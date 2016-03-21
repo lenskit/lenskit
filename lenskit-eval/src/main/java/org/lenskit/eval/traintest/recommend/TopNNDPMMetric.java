@@ -126,7 +126,6 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
         return dpm;
     }
 
-
     /**
      * Specification for configuring nDPM metrics.
      */
