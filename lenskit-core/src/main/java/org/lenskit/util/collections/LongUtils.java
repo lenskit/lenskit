@@ -134,6 +134,14 @@ public final class LongUtils {
         }
     }
 
+    public static LongList asLongList(List<Long> longs) {
+       if (longs instanceof  LongList) {
+           return (LongList) longs;
+       } else {
+           return new LongListWrapper(longs);
+       }
+    }
+
     /**
      * Create a map that maps a group of items to the same value.
      * @param keys The keys.
@@ -163,6 +171,23 @@ public final class LongUtils {
         } else {
             return new LongSetWrapper(longs);
         }
+    }
+
+    /**
+     * Compute the ranks for a list of longs.
+     * @param results The list of longs.
+     * @return The map of ranks; its default return value will be -1.
+     */
+    public static Long2IntMap itemRanks(LongList results) {
+        Long2IntMap ranks = new Long2IntOpenHashMap(results.size());
+        ranks.defaultReturnValue(-1);
+        LongListIterator iter = results.listIterator();
+        while (iter.hasNext()) {
+            int i = iter.nextIndex();
+            long val = iter.nextLong();
+            ranks.put(val, i);
+        }
+        return ranks;
     }
 
     /**

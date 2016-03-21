@@ -83,13 +83,8 @@ public final class Functional {
 
         @Override
         public void funnel(Object from, PrimitiveSink into) {
-            try {
-                ObjectOutputStream out = new ObjectOutputStream(Funnels.asOutputStream(into));
-                try {
-                    out.writeObject(from);
-                } finally {
-                    out.close();
-                }
+            try (ObjectOutputStream out = new ObjectOutputStream(Funnels.asOutputStream(into))) {
+                out.writeObject(from);
             } catch (IOException ex) {
                 throw Throwables.propagate(ex);
             }

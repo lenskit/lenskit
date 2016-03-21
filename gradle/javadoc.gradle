@@ -56,6 +56,7 @@ allprojects {
     }
     tasks.withType(Javadoc) { task ->
         task.configure {
+            maxMemory = '128m'
             onlyIf {
                 !travis.isActive() || travis.activeJdk == 'oraclejdk8'
             }

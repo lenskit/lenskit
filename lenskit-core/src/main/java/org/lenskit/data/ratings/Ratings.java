@@ -46,6 +46,9 @@ import java.util.Comparator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Ratings {
+    private Ratings() {
+    }
+
     /**
      * Construct a rating vector that contains the ratings provided by each user.
      * If all ratings in <var>ratings</var> are for the same item, then this

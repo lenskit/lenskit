@@ -147,8 +147,5 @@ do this:
 1. Fork the LensKit repository (`lenskit/lenskit`) on GitHub
 2. Push your changes to your fork
 3. Submit a pull request via the GitHub web interface
-   
-When submitting a pull request via GitHub, you warrant that you
-either own the code or have appropriate authority to submit it, and
-license your changes under LensKit's copyright license (LGPLv2.1+ for
-the main code, 3-clause BSD for the build scripts).
+
+For additional details, including legal maters, please see [CONTRIBUTING.md](CONTRIBUTING.md).

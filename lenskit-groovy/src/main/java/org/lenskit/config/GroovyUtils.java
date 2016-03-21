@@ -34,6 +34,9 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class GroovyUtils {
+    private GroovyUtils() {
+    }
+
     /**
      * Call a configuration block with a specified delegate.
      * @param block The block to invoke.
