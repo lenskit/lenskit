@@ -41,7 +41,6 @@ import java.util.Collections;
  * Measure the nDPM of the top-N recommendations, using rankings.
  * This metric is registered with the type name `ndpm`.
  * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf.
- * Created by VaibhavMahant on 2/1/16.
  */
 public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
     public static final String DEFAULT_COLUMN = "TopN.nDPM";
@@ -87,7 +86,9 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
 
         double dpm = computeDPM(actual, ratings);
 
-        double nDPM = dpm / 2 * dpm; // Normalized nDPM
+        double normalizingFactor = computeNormalizingFactor(actual, ratings);
+
+        double nDPM = dpm / normalizingFactor; // Normalized nDPM
 
         context.add(nDPM);
 
@@ -114,16 +115,51 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
                         valueTwo = value.get(actual_item[j]);
                     }
                 }
-                if(valueOne < valueTwo)
-                    nCompatible++;
-                if(valueOne == valueTwo)
+                if(valueOne < valueTwo){
                     nDisagree++;
+                }
+                if(valueOne == valueTwo) {
+                    nCompatible++;
+                }
             }
         }
 
-        double dpm = (2 * nCompatible) + nDisagree;
+        double dpm = (2 * nDisagree) + nCompatible;
 
         return dpm;
+    }
+
+    double computeNormalizingFactor(long [] actual_item, Long2DoubleFunction value) {
+        int npairs = 0;
+
+        for(int i = 0; i < actual_item.length; i++) {
+            for(int j = i+1; j < actual_item.length; j++) {
+                double valueOne;
+                double valueTwo;
+
+                if (value.containsKey(actual_item[i])) {
+                    valueOne = value.get(actual_item[i]);
+
+                    if (value.containsKey(actual_item[j])) {
+                        valueTwo = value.get(actual_item[j]);
+                        if(valueOne < valueTwo || valueOne > valueTwo) {
+                            npairs++;
+                        }
+                    }
+                }
+            }
+        }
+
+        double denominator;
+
+        if(npairs > 0){
+            denominator = 2 * npairs;
+        }
+        else{
+            denominator = 1;
+        }
+
+        return denominator;
     }
 
     /**
