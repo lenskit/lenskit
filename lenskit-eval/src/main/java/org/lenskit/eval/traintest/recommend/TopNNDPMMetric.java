@@ -32,6 +32,7 @@ import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.math.Scalars;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -105,21 +106,22 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
 
         for(int i = 0; i < actual_item.length; i++){
             for(int j = i+1; j < actual_item.length; j++){
-                double valueOne = 0;
-                double valueTwo = 0;
+                double valueOne;
+                double valueTwo;
 
                 if (value.containsKey(actual_item[i])) {
                     valueOne = value.get(actual_item[i]);
 
                     if (value.containsKey(actual_item[j])) {
                         valueTwo = value.get(actual_item[j]);
+
+                        if (Scalars.isZero(valueOne - valueTwo)) {
+                            nCompatible++;
+                        }
+                        if(valueOne < valueTwo){
+                            nDisagree++;
+                        }
                     }
-                }
-                if(valueOne < valueTwo){
-                    nDisagree++;
-                }
-                if(valueOne == valueTwo) {
-                    nCompatible++;
                 }
             }
         }
