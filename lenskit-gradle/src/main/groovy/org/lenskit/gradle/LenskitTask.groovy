@@ -20,6 +20,7 @@
  */
 package org.lenskit.gradle
 
+import org.fusesource.jansi.AnsiConsole
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
@@ -106,8 +107,14 @@ public abstract class LenskitTask extends ConventionTask {
         if (logbackConfiguration) {
             invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
+
         logger.info('applying JVM arguments {}', getJvmArgs())
         invoker.jvmArgs getJvmArgs() // add all the arguments in the invoker
+
+        // the LensKit process will have stderr redirected, even if we're on a terminal
+        // use our JAnsi terminal
+        invoker.errorOutput = AnsiConsole.err
+        invoker.systemProperties 'jansi.passthrough': true
     }
 
     /**
