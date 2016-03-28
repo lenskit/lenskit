@@ -31,7 +31,7 @@ import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base class for LensKit configuration scripts.  This class mixes in {@code LenskitConfigDSL}, so
@@ -43,6 +43,7 @@ import java.util.Set;
 public abstract class LenskitConfigScript extends Script {
     protected final Logger logger = LoggerFactory.getLogger(LenskitConfigScript.class);
     private LenskitConfigDSL delegate;
+    private Map<String,Set<String>> badProperties = new LinkedHashMap<>();
 
     protected LenskitConfigScript() {
         this(new Binding());
@@ -89,6 +90,49 @@ public abstract class LenskitConfigScript extends Script {
         }
     }
 
+    /**
+     * Groovy override to provide usage hints with missing properties.
+     * @param name The name of the missing property
+     * @return The (simulated) property value.
+     */
+    public Object propertyMissing(String name) {
+        if (Character.isUpperCase(name.charAt(0))) {
+            logger.error("unresolved class or property {}", name);
+            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
+            logger.debug("found {} packages with classes named {}", packages.size(), name);
+            badProperties.put(name, packages);
+            return null;
+        } else {
+            logger.error("unresolved property {} in configuration script", name);
+            throw new MissingPropertyException(name, getClass());
+        }
+    }
+
+    /**
+     * Run the script and check for error conditions.
+     * @throws RecommenderConfigurationException if there is an error with the configuration.
+     */
+    private void runScript() throws RecommenderConfigurationException {
+        badProperties.clear();
+        try {
+            run();
+        } catch (RecommenderConfigurationException rce) {
+            throw rce;
+        } catch (Exception ex) {
+            throw new RecommenderConfigurationException("error configuring recommender", ex);
+        }
+        if (!badProperties.isEmpty()) {
+            for (Map.Entry<String,Set<String>> bpe: badProperties.entrySet()) {
+                logger.error("Script references unknown class or property {}", bpe.getKey());
+                for (String pkg: bpe.getValue()) {
+                    logger.info("consider importing {}.{}", pkg, bpe.getKey());
+                }
+            }
+            String message = "Unresolved properties in evaluation script: ";
+            message += Joiner.on(", ").join(badProperties.keySet());
+            throw new RecommenderConfigurationException(message);
+        }
+    }
 
     /**
      * Run this script against an existing configuration.
@@ -98,18 +142,7 @@ public abstract class LenskitConfigScript extends Script {
         LenskitConfigDSL old = getDelegate();
         setDelegate(new LenskitConfigDSL(old.getConfigLoader(), config, delegate.getBaseURI()));
         try {
-            run();
-        } catch (MissingPropertyException e) {
-            String name = e.getProperty();
-            logger.error("Cannot resolve class or property " + name);
-            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
-            logger.debug("found {} packages with classes named {}", packages.size(), name);
-            if (!packages.isEmpty()) {
-                logger.info("Did you intend to import it from {}?", Joiner.on(", ").join(packages));
-            }
-            throw new RecommenderConfigurationException("error configuring recommender", e);
-        } catch (Exception ex) {
-            throw new RecommenderConfigurationException("error configuring recommender", ex);
+            runScript();
         } finally {
             setDelegate(old);
         }
@@ -121,20 +154,7 @@ public abstract class LenskitConfigScript extends Script {
      * @throws RecommenderConfigurationException if an error occurs.
      */
     public LenskitConfiguration configure() throws RecommenderConfigurationException {
-        try {
-            run();
-        } catch (MissingPropertyException e) {
-            String name = e.getProperty();
-            logger.error("Cannot resolve class or property " + name);
-            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
-            logger.debug("found {} packages with classes named {}", packages.size(), name);
-            if (!packages.isEmpty()) {
-                logger.info("Did you intend to import it from {}?", Joiner.on(", ").join(packages));
-            }
-            throw new RecommenderConfigurationException("error configuring recommender", e);
-        } catch (Exception ex) {
-            throw new RecommenderConfigurationException("error configuring recommender", ex);
-        }
+        runScript();
         return delegate.getConfig();
     }
 }
