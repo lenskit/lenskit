@@ -101,8 +101,9 @@ public abstract class LenskitConfigScript extends Script {
             run();
         } catch (MissingPropertyException e) {
             String name = e.getProperty();
-            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
             logger.error("Cannot resolve class or property " + name);
+            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
+            logger.debug("found {} packages with classes named {}", packages.size(), name);
             if (!packages.isEmpty()) {
                 logger.info("Did you intend to import it from {}?", Joiner.on(", ").join(packages));
             }
@@ -124,8 +125,9 @@ public abstract class LenskitConfigScript extends Script {
             run();
         } catch (MissingPropertyException e) {
             String name = e.getProperty();
-            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
             logger.error("Cannot resolve class or property " + name);
+            Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
+            logger.debug("found {} packages with classes named {}", packages.size(), name);
             if (!packages.isEmpty()) {
                 logger.info("Did you intend to import it from {}?", Joiner.on(", ").join(packages));
             }
