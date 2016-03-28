@@ -7,7 +7,6 @@ dependencies {
 
     compile project(':lenskit-specs')
     compile 'org.joda:joda-convert:1.8.1'
-    compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.11'
 }
 
 apply from: 'integration-tests.gradle'

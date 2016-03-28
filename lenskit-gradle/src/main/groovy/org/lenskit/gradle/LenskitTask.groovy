@@ -20,16 +20,18 @@
  */
 package org.lenskit.gradle
 
-import org.fusesource.jansi.AnsiConsole
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.nativeintegration.console.ConsoleDetector
+import org.gradle.internal.nativeintegration.console.ConsoleMetaData
+import org.gradle.internal.nativeintegration.services.NativeServices
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.JavaExecHandleBuilder
-import org.gradle.util.ConfigureUtil;
+import org.gradle.util.ConfigureUtil
 
 /**
  * Base class for LensKit tasks.
@@ -97,9 +99,14 @@ public abstract class LenskitTask extends ConventionTask {
             invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
         // the LensKit process will have stderr redirected, even if we're on a terminal
-        // use our JAnsi terminal
-        invoker.errorOutput = AnsiConsole.err
-        invoker.systemProperties 'jansi.passthrough': true
+        // so we need to detect console things
+        ConsoleDetector console = NativeServices.getInstance().get(ConsoleDetector.class);
+        ConsoleMetaData cmd = console.getConsole();
+        if (cmd?.isStdErr()) {
+            // stderr is a console
+            logger.info('color output, turning on color passthrough')
+            invoker.systemProperties 'jansi.passthrough': true
+        }
     }
 
     /**
