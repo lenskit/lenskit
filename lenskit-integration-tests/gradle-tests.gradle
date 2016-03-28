@@ -45,6 +45,9 @@ def ift = task makeTestRepo {
     }
 }
 
+def testGradleVersions = ['2.2', '2.3', '2.4', '2.5', '2.6', '2.7',
+                          '2.8', '2.9', '2.10', '2.11', '2.12']
+
 task gradleTests(group: 'verification')
 check.dependsOn gradleTests
 
@@ -93,4 +96,47 @@ file('src/it/gradle').eachDir { testDir ->
     }
 
     gradleTests.dependsOn "test$tname"
+}
+
+task gradleVersionTests(group: 'verification')
+
+def basicGradleTest = 'src/it/gradle/gradle-plugin-basics'
+def gradleTestWorkDir = "$buildDir/gradle-versions"
+for (ver in testGradleVersions) {
+    def workDir = "$gradleTestWorkDir/$ver"
+    def prep = task("prepBasicGradle$ver", type: Copy) {
+        ext.gradleVersion = ver
+        from basicGradleTest
+        into workDir
+        from('src/it/gradle') {
+            include 'common.gradle'
+        }
+        from(rootDir) {
+            include 'gradlew'
+            include 'gradlew.bat'
+            include 'gradle/wrapper/gradle-wrapper.jar'
+        }
+        doLast {
+            file("$workDir/gradle/wrapper/gradle-wrapper.properties").text = """\
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+distributionUrl=https\\://services.gradle.org/distributions/gradle-$gradleVersion-bin.zip
+""".stripIndent()
+            file("$workDir/gradle.properties").text = """\
+testRepoURI=${rootProject.uri("build/test-repo").toString().replaceAll(':', '\\:')}
+lenskitVersion=${project.version}
+"""
+        }
+    }
+    def test = task("testBasicGradle$ver", type: Exec, dependsOn: [prep, makeTestRepo]) {
+        workingDir workDir
+        executable './gradlew'
+        args 'check', '--stacktrace'
+    }
+    gradleVersionTests.dependsOn test
+}
+if (travis.active) {
+    check.dependsOn gradleVersionTests
 }
