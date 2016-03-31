@@ -6,15 +6,17 @@ import java.util.ArrayList;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
-import org.lenskit.solver.objective.LearningInstance;
-import org.lenskit.solver.objective.LearningModel;
-import org.lenskit.solver.objective.StochasticOracle;
+import org.lenskit.solver.LearningInstance;
+import org.lenskit.solver.LearningModel;
+import org.lenskit.solver.VariableManager;
+import org.lenskit.solver.StochasticOracle;
 import org.lenskit.util.keys.ObjectKeyIndex;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureModel extends LearningModel {
+public class SVDFeatureModel implements LearningModel {
+    private VariableManager variableManager;
     private transient SVDFeatureInstanceDAO dao;
     private transient ArrayList<SVDFeatureInstance> instances;
     private RealVector biases;

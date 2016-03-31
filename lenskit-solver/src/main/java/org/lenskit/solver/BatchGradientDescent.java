@@ -1,11 +1,11 @@
-package org.lenskit.solver.method;
+package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.solver.objective.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,7 +15,7 @@ import java.util.Map;
 // Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class BatchGradientDescent implements OptimizationMethod {
     private HashMap<String, RealVector> scalarGrads;
-    private HashMap<String, ArrayList<RealVector>> vectorGrads;
+    private HashMap<String, List<RealVector>> vectorGrads;
 
     private int maxIter;
     private double l2coef;
@@ -40,11 +40,7 @@ public class BatchGradientDescent implements OptimizationMethod {
         vectorGrads = new HashMap<>();
     }
 
-    public void divideLearningRate(double divider) {
-        lr /= divider;
-    }
-
-    private void assignGrads(HashMap<String, RealVector> scalarVars, HashMap<String, ArrayList<RealVector>> vectorVars) {
+    private void assignGrads(HashMap<String, RealVector> scalarVars, HashMap<String, List<RealVector>> vectorVars) {
         for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
             String name = entry.getKey();
             RealVector var = entry.getValue();
@@ -52,27 +48,27 @@ public class BatchGradientDescent implements OptimizationMethod {
             grad.set(0.0);
             scalarGrads.put(name, grad);
         }
-        for (Map.Entry<String, ArrayList<RealVector>> entry : vectorVars.entrySet()) {
+        for (Map.Entry<String, List<RealVector>> entry : vectorVars.entrySet()) {
             String name = entry.getKey();
-            ArrayList<RealVector> var = entry.getValue();
-            ArrayList<RealVector> grad = new ArrayList<>(var.size());
-            for (int i=0; i<var.size(); i++) {
-                grad.add(MatrixUtils.createRealVector(new double[var.get(i).getDimension()]));
+            List<RealVector> var = entry.getValue();
+            List<RealVector> grad = new ArrayList<>(var.size());
+            for (RealVector oneVar : var) {
+                grad.add(MatrixUtils.createRealVector(new double[oneVar.getDimension()]));
             }
             vectorGrads.put(name, grad);
         }
     }
 
-    private void updateVars(HashMap<String, RealVector> scalarVars, HashMap<String, ArrayList<RealVector>> vectorVars) {
+    private void updateVars(HashMap<String, RealVector> scalarVars, HashMap<String, List<RealVector>> vectorVars) {
         for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
             String name = entry.getKey();
             RealVector var = entry.getValue();
             var.combineToSelf(1.0, -lr, scalarGrads.get(name));
         }
-        for (Map.Entry<String, ArrayList<RealVector>> entry : vectorVars.entrySet()) {
+        for (Map.Entry<String, List<RealVector>> entry : vectorVars.entrySet()) {
             String name = entry.getKey();
-            ArrayList<RealVector> var = entry.getValue();
-            ArrayList<RealVector> grad = vectorGrads.get(name);
+            List<RealVector> var = entry.getValue();
+            List<RealVector> grad = vectorGrads.get(name);
             for (int i=0; i<var.size(); i++) {
                 var.get(i).combineToSelf(1.0, -1.0, grad.get(i).mapMultiplyToSelf(lr));
             }
@@ -81,8 +77,9 @@ public class BatchGradientDescent implements OptimizationMethod {
 
     public double minimize(LearningModel model, ObjectiveFunction objFunc) {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
-        HashMap<String, RealVector> scalarVars = model.getScalarVars();
-        HashMap<String, ArrayList<RealVector>> vectorVars = model.getVectorVars();
+        VariableManager variableManager = model.getVariables();
+        HashMap<String, RealVector> scalarVars = variableManager.scalarVars;
+        HashMap<String, List<RealVector>> vectorVars = variableManager.vectorVars;
         assignGrads(scalarVars, vectorVars);
         L2Regularizer l2term = new L2Regularizer();
         double objVal = 0;
@@ -113,7 +110,7 @@ public class BatchGradientDescent implements OptimizationMethod {
             for (RealVector var : scalarVars.values()) {
                 objVal += l2term.getObjective(l2coef, var);
             }
-            for (ArrayList<RealVector> vars : vectorVars.values()) {
+            for (List<RealVector> vars : vectorVars.values()) {
                 objVal += l2term.getObjective(l2coef, vars);
             }
             updateVars(scalarVars, vectorVars);

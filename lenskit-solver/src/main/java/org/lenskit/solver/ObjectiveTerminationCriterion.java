@@ -1,10 +1,8 @@
-package org.lenskit.solver.method;
+package org.lenskit.solver;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

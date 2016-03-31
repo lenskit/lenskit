@@ -1,8 +1,4 @@
-package org.lenskit.solver.method;
-
-import org.lenskit.solver.objective.LearningInstance;
-import org.lenskit.solver.objective.LearningModel;
-import org.lenskit.solver.objective.ObjectiveFunction;
+package org.lenskit.solver;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -18,7 +14,9 @@ public class ExpectationMaximization implements OptimizationMethod {
         method = new StochasticGradientDescent(3, 0.0, 0.01, 10);
     }
 
-    public double minimize(LearningModel model, ObjectiveFunction objFunc) {
+    public double minimize(LearningModel learningModel, ObjectiveFunction objFunc) {
+        //check the type of learningModel
+        LatentLearningModel model = (LatentLearningModel)learningModel;
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         double objVal = 0;
         while (termCrit.keepIterate()) {

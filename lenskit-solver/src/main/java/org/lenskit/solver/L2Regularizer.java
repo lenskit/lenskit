@@ -1,8 +1,9 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -27,10 +28,10 @@ public class L2Regularizer {
         return l2coef * l2norm * l2norm;
     }
 
-    public double getObjective(double l2coef, ArrayList<RealVector> vars) {
+    public double getObjective(double l2coef, List<RealVector> vars) {
         double objVal = 0.0;
-        for (int i=0; i<vars.size(); i++) {
-            double l2norm = vars.get(i).getNorm();
+        for (RealVector realVector : vars) {
+            double l2norm = realVector.getNorm();
             objVal += l2norm * l2norm;
         }
         return objVal * l2coef;

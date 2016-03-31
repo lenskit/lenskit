@@ -1,4 +1,4 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver;
 
 public class LogisticLoss implements ObjectiveFunction {
     public LogisticLoss() { }
