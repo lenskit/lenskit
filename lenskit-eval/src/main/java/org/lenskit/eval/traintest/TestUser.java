@@ -40,8 +40,9 @@ public class TestUser {
 
     /**
      * Construct a new test user object.
+     *
      * @param train The training history.
-     * @param test The test history.
+     * @param test  The test history.
      */
     public TestUser(UserHistory<Event> train, UserHistory<Event> test) {
         Preconditions.checkNotNull(train, "training history");
@@ -54,7 +55,8 @@ public class TestUser {
 
     /**
      * Make a builder for test users.
-     * @return A new builder for a a test user object.
+     *
+     * @return A new builder for a test user object.
      */
     public static TestUserBuilder newBuilder() {
         return new TestUserBuilder();
@@ -97,7 +99,6 @@ public class TestUser {
 
     /**
      * Get the user's test ratings.
-     *
      * Summarizes the user's ratings from the history.
      *
      * @return The user's ratings for the test items.

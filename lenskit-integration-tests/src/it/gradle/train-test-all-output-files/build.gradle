@@ -9,7 +9,6 @@ buildscript {
         classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
     }
 }
-
 import org.lenskit.gradle.*
 
 apply plugin: 'java'
@@ -61,6 +60,7 @@ task trainTest(type: TrainTest) {
         metric('ndcg') {
             columnName 'nDCG'
         }
+        metric'ndpm'
         metric 'popularity'
         metric 'mrr'
         metric 'map'
@@ -77,6 +77,7 @@ task trainTest(type: TrainTest) {
         metric('ndcg') {
             columnName 'nDCG'
         }
+        metric'ndpm'
         metric 'popularity'
         metric 'mrr'
         metric 'map'
