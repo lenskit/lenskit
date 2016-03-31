@@ -1,7 +1,4 @@
-package org.lenskit.solver.method;
-
-import org.lenskit.solver.objective.LearningModel;
-import org.lenskit.solver.objective.ObjectiveFunction;
+package org.lenskit.solver;
 
 public class RegularizedDualAveraging implements OptimizationMethod {
     public double minimize(LearningModel learningModel, ObjectiveFunction objectiveFunction) {

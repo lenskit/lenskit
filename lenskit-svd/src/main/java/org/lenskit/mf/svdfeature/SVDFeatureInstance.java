@@ -1,14 +1,14 @@
 package org.lenskit.mf.svdfeature;
 
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.solver.objective.LearningInstance;
+import org.lenskit.solver.LearningInstance;
 
 import java.util.ArrayList;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureInstance extends LearningInstance {
+public class SVDFeatureInstance implements LearningInstance {
     public double weight;
     public double label;
     public ArrayList<Feature> gfeas;

@@ -1,10 +1,8 @@
 package org.lenskit.mf.svdfeature;
 
-import java.io.IOException;
-
-import org.lenskit.solver.method.StochasticGradientDescent;
-import org.lenskit.solver.objective.ObjectiveFunction;
-import org.lenskit.solver.method.OptimizationMethod;
+import org.lenskit.solver.StochasticGradientDescent;
+import org.lenskit.solver.ObjectiveFunction;
+import org.lenskit.solver.OptimizationMethod;
 
 import javax.inject.Inject;
 import javax.inject.Provider;

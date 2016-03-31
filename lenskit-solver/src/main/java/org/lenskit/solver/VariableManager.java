@@ -1,30 +1,40 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class LearningModel implements Serializable {
-    protected HashMap<String, RealVector> scalarVars;
-    protected HashMap<String, ArrayList<RealVector>> vectorVars;
+public class VariableManager {
+    HashMap<String, RealVector> scalarVars;
+    HashMap<String, List<RealVector>> vectorVars;
 
-    public LearningModel() {
+    public VariableManager() {
         scalarVars = new HashMap<>();
         vectorVars = new HashMap<>();
     }
 
-    public HashMap<String, RealVector> getScalarVars() {
-        return scalarVars;
+    public double getScalarVar(String name, int index) {
+        return scalarVars.get(name).getEntry(index);
     }
-    public HashMap<String, ArrayList<RealVector>> getVectorVars() {
-        return vectorVars;
+
+    public void setScalarVar(String name, int index, double val) {
+        scalarVars.get(name).setEntry(index, val);
     }
-    protected RealVector requestScalarVar(String name, int size, double initial, 
+
+    public RealVector getVectorVar(String name, int index) {
+        return vectorVars.get(name).get(index);
+    }
+
+    public void setVectorVar(String name, int index, RealVector val) {
+    }
+
+    public RealVector requestScalarVar(String name, int size, double initial,
                                           boolean randomize, boolean normalize) {
         RealVector var = MatrixUtils.createRealVector(new double[size]);
         if (randomize) {
@@ -36,7 +46,7 @@ public abstract class LearningModel implements Serializable {
         scalarVars.put(name, var);
         return var;
     }
-    protected ArrayList<RealVector> requestVectorVar(String name, int size, int dim, double initial,
+    public List<RealVector> requestVectorVar(String name, int size, int dim, double initial,
                                           boolean randomize, boolean normalize) {
         ArrayList<RealVector> var = new ArrayList<>(size);
         for (int i=0; i<size; i++) {
@@ -54,12 +64,4 @@ public abstract class LearningModel implements Serializable {
         vectorVars.put(name, var);
         return var;
     }
-
-    public LearningInstance getLearningInstance() { return null; }
-    public void startNewIteration() {}
-    public void assignVariables() {}
-    public StochasticOracle getStochasticOracle(LearningInstance ins) { return null; }
-
-    public double expectation(LearningInstance ins) { return 0.0; }
-    public LearningModel maximization() { return null; }
 }

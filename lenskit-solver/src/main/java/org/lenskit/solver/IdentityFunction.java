@@ -1,10 +1,11 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class IdentityFunction {
+public class IdentityFunction implements ObjectiveFunction {
     public IdentityFunction() {}
+
     public void wrapOracle(StochasticOracle orc) {
         orc.objVal = orc.modelOutput * orc.insWeight;
         if (orc.insWeight != 1.0) {

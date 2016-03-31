@@ -1,4 +1,4 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;

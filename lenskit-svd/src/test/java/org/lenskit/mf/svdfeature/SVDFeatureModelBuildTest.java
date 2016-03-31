@@ -1,7 +1,7 @@
 package org.lenskit.mf.svdfeature;
 
 import org.junit.Test;
-import org.lenskit.solver.objective.LogisticLoss;
+import org.lenskit.solver.LogisticLoss;
 
 import java.io.*;
 

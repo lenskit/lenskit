@@ -1,18 +1,19 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.commons.math3.linear.RealVector;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class StochasticOracle { 
-    public ArrayList<String> scalarNames;
-    public IntArrayList scalarIndexes;
-    public DoubleArrayList scalarGrads;
-    public ArrayList<String> vectorNames;
-    public IntArrayList vectorIndexes;
-    public ArrayList<RealVector> vectorGrads;
+    List<String> scalarNames;
+    IntArrayList scalarIndexes;
+    DoubleArrayList scalarGrads;
+    List<String> vectorNames;
+    IntArrayList vectorIndexes;
+    List<RealVector> vectorGrads;
 
     public double objVal;
     public double modelOutput;
@@ -20,12 +21,12 @@ public class StochasticOracle {
     public double insWeight;
 
     public StochasticOracle() {
-        scalarNames = new ArrayList<String>();
+        scalarNames = new ArrayList<>();
         scalarIndexes = new IntArrayList();
         scalarGrads = new DoubleArrayList();
-        vectorNames = new ArrayList<String>();
+        vectorNames = new ArrayList<>();
         vectorIndexes = new IntArrayList();
-        vectorGrads = new ArrayList<RealVector>();
+        vectorGrads = new ArrayList<>();
     }
 
     public void addScalarOracle(String name, int index, double grad) {

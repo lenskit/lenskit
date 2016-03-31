@@ -1,10 +1,8 @@
-package org.lenskit.solver.method;
+package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.solver.objective.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -31,14 +29,9 @@ public class StochasticGradientDescent implements OptimizationMethod {
         tol = inTol;
     }
 
-    public void divideLearningRate(double divider) {
-        lr /= divider;
-    }
-
     public double minimize(LearningModel model, ObjectiveFunction objFunc) {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
-        HashMap<String, RealVector> scalarVars = model.getScalarVars();
-        HashMap<String, ArrayList<RealVector>> vectorVars = model.getVectorVars();
+        VariableManager variables = model.getVariables();
         L2Regularizer l2term = new L2Regularizer();
         double objVal = 0;
         while (termCrit.keepIterate()) {
@@ -53,22 +46,22 @@ public class StochasticGradientDescent implements OptimizationMethod {
                     String name = orc.scalarNames.get(i);
                     int idx = orc.scalarIndexes.get(i);
                     double grad = orc.scalarGrads.get(i);
-                    double var = scalarVars.get(name).getEntry(idx);
-                    scalarVars.get(name).setEntry(idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
+                    double var = variables.getScalarVar(name, idx);
+                    variables.setScalarVar(name, idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
                 }
                 for (int i=0; i<orc.vectorNames.size(); i++) {
                     String name = orc.vectorNames.get(i);
                     int idx = orc.vectorIndexes.get(i);
-                    RealVector var = vectorVars.get(name).get(idx);
+                    RealVector var = variables.getVectorVar(name, idx);
                     RealVector grad = orc.vectorGrads.get(i);
                     var.combineToSelf(1.0, -lr, l2term.addGradient(grad, var, l2coef));
                 }
                 objVal += orc.objVal;
             }
-            for (RealVector var : scalarVars.values()) {
+            for (RealVector var : variables.scalarVars.values()) {
                 objVal += l2term.getObjective(l2coef, var);
             }
-            for (ArrayList<RealVector> vars : vectorVars.values()) {
+            for (List<RealVector> vars : variables.vectorVars.values()) {
                 objVal += l2term.getObjective(l2coef, vars);
             }
             termCrit.addIteration("StochasticGradientDescent", objVal);
