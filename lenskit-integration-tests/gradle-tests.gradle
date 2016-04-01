@@ -94,6 +94,7 @@ file('src/it/gradle').eachDir { testDir ->
                 into workDir
                 include '*.gradle'
             }
+            file("$workDir/settings.gradle").text = ""
             println "running gradle build for $testDir"
         }
     }
@@ -142,6 +143,7 @@ distributionUrl=https\\://services.gradle.org/distributions/gradle-$gradleVersio
 testRepoURI=${rootProject.uri("build/test-repo").toString().replaceAll(':', '\\:')}
 lenskitVersion=${project.version}
 """
+            file("$workDir/settings.gradle").text = ""
         }
     }
     def test = task("testBasicGradle$ver", type: Exec, dependsOn: [prep, makeTestRepo]) {
