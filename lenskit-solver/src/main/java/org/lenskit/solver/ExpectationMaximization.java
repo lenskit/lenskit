@@ -14,22 +14,23 @@ public class ExpectationMaximization implements OptimizationMethod {
         method = new StochasticGradientDescent(3, 0.0, 0.01, 10);
     }
 
-    public double minimize(LearningModel learningModel, ObjectiveFunction objFunc) {
+    public double minimize(LearningModel learningModel, LearningData learningData) {
         //check the type of learningModel
         LatentLearningModel model = (LatentLearningModel)learningModel;
+        ObjectiveFunction objFunc = learningModel.getObjectiveFunction();
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         double objVal = 0;
         while (termCrit.keepIterate()) {
             objVal = 0;
-            model.startNewIteration();
+            learningData.startNewIteration();
             LearningInstance ins;
-            while ((ins = model.getLearningInstance()) != null) {
+            while ((ins = learningData.getLearningInstance()) != null) {
                 objVal += model.expectation(ins);
             }
             termCrit.addIteration(objVal);
             LearningModel subModel = model.maximization();
             if (subModel != null) {
-                method.minimize(subModel, objFunc);
+                method.minimize(subModel, learningData);
             }
         }
         return objVal;

@@ -1,8 +1,7 @@
 package org.lenskit.solver;
 
 public interface LearningModel {
-    VariableManager getVariables();
-    LearningInstance getLearningInstance();
-    void startNewIteration();
+    SynchronizedVariableSpace getVariables();
     StochasticOracle getStochasticOracle(LearningInstance ins);
+    ObjectiveFunction getObjectiveFunction();
 }

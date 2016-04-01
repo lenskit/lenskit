@@ -3,7 +3,7 @@ package org.lenskit.util.keys;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-public class ObjectKeyIndex<K> extends Object {
+public class ObjectKeyIndex<K> {
     private Object2IntOpenHashMap<K> key2idx;
     private ObjectArrayList<K> keyList;
 

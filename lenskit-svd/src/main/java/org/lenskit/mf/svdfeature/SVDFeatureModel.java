@@ -6,54 +6,50 @@ import java.util.ArrayList;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
-import org.lenskit.solver.LearningInstance;
-import org.lenskit.solver.LearningModel;
-import org.lenskit.solver.VariableManager;
-import org.lenskit.solver.StochasticOracle;
+import org.lenskit.solver.*;
 import org.lenskit.util.keys.ObjectKeyIndex;
+import org.lenskit.util.keys.SynchronizedIndexSpace;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureModel implements LearningModel {
-    private VariableManager variableManager;
-    private transient SVDFeatureInstanceDAO dao;
-    private transient ArrayList<SVDFeatureInstance> instances;
-    private RealVector biases;
-    private ArrayList<RealVector> factors;
-    private ObjectKeyIndex<String> biasMap;
-    private ObjectKeyIndex<String> factMap;
+    private SynchronizedVariableSpace variableSpace;
+    private SynchronizedIndexSpace indexSpace;
+    private ObjectiveFunction objectiveFunction;
     private int factDim;
-    private int insIdx;
+    private int biasSize;
+    private int factSize;
 
-    public SVDFeatureModel(int inFactDim, SVDFeatureInstanceDAO inDao) {
-        factDim = inFactDim;
-        dao = inDao;
-        instances = null;
-        insIdx = 0;
+    public SVDFeatureModel(int biasSize, int factSize, int factDim, ObjectiveFunction objectiveFunction) {
+        this.biasSize = biasSize;
+        this.factSize = factSize;
+        this.factDim = factDim;
+        this.objectiveFunction = objectiveFunction;
+        this.variableSpace = new SynchronizedVariableSpace();
+        this.variableSpace.requestScalarVar("biases", this.biasSize, 0, false, false);
+        this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
     }
 
-    public SVDFeatureModel(int inFactDim) {
-        factDim = inFactDim;
-        dao = null;
-        instances = null;
-        insIdx = 0;
+    /* SVDFeatureModel must fulfill transforming raw data to svdfeature instance because
+        1. indexSpace is together with a model
+        2. during prediction online, raw data is given
+    */
+
+    public SVDFeatureModel(SVDFeatureRawDAO dao, ObjectiveFunction objectiveFunction) {
+        this.objectiveFunction = objectiveFunction;
+        //extract all sizes from dao and construct index space
     }
 
-    public void setInstanceDAO(SVDFeatureInstanceDAO inDao) {
-        dao = inDao;
+    public SynchronizedVariableSpace getVariables() {
+        return variableSpace;
     }
 
-    public void setInstances(ArrayList<SVDFeatureInstance> outIns) {
-        instances = outIns;
+    public ObjectiveFunction getObjectiveFunction() {
+        return objectiveFunction;
     }
 
-    public void assignVariables() {
-        biases = requestScalarVar("biases", biasMap.size(), 0, false, false);
-        factors = requestVectorVar("factors", factMap.size(), factDim, 0, true, false);
-    }
-
-    public double predict(SVDFeatureInstance ins, StochasticOracle outOrc,
+    private double predict(SVDFeatureInstance ins, StochasticOracle outOrc,
                           RealVector outUfactSum, RealVector outIfactSum) {
         double pred = 0.0;
         for (int i=0; i<ins.gfeas.size(); i++) {
@@ -62,40 +58,25 @@ public class SVDFeatureModel implements LearningModel {
             if (outOrc != null) {
                 outOrc.addScalarOracle("biases", ind, val);
             }
-            pred += biases.getEntry(ind) * val;
+            pred += variableSpace.getScalarVar("bias", ind) * val;
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ufeas.size(); i++) {
             int index = ins.ufeas.get(i).index;
             outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).value);
-            outUfactSum.combineToSelf(1.0, 1.0, factors.get(index));
+            outUfactSum.combineToSelf(1.0, 1.0, variableSpace.getVectorVar("factors", index));
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ifeas.size(); i++) {
             int index = ins.ifeas.get(i).index;
             outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).value);
-            outIfactSum.combineToSelf(1.0, 1.0, factors.get(index));
+            outIfactSum.combineToSelf(1.0, 1.0, variableSpace.getVectorVar("factors", index));
         }
 
         pred += outUfactSum.dotProduct(outIfactSum);
         return pred;
-    }
-
-    public SVDFeatureInstance getLearningInstance() {
-        SVDFeatureInstance ins = null;
-        if (dao != null) {
-            try {
-                ins = dao.getNextInstance();
-            } catch (IOException e) {
-                ins = null;
-            }
-        } else if (instances.size() > insIdx) {
-            ins = instances.get(insIdx);
-            ++insIdx;
-        }
-        return ins;
     }
 
     public StochasticOracle getStochasticOracle(LearningInstance inIns) {
@@ -126,15 +107,6 @@ public class SVDFeatureModel implements LearningModel {
         orc.insLabel = ins.label;
         orc.insWeight = ins.weight;
         return orc;
-    }
-
-    public void startNewIteration() {
-        insIdx = 0;
-        if (dao != null) {
-            try {
-                dao.goBackToBeginning();
-            } catch (IOException e) {}
-        }
     }
 
     public double predict(SVDFeatureInstance ins, boolean sigmoid) {
