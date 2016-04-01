@@ -12,29 +12,25 @@ import javax.inject.Provider;
  */
 public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
     private SVDFeatureModel model;
-    private ObjectiveFunction loss;
     private OptimizationMethod method;
+    private SVDFeatureInstanceDAO dao;
 
-    @Inject
     public SVDFeatureModelBuilder(int numBiases, int numFactors, int factDim,
-                                  SVDFeatureInstanceDAO dao, ObjectiveFunction inLoss) {
-        loss = inLoss;
-        model = new SVDFeatureModel(numBiases, numFactors, factDim, dao);
-        method = new StochasticGradientDescent();
+                                  SVDFeatureInstanceDAO dao, ObjectiveFunction loss) {
+        this.model = new SVDFeatureModel(numBiases, numFactors, factDim, loss);
+        this.method = new StochasticGradientDescent();
+        this.dao = dao;
     }
 
-    public SVDFeatureModelBuilder(int numBiases, int numFactors, int factDim,
-                                  SVDFeatureInstanceDAO dao, ObjectiveFunction inLoss, 
-                                  double inL1coef, double inL2coef, int inMaxIter, 
-                                  double inLearningRate, double inTol) {
-        loss = inLoss;
-        model = new SVDFeatureModel(numBiases, numFactors, factDim, dao);
-        method = new StochasticGradientDescent(inMaxIter, inL2coef, inLearningRate, inTol);
+    @Inject
+    public SVDFeatureModelBuilder(SVDFeatureRawDAO dao, ObjectiveFunction loss) {
+        this.model = new SVDFeatureModel(dao, loss);
+        this.method = new StochasticGradientDescent();
+        // get instance dao
     }
 
     public SVDFeatureModel get() {
-        model.assignVariables();
-        method.minimize(model, loss);
+        method.minimize(model, dao);
         return model;
     }
 }

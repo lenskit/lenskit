@@ -29,17 +29,18 @@ public class StochasticGradientDescent implements OptimizationMethod {
         tol = inTol;
     }
 
-    public double minimize(LearningModel model, ObjectiveFunction objFunc) {
+    public double minimize(LearningModel model, LearningData learningData) {
+        ObjectiveFunction objFunc = model.getObjectiveFunction();
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
-        VariableManager variables = model.getVariables();
+        SynchronizedVariableSpace variables = model.getVariables();
         L2Regularizer l2term = new L2Regularizer();
         double objVal = 0;
         while (termCrit.keepIterate()) {
             objVal = 0;
-            model.startNewIteration();
+            learningData.startNewIteration();
             LearningInstance ins;
             StochasticOracle orc;
-            while ((ins = model.getLearningInstance()) != null) {
+            while ((ins = learningData.getLearningInstance()) != null) {
                 orc = model.getStochasticOracle(ins);
                 objFunc.wrapOracle(orc);
                 for (int i=0; i<orc.scalarNames.size(); i++) {
