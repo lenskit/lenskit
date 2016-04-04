@@ -23,7 +23,7 @@ public class SynchronizedVariableSpace {
         return scalarVars.get(name).getEntry(index);
     }
 
-    public void setScalarVar(String name, int index, double val) {
+    void setScalarVar(String name, int index, double val) {
         scalarVars.get(name).setEntry(index, val);
     }
 
@@ -32,7 +32,7 @@ public class SynchronizedVariableSpace {
         return vectorVars.get(name).get(index);
     }
 
-    public void setVectorVar(String name, int index, RealVector val) {
+    void setVectorVar(String name, int index, RealVector val) {
     }
 
     public void requestScalarVar(String name, int size, double initial,
