@@ -71,7 +71,7 @@ fetchData << {
 test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
-    maxHeapSize = '384m';
+    maxHeapSize = '320m';
 }
 
 // import code to run the integration tests
