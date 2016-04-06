@@ -86,13 +86,14 @@ file('src/it/gradle').eachDir { testDir ->
         }
         doFirst {
             copy {
-                from testDir
-                into workDir
-            }
-            copy {
                 from 'src/it/gradle'
                 into workDir
                 include '*.gradle'
+                include '*.properties'
+            }
+            copy {
+                from testDir
+                into workDir
             }
             file("$workDir/settings.gradle").text = ""
             println "running gradle build for $testDir"
