@@ -41,6 +41,7 @@ env:
   global:
   - TERM=dumb
   - TZ=CST6CDT
+  - MALLOC_ARENA_MAX=2
   # SONAR_USER
   - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="
   # SONAR_PASSWORD
