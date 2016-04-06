@@ -559,6 +559,7 @@ public class TrainTestExperiment {
         exp.setUserOutputFile(spec.getUserOutputFile());
         exp.setCacheDirectory(spec.getCacheDirectory());
         exp.setShareModelComponents(spec.getShareModelComponents());
+        exp.setThreadCount(spec.getThreadCount());
         for (DataSetSpec ds: spec.getDataSets()) {
             exp.addDataSet(DataSet.fromSpec(ds));
         }
