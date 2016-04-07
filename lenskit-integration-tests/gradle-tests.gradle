@@ -114,8 +114,6 @@ testEvalWithOfflineRepo {
     startParameter.projectProperties['offlineRepoURI'] = uri("$buildDir/offline-repo/lenskit-repo-$version")
 }
 
-task gradleVersionTests(group: 'verification')
-
 def basicGradleTest = 'src/it/gradle/gradle-plugin-basics'
 def gradleTestWorkDir = "$buildDir/gradle-versions"
 for (ver in testGradleVersions) {
@@ -152,8 +150,5 @@ lenskitVersion=${project.version}
         executable './gradlew'
         args 'check', '--stacktrace'
     }
-    gradleVersionTests.dependsOn test
-}
-if (travis.active) {
-    check.dependsOn gradleVersionTests
+    crossCheck.dependsOn test
 }
