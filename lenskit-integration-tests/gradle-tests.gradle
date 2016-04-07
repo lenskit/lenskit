@@ -66,6 +66,7 @@ file('src/it/gradle').eachDir { testDir ->
         inputs.dir "$buildDir/test-repo"
         outputs.dir workDir
 
+        startParameter.searchUpwards = false
         startParameter.projectProperties = [
                 testRepoURI: rootProject.uri("build/test-repo"),
                 lenskitVersion: project.version,
@@ -95,7 +96,6 @@ file('src/it/gradle').eachDir { testDir ->
                 from testDir
                 into workDir
             }
-            file("$workDir/settings.gradle").text = ""
             println "running gradle build for $testDir"
         }
     }
