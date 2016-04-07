@@ -17,6 +17,8 @@ before_install:
 install:
 - "./gradlew ciPrep --stacktrace"
 script: "./gradlew ciTest --stacktrace"
+after_failure:
+- jps -lvm
 before_cache:
 - rm -f $HOME/.gradle/caches/*/*.lock
 deploy:
