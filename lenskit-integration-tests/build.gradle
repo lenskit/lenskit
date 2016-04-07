@@ -72,7 +72,12 @@ test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
     maxHeapSize = '384m';
+    testLogging {
+        events = ["passed", "failed", "started", "skipped"]
+    }
 }
+
+task crossCheck(group: 'verification')
 
 // import code to run the integration tests
 apply from: 'gradle-tests.gradle'

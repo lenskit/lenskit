@@ -122,12 +122,6 @@ subprojects {
     sourceCompatibility = '1.7'
     targetCompatibility = '1.7'
 
-    // Create a compileOnly configuration
-    configurations {
-        compileOnly.visible = false
-        compile.extendsFrom compileOnly
-    }
-
     sourceSets.all { ss ->
         // generate resources & classes to same dir
         ss.output.resourcesDir = ss.output.classesDir
@@ -143,13 +137,6 @@ subprojects {
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
-        task.options.fork = false
-        task.options.forkOptions.memoryMaximumSize = '128m'
-    }
-    tasks.withType(GroovyCompile).all { task ->
-        task.options.fork = false
-        task.groovyOptions.fork = false
-        task.groovyOptions.forkOptions.memoryMaximumSize = '128m'
     }
     compileJava {
         options.deprecation = true

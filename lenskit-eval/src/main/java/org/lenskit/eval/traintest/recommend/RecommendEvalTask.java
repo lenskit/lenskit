@@ -368,7 +368,9 @@ public class RecommendEvalTask implements EvalTask {
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                row.putAll(mc.measureUser(testUser, n, results).getValues());
+                row.putAll(mc.measureUser(testUser, n, results)
+                             .withPrefix(getLabelPrefix())
+                             .getValues());
             }
 
             // Write all attempted predictions

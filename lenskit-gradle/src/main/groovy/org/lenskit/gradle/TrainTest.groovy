@@ -42,6 +42,7 @@ class TrainTest extends LenskitTask {
         conventionMapping.specFile = {
             project.file("$project.buildDir/${name}.json")
         }
+        spec.setThreadCount(project.lenskit.threadCount)
     }
 
     /**

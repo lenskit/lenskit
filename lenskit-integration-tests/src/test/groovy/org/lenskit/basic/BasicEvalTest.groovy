@@ -32,7 +32,9 @@ import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.recommend.*
 import org.lenskit.util.table.Table
 
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber
 import static org.hamcrest.Matchers.closeTo
+import static org.hamcrest.Matchers.not
 import static org.junit.Assert.assertThat
 
 /**
@@ -51,13 +53,27 @@ public class BasicEvalTest extends CrossfoldTestSuite {
 
     @Override
     void addExtraConfig(SimpleEvaluator eval) {
+        eval.userOutput = workDir.root.toPath().resolve('user-out.csv')
         RecommendEvalTask task = new RecommendEvalTask()
         task.listSize = 25
+        task.labelPrefix = 'All'
         task.addMetric(new TopNMRRMetric())
         task.addMetric(new TopNMAPMetric())
         task.addMetric(new TopNPrecisionRecallMetric())
         task.addMetric(new TopNEntropyMetric())
         task.addMetric(new TopNPopularityMetric())
+        task.candidateSelector = ItemSelector.allItems()
+        eval.experiment.addTask(task)
+
+        task = new RecommendEvalTask();
+        task.listSize = 10
+        task.labelPrefix = 'PlusRand'
+        task.addMetric(new TopNMRRMetric())
+        task.addMetric(new TopNMAPMetric())
+        task.addMetric(new TopNPrecisionRecallMetric())
+        task.addMetric(new TopNEntropyMetric())
+        task.addMetric(new TopNPopularityMetric())
+        task.candidateSelector = ItemSelector.compileSelector('pickRandom(getUnseenItems(user), 50)')
         eval.experiment.addTask(task)
     }
 
@@ -67,5 +83,7 @@ public class BasicEvalTest extends CrossfoldTestSuite {
                    closeTo(0.75d, 0.025d))
         assertThat(table.column("RMSE.ByUser").average(),
                    closeTo(0.93d, 0.05d))
+        assertThat(table.column("PlusRand.MAP").average(),
+                   not(notANumber()))
     }
 }
