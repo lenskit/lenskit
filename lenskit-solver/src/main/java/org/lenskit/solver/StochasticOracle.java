@@ -1,6 +1,7 @@
 package org.lenskit.solver;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.commons.math3.linear.RealVector;
 
@@ -15,10 +16,10 @@ public class StochasticOracle {
     IntArrayList vectorIndexes;
     List<RealVector> vectorGrads;
 
-    public double objVal;
-    public double modelOutput;
-    public double insLabel;
-    public double insWeight;
+    double objVal;
+    double modelOutput;
+    double insLabel;
+    double insWeight;
 
     public StochasticOracle() {
         scalarNames = new ArrayList<>();
@@ -39,5 +40,17 @@ public class StochasticOracle {
         vectorIndexes.add(index);
         vectorNames.add(name);
         vectorGrads.add(grad);
+    }
+
+    public void setModelOutput(double modelOutput) {
+        this.modelOutput = modelOutput;
+    }
+
+    public void setInsLabel(double insLabel) {
+        this.insLabel = insLabel;
+    }
+
+    public void setInsWeight(double insWeight) {
+        this.insWeight = insWeight;
     }
 }

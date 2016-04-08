@@ -13,8 +13,7 @@ import org.lenskit.util.keys.SynchronizedIndexSpace;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureModel implements LearningModel {
-    private SynchronizedVariableSpace variableSpace;
+public class SVDFeatureModel extends AbstractLearningModel {
     private SynchronizedIndexSpace indexSpace;
     private ObjectiveFunction objectiveFunction;
     private int factDim;
@@ -22,11 +21,11 @@ public class SVDFeatureModel implements LearningModel {
     private int factSize;
 
     public SVDFeatureModel(int biasSize, int factSize, int factDim, ObjectiveFunction objectiveFunction) {
+        super();
         this.biasSize = biasSize;
         this.factSize = factSize;
         this.factDim = factDim;
         this.objectiveFunction = objectiveFunction;
-        this.variableSpace = new SynchronizedVariableSpace();
         this.variableSpace.requestScalarVar("biases", this.biasSize, 0, false, false);
         this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
     }
@@ -39,10 +38,6 @@ public class SVDFeatureModel implements LearningModel {
     public SVDFeatureModel(SVDFeatureRawDAO dao, ObjectiveFunction objectiveFunction) {
         this.objectiveFunction = objectiveFunction;
         //extract all sizes from dao and construct index space
-    }
-
-    public SynchronizedVariableSpace getVariables() {
-        return variableSpace;
     }
 
     public ObjectiveFunction getObjectiveFunction() {
@@ -58,21 +53,21 @@ public class SVDFeatureModel implements LearningModel {
             if (outOrc != null) {
                 outOrc.addScalarOracle("biases", ind, val);
             }
-            pred += variableSpace.getScalarVar("bias", ind) * val;
+            pred += getScalarVarByNameIndex("bias", ind) * val;
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ufeas.size(); i++) {
             int index = ins.ufeas.get(i).index;
             outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).value);
-            outUfactSum.combineToSelf(1.0, 1.0, variableSpace.getVectorVar("factors", index));
+            outUfactSum.combineToSelf(1.0, 1.0, getVectorVarByNameIndex("factors", index));
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ifeas.size(); i++) {
             int index = ins.ifeas.get(i).index;
             outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).value);
-            outIfactSum.combineToSelf(1.0, 1.0, variableSpace.getVectorVar("factors", index));
+            outIfactSum.combineToSelf(1.0, 1.0, getVectorVarByNameIndex("factors", index));
         }
 
         pred += outUfactSum.dotProduct(outIfactSum);
@@ -103,9 +98,9 @@ public class SVDFeatureModel implements LearningModel {
                     rightGrad.mapMultiply(ins.ifeas.get(i).value));
         }
 
-        orc.modelOutput = pred;
-        orc.insLabel = ins.label;
-        orc.insWeight = ins.weight;
+        orc.setModelOutput(pred);
+        orc.setInsLabel(ins.label);
+        orc.setInsWeight(ins.weight);
         return orc;
     }
 
