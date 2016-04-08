@@ -32,6 +32,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -85,10 +86,11 @@ public final class Logging {
         Logger root = context.getLogger(Logger.ROOT_LOGGER_NAME);
         root.detachAndStopAllAppenders();
 
+        // manually run JAnsi setup to use its terminal detection logic
+        AnsiConsole.systemInstall();
         ConsoleAppender<ILoggingEvent> console = new ConsoleAppender<>();
         console.setContext(context);
         console.setTarget("System.err");
-        console.setWithJansi(true);
         PatternLayoutEncoder consolePat = new PatternLayoutEncoder();
         consolePat.setContext(context);
         consolePat.setPattern(CONSOLE_PATTERN);
