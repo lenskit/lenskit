@@ -23,6 +23,7 @@ package org.lenskit.gradle.delegates
 import com.fasterxml.jackson.databind.JsonNode
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
+import org.gradle.api.Project
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.EvalTaskSpec
 import org.lenskit.specs.eval.PredictEvalTaskSpec
@@ -33,8 +34,8 @@ import org.lenskit.specs.eval.PredictEvalTaskSpec
 class EvalTaskDelegate extends SpecDelegate {
     private final EvalTaskSpec taskSpec;
 
-    public EvalTaskDelegate(EvalTaskSpec sp) {
-        super(sp)
+    public EvalTaskDelegate(Project prj, EvalTaskSpec sp) {
+        super(prj, sp)
         taskSpec = sp
     }
 

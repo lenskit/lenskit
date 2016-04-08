@@ -1,3 +1,5 @@
+import org.gradle.logging.ShowStacktrace
+
 /*
  * Build system for LensKit, and open-source recommender systems toolkit.
  * Copyright 2010-2014 Regents of the University of Minnesota and contributors
@@ -51,10 +53,12 @@ file('src/it/gradle').eachDir { testDir ->
 
     task("test$tname", type: GradleBuild) {
         dependsOn makeTestRepo
+        mustRunAfter test
         inputs.dir testDir
         inputs.dir "$buildDir/test-repo"
         outputs.dir workDir
 
+        startParameter.searchUpwards = false
         startParameter.projectProperties = [
                 testRepoURI: rootProject.uri("build/test-repo"),
                 lenskitVersion: project.version
