@@ -7,6 +7,10 @@ import java.util.List;
 abstract public class AbstractLearningModel implements LearningModel {
     protected SynchronizedVariableSpace variableSpace;
 
+    protected AbstractLearningModel() {
+        variableSpace = new SynchronizedVariableSpace();
+    }
+
     public RealVector getScalarVarByName(String name) {
         return variableSpace.getScalarVarByName(name);
     }

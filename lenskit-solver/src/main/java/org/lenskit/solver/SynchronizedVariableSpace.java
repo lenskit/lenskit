@@ -3,6 +3,7 @@ package org.lenskit.solver;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
@@ -11,8 +12,8 @@ import org.apache.commons.math3.linear.RealVector;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SynchronizedVariableSpace {
-    HashMap<String, RealVector> scalarVars;
-    HashMap<String, List<RealVector>> vectorVars;
+    Map<String, RealVector> scalarVars;
+    Map<String, List<RealVector>> vectorVars;
 
     public SynchronizedVariableSpace() {
         scalarVars = new HashMap<>();
