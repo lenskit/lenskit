@@ -54,7 +54,7 @@ import java.nio.file.Path
  */
 class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     private def spec = new CrossfoldSpec();
-    private def specDelegate = new SpecDelegate(spec)
+    private def specDelegate = new SpecDelegate(project, spec)
 
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
@@ -157,8 +157,8 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         spec
     }
 
-    public static PartitionMethodSpec holdout(Closure block) {
-        SpecDelegate.configure(PartitionMethodSpec.Holdout, block)
+    public PartitionMethodSpec holdout(Closure block) {
+        SpecDelegate.configureSpec(project, PartitionMethodSpec.Holdout, block)
     }
 
     /**
@@ -167,15 +167,15 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * @param order The sort order. Defaults to `random`.
      * @return The partition method.
      */
-    public static PartitionMethodSpec retain(int n, String order = 'random') {
+    public PartitionMethodSpec retain(int n, String order = 'random') {
         def spec = new PartitionMethodSpec.Retain()
         spec.count = n
         spec.order = order
         spec
     }
 
-    public static PartitionMethodSpec retain(Closure block) {
-        SpecDelegate.configure(PartitionMethodSpec.Retain, block)
+    public PartitionMethodSpec retain(Closure block) {
+        SpecDelegate.configureSpec(project, PartitionMethodSpec.Retain, block)
     }
 
     /**
@@ -184,14 +184,14 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * @param order The sort order. Defaults to `random`.
      * @return The partition method.
      */
-    public static PartitionMethodSpec holdoutFraction(double f, String order = 'random') {
+    public PartitionMethodSpec holdoutFraction(double f, String order = 'random') {
         def spec = new PartitionMethodSpec.HoldoutFraction()
         spec.fraction = f
         spec.order = order
         spec
     }
 
-    public static PartitionMethodSpec holdoutFraction(Closure block) {
-        SpecDelegate.configure(PartitionMethodSpec.HoldoutFraction, block)
+    public PartitionMethodSpec holdoutFraction(Closure block) {
+        SpecDelegate.configureSpec(project, PartitionMethodSpec.HoldoutFraction, block)
     }
 }

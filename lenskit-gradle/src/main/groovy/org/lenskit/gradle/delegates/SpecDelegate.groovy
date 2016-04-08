@@ -20,6 +20,7 @@
  */
 package org.lenskit.gradle.delegates
 
+import org.gradle.api.Project
 import org.gradle.util.ConfigureUtil
 import org.lenskit.specs.AbstractSpec
 
@@ -32,9 +33,11 @@ import java.nio.file.Paths
  */
 class SpecDelegate {
     // FIXME Support ObjectNode specifications
+    final def Project project
     final def AbstractSpec spec
 
-    SpecDelegate(AbstractSpec sp) {
+    SpecDelegate(Project prj, AbstractSpec sp) {
+        project = prj
         spec = sp
     }
 
@@ -81,7 +84,7 @@ class SpecDelegate {
                     prop.setProperty(spec, Paths.get(value))
                 }
             } else if (Closure.isAssignableFrom(vtype) && AbstractSpec.isAssignableFrom(ptype)) {
-                def val = configure(ptype, value as Closure)
+                def val = configureSpec(project, ptype, value as Closure)
                 prop.setProperty(spec, val)
             } else {
                 throw missing(name, argArray, e);
@@ -108,10 +111,13 @@ class SpecDelegate {
      * @param block The block.
      * @return The configured specification.
      */
-    public static <T extends AbstractSpec> T configure(T spec, Closure block) {
-        def dlg = new SpecDelegate(spec)
+    public static <T extends AbstractSpec> T configureSpec(Project prj, T spec, Closure block, Class... traits) {
+        def dlg = new SpecDelegate(prj, spec)
+        for (tr in traits) {
+            dlg = dlg.withTraits(tr)
+        }
         ConfigureUtil.configure(block, dlg)
-        spec
+        return spec
     }
 
     /**
@@ -120,11 +126,9 @@ class SpecDelegate {
      * @param block The configuration block.
      * @return The spec.
      */
-    public static <T extends AbstractSpec> T configure(Class<? extends T> specType, Closure block) {
+    public static <T extends AbstractSpec> T configureSpec(Project prj, Class<? extends T> specType, Closure block, Class... traits) {
         def spec = specType.newInstance()
-        def dlg = new SpecDelegate(spec)
-        ConfigureUtil.configure(block, dlg)
-        spec
+        return configureSpec(prj, spec, block, traits)
     }
 
     /**
@@ -133,9 +137,9 @@ class SpecDelegate {
      * @param block The configuration block.
      * @return The spec.
      */
-    public static <T extends AbstractSpec> T configure(Class<? extends T> specType, Class<? extends SpecDelegate> dlgType, Closure block) {
+    public static <T extends AbstractSpec> T configureSpec(Project prj, Class<? extends T> specType, Class<? extends SpecDelegate> dlgType, Closure block) {
         def spec = specType.newInstance()
-        def dlg = dlgType.newInstance(spec)
+        def dlg = dlgType.newInstance(prj, spec)
         ConfigureUtil.configure(block, dlg)
         spec
     }

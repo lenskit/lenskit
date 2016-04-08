@@ -1,0 +1,33 @@
+buildscript {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hamcrest:hamcrest-library:1.3'
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import org.lenskit.gradle.*
+
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+
+task evaluate(type: TrainTest) {
+    dryRun true
+    dataSet {
+        trainSource textFile('train.csv')
+        testSource textFile('test.csv')
+    }
+}
+
+task check(overwrite: true, dependsOn: evaluate) << {
+    def spec = file("$buildDir/evaluate.json")
+    assertThat("spec file exists", spec.exists())
+}
