@@ -14,8 +14,8 @@ import org.lenskit.util.keys.SynchronizedIndexSpace;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureModel extends AbstractLearningModel {
-    private SynchronizedIndexSpace indexSpace;
-    private ObjectiveFunction objectiveFunction;
+    private final SynchronizedIndexSpace indexSpace = new SynchronizedIndexSpace();
+    private final ObjectiveFunction objectiveFunction;
     private int factDim;
     private int biasSize;
     private int factSize;

@@ -1,6 +1,7 @@
 package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.util.keys.SynchronizedIndexSpace;
 
 import java.util.List;
 
