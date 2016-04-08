@@ -24,6 +24,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.nativeintegration.console.ConsoleDetector
 import org.gradle.internal.nativeintegration.console.ConsoleMetaData
@@ -37,6 +38,11 @@ import org.gradle.util.ConfigureUtil
  * Base class for LensKit tasks.
  */
 public abstract class LenskitTask extends ConventionTask {
+    /**
+     * Enable dry-run support. If turned on, the runner prepares but does not execute the task.
+     */
+    def boolean dryRun
+
     /**
      * The maximum memory the LensKit task should use.  Defaults to {@link LenskitExtension#getMaxMemory()}.
      */
@@ -167,6 +173,9 @@ public abstract class LenskitTask extends ConventionTask {
             for (f in getClasspath().files) {
                 logger.info('  {}', f)
             }
+        }
+        if (getDryRun()) {
+            throw new StopExecutionException()
         }
         invoker.main = 'org.lenskit.cli.Main'
         if (getLogFile() != null) {

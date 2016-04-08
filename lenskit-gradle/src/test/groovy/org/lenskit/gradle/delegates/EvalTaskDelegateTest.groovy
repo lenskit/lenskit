@@ -38,7 +38,7 @@ class EvalTaskDelegateTest {
     @Before
     void setupSpec() {
         spec = new PredictEvalTaskSpec()
-        delegate = new EvalTaskDelegate(spec)
+        delegate = new EvalTaskDelegate(null, spec)
     }
 
     @Test

@@ -33,12 +33,26 @@ trait DataSources {
 
     /**
      * Configure a text file data source.
-     * @param block The configuration block, used to configure a {@link TextDataSourceSpec}.
+     * @param block The configuration block, used to configureSpec a {@link TextDataSourceSpec}.
      * @return A JSON specification of a text file data source.
      * @see TextDataSourceSpec
      * @see SpecDelegate
      */
     DataSourceSpec textFile(Closure block) {
-        SpecDelegate.configure(TextDataSourceSpec, block)
+        SpecDelegate.configureSpec(project, TextDataSourceSpec, block)
+    }
+
+    /**
+     * Configure a rating CSV file data source.
+     * @param fn The file to use.
+     * @return A JSON specification of a text file data source.
+     * @see TextDataSourceSpec
+     * @see SpecDelegate
+     */
+    DataSourceSpec textFile(Object fn) {
+        def f = project.file(fn)
+        return textFile {
+            file f.toPath()
+        }
     }
 }
