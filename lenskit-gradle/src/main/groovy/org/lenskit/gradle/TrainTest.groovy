@@ -22,6 +22,7 @@ package org.lenskit.gradle
 
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.delegates.DataSetSpecDelegate
 import org.lenskit.gradle.delegates.EvalTaskDelegate
 import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.gradle.traits.DataSources
@@ -65,8 +66,8 @@ class TrainTest extends LenskitTask {
      * Configure a train-test data set.
      * @param block A block which will be used to configureSpec a {@link DataSetSpec}.
      */
-    void dataSet(Closure block) {
-        dataSet SpecDelegate.configureSpec(project, DataSetSpec, block, DataSources)
+    void dataSet(@DelegatesTo(DataSetSpecDelegate) Closure block) {
+        dataSet SpecDelegate.configureSpec(project, DataSetSpec, DataSetSpecDelegate, block)
     }
 
     /**
