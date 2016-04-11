@@ -12,6 +12,9 @@ buildscript {
 }
 
 import org.lenskit.gradle.*
+import org.lenskit.specs.*
+import org.lenskit.specs.data.*
+import org.lenskit.specs.eval.*
 
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.*
@@ -22,12 +25,20 @@ apply plugin: 'lenskit'
 task evaluate(type: TrainTest) {
     dryRun true
     dataSet {
+        name 'Foo'
         trainSource textFile('train.csv')
         testSource textFile('test.csv')
+        attributes Partition: 1
     }
 }
 
 task check(overwrite: true, dependsOn: evaluate) << {
-    def spec = file("$buildDir/evaluate.json")
-    assertThat("spec file exists", spec.exists())
+    def specFile = file("$buildDir/evaluate.json")
+    assertThat("spec file exists", specFile.exists())
+    def exp = SpecUtils.load(TrainTestExperimentSpec, specFile.toPath())
+    assertThat(exp.dataSets, hasSize(1))
+    def spec = exp.dataSets[0]
+    assertThat(spec.name, equalTo('Foo'))
+    assertThat(spec.attributes, hasEntry('Partition', 1))
+    assertThat(spec.testSource, instanceOf(TextDataSourceSpec))
 }
