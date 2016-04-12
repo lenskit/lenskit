@@ -12,8 +12,8 @@ public class Feature {
         index = 0;
     }
 
-    public Feature(int ind, double val) {
-        value = val;
-        index = ind;
+    public Feature(int index, double value) {
+        this.value = value;
+        this.index = index;
     }
 }

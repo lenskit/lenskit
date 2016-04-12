@@ -23,11 +23,11 @@ public class SVDFeatureInstance implements LearningInstance {
         label = 0.0;
     }
 
-    public SVDFeatureInstance(ArrayList<Feature> inGfeas, ArrayList<Feature> inUfeas, 
-                              ArrayList<Feature> inIfeas) {
-        gfeas = inGfeas;
-        ufeas = inUfeas;
-        ifeas = inIfeas;
+    public SVDFeatureInstance(ArrayList<Feature> gfeas, ArrayList<Feature> ufeas, 
+                              ArrayList<Feature> ifeas) {
+        this.gfeas = gfeas;
+        this.ufeas = ufeas;
+        this.ifeas = ifeas;
         label = 0.0;
         weight = 1.0;
     }

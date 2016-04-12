@@ -15,10 +15,11 @@ public class SVDFeatureInstanceDAO implements LearningData {
 
     //add default setting for file and delim
     @Inject
-    public SVDFeatureInstanceDAO(File file, String delim) throws FileNotFoundException {
-        sourceFile = file;
-        delimiter = delim;
-        reader = new BufferedReader(new FileReader(file));
+    public SVDFeatureInstanceDAO(File sourceFile, String delimiter) 
+            throws FileNotFoundException {
+        this.sourceFile = sourceFile;
+        this.delimiter = delimiter;
+        reader = new BufferedReader(new FileReader(this.sourceFile));
     }
 
     public SVDFeatureInstance getLearningInstance() {
