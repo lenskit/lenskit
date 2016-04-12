@@ -6,7 +6,7 @@ public class RegularizedDualAveraging implements OnlineOptimizationMethod {
         return 0.0;
     }
 
-    public void update(LearningModel learningModel, LearningData learningData) {
-
+    public double update(LearningModel learningModel, LearningData learningData) {
+        return 0.0;
     }
 }

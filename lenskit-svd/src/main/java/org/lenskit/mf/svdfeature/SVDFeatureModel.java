@@ -1,26 +1,33 @@
 package org.lenskit.mf.svdfeature;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
+import org.lenskit.featurize.Entity;
+import org.lenskit.featurize.Featurizer;
 import org.lenskit.solver.*;
-import org.lenskit.util.keys.ObjectKeyIndex;
-import org.lenskit.util.keys.SynchronizedIndexSpace;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureModel extends AbstractLearningModel {
-    private final SynchronizedIndexSpace indexSpace = new SynchronizedIndexSpace();
-    private final ObjectiveFunction objectiveFunction;
+public class SVDFeatureModel extends AbstractLearningModel implements Featurizer {
+    private ObjectiveFunction objectiveFunction;
+    private final Set<String> biasFeas = new HashSet<>();
+    private final Set<String> ufactFeas = new HashSet<>();
+    private final Set<String> ifactFeas = new HashSet<>();
     private int factDim;
     private int biasSize;
     private int factSize;
 
-    public SVDFeatureModel(int biasSize, int factSize, int factDim, ObjectiveFunction objectiveFunction) {
+
+    //for training with featurized SVDFeatureInstance only.
+    //  the built model is not usable because getIndex()Space is not initialized
+    //  could provide a parameter for getIndex()Space
+    public SVDFeatureModel(int biasSize, int factSize, int factDim,
+                           ObjectiveFunction objectiveFunction) {
         super();
         this.biasSize = biasSize;
         this.factSize = factSize;
@@ -30,14 +37,24 @@ public class SVDFeatureModel extends AbstractLearningModel {
         this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
     }
 
-    /* SVDFeatureModel must fulfill transforming raw data to svdfeature instance because
-        1. indexSpace is together with a model
-        2. during prediction online, raw data is given
-    */
-
-    public SVDFeatureModel(SVDFeatureRawDAO dao, ObjectiveFunction objectiveFunction) {
+    public SVDFeatureModel(Set<String> biasFeas,
+                           Set<String> ufactFeas,
+                           Set<String> ifactFeas,
+                           ObjectiveFunction objectiveFunction) {
+        super();
+        this.biasFeas.addAll(biasFeas);
+        this.ufactFeas.addAll(ufactFeas);
+        this.ifactFeas.addAll(ifactFeas);
         this.objectiveFunction = objectiveFunction;
-        //extract all sizes from dao and construct index space
+        this.variableSpace.requestScalarVar("biases", this.biasSize, 0, false, false);
+        this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
+        this.indexSpace.requestStringKeyMap("biases");
+        this.indexSpace.requestStringKeyMap("factors");
+    }
+
+    public LearningInstance featurize(Entity entity, boolean update) {
+        //return a SVDFeatureInstance
+        return null;
     }
 
     public ObjectiveFunction getObjectiveFunction() {
@@ -48,8 +65,8 @@ public class SVDFeatureModel extends AbstractLearningModel {
                           RealVector outUfactSum, RealVector outIfactSum) {
         double pred = 0.0;
         for (int i=0; i<ins.gfeas.size(); i++) {
-            int ind = ins.gfeas.get(i).index;
-            double val = ins.gfeas.get(i).value;
+            int ind = ins.gfeas.get(i).getIndex();
+            double val = ins.gfeas.get(i).getValue();
             if (outOrc != null) {
                 outOrc.addScalarOracle("biases", ind, val);
             }
@@ -58,15 +75,15 @@ public class SVDFeatureModel extends AbstractLearningModel {
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ufeas.size(); i++) {
-            int index = ins.ufeas.get(i).index;
-            outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).value);
+            int index = ins.ufeas.get(i).getIndex();
+            outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).getValue());
             outUfactSum.combineToSelf(1.0, 1.0, getVectorVarByNameIndex("factors", index));
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ifeas.size(); i++) {
-            int index = ins.ifeas.get(i).index;
-            outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).value);
+            int index = ins.ifeas.get(i).getIndex();
+            outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).getValue());
             outIfactSum.combineToSelf(1.0, 1.0, getVectorVarByNameIndex("factors", index));
         }
 
@@ -79,6 +96,7 @@ public class SVDFeatureModel extends AbstractLearningModel {
         if (inIns instanceof SVDFeatureInstance) {
             ins = (SVDFeatureInstance) inIns;
         } else {
+            //raise exception
             return null;
         }
         StochasticOracle orc = new StochasticOracle();
@@ -90,12 +108,12 @@ public class SVDFeatureModel extends AbstractLearningModel {
         RealVector rightGrad = ufactSum;
         String name = "factors";
         for (int i=0; i<ins.ufeas.size(); i++) {
-            orc.addVectorOracle(name, ins.ufeas.get(i).index,
-                    leftGrad.mapMultiply(ins.ufeas.get(i).value));
+            orc.addVectorOracle(name, ins.ufeas.get(i).getIndex(),
+                    leftGrad.mapMultiply(ins.ufeas.get(i).getValue()));
         }
         for (int i=0; i<ins.ifeas.size(); i++) {
-            orc.addVectorOracle(name, ins.ifeas.get(i).index,
-                    rightGrad.mapMultiply(ins.ifeas.get(i).value));
+            orc.addVectorOracle(name, ins.ifeas.get(i).getIndex(),
+                    rightGrad.mapMultiply(ins.ifeas.get(i).getValue()));
         }
 
         orc.setModelOutput(pred);
