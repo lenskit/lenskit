@@ -1,11 +1,11 @@
-package org.lenskit.mf.svdfeature;
+package org.lenskit.featurize;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Feature {
-    public double value;
-    public int index;
+    private final double value;
+    private final int index;
 
     public Feature() {
         value = 0;
@@ -15,5 +15,13 @@ public class Feature {
     public Feature(int index, double value) {
         this.value = value;
         this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public double getValue() {
+        return value;
     }
 }

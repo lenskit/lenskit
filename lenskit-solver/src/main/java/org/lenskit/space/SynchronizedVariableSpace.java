@@ -1,4 +1,4 @@
-package org.lenskit.solver;
+package org.lenskit.space;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.solver.RandomInitializer;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

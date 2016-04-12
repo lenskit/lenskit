@@ -1,16 +1,16 @@
 package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.util.keys.SynchronizedIndexSpace;
+import org.lenskit.space.SynchronizedIndexSpace;
+import org.lenskit.space.SynchronizedVariableSpace;
 
 import java.util.List;
 
 abstract public class AbstractLearningModel implements LearningModel {
-    protected SynchronizedVariableSpace variableSpace;
+    final protected SynchronizedVariableSpace variableSpace = new SynchronizedVariableSpace();
+    protected SynchronizedIndexSpace indexSpace = new SynchronizedIndexSpace();
 
-    protected AbstractLearningModel() {
-        variableSpace = new SynchronizedVariableSpace();
-    }
+    protected AbstractLearningModel() {}
 
     public RealVector getScalarVarByName(String name) {
         return variableSpace.getScalarVarByName(name);

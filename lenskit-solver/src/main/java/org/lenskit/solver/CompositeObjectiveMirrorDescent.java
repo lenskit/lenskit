@@ -1,30 +1,27 @@
 package org.lenskit.solver;
 
-public class CompositeObjectiveMirrorDescent implements OnlineOptimizationMethod {
+public class CompositeObjectiveMirrorDescent extends AbstractOnlineOptimizationMethod {
 
     private final BregmanDivergence bregmanDivergence;
 
-    public CompositeObjectiveMirrorDescent(BregmanDivergence bregmanDivergence) {
+    public CompositeObjectiveMirrorDescent(BregmanDivergence bregmanDivergence,
+                                           double tol,
+                                           int maxIter) {
+        super();
         this.bregmanDivergence = bregmanDivergence;
-    }
-
-    public double minimize(LearningModel learningModel, LearningData learningData) {
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
-        double objVal = 0;
-        while (termCrit.keepIterate()) {
-            learningData.startNewIteration();
-            objVal = update(learningModel, LearningData);
-            termCrit.addIteration("CompositeObjectiveMirrorDescent", objVal);
-        }
-        return objVal;
+        this.tol = tol;
+        this.maxIter = maxIter;
     }
 
     public double update(LearningModel learningModel, LearningData learningData) {
         ObjectiveFunction objFunc = learningModel.getObjectiveFunction();
         LearningInstance ins;
+        double objVal = 0.0;
         while ((ins = learningData.getLearningInstance()) != null) {
-            StochasticOracle orc = model.getStochasticOracle(ins);
+            StochasticOracle orc = learningModel.getStochasticOracle(ins);
             objFunc.wrapOracle(orc);
+            //main algorithm here
         }
+        return objVal;
     }
 }

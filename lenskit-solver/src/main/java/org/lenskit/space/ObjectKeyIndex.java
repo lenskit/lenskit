@@ -1,4 +1,4 @@
-package org.lenskit.util.keys;
+package org.lenskit.space;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

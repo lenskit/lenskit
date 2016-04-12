@@ -1,4 +1,4 @@
-package org.lenskit.util.keys;
+package org.lenskit.space;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -14,8 +14,8 @@ import java.util.Map;
 
 // Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class BatchGradientDescent implements OptimizationMethod {
-    private HashMap<String, RealVector> scalarGrads;
-    private HashMap<String, List<RealVector>> vectorGrads;
+    private final HashMap<String, RealVector> scalarGrads = new HashMap<>();
+    private final HashMap<String, List<RealVector>> vectorGrads = new HashMap<>();
 
     private int maxIter;
     private double l2coef;
@@ -27,8 +27,6 @@ public class BatchGradientDescent implements OptimizationMethod {
         l2coef = 0.01;
         lr = 10e-6;
         tol = 1.0;
-        this.scalarGrads = new HashMap<>();
-        this.vectorGrads = new HashMap<>();
     }
 
     public BatchGradientDescent(int maxIter, double l2coef, double learningRate, double tol) {
@@ -36,8 +34,6 @@ public class BatchGradientDescent implements OptimizationMethod {
         this.l2coef = l2coef;
         this.lr = learningRate;
         this.tol = tol;
-        this.scalarGrads = new HashMap<>();
-        this.vectorGrads = new HashMap<>();
     }
 
     private void assignGrads(LearningModel learningModel) {

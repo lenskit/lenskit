@@ -14,9 +14,9 @@ public class ObjectiveTerminationCriterion {
     private double tol;
     private DoubleArrayList objHistory;
 
-    public ObjectiveTerminationCriterion(double outTol, int outMaxIter) {
-        maxIter = outMaxIter;
-        tol = outTol;
+    public ObjectiveTerminationCriterion(double tol, int maxIter) {
+        this.maxIter = maxIter;
+        this.tol = tol;
         curIter = 0;
         objHistory = new DoubleArrayList();
     }
