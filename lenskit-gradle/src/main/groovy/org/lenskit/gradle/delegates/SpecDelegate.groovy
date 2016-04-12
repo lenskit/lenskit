@@ -43,7 +43,12 @@ class SpecDelegate {
 
     @Override
     Object getProperty(String property) {
-        return spec.metaClass.getProperty(spec, property)
+        switch (property) {
+        case 'project':
+            return getProject()
+        default:
+            return spec.metaClass.getProperty(spec, property)
+        }
     }
 
     @Override

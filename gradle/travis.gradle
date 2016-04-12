@@ -63,3 +63,11 @@ tasks.all { task ->
             break
     }
 }
+
+tasks.withType(JavaCompile).each { task ->
+    task.options.fork = true
+}
+tasks.withType(GroovyCompile).each { task ->
+    task.options.fork = true
+    task.groovyOptions.fork = true
+}
