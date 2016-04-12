@@ -20,8 +20,8 @@ public class SVDFeatureModelItemScorer extends AbstractItemScorer {
     private SVDFeatureModel model;
 
     @Inject
-    public SVDFeatureModelItemScorer(SVDFeatureModel inModel) {
-        model = inModel;
+    public SVDFeatureModelItemScorer(SVDFeatureModel model) {
+        this.model = model;
     }
 
     public double predict(SVDFeatureInstance ins) {

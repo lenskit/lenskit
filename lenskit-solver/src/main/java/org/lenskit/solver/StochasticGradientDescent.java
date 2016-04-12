@@ -22,11 +22,11 @@ public class StochasticGradientDescent implements OptimizationMethod {
         tol = 1.0;
     }
 
-    public StochasticGradientDescent(int inMaxIter, double inL2coef, double inLearningRate, double inTol) {
-        maxIter = inMaxIter;
-        l2coef = inL2coef;
-        lr = inLearningRate;
-        tol = inTol;
+    public StochasticGradientDescent(int maxIter, double l2coef, double learningRate, double tol) {
+        this.maxIter = maxIter;
+        this.l2coef = l2coef;
+        this.lr = learningRate;
+        this.tol = tol;
     }
 
     public double minimize(LearningModel model, LearningData learningData) {
@@ -48,9 +48,8 @@ public class StochasticGradientDescent implements OptimizationMethod {
             }
             learningData.startNewIteration();
             LearningInstance ins;
-            StochasticOracle orc;
             while ((ins = learningData.getLearningInstance()) != null) {
-                orc = model.getStochasticOracle(ins);
+                StochasticOracle orc = model.getStochasticOracle(ins);
                 objFunc.wrapOracle(orc);
                 for (int i=0; i<orc.scalarNames.size(); i++) {
                     String name = orc.scalarNames.get(i);

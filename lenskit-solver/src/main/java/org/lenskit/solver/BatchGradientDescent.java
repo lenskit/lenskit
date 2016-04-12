@@ -27,17 +27,17 @@ public class BatchGradientDescent implements OptimizationMethod {
         l2coef = 0.01;
         lr = 10e-6;
         tol = 1.0;
-        scalarGrads = new HashMap<>();
-        vectorGrads = new HashMap<>();
+        this.scalarGrads = new HashMap<>();
+        this.vectorGrads = new HashMap<>();
     }
 
-    public BatchGradientDescent(int inMaxIter, double inL2coef, double inLearningRate, double inTol) {
-        maxIter = inMaxIter;
-        l2coef = inL2coef;
-        lr = inLearningRate;
-        tol = inTol;
-        scalarGrads = new HashMap<>();
-        vectorGrads = new HashMap<>();
+    public BatchGradientDescent(int maxIter, double l2coef, double learningRate, double tol) {
+        this.maxIter = maxIter;
+        this.l2coef = l2coef;
+        this.lr = learningRate;
+        this.tol = tol;
+        this.scalarGrads = new HashMap<>();
+        this.vectorGrads = new HashMap<>();
     }
 
     private void assignGrads(LearningModel learningModel) {
