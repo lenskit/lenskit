@@ -59,6 +59,11 @@ public class Simulate implements Command {
               .metavar("FILE")
               .setDefault("ratings.pack")
               .help("write predicted score to FILE");
+        parser.addArgument("-s", "--list-size")
+              .type(Integer.class)
+              .metavar("INTEGER")
+              .setDefault(10)
+              .help("Size of recommendations list");
         parser.addArgument("-r", "--rebuild-period")
               .type(Long.class)
               .metavar("SECONDS")
@@ -88,9 +93,11 @@ public class Simulate implements Command {
         Stopwatch timer = Stopwatch.createStarted();
 
         Long rebuildPeriod = ctx.getRebuildPeriod();
+        Integer listSize = ctx.getListSize();
         tempEval.setDataSource(ctx.getInputFile());
         tempEval.setPredictOutputFile(ctx.getOutputFile());
         tempEval.setRebuildPeriod(rebuildPeriod);
+        tempEval.setListSize(listSize);
 
         ConfigurationLoader loader = new ConfigurationLoader();
         LenskitConfiguration config = loader.load(ctx.getConfigFile());
@@ -124,8 +131,11 @@ public class Simulate implements Command {
             return options.get("config");
         }
 
-        public Long getRebuildPeriod() {
+        public long getRebuildPeriod() {
             return options.get("rebuild_period");
+        }
+        public int getListSize() {
+            return options.get("list_size");
         }
     }
 }
