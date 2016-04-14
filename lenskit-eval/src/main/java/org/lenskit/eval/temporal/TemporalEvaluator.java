@@ -148,6 +148,7 @@ public class TemporalEvaluator {
 
     /**
      * sets the size of recommendationss list size
+     *
      * @param lSize size of list to be set
      * @return returns itself
      */
@@ -180,7 +181,6 @@ public class TemporalEvaluator {
     /**
      * During the evaluation, it will replay the ratings, try to predict each one, and
      * write the prediction, TARMSE and the rating to the output file
-     *
      */
 
     public void execute() throws IOException, RecommenderBuildException {

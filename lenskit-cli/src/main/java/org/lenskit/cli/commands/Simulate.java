@@ -134,6 +134,7 @@ public class Simulate implements Command {
         public long getRebuildPeriod() {
             return options.get("rebuild_period");
         }
+
         public int getListSize() {
             return options.get("list_size");
         }
