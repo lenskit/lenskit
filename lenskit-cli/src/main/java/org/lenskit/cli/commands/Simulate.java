@@ -22,7 +22,6 @@ package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
