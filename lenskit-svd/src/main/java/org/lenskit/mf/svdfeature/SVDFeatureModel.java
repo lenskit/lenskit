@@ -4,23 +4,28 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
 import org.lenskit.featurize.Entity;
+import org.lenskit.featurize.Feature;
+import org.lenskit.featurize.FeatureExtractor;
 import org.lenskit.featurize.Featurizer;
 import org.lenskit.solver.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureModel extends AbstractLearningModel implements Featurizer {
-    private ObjectiveFunction objectiveFunction;
+    private final ObjectiveFunction objectiveFunction;
     private final Set<String> biasFeas = new HashSet<>();
     private final Set<String> ufactFeas = new HashSet<>();
     private final Set<String> ifactFeas = new HashSet<>();
-    private int factDim;
-    private int biasSize;
-    private int factSize;
+    private final List<FeatureExtractor> featureExtractors = new ArrayList<>();
+    private final int factDim;
+    private final int biasSize;
+    private final int factSize;
 
 
     //for training with featurized SVDFeatureInstance only.
@@ -40,11 +45,17 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
     public SVDFeatureModel(Set<String> biasFeas,
                            Set<String> ufactFeas,
                            Set<String> ifactFeas,
+                           List<FeatureExtractor> featureExtractors,
+                           int biasSize, int factSize, int factDim,
                            ObjectiveFunction objectiveFunction) {
         super();
+        this.biasSize = biasSize;
+        this.factSize = factSize;
+        this.factDim = factDim;
         this.biasFeas.addAll(biasFeas);
         this.ufactFeas.addAll(ufactFeas);
         this.ifactFeas.addAll(ifactFeas);
+        this.featureExtractors.addAll(featureExtractors);
         this.objectiveFunction = objectiveFunction;
         this.variableSpace.requestScalarVar("biases", this.biasSize, 0, false, false);
         this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
@@ -52,8 +63,14 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         this.indexSpace.requestStringKeyMap("factors");
     }
 
+
+    //TODO: how to update variableSpace, not only indexSpace
     public LearningInstance featurize(Entity entity, boolean update) {
         //return a SVDFeatureInstance
+        List<Feature> gfeas = new ArrayList<>();
+        for (String feaName : biasFeas) {
+
+        }
         return null;
     }
 

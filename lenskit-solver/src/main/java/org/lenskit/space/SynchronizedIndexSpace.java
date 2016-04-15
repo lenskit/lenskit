@@ -32,19 +32,19 @@ public class SynchronizedIndexSpace {
         }
     }
 
-    public void setLongKey(String name, long key) {
+    public int setLongKey(String name, long key) {
         writeLock.lock();
         try {
-            longKeyMap.get(name).setKey(key);
+            return longKeyMap.get(name).setKey(key);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public void setStringKey(String name, String key) {
+    public int setStringKey(String name, String key) {
         writeLock.lock();
         try {
-            stringKeyMap.get(name).setKey(key);
+            return stringKeyMap.get(name).setKey(key);
         } finally {
             writeLock.unlock();
         }
