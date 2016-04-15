@@ -3,8 +3,8 @@ package org.lenskit.mf.svdfeature;
 import org.lenskit.solver.OnlineOptimizationMethod;
 
 public class SVDFeatureModelUpdater {
-    private SVDFeatureModel model;
-    private OnlineOptimizationMethod method;
+    final private SVDFeatureModel model;
+    final private OnlineOptimizationMethod method;
 
     public SVDFeatureModelUpdater(SVDFeatureModel model,
                                   OnlineOptimizationMethod method) {

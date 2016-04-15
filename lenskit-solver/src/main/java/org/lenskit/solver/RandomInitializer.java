@@ -4,6 +4,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -35,6 +36,23 @@ public class RandomInitializer {
         }
         if (normalize) {
             vec.mapDivideToSelf(sum);
+        }
+    }
+
+    public void randInitDoubleList(List<Double> doubleList, boolean normalize) {
+        int size = doubleList.size();
+        double sum = 0.0;
+        for (int i=0; i<size; i++) {
+            double val = rand.nextDouble() * multi;
+            doubleList.set(i, val);
+            if (normalize) {
+                sum += val;
+            }
+        }
+        if (normalize) {
+            for (int i=0; i<size; i++) {
+                doubleList.set(i, doubleList.get(i) / sum);
+            }
         }
     }
 

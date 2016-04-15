@@ -13,9 +13,9 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
-    private SVDFeatureModel model;
-    private OptimizationMethod method;
-    private LearningData learningData;
+    final private SVDFeatureModel model;
+    final private OptimizationMethod method;
+    final private LearningData learningData;
 
     public SVDFeatureModelBuilder(int numBiases, int numFactors, int factDim,
                                   SVDFeatureInstanceDAO dao,
@@ -26,6 +26,8 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
         this.learningData = dao;
     }
 
+    //biasFeas, ufactFeas and ifactFeas should be from the configuration
+    //especially, label and weight are hard-coded attribute name for now
     @Inject
     public SVDFeatureModelBuilder(EntityDAO dao, Set<String> biasFeas,
                                   Set<String> ufactFeas, Set<String> ifactFeas,
