@@ -20,8 +20,7 @@ public class IdentityExtractor implements FeatureExtractor {
     }
 
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
-                                              IndexSpace indexSpace,
-                                              VariableSpace variableSpace) {
+                                              IndexSpace indexSpace) {
         List<Feature> feaList = new ArrayList<>();
         if (entity.hasNumAttr(attrName)) {
             double val = entity.getNumAttr(attrName);
