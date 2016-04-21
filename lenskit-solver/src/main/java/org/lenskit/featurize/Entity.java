@@ -16,6 +16,22 @@ public class Entity {
         catAttrs.put(name, vals);
     }
 
+    public void addCatAttr(String name, String value) {
+        if (catAttrs.containsKey(name)) {
+            catAttrs.get(name).add(value);
+        } else {
+            List<String> vals = new ArrayList<>();
+            vals.add(value);
+            catAttrs.put(name, vals);
+        }
+    }
+
+    public void addAllCatAttr(String name, List<String> values) {
+        for (String value : values) {
+            addCatAttr(name, value);
+        }
+    }
+
     public void setNumAttr(String name, double value) {
         numAttrs.put(name, value);
     }

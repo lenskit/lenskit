@@ -2,9 +2,10 @@ package org.lenskit.space;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface VariableSpace {
+public interface VariableSpace extends Serializable {
     void requestScalarVar(String name, int size, double initial,
                                        boolean randomize, boolean normalize);
     void ensureScalarVar(String name, int size, double initial, boolean randomize);

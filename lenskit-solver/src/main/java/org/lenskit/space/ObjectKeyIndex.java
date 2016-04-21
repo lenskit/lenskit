@@ -3,7 +3,9 @@ package org.lenskit.space;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-public class ObjectKeyIndex<K> {
+import java.io.Serializable;
+
+public class ObjectKeyIndex<K> implements Serializable {
     private Object2IntOpenHashMap<K> key2idx;
     private ObjectArrayList<K> keyList;
 

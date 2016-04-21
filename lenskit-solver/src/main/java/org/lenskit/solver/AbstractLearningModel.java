@@ -6,11 +6,12 @@ import org.lenskit.space.SynchronizedIndexSpace;
 import org.lenskit.space.SynchronizedVariableSpace;
 import org.lenskit.space.VariableSpace;
 
+import java.io.Serializable;
 import java.util.List;
 
 abstract public class AbstractLearningModel implements LearningModel {
     final protected VariableSpace variableSpace = new SynchronizedVariableSpace();
-    protected IndexSpace indexSpace = new SynchronizedIndexSpace();
+    final protected IndexSpace indexSpace = new SynchronizedIndexSpace();
 
     protected AbstractLearningModel() {}
 
