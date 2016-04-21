@@ -23,8 +23,7 @@ public class IdToIdxExtractor implements FeatureExtractor {
     }
 
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
-                                              IndexSpace indexSpace,
-                                              VariableSpace variableSpace) {
+                                              IndexSpace indexSpace) {
         List<Feature> features = new ArrayList<>();
         List<String> attrs = entity.getCatAttr(attrName);
         for (String attr : attrs) {

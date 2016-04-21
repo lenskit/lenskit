@@ -8,6 +8,5 @@ import java.util.Map;
 
 public interface FeatureExtractor {
     Map<String, List<Feature>> extract(Entity entity, boolean update,
-                                       IndexSpace indexSpace,
-                                       VariableSpace variableSpace);
+                                       IndexSpace indexSpace);
 }

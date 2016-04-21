@@ -88,7 +88,7 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         Map<String, List<Feature>> feaMap = new HashMap<>();
         for (FeatureExtractor extractor : featureExtractors) {
             feaMap.putAll(extractor.extract(entity, update,
-                                            indexSpace, variableSpace));
+                                            indexSpace));
         }
         List<Feature> gfeas = getFeatures(biasFeas, feaMap);
         List<Feature> ufeas = getFeatures(ufactFeas, feaMap);
