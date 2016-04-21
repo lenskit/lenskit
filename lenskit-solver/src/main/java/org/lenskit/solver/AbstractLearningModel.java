@@ -1,14 +1,16 @@
 package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.space.IndexSpace;
 import org.lenskit.space.SynchronizedIndexSpace;
 import org.lenskit.space.SynchronizedVariableSpace;
+import org.lenskit.space.VariableSpace;
 
 import java.util.List;
 
 abstract public class AbstractLearningModel implements LearningModel {
-    final protected SynchronizedVariableSpace variableSpace = new SynchronizedVariableSpace();
-    protected SynchronizedIndexSpace indexSpace = new SynchronizedIndexSpace();
+    final protected VariableSpace variableSpace = new SynchronizedVariableSpace();
+    protected IndexSpace indexSpace = new SynchronizedIndexSpace();
 
     protected AbstractLearningModel() {}
 

@@ -5,12 +5,12 @@ import org.lenskit.featurize.EntityDAO;
 import org.lenskit.solver.LearningData;
 import org.lenskit.solver.LearningInstance;
 
-public class SVDFeatureLearningData implements LearningData {
+public class SVDFeatureEntityDAOLearningData implements LearningData {
 
     private final EntityDAO entityDAO;
     private final SVDFeatureModel model;
 
-    public SVDFeatureLearningData(EntityDAO entityDAO,
+    public SVDFeatureEntityDAOLearningData(EntityDAO entityDAO,
                                   SVDFeatureModel model) {
         this.entityDAO = entityDAO;
         this.model = model;

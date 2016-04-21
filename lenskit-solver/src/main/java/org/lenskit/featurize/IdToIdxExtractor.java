@@ -1,37 +1,45 @@
 package org.lenskit.featurize;
 
+import org.lenskit.space.IndexSpace;
 import org.lenskit.space.SynchronizedIndexSpace;
+import org.lenskit.space.VariableSpace;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class IdToIdxExtractor implements FeatureExtractor {
-    private final SynchronizedIndexSpace indexSpace;
     private final String indexName;
-    private final boolean update;
     private final String attrName;
+    private final String feaName;
 
-    public IdToIdxExtractor(SynchronizedIndexSpace indexSpace, String indexName, boolean update,
-                            String attrName) {
+    public IdToIdxExtractor(String indexName,
+                            String attrName,
+                            String feaName) {
         this.indexName = indexName;
-        this.indexSpace = indexSpace;
-        this.update = update;
         this.attrName = attrName;
+        this.feaName = feaName;
     }
 
-    public List<Feature> extract(Entity entity) {
+    public Map<String, List<Feature>> extract(Entity entity, boolean update,
+                                              IndexSpace indexSpace,
+                                              VariableSpace variableSpace) {
         List<Feature> features = new ArrayList<>();
         List<String> attrs = entity.getCatAttr(attrName);
         for (String attr : attrs) {
-            if (indexSpace.containsStringKey(indexName, attr)) {
-                Feature feature = new Feature(indexSpace.getIndexForStringKey(indexName, attr), 1.0);
+            String key = attrName + ":" + attr;
+            if (indexSpace.containsStringKey(indexName, key)) {
+                Feature feature = new Feature(indexSpace.getIndexForStringKey(indexName, key), 1.0);
                 features.add(feature);
             } else if (update) {
-                int index = indexSpace.setStringKey(indexName, attr);
-                Feature feature = new Feature(index, 1.);
+                int index = indexSpace.setStringKey(indexName, key);
+                Feature feature = new Feature(index, 1.0);
                 features.add(feature);
             }
         }
-        return features;
+        Map<String, List<Feature>> feaMap = new HashMap<>();
+        feaMap.put(feaName, features);
+        return feaMap;
     }
 }

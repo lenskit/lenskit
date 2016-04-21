@@ -28,4 +28,12 @@ public class Entity {
     public double getNumAttr(String name) {
         return numAttrs.get(name);
     }
+
+    public boolean hasCatAttr(String name) {
+        return catAttrs.containsKey(name);
+    }
+
+    public boolean hasNumAttr(String name) {
+        return numAttrs.containsKey(name);
+    }
 }
