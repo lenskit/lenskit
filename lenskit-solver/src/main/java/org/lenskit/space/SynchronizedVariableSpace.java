@@ -15,7 +15,7 @@ import org.lenskit.solver.RandomInitializer;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SynchronizedVariableSpace {
+public class SynchronizedVariableSpace implements VariableSpace {
     private final Map<String, List<Double>> scalarVars = new HashMap<>();
     private final Map<String, List<RealVector>> vectorVars = new HashMap<>();
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -45,18 +45,49 @@ public class SynchronizedVariableSpace {
         }
     }
 
-    final public void requestScalarVar(String name, int size, double initial,
-                                          boolean randomize, boolean normalize) {
-        DoubleArrayList var = new DoubleArrayList(size);
+    private void initializeDoubleList(List<Double> var, double initial,
+                                      boolean randomize, boolean normalize) {
         if (randomize) {
             RandomInitializer randInit = new RandomInitializer();
             randInit.randInitDoubleList(var, normalize);
         } else {
             setDoubleList(var, initial);
         }
+    }
+
+    private void initializeVector(RealVector vec, double initial,
+                                  boolean randomize, boolean normalize) {
+        if (randomize) {
+            RandomInitializer randInit = new RandomInitializer();
+            randInit.randInitVector(vec, normalize);
+        } else {
+            if (initial != 0) {
+                vec.set(initial);
+            }
+        }
+    }
+
+    final public void requestScalarVar(String name, int size, double initial,
+                                          boolean randomize, boolean normalize) {
+        DoubleArrayList var = new DoubleArrayList(size);
+        initializeDoubleList(var, initial, randomize, normalize);
         writeLock.lock();
         try {
             scalarVars.put(name, var);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    final public void ensureScalarVar(String name, int size, double initial, boolean randomize) {
+        writeLock.lock();
+        try {
+            int curSize = scalarVars.get(name).size();
+            if (curSize < size) {
+                DoubleArrayList toAdd = new DoubleArrayList(size - curSize);
+                initializeDoubleList(toAdd, initial, randomize, false);
+                scalarVars.get(name).addAll(toAdd);
+            }
         } finally {
             writeLock.unlock();
         }
@@ -67,19 +98,29 @@ public class SynchronizedVariableSpace {
         List<RealVector> var = new ArrayList<>(size);
         for (int i=0; i<size; i++) {
             RealVector vec = MatrixUtils.createRealVector(new double[dim]);
-            if (randomize) {
-                RandomInitializer randInit = new RandomInitializer();
-                randInit.randInitVector(vec, normalize);
-            } else {
-                if (initial != 0) {
-                    vec.set(initial);
-                }
-            }
+            initializeVector(vec, initial, randomize, normalize);
             var.add(vec);
         }
         writeLock.lock();
         try {
             vectorVars.put(name, var);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    final public void ensureVectorVar(String name, int size, int dim, double initial,
+            boolean randomize, boolean normalize) {
+        writeLock.lock();
+        try {
+            int curSize = vectorVars.get(name).size();
+            if (curSize < size) {
+                for (int i=curSize; i<size; i++) {
+                    RealVector vec = MatrixUtils.createRealVector(new double[dim]);
+                    initializeVector(vec, initial, randomize, normalize);
+                    vectorVars.get(name).add(vec);
+                }
+            }
         } finally {
             writeLock.unlock();
         }

@@ -9,10 +9,7 @@ import org.lenskit.featurize.FeatureExtractor;
 import org.lenskit.featurize.Featurizer;
 import org.lenskit.solver.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -22,56 +19,93 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
     private final Set<String> biasFeas = new HashSet<>();
     private final Set<String> ufactFeas = new HashSet<>();
     private final Set<String> ifactFeas = new HashSet<>();
+    private final String labelName;
+    private final String weightName;
     private final List<FeatureExtractor> featureExtractors = new ArrayList<>();
     private final int factDim;
-    private final int biasSize;
-    private final int factSize;
 
 
     //for training with featurized SVDFeatureInstance only.
-    //  the built model is not usable because getIndex()Space is not initialized
-    //  could provide a parameter for getIndex()Space
+    //  the built model is not usable because indexSpace is not initialized
     public SVDFeatureModel(int biasSize, int factSize, int factDim,
                            ObjectiveFunction objectiveFunction) {
         super();
-        this.biasSize = biasSize;
-        this.factSize = factSize;
         this.factDim = factDim;
+        this.labelName = "label";
+        this.weightName = "weight";
         this.objectiveFunction = objectiveFunction;
-        this.variableSpace.requestScalarVar("biases", this.biasSize, 0, false, false);
-        this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
+        this.variableSpace.requestScalarVar("biases", biasSize, 0, false, false);
+        this.variableSpace.requestVectorVar("factors", factSize, this.factDim, 0, true, false);
     }
 
     public SVDFeatureModel(Set<String> biasFeas,
                            Set<String> ufactFeas,
                            Set<String> ifactFeas,
+                           String labelName,
+                           String weightName,
                            List<FeatureExtractor> featureExtractors,
                            int biasSize, int factSize, int factDim,
                            ObjectiveFunction objectiveFunction) {
         super();
-        this.biasSize = biasSize;
-        this.factSize = factSize;
         this.factDim = factDim;
         this.biasFeas.addAll(biasFeas);
         this.ufactFeas.addAll(ufactFeas);
         this.ifactFeas.addAll(ifactFeas);
+        this.labelName = labelName;
+        this.weightName = weightName;
         this.featureExtractors.addAll(featureExtractors);
         this.objectiveFunction = objectiveFunction;
-        this.variableSpace.requestScalarVar("biases", this.biasSize, 0, false, false);
-        this.variableSpace.requestVectorVar("factors", this.factSize, this.factDim, 0, true, false);
+        this.variableSpace.requestScalarVar("biases", biasSize, 0, false, false);
+        this.variableSpace.requestVectorVar("factors", factSize, this.factDim, 0, true, false);
         this.indexSpace.requestStringKeyMap("biases");
         this.indexSpace.requestStringKeyMap("factors");
     }
 
-
-    //TODO: how to update variableSpace, not only indexSpace
-    public LearningInstance featurize(Entity entity, boolean update) {
-        //return a SVDFeatureInstance
-        List<Feature> gfeas = new ArrayList<>();
-        for (String feaName : biasFeas) {
-
+    private List<Feature> getFeatures(Set<String> feaNames, Map<String, List<Feature>> feaMap) {
+        List<Feature> feaList = new ArrayList<>();
+        for (String feaName : feaNames) {
+            if (feaMap.containsKey(feaName)) {
+                feaList.addAll(feaMap.get(feaName));
+            }
         }
-        return null;
+        return feaList;
+    }
+
+    private void ensureScalarVarSpace(List<Feature> features) {
+        for (Feature fea : features) {
+            variableSpace.ensureScalarVar("biases", fea.getIndex() + 1, 0, true);
+        }
+    }
+
+    private void ensureVectorVarSpace(List<Feature> features) {
+        for (Feature fea : features) {
+            variableSpace.ensureVectorVar("factors", fea.getIndex() + 1, factDim,
+                                          0, true, true);
+        }
+    }
+
+    public LearningInstance featurize(Entity entity, boolean update) {
+        Map<String, List<Feature>> feaMap = new HashMap<>();
+        for (FeatureExtractor extractor : featureExtractors) {
+            feaMap.putAll(extractor.extract(entity, update,
+                                            indexSpace, variableSpace));
+        }
+        List<Feature> gfeas = getFeatures(biasFeas, feaMap);
+        List<Feature> ufeas = getFeatures(ufactFeas, feaMap);
+        List<Feature> ifeas = getFeatures(ifactFeas, feaMap);
+        if (update) {
+            ensureScalarVarSpace(gfeas);
+            ensureVectorVarSpace(ufeas);
+            ensureVectorVarSpace(ifeas);
+        }
+        SVDFeatureInstance ins = new SVDFeatureInstance(gfeas, ufeas, ifeas);
+        if (entity.hasNumAttr(labelName)) {
+            ins.label = entity.getNumAttr(labelName);
+        }
+        if (entity.hasNumAttr(weightName)) {
+            ins.weight = entity.getNumAttr(weightName);
+        }
+        return ins;
     }
 
     public ObjectiveFunction getObjectiveFunction() {
@@ -148,5 +182,10 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         } else {
             return pred;
         }
+    }
+
+    public double predict(Entity entity, boolean sigmoid) {
+        LearningInstance ins = featurize(entity, false);
+        return predict((SVDFeatureInstance)ins, sigmoid);
     }
 }

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class SynchronizedIndexSpace {
+public class SynchronizedIndexSpace implements IndexSpace {
     private final Map<String, ObjectKeyIndex<Long>> longKeyMap = new HashMap<>();
     private final Map<String, ObjectKeyIndex<String>> stringKeyMap = new HashMap<>();
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
