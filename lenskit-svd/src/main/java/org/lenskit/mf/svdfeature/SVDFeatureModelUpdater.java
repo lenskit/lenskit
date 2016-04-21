@@ -12,7 +12,7 @@ public class SVDFeatureModelUpdater {
         this.method = method;
     }
 
-    public void update(SVDFeatureEntityListLearningData learningData) {
+    public void update(SVDFeatureEntityList learningData) {
         method.update(model, learningData);
     }
 }

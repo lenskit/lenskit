@@ -121,7 +121,7 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
             if (outOrc != null) {
                 outOrc.addScalarOracle("biases", ind, val);
             }
-            pred += getScalarVarByNameIndex("bias", ind) * val;
+            pred += getScalarVarByNameIndex("biases", ind) * val;
         }
 
         outUfactSum.set(0.0);

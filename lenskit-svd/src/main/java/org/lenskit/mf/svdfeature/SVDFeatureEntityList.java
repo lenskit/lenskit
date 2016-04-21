@@ -6,12 +6,12 @@ import org.lenskit.solver.LearningInstance;
 
 import java.util.List;
 
-public class SVDFeatureEntityListLearningData implements LearningData {
+public class SVDFeatureEntityList implements LearningData {
     private int iter = 0;
     private final List<Entity> entityList;
     private final SVDFeatureModel model;
 
-    SVDFeatureEntityListLearningData(SVDFeatureModel model, List<Entity> entityList) {
+    SVDFeatureEntityList(SVDFeatureModel model, List<Entity> entityList) {
         this.entityList = entityList;
         this.model = model;
     }

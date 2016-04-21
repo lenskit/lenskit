@@ -45,7 +45,7 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
         this.method = method;
         this.model = new SVDFeatureModel(biasFeas, ufactFeas, ifactFeas, labelName, weightName,
                                          featureExtractors, biasSize, factSize, factDim, loss);
-        this.learningData = new SVDFeatureEntityDAOLearningData(dao, model);
+        this.learningData = new SVDFeatureEntityDAO(dao, model);
     }
 
     public SVDFeatureModel get() {

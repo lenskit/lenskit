@@ -2,9 +2,10 @@ package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import java.io.Serializable;
 import java.util.List;
 
-public interface LearningModel {
+public interface LearningModel extends Serializable {
     RealVector getScalarVarByName(String name);
     int getScalarVarSizeByName(String name);
     void setScalarVarByName(String name, RealVector vars);

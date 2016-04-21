@@ -15,7 +15,7 @@ import org.lenskit.solver.RandomInitializer;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SynchronizedVariableSpace implements VariableSpace {
+public final class SynchronizedVariableSpace implements VariableSpace {
     private final Map<String, List<Double>> scalarVars = new HashMap<>();
     private final Map<String, List<RealVector>> vectorVars = new HashMap<>();
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -51,7 +51,9 @@ public class SynchronizedVariableSpace implements VariableSpace {
             RandomInitializer randInit = new RandomInitializer();
             randInit.randInitDoubleList(var, normalize);
         } else {
-            setDoubleList(var, initial);
+            if (initial != 0.0) {
+                setDoubleList(var, initial);
+            }
         }
     }
 
@@ -61,7 +63,7 @@ public class SynchronizedVariableSpace implements VariableSpace {
             RandomInitializer randInit = new RandomInitializer();
             randInit.randInitVector(vec, normalize);
         } else {
-            if (initial != 0) {
+            if (initial != 0.0) {
                 vec.set(initial);
             }
         }
@@ -70,6 +72,9 @@ public class SynchronizedVariableSpace implements VariableSpace {
     final public void requestScalarVar(String name, int size, double initial,
                                           boolean randomize, boolean normalize) {
         DoubleArrayList var = new DoubleArrayList(size);
+        for (int i=0; i<size; i++) {
+            var.add(0.0);
+        }
         initializeDoubleList(var, initial, randomize, normalize);
         writeLock.lock();
         try {
@@ -85,6 +90,9 @@ public class SynchronizedVariableSpace implements VariableSpace {
             int curSize = scalarVars.get(name).size();
             if (curSize < size) {
                 DoubleArrayList toAdd = new DoubleArrayList(size - curSize);
+                for (int i=0; i<size - curSize; i++) {
+                    toAdd.add(0.0);
+                }
                 initializeDoubleList(toAdd, initial, randomize, false);
                 scalarVars.get(name).addAll(toAdd);
             }

@@ -1,6 +1,8 @@
 package org.lenskit.space;
 
-public interface IndexSpace {
+import java.io.Serializable;
+
+public interface IndexSpace extends Serializable {
     void requestStringKeyMap(String name);
     void requestLongKeyMap(String name);
     int setLongKey(String name, long key);
