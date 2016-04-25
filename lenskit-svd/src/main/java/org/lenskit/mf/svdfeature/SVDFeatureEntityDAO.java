@@ -1,7 +1,7 @@
 package org.lenskit.mf.svdfeature;
 
-import org.lenskit.featurize.Entity;
-import org.lenskit.featurize.EntityDAO;
+import org.lenskit.featurizer.Entity;
+import org.lenskit.featurizer.EntityDAO;
 import org.lenskit.solver.LearningData;
 import org.lenskit.solver.LearningInstance;
 

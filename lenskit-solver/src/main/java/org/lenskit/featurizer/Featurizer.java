@@ -1,4 +1,4 @@
-package org.lenskit.featurize;
+package org.lenskit.featurizer;
 
 import org.lenskit.solver.LearningInstance;
 

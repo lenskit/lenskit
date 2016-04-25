@@ -3,10 +3,10 @@ package org.lenskit.mf.svdfeature;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
-import org.lenskit.featurize.Entity;
-import org.lenskit.featurize.Feature;
-import org.lenskit.featurize.FeatureExtractor;
-import org.lenskit.featurize.Featurizer;
+import org.lenskit.featurizer.Entity;
+import org.lenskit.featurizer.Feature;
+import org.lenskit.featurizer.FeatureExtractor;
+import org.lenskit.featurizer.Featurizer;
 import org.lenskit.solver.*;
 
 import java.util.*;

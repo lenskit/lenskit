@@ -1,4 +1,4 @@
-package org.lenskit.featurize;
+package org.lenskit.featurizer;
 
 public enum VariableValueType implements EntityAttrAdder {
     CATEGORICAL("categorical") {
