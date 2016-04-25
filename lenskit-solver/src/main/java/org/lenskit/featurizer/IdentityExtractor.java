@@ -23,12 +23,12 @@ public class IdentityExtractor implements FeatureExtractor {
         List<Feature> feaList = new ArrayList<>();
         if (entity.hasNumAttr(attrName)) {
             double val = entity.getNumAttr(attrName);
-            if (indexSpace.containsStringKey(indexName, attrName)) {
+            if (indexSpace.containsKey(indexName, attrName)) {
                 Feature feature = new Feature(
-                        indexSpace.getIndexForStringKey(indexName, attrName), val);
+                        indexSpace.getIndexForKey(indexName, attrName), val);
                 feaList.add(feature);
             } else if (update) {
-                int index = indexSpace.setStringKey(indexName, attrName);
+                int index = indexSpace.setKey(indexName, attrName);
                 Feature feature = new Feature(index, val);
                 feaList.add(feature);
             }
