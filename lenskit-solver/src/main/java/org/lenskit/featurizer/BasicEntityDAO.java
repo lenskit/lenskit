@@ -4,8 +4,8 @@ import java.io.*;
 
 public class BasicEntityDAO implements EntityDAO {
     private final File sourceFile;
-    private final BufferedReader reader;
     private final String delimiter = "\t";
+    private BufferedReader reader;
 
     public BasicEntityDAO(File sourceFile) throws FileNotFoundException {
         this.sourceFile = sourceFile;
@@ -41,6 +41,11 @@ public class BasicEntityDAO implements EntityDAO {
     }
 
     public void restart() {
-
+        try {
+            reader.close();
+            reader = new BufferedReader(new FileReader(sourceFile));
+        } catch (IOException e) {
+            //TODO: add logging
+        }
     }
 }

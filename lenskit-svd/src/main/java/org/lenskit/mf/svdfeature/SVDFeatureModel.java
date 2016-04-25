@@ -34,8 +34,10 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         this.labelName = "label";
         this.weightName = "weight";
         this.objectiveFunction = objectiveFunction;
-        this.variableSpace.requestScalarVar("biases", biasSize, 0, false, false);
-        this.variableSpace.requestVectorVar("factors", factSize, this.factDim, 0, true, false);
+        this.variableSpace.requestScalarVar(SVDFeatureIndexName.BIASES.get(),
+                                            biasSize, 0, false, false);
+        this.variableSpace.requestVectorVar(SVDFeatureIndexName.FACTORS.get(),
+                                            factSize, this.factDim, 0, true, false);
     }
 
     public SVDFeatureModel(Set<String> biasFeas,
@@ -55,10 +57,12 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         this.weightName = weightName;
         this.featureExtractors.addAll(featureExtractors);
         this.objectiveFunction = objectiveFunction;
-        this.variableSpace.requestScalarVar("biases", biasSize, 0, false, false);
-        this.variableSpace.requestVectorVar("factors", factSize, this.factDim, 0, true, false);
-        this.indexSpace.requestStringKeyMap("biases");
-        this.indexSpace.requestStringKeyMap("factors");
+        this.variableSpace.requestScalarVar(SVDFeatureIndexName.BIASES.get(),
+                                            biasSize, 0, false, false);
+        this.variableSpace.requestVectorVar(SVDFeatureIndexName.FACTORS.get(),
+                                            factSize, this.factDim, 0, true, false);
+        this.indexSpace.requestKeyMap(SVDFeatureIndexName.BIASES.get());
+        this.indexSpace.requestKeyMap(SVDFeatureIndexName.FACTORS.get());
     }
 
     private List<Feature> getFeatures(Set<String> feaNames, Map<String, List<Feature>> feaMap) {
@@ -73,13 +77,15 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
 
     private void ensureScalarVarSpace(List<Feature> features) {
         for (Feature fea : features) {
-            variableSpace.ensureScalarVar("biases", fea.getIndex() + 1, 0, true);
+            variableSpace.ensureScalarVar(SVDFeatureIndexName.BIASES.get(),
+                                          fea.getIndex() + 1, 0, true);
         }
     }
 
     private void ensureVectorVarSpace(List<Feature> features) {
         for (Feature fea : features) {
-            variableSpace.ensureVectorVar("factors", fea.getIndex() + 1, factDim,
+            variableSpace.ensureVectorVar(SVDFeatureIndexName.FACTORS.get(),
+                                          fea.getIndex() + 1, factDim,
                                           0, true, true);
         }
     }
@@ -119,23 +125,27 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
             int ind = ins.gfeas.get(i).getIndex();
             double val = ins.gfeas.get(i).getValue();
             if (outOrc != null) {
-                outOrc.addScalarOracle("biases", ind, val);
+                outOrc.addScalarOracle(SVDFeatureIndexName.BIASES.get(), ind, val);
             }
-            pred += getScalarVarByNameIndex("biases", ind) * val;
+            pred += getScalarVarByNameIndex(SVDFeatureIndexName.BIASES.get(), ind) * val;
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ufeas.size(); i++) {
             int index = ins.ufeas.get(i).getIndex();
             outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).getValue());
-            outUfactSum.combineToSelf(1.0, 1.0, getVectorVarByNameIndex("factors", index));
+            outUfactSum.combineToSelf(1.0, 1.0,
+                                      getVectorVarByNameIndex(SVDFeatureIndexName.FACTORS.get(),
+                                                              index));
         }
 
-        outUfactSum.set(0.0);
+        outIfactSum.set(0.0);
         for (int i=0; i<ins.ifeas.size(); i++) {
             int index = ins.ifeas.get(i).getIndex();
             outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).getValue());
-            outIfactSum.combineToSelf(1.0, 1.0, getVectorVarByNameIndex("factors", index));
+            outIfactSum.combineToSelf(1.0, 1.0,
+                                      getVectorVarByNameIndex(SVDFeatureIndexName.FACTORS.get(),
+                                                              index));
         }
 
         pred += outUfactSum.dotProduct(outIfactSum);
@@ -157,13 +167,14 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
    
         RealVector leftGrad = ifactSum;
         RealVector rightGrad = ufactSum;
-        String name = "factors";
         for (int i=0; i<ins.ufeas.size(); i++) {
-            orc.addVectorOracle(name, ins.ufeas.get(i).getIndex(),
+            orc.addVectorOracle(SVDFeatureIndexName.FACTORS.get(),
+                                ins.ufeas.get(i).getIndex(),
                     leftGrad.mapMultiply(ins.ufeas.get(i).getValue()));
         }
         for (int i=0; i<ins.ifeas.size(); i++) {
-            orc.addVectorOracle(name, ins.ifeas.get(i).getIndex(),
+            orc.addVectorOracle(SVDFeatureIndexName.FACTORS.get(),
+                                ins.ifeas.get(i).getIndex(),
                     rightGrad.mapMultiply(ins.ifeas.get(i).getValue()));
         }
 

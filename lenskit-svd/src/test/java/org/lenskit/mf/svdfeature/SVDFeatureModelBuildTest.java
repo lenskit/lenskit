@@ -36,19 +36,19 @@ public class SVDFeatureModelBuildTest {
 
         String train = "/home/qian/Study/pyml/RecCtr/data/lenskit-svdfeature-entity.tsv";
         String modelFile = "/home/qian/Study/pyml/RecCtr/data/lenskit-svdfeature.bin";
-        int biasSize = 38544;
-        int factSize = 38543;
+        int biasSize = 10;
+        int factSize = 10;
         int factDim = 20;
         ObjectiveFunction loss = new L2NormLoss();
         OptimizationMethod method = new StochasticGradientDescent();
         EntityDAO entityDAO = new BasicEntityDAO(new File(train));
         List<FeatureExtractor> featureExtractors = new ArrayList<>();
-        featureExtractors.add(new IdentityExtractor("biases", "intercept", "globalBias"));
+        featureExtractors.add(new IdentityExtractor("biases", "intercept", "globalBiasIdx"));
         featureExtractors.add(new IdToIdxExtractor("biases", "userId", "userBiasIdx"));
         featureExtractors.add(new IdToIdxExtractor("biases", "movieId", "itemBiasIdx"));
         featureExtractors.add(new IdToIdxExtractor("factors", "userId", "userFactIdx"));
         featureExtractors.add(new IdToIdxExtractor("factors", "movieId", "itemFactIdx"));
-        String[] bFeas = {"globalBias", "userBiasIdx", "itemBiasIdx"};
+        String[] bFeas = {"globalBiasIdx", "userBiasIdx", "itemBiasIdx"};
         String[] uFeas = {"userFactIdx"};
         String[] iFeas = {"itemFactIdx"};
         SVDFeatureModelBuilder modelBuilder = new SVDFeatureModelBuilder(entityDAO, featureExtractors,

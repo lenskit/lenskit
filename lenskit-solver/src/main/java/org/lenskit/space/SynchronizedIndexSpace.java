@@ -6,81 +6,44 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class SynchronizedIndexSpace implements IndexSpace {
-    private final Map<String, ObjectKeyIndex<Long>> longKeyMap = new HashMap<>();
-    private final Map<String, ObjectKeyIndex<String>> stringKeyMap = new HashMap<>();
+    private final Map<String, ObjectKeyIndex<Object>> keyMap = new HashMap<>();
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final Lock readLock = rwl.readLock();
     private final Lock writeLock = rwl.writeLock();
 
     public SynchronizedIndexSpace() {}
 
-    public void requestStringKeyMap(String name) {
+    public void requestKeyMap(String name) {
         writeLock.lock();
         try {
-            stringKeyMap.put(name, new ObjectKeyIndex<String>());
+            keyMap.put(name, new ObjectKeyIndex<Object>());
         } finally {
             writeLock.unlock();
         }
     }
 
-    public void requestLongKeyMap(String name) {
+    public int setKey(String name, Object key) {
         writeLock.lock();
         try {
-            longKeyMap.put(name, new ObjectKeyIndex<Long>());
+            return keyMap.get(name).setKey(key);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public int setLongKey(String name, long key) {
-        writeLock.lock();
-        try {
-            return longKeyMap.get(name).setKey(key);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    public int setStringKey(String name, String key) {
-        writeLock.lock();
-        try {
-            return stringKeyMap.get(name).setKey(key);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    public boolean containsLongKey(String name, long key) {
+    public boolean containsKey(String name, Object key) {
         readLock.lock();
         try {
-            return longKeyMap.get(name).containsKey(key);
+            return keyMap.get(name).containsKey(key);
         } finally {
             readLock.unlock();
         }
     }
 
-    public boolean containsStringKey(String name, String key) {
+    public int getIndexForKey(String name, Object key) {
         readLock.lock();
         try {
-            return stringKeyMap.get(name).containsKey(key);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    public int getIndexForLongKey(String name, long key) {
-        readLock.lock();
-        try {
-            return longKeyMap.get(name).getIndex(key);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    public int getIndexForStringKey(String name, String key) {
-        readLock.lock();
-        try {
-            return stringKeyMap.get(name).getIndex(key);
+            return keyMap.get(name).getIndex(key);
         } finally {
             readLock.unlock();
         }

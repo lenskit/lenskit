@@ -6,7 +6,7 @@ public enum SVDFeatureIndexName {
 
     private final String indexName;
 
-    EngineComponent(String indexName) {
+    SVDFeatureIndexName(String indexName) {
         this.indexName = indexName;
     }
 

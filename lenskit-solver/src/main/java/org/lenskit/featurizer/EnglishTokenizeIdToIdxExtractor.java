@@ -28,14 +28,8 @@ public class EnglishTokenizeIdToIdxExtractor implements FeatureExtractor {
             String[] tokens = attr.split(" ");
             for (String token : tokens) {
                 String key = attrName + ":" + token;
-                if (indexSpace.containsStringKey(indexName, key)) {
-                    Feature feature = new Feature(indexSpace.getIndexForStringKey(indexName, key), 1.0);
-                    features.add(feature);
-                } else if (update) {
-                    int index = indexSpace.setStringKey(indexName, key);
-                    Feature feature = new Feature(index, 1.0);
-                    features.add(feature);
-                }
+                FeatureExtractorUtilities.getOrSetIndexSpaceToFeaturize(features, update,
+                                                                        indexSpace, indexName, key);
             }
         }
         Map<String, List<Feature>> feaMap = new HashMap<>();

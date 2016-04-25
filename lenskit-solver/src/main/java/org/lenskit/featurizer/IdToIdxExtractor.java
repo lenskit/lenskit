@@ -26,14 +26,8 @@ public class IdToIdxExtractor implements FeatureExtractor {
         List<String> attrs = entity.getCatAttr(attrName);
         for (String attr : attrs) {
             String key = attrName + ":" + attr;
-            if (indexSpace.containsStringKey(indexName, key)) {
-                Feature feature = new Feature(indexSpace.getIndexForStringKey(indexName, key), 1.0);
-                features.add(feature);
-            } else if (update) {
-                int index = indexSpace.setStringKey(indexName, key);
-                Feature feature = new Feature(index, 1.0);
-                features.add(feature);
-            }
+            FeatureExtractorUtilities.getOrSetIndexSpaceToFeaturize(features, update,
+                                                                    indexSpace, indexName, key);
         }
         Map<String, List<Feature>> feaMap = new HashMap<>();
         feaMap.put(feaName, features);
