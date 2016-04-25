@@ -1,7 +1,7 @@
 package org.lenskit.mf.svdfeature;
 
 import org.junit.Test;
-import org.lenskit.featurize.*;
+import org.lenskit.featurizer.*;
 import org.lenskit.solver.*;
 
 import java.io.*;

@@ -1,7 +1,7 @@
 package org.lenskit.mf.svdfeature;
 
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.featurize.Feature;
+import org.lenskit.featurizer.Feature;
 import org.lenskit.solver.LearningInstance;
 
 import java.util.ArrayList;

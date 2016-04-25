@@ -1,7 +1,6 @@
-package org.lenskit.featurize;
+package org.lenskit.featurizer;
 
 import org.lenskit.space.IndexSpace;
-import org.lenskit.space.VariableSpace;
 
 import java.io.Serializable;
 import java.util.List;

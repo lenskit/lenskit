@@ -1,6 +1,6 @@
 package org.lenskit.mf.svdfeature;
 
-import org.lenskit.featurize.Feature;
+import org.lenskit.featurizer.Feature;
 import org.lenskit.solver.LearningData;
 
 import javax.inject.Inject;

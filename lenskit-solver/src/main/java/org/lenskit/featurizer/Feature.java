@@ -1,4 +1,4 @@
-package org.lenskit.featurize;
+package org.lenskit.featurizer;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

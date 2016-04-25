@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.featurize.Entity;
+import org.lenskit.featurizer.Entity;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
