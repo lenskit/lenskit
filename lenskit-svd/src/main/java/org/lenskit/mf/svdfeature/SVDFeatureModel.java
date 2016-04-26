@@ -184,6 +184,10 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         return orc;
     }
 
+    public double predict(LearningInstance ins) {
+        return predict((SVDFeatureInstance)ins, true);
+    }
+
     public double predict(SVDFeatureInstance ins, boolean sigmoid) {
         RealVector ufactSum = MatrixUtils.createRealVector(new double[factDim]);
         RealVector ifactSum = MatrixUtils.createRealVector(new double[factDim]);
