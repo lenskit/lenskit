@@ -21,6 +21,7 @@ public interface LearningModel extends Serializable {
     List<String> getAllScalarVarNames();
     List<String> getAllVectorVarNames();
 
+    double predict(LearningInstance ins);
     StochasticOracle getStochasticOracle(LearningInstance ins);
     ObjectiveFunction getObjectiveFunction();
 }
