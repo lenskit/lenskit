@@ -10,7 +10,7 @@ abstract public class AbstractOnlineOptimizationMethod implements OnlineOptimiza
         while (termCrit.keepIterate()) {
             learningData.startNewIteration();
             objVal = update(learningModel, learningData);
-            termCrit.addIteration("CompositeObjectiveMirrorDescent", objVal);
+            termCrit.addIteration(AbstractOnlineOptimizationMethod.class.toString(), objVal);
         }
         return objVal;
     }
