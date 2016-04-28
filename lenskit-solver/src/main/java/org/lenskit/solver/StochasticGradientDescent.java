@@ -9,13 +9,12 @@ import java.util.List;
  */
 
 // Objective function is changed from f(X) to f(X) + l2coef * |X|^2
-public class StochasticGradientDescent implements OptimizationMethod {
-    private int maxIter;
+public class StochasticGradientDescent extends AbstractOnlineOptimizationMethod {
     private double l2coef;
     private double lr;
-    private double tol;
 
     public StochasticGradientDescent() {
+        super();
         maxIter = 50;
         l2coef = 0.01;
         lr = 0.005;
@@ -23,52 +22,47 @@ public class StochasticGradientDescent implements OptimizationMethod {
     }
 
     public StochasticGradientDescent(int maxIter, double l2coef, double learningRate, double tol) {
+        super();
         this.maxIter = maxIter;
         this.l2coef = l2coef;
         this.lr = learningRate;
         this.tol = tol;
     }
 
-    public double minimize(LearningModel model, LearningData learningData) {
+    public double update(LearningModel model, LearningData learningData) {
         ObjectiveFunction objFunc = model.getObjectiveFunction();
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         L2Regularizer l2term = new L2Regularizer();
-        double objVal = 0;
-        while (termCrit.keepIterate()) {
-            objVal = 0;
-            List<String> allScalarVarNames = model.getAllScalarVarNames();
-            for (String name : allScalarVarNames) {
-                RealVector var = model.getScalarVarByName(name);
-                objVal += l2term.getObjective(l2coef, var);
+        double objVal = 0.0;
+        List<String> allScalarVarNames = model.getAllScalarVarNames();
+        for (String name : allScalarVarNames) {
+            RealVector var = model.getScalarVarByName(name);
+            objVal += l2term.getObjective(l2coef, var);
+        }
+        List<String> allVectorVarNames = model.getAllVectorVarNames();
+        for (String name : allVectorVarNames) {
+            List<RealVector> vars = model.getVectorVarByName(name);
+            objVal += l2term.getObjective(l2coef, vars);
+        }
+        LearningInstance ins;
+        while ((ins = learningData.getLearningInstance()) != null) {
+            StochasticOracle orc = model.getStochasticOracle(ins);
+            objFunc.wrapOracle(orc);
+            for (int i=0; i<orc.scalarNames.size(); i++) {
+                String name = orc.scalarNames.get(i);
+                int idx = orc.scalarIndexes.get(i);
+                double grad = orc.scalarGrads.get(i);
+                double var = model.getScalarVarByNameIndex(name, idx);
+                model.setScalarVarByNameIndex(name, idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
             }
-            List<String> allVectorVarNames = model.getAllVectorVarNames();
-            for (String name : allVectorVarNames) {
-                List<RealVector> vars = model.getVectorVarByName(name);
-                objVal += l2term.getObjective(l2coef, vars);
+            for (int i=0; i<orc.vectorNames.size(); i++) {
+                String name = orc.vectorNames.get(i);
+                int idx = orc.vectorIndexes.get(i);
+                RealVector var = model.getVectorVarByNameIndex(name, idx);
+                RealVector grad = orc.vectorGrads.get(i);
+                model.setVectorVarByNameIndex(name, idx, var.combineToSelf(1.0, -lr,
+                                                                           l2term.addGradient(grad, var, l2coef)));
             }
-            learningData.startNewIteration();
-            LearningInstance ins;
-            while ((ins = learningData.getLearningInstance()) != null) {
-                StochasticOracle orc = model.getStochasticOracle(ins);
-                objFunc.wrapOracle(orc);
-                for (int i=0; i<orc.scalarNames.size(); i++) {
-                    String name = orc.scalarNames.get(i);
-                    int idx = orc.scalarIndexes.get(i);
-                    double grad = orc.scalarGrads.get(i);
-                    double var = model.getScalarVarByNameIndex(name, idx);
-                    model.setScalarVarByNameIndex(name, idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
-                }
-                for (int i=0; i<orc.vectorNames.size(); i++) {
-                    String name = orc.vectorNames.get(i);
-                    int idx = orc.vectorIndexes.get(i);
-                    RealVector var = model.getVectorVarByNameIndex(name, idx);
-                    RealVector grad = orc.vectorGrads.get(i);
-                    model.setVectorVarByNameIndex(name, idx, var.combineToSelf(1.0, -lr,
-                                                                               l2term.addGradient(grad, var, l2coef)));
-                }
-                objVal += orc.objVal;
-            }
-            termCrit.addIteration("StochasticGradientDescent", objVal);
+            objVal += orc.objVal;
         }
         return objVal;
     }
