@@ -11,7 +11,7 @@ public class SVDFeatureEntityList implements LearningData {
     private final List<Entity> entityList;
     private final SVDFeatureModel model;
 
-    SVDFeatureEntityList(SVDFeatureModel model, List<Entity> entityList) {
+    public SVDFeatureEntityList(SVDFeatureModel model, List<Entity> entityList) {
         this.entityList = entityList;
         this.model = model;
     }
