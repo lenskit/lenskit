@@ -1,5 +1,6 @@
 package org.lenskit.mf.svdfeature;
 
+import org.lenskit.solver.LearningData;
 import org.lenskit.solver.OnlineOptimizationMethod;
 
 public class SVDFeatureModelUpdater {
