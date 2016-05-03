@@ -154,12 +154,7 @@ public abstract class ItemSelector {
          * or train sets.
          */
         public LongSet getUnseenItems(TestUser user){
-            LongSet unseenItem;
-
-            unseenItem = LongUtils.setDifference(allItems, user.getTrainItems());
-            unseenItem = LongUtils.setDifference(unseenItem, user.getTestItems());
-
-            return unseenItem;
+            return LongUtils.setDifference(allItems, user.getSeenItems());
         }
     }
 
