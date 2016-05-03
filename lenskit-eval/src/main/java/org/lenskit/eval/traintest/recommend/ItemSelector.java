@@ -24,9 +24,9 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.lenskit.api.Recommender;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.util.collections.LongUtils;
 
 import java.util.Random;
 import java.util.Set;
