@@ -21,9 +21,9 @@
 package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.junit.Test;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.util.collections.LongUtils;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
