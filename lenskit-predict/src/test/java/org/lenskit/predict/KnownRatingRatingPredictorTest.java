@@ -21,7 +21,6 @@
 package org.lenskit.predict;
 
 import org.lenskit.api.RecommenderBuildException;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.lenskit.data.dao.EventCollectionDAO;
 import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.PrefetchingUserEventDAO;
@@ -31,6 +30,7 @@ import org.lenskit.data.ratings.RatingBuilder;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -62,6 +62,7 @@ public class PackRatings implements Command {
     public void execute(Namespace opts) throws IOException {
         Context ctx = new Context(opts);
         logger.info("packing ratings from {}", ctx.input);
+        logger.warn("pack-ratings is deprecated and will be removed in LensKit 3.0.");
         logger.debug("using delimiter {}", ctx.getDelimiter());
         EventDAO dao = ctx.input.getEventDAO();
         if (dao == null) {

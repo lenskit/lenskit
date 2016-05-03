@@ -21,7 +21,6 @@
 package org.lenskit.predict.ordrec;
 
 import org.lenskit.api.RecommenderBuildException;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.lenskit.data.dao.EventCollectionDAO;
 import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.PrefetchingUserEventDAO;
@@ -34,6 +33,7 @@ import org.lenskit.api.ResultMap;
 import org.lenskit.basic.PrecomputedItemScorer;
 import org.lenskit.transform.quantize.Quantizer;
 import org.lenskit.transform.quantize.ValueArrayQuantizer;
+import org.lenskit.util.collections.LongUtils;
 
 import java.util.ArrayList;
 import java.util.List;

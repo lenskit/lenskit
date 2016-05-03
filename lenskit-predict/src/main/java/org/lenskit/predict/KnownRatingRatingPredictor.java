@@ -23,7 +23,6 @@ package org.lenskit.predict;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.api.Result;
@@ -31,6 +30,7 @@ import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractRatingPredictor;
 import org.lenskit.basic.FallbackItemScorer;
 import org.lenskit.results.Results;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
