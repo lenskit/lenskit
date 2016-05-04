@@ -23,6 +23,7 @@ package org.lenskit.gradle.traits
 import org.gradle.api.Project
 import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.data.DataSourceSpec
+import org.lenskit.specs.data.PackedDataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 
 /**
@@ -54,5 +55,17 @@ trait DataSources {
         return textFile {
             file f.toPath()
         }
+    }
+
+    /**
+     * Construct a data source for a pack file.
+     * @param fn The name of the pack file.
+     * @return The data source spec.
+     */
+    DataSourceSpec packFile(Object fn) {
+        def f = project.file(fn)
+        def spec = new PackedDataSourceSpec()
+        spec.file = f.toPath()
+        return spec
     }
 }

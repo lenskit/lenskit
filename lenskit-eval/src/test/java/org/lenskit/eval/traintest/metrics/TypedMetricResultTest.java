@@ -21,7 +21,6 @@
 package org.lenskit.eval.traintest.metrics;
 
 import org.junit.Test;
-import sun.reflect.ReflectionFactory;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
