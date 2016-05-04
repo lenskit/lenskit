@@ -29,6 +29,7 @@ import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface for accessing data in LensKit.
@@ -36,6 +37,12 @@ import java.util.List;
  * LensKit data is represented by *entities*; see {@link org.lenskit.data.entities}
  */
 public interface DataAccessObject {
+    /**
+     * Get the types of entities that are available in this DAO.
+     * @return The set of available entity types.
+     */
+    Set<EntityType> getEntityTypes();
+
     /**
      * Get the IDs of all entities with a particular type.
      * @param type The entity type.

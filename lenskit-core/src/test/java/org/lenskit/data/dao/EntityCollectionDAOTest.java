@@ -208,7 +208,7 @@ public class EntityCollectionDAOTest {
                              .setAttribute(CommonAttributes.USER_ID, 42L)
                              .setAttribute(CommonAttributes.ITEM_ID, 28L)
                              .build());
-        EntityCollectionDAO dao = new EntityCollectionDAO(entities);
+        EntityCollectionDAO dao = EntityCollectionDAO.create(entities);
 
         EntityQuery<Entity> query = EntityQuery.newBuilder()
                                                .setEntityType(LIKE)

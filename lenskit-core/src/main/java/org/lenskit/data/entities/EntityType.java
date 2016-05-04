@@ -32,6 +32,8 @@ import java.util.Locale;
 /**
  * A type for an entity.  Obtain an entity from a named type with {@link #forName(String)}.
  *
+ * Entity types are unique objects that can be equality-tested with `==`.
+ *
  * Type names are *case-insensitive*, and are normalized to lowercase in the {@linkplain Locale#ROOT root locale}.
  */
 public final class EntityType implements Serializable {

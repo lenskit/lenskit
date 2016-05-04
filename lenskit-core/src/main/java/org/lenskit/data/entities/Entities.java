@@ -23,6 +23,9 @@ package org.lenskit.data.entities;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Longs;
+import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,6 +102,22 @@ public final class Entities {
         };
     }
 
+    /**
+     * Return an ordering over entities that sorts them by ID.
+     * @return An ordering over entities by ID.
+     */
+    public static Ordering<Entity> idOrdering() {
+        return ID_ORDER;
+    }
+
+    /**
+     * Key extractor that keys entities by ID.
+     * @return A key extractor that returns entities' IDs.
+     */
+    public static KeyExtractor<Entity> idKeyExtractor() {
+        return ID_KEY_EX;
+    }
+
     public static <T> Function<Entity,T> attributeValueFunction(final TypedName<T> name) {
         return new Function<Entity, T>() {
             @Nullable
@@ -145,4 +164,24 @@ public final class Entities {
             };
         }
     }
+
+    /**
+     * Extract the ID from an entity as its key.
+     */
+    private static class IdKeyEx implements KeyExtractor<Entity> {
+        @Override
+        public long getKey(Entity obj) {
+            return obj.getId();
+        }
+    }
+
+    private static class IdOrder extends Ordering<Entity> {
+        @Override
+        public int compare(@Nullable Entity left, @Nullable Entity right) {
+            return Longs.compare(left.getId(), right.getId());
+        }
+    }
+
+    private static Ordering<Entity> ID_ORDER = new IdOrder();
+    private static KeyExtractor<Entity> ID_KEY_EX = new IdKeyEx();
 }
