@@ -57,10 +57,12 @@ public class TemporalEvaluator {
     private File predictOutputFile;
     private Long rebuildPeriod;
     private Integer listSize;
+    private Random rng;
 
     public TemporalEvaluator() {
         rebuildPeriod = 86400L;
         listSize = 10;
+        rng = new Random();
     }
 
     /**
@@ -202,24 +204,30 @@ public class TemporalEvaluator {
 
         TableLayout tl = tlb.build();
 
+        //Initialize recommender engine and recommender
         LenskitRecommenderEngine lre = null;
         Recommender recommender = null;
 
+        //Start try block -- will try to write output on file
         try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO)) {
             List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
             BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
 
+            //Initialize local variables, will use to calculate RMSE
             double sse = 0;
             int n = 0;
+            // Initialize build parameters
             long buildTime = 0L;
             int buildsCount = 0;
 
+            //Loop through ratings
             for (Rating r : ratings) {
                 if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
                     limitedDao = dataSource.createWindowedView(r.getTimestamp());
                     LenskitConfiguration config = new LenskitConfiguration();
                     config.addComponent(limitedDao);
 
+                    //rebuild recommender system if its older then rebuild period set or null
                     if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
                         buildTime = r.getTimestamp();
                         lre = LenskitRecommenderEngine.newBuilder()
@@ -231,62 +239,59 @@ public class TemporalEvaluator {
                     if (recommender != null) {
                         recommender.close();
                     }
-
                     recommender = lre.createRecommender(config);
                 }
-                //gets prediction score
-                Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
+
+                 //get prediction score
                 double predict = Double.NaN;
+                Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
+
+                //check result to avoid null exception
                 if (predictionResult != null) {
                     predict = predictionResult.getScore();
                 }
-                //calculates time averaged RMSE
+                /***calculate Time Averaged RMSE***/
+                double rmse = 0.0;
                 if (!Double.isNaN(predict)) {
                     double err = predict - r.getValue();
                     sse += err * err;
                     n++;
-                }
-                double rmse = 0.0;
-                if (n > 0) {
                     rmse = sqrt(sse / n);
                 }
 
-                //calculate recommendation rank
-                int rank = -1;
-                LongSet itemsInDao = new LongOpenHashSet(limitedDao.getItemIds().size());
-                itemsInDao.addAll(limitedDao.getItemIds());
+                /***calculate recommendation rank***/
+                // item rank
+                int rank = -1; //rank < 0 indicates item not found
+                /* set of all items in limited DAO */
+                LongSet itemsInDao = new LongOpenHashSet(limitedDao.getItemIds());
+                /* set of all items rated by user */
+                LongSet itemsByUser = new LongOpenHashSet();
+                /* set of candidates that includes current item +
+                   listsize-1 random values from (items from dao - items rated by user) */
+                LongSet candidates = new LongOpenHashSet();
 
-                if (itemsInDao.size() > 0) {
-                    //candidate =  r.getItemId() + random (items from dao - items by user, listsize-1);
-                    LongSet itemsByUser = new LongOpenHashSet(itemsInDao.size());
-
-                    if (limitedDao.getEventsForUser(r.getUserId()) != null) {
-                        itemsByUser.addAll(limitedDao.getEventsForUser(r.getUserId()).itemSet());
-
-                    }
-                    itemsInDao.removeAll(itemsByUser);
-                    LongSet candidates = new LongOpenHashSet(10);
-
-                    if (itemsInDao.size() > 0) {
-                        candidates.addAll(LongUtils.randomSubset(itemsInDao, listSize - 1, new Random()));
-                    }
-                    if (candidates.size() > 0) {
-                        if (!candidates.contains(r.getItemId())) {
-                            candidates.add(r.getItemId());
-                        }
-                        List<Long> recs = recommender.getItemRecommender().recommend(r.getUserId(), listSize, candidates, itemsByUser);
-                        rank = recs.indexOf(r.getItemId());
-                        if (rank >= 0) {
-                            rank++;
-                        } else {
-                            rank = 0;
-                        }
-                    }
+                //Check if events for users exists to avoid NULL exception
+                if (limitedDao.getEventsForUser(r.getUserId()) != null) {
+                    itemsByUser.addAll(limitedDao.getEventsForUser(r.getUserId()).itemSet());
+                    candidates.addAll(LongUtils.randomSubset(itemsInDao, listSize - 1, itemsByUser, rng));
                 }
-                //writes the Prediction Score and TARMSE on file.
+
+                //Check size to avoid exception
+                if (candidates.size() > 0) {
+                    //if current item is removed from candidates, add it again
+                    if (!candidates.contains(r.getItemId())) {
+                        candidates.add(r.getItemId());
+                    }
+                    // get list of recommendations
+                    List<Long> recs = recommender.getItemRecommender().recommend(r.getUserId(), listSize, candidates, itemsByUser);
+                    rank = recs.indexOf(r.getItemId());
+                 }
+                //increment index to get correct rank
+                rank++;
+                /**writes the Prediction Score, Rank and TARMSE on file.**/
                 tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(),
                                      predict, rmse, r.getTimestamp() - buildTime, rank, buildsCount);
-            }
+            }//ratings loop end here
         } finally {
             if (recommender != null) {
                 recommender.close();
