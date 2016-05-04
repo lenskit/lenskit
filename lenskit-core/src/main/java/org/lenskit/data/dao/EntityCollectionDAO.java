@@ -21,7 +21,6 @@
 package org.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -35,7 +34,6 @@ import org.lenskit.util.io.GroupingObjectStream;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.keys.KeyedObjectMap;
-import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,33 +46,16 @@ import java.util.*;
 public class EntityCollectionDAO implements DataAccessObject {
     private final Map<EntityType, KeyedObjectMap<Entity>> storage;
 
-    private EntityCollectionDAO(Iterable<? extends Entity> data) {
-        Map<EntityType, KeyedObjectMapBuilder<Entity>> maps = new HashMap<>();
+    EntityCollectionDAO(Map<EntityType, KeyedObjectMap<Entity>> data) {
+        storage = data;
+    }
 
-        // remember the last builder used as a fast path
-        KeyedObjectMapBuilder<Entity> bld = null;
-        EntityType last = null;
-
-        for (Entity e: data) {
-            EntityType type = e.getType();
-            if (type != last) {
-                bld = maps.get(type);
-                last = type;
-                if (bld == null) {
-                    bld = KeyedObjectMap.newBuilder(Entities.idKeyExtractor());
-                    maps.put(type, bld);
-                }
-            }
-            assert bld != null;
-            bld.add(e);
-        }
-
-        ImmutableMap.Builder<EntityType, KeyedObjectMap<Entity>> mb = ImmutableMap.builder();
-        for (Map.Entry<EntityType, KeyedObjectMapBuilder<Entity>> e: maps.entrySet()) {
-            mb.put(e.getKey(), e.getValue().build());
-        }
-
-        storage = mb.build();
+    /**
+     * Create a new DAO builder.
+     * @return The entity collection DAO builder.
+     */
+    public static EntityCollectionDAOBuilder newBuilder() {
+        return new EntityCollectionDAOBuilder();
     }
 
     /**
@@ -83,7 +64,7 @@ public class EntityCollectionDAO implements DataAccessObject {
      * @return The DAO.
      */
     public static EntityCollectionDAO create(Entity... data) {
-        return new EntityCollectionDAO(Arrays.asList(data));
+        return newBuilder().addEntities(data).build();
     }
 
     /**
@@ -92,7 +73,7 @@ public class EntityCollectionDAO implements DataAccessObject {
      * @return The DAO.
      */
     public static EntityCollectionDAO create(Collection<Entity> data) {
-        return new EntityCollectionDAO(data);
+        return newBuilder().addEntities(data).build();
     }
 
 

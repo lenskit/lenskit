@@ -25,12 +25,14 @@ import org.junit.Test;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStreams;
+import org.omg.IOP.ENCODING_CDR_ENCAPS;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.lenskit.data.entities.CommonTypes.RATING;
 
 public class EntityCollectionDAOTest {
     private static final EntityType LIKE = EntityType.forName("like");
@@ -39,8 +41,8 @@ public class EntityCollectionDAOTest {
     public void testEmptyDAO() {
         EntityCollectionDAO dao = EntityCollectionDAO.create();
         assertThat(dao.getEntityIds(CommonTypes.ITEM), hasSize(0));
-        assertThat(dao.getEntityIds(CommonTypes.RATING), hasSize(0));
-        assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.RATING)),
+        assertThat(dao.getEntityIds(RATING), hasSize(0));
+        assertThat(ObjectStreams.makeList(dao.streamEntities(RATING)),
                    hasSize(0));
     }
 
@@ -51,7 +53,7 @@ public class EntityCollectionDAOTest {
         assertThat(dao.getEntityIds(CommonTypes.ITEM), hasSize(0));
         assertThat(dao.getEntityIds(CommonTypes.USER),
                    contains(42L));
-        assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.RATING)),
+        assertThat(ObjectStreams.makeList(dao.streamEntities(RATING)),
                    hasSize(0));
         assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.USER)),
                    contains(Entities.create(CommonTypes.USER, 42L)));
@@ -220,5 +222,44 @@ public class EntityCollectionDAOTest {
         assertThat(results,
                    containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(0))),
                                       IdBox.create(67L, ImmutableList.of(entities.get(1)))));
+    }
+
+    @Test
+    public void testMultipleTypes() {
+        EntityCollectionDAOBuilder builder = EntityCollectionDAO.newBuilder();
+        builder.addEntity(Entities.newBuilder(LIKE, 1)
+                                  .setAttribute(CommonAttributes.USER_ID, 42L)
+                                  .setAttribute(CommonAttributes.ITEM_ID, 39L)
+                                  .build());
+        builder.addEntity(Entities.newBuilder(RATING, 10)
+                                  .setAttribute(CommonAttributes.USER_ID, 42L)
+                                  .setAttribute(CommonAttributes.ITEM_ID, 75L)
+                                  .setAttribute(CommonAttributes.RATING, 3.5)
+                                  .build());
+        EntityCollectionDAO dao = builder.build();
+
+        assertThat(dao.getEntityIds(RATING), contains(10L));
+        assertThat(dao.getEntityIds(LIKE), contains(1L));
+        assertThat(dao.lookupEntity(RATING, 10L),
+                   equalTo(Entities.newBuilder(RATING, 10)
+                                   .setAttribute(CommonAttributes.USER_ID, 42L)
+                                   .setAttribute(CommonAttributes.ITEM_ID, 75L)
+                                   .setAttribute(CommonAttributes.RATING, 3.5)
+                                   .build()));
+        assertThat(ObjectStreams.makeList(dao.streamEntities(RATING)),
+                   contains(Entities.newBuilder(RATING, 10)
+                                    .setAttribute(CommonAttributes.USER_ID, 42L)
+                                    .setAttribute(CommonAttributes.ITEM_ID, 75L)
+                                    .setAttribute(CommonAttributes.RATING, 3.5)
+                                    .build()));
+
+        assertThat(ObjectStreams.makeList(dao.streamEntities(LIKE)),
+                   contains(Entities.newBuilder(LIKE, 1)
+                                    .setAttribute(CommonAttributes.USER_ID, 42L)
+                                    .setAttribute(CommonAttributes.ITEM_ID, 39L)
+                                    .build()));
+
+        assertThat(dao.getEntityTypes(),
+                   containsInAnyOrder(RATING, LIKE));
     }
 }
