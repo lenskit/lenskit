@@ -56,13 +56,13 @@ public class Simulate implements Command {
         parser.addArgument("-o", "--output-file")
               .type(File.class)
               .metavar("FILE")
-              .setDefault("ratings.pack")
+              .setDefault("predictions.csv")
               .help("write predicted score to FILE");
-        parser.addArgument("-s", "--list-size")
+        parser.addArgument("-n", "--list-size")
               .type(Integer.class)
               .metavar("INTEGER")
               .setDefault(10)
-              .help("Size of recommendations list");
+              .help("Length of recommendation lists");
         parser.addArgument("-r", "--rebuild-period")
               .type(Long.class)
               .metavar("SECONDS")
