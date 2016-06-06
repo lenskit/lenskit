@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.google.common.base.Preconditions;
-import com.sun.istack.internal.Nullable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.io.CompressionMode;
@@ -48,9 +47,8 @@ import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.TableWriter;
 
-import java.io.BufferedWriter;
+import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -305,38 +303,8 @@ public class TemporalEvaluator {
                 Integer rank = null;
                 ItemRecommender irec = recommender.getItemRecommender();
                 if (irec != null) {
-                    /***calculate recommendation rank***/
-                    /* set of all items in limited DAO */
-                    LongSet itemsInDao = new LongOpenHashSet(limitedDao.getItemIds());
-                    /* set of candidates that includes current item +
-                       listsize-1 random values from (items from dao - items rated by user) */
-                    LongSet candidates = new LongOpenHashSet();
-                    /* Users *not* to include in candidate set */
-                    LongSet excludes = new LongOpenHashSet();
-                    // include the target item...
-                    candidates.add(r.getItemId());
-                    // .. and exlude it from being added again
-                    excludes.add(r.getItemId());
+                    rank = getRecommendationRank(limitedDao, r, json, irec);
 
-                    //Check if events for users exists to avoid NULL exception
-                    UserHistory<Event> profile = limitedDao.getEventsForUser(r.getUserId());
-                    if (profile != null) {
-                        excludes.addAll(profile.itemSet());
-                    }
-
-                    // Add a random set of decoy items
-                    candidates.addAll(LongUtils.randomSubset(itemsInDao, listSize - 1, excludes, rng));
-
-                    // get list of recommendations
-                    List<Long> recs = irec.recommend(r.getUserId(), listSize, candidates, null);
-                    json.put("recommendations", recs);
-                    rank = recs.indexOf(r.getItemId());
-                    if (rank >= 0) {
-                        //increment index to get correct rank
-                        rank++;
-                    } else {
-                        rank = null;
-                    }
                 }
 
                 /**writes the Prediction Score, Rank and TARMSE on file.**/
@@ -352,6 +320,49 @@ public class TemporalEvaluator {
                 recommender.close();
             }
         }
+    }
+
+    /**
+     * Get the rank of the recommended item.
+     * @param dao The limited DAO.
+     * @param rating The rating.
+     * @param json The JSON object being built.
+     * @param irec The item recommender.
+     * @return The rank, or `null` if the item is not recommended.
+     */
+    @Nullable
+    private Integer getRecommendationRank(BinaryRatingDAO dao, Rating rating, Map<String, Object> json, ItemRecommender irec) {
+        Integer rank; /***calculate recommendation rank***/
+                    /* set of candidates that includes current item +
+                       listsize-1 random values from (items from dao - items rated by user) */
+        LongSet candidates = new LongOpenHashSet();
+                    /* Users *not* to include in candidate set */
+        LongSet excludes = new LongOpenHashSet();
+        // include the target item...
+        candidates.add(rating.getItemId());
+        // .. and exlude it from being added again
+        excludes.add(rating.getItemId());
+
+        //Check if events for users exists to avoid NULL exception
+        UserHistory<Event> profile = dao.getEventsForUser(rating.getUserId());
+        if (profile != null) {
+            excludes.addAll(profile.itemSet());
+        }
+
+        // Add a random set of decoy items
+        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), listSize - 1, excludes, rng));
+
+        // get list of recommendations
+        List<Long> recs = irec.recommend(rating.getUserId(), listSize, candidates, null);
+        json.put("recommendations", recs);
+        rank = recs.indexOf(rating.getItemId());
+        if (rank >= 0) {
+            //increment index to get correct rank
+            rank++;
+        } else {
+            rank = null;
+        }
+        return rank;
     }
 
     @Nullable
