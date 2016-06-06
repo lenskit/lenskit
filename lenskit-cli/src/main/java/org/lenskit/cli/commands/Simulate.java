@@ -24,13 +24,12 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-
-import org.lenskit.config.ConfigurationLoader;
-import org.lenskit.eval.temporal.TemporalEvaluator;
-import org.lenskit.LenskitConfiguration;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.eval.temporal.TemporalEvaluator;
+import org.lenskit.specs.eval.AlgorithmSpec;
+import org.lenskit.specs.eval.SimulateSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,27 +92,32 @@ public class Simulate implements Command {
     public void execute(Namespace opts) throws IOException, RecommenderBuildException {
 
         Context ctx = new Context(opts);
-        TemporalEvaluator eval = new TemporalEvaluator();
+        SimulateSpec spec = new SimulateSpec();
 
+        spec.setListSize(ctx.getListSize());
+        spec.setRebuildPeriod(ctx.getRebuildPeriod());
+
+        spec.setInputFile(ctx.getInputFile().toPath());
+        File out = ctx.getOutputFile();
+        if (out != null) {
+            spec.setOutputFile(out.toPath());
+        }
+        out = ctx.getExtendedOutputFile();
+        if (out != null) {
+            spec.setExtendedOutputFile(out.toPath());
+        }
+
+        AlgorithmSpec algo = new AlgorithmSpec();
+        File cfg = ctx.getConfigFile();
+        algo.setName(cfg.getName());
+        algo.setConfigFile(cfg.toPath());
+
+        TemporalEvaluator eval = new TemporalEvaluator(spec);
         Stopwatch timer = Stopwatch.createStarted();
-
-        Long rebuildPeriod = ctx.getRebuildPeriod();
-        Integer listSize = ctx.getListSize();
-        eval.setDataSource(ctx.getInputFile());
-        eval.setPredictOutputFile(ctx.getOutputFile());
-        eval.setExtendedOutputFile(ctx.getExtendedOutputFile());
-        eval.setRebuildPeriod(rebuildPeriod);
-        eval.setListSize(listSize);
-
-        ConfigurationLoader loader = new ConfigurationLoader();
-        LenskitConfiguration config = loader.load(ctx.getConfigFile());
-        eval.setAlgorithm(config.toString(), config);
-
+        logger.info("beginning temporal evaluator");
         eval.execute();
         timer.stop();
         logger.info("evaluator executed  in {}", timer);
-        logger.info("writing simulator output to {}", ctx.getOutputFile());
-        logger.info("Rebuild period set to {}", ctx.getRebuildPeriod());
     }
 
     private static class Context {

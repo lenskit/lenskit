@@ -40,6 +40,8 @@ import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.traintest.AlgorithmInstance;
+import org.lenskit.specs.eval.AlgorithmSpec;
+import org.lenskit.specs.eval.SimulateSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.table.TableLayout;
@@ -50,6 +52,7 @@ import org.lenskit.util.table.writer.TableWriter;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,19 +62,20 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.Math.sqrt;
 
 public class TemporalEvaluator {
-    private BinaryRatingDAO dataSource;
-    private AlgorithmInstance algorithm;
-    private File predictOutputFile;
-    @Nullable
-    private File extOutputFile;
-    private Long rebuildPeriod;
-    private Integer listSize;
+    private final SimulateSpec spec;
     private Random rng;
+    private AlgorithmInstance algorithm;
+    private BinaryRatingDAO dataSource;
+
+    public TemporalEvaluator(SimulateSpec spec) {
+        this.spec = spec;
+        rng = new Random();
+    }
 
     public TemporalEvaluator() {
-        rebuildPeriod = 86400L;
-        listSize = 10;
-        rng = new Random();
+        spec = new SimulateSpec();
+        spec.setRebuildPeriod(24 * 3600);
+        spec.setListSize(10);
     }
 
     /**
@@ -120,21 +124,7 @@ public class TemporalEvaluator {
      * @return Itself for  method chaining
      */
     public TemporalEvaluator setPredictOutputFile(File file) {
-        predictOutputFile = file;
-        return this;
-    }
-
-    /**
-     * *
-     *
-     * @param file  The file set as the output of the command
-     * @param cMode Compression Mode
-     * @return Itself for  method chaining
-     */
-
-    //TODO Set compression mode in file
-    public TemporalEvaluator setPredictOutputFile(File file, CompressionMode cMode) {
-        predictOutputFile = file;
+        spec.setOutputFile(file.toPath());
         return this;
     }
 
@@ -143,8 +133,8 @@ public class TemporalEvaluator {
      * @return the output file.
      */
     @Nullable
-    public File getExtendedOutputFile() {
-        return extOutputFile;
+    public Path getExtendedOutputFile() {
+        return spec.getExtendedOutputFile();
     }
 
     /**
@@ -153,7 +143,16 @@ public class TemporalEvaluator {
      * @return The evaluator (for chaining).
      */
     public TemporalEvaluator setExtendedOutputFile(@Nullable File file) {
-        extOutputFile = file;
+        return setExtendedOutputFile(file != null ? file.toPath() : null);
+    }
+
+    /**
+     * Set the output file for extended output (lines of JSON).
+     * @param file The output file name.
+     * @return The evaluator (for chaining).
+     */
+    public TemporalEvaluator setExtendedOutputFile(@Nullable Path file) {
+        spec.setExtendedOutputFile(file);
         return this;
     }
 
@@ -163,7 +162,7 @@ public class TemporalEvaluator {
      * @return Itself for  method chaining
      */
     public TemporalEvaluator setRebuildPeriod(Long time, TimeUnit unit) {
-        rebuildPeriod = unit.toSeconds(time);
+        spec.setRebuildPeriod(unit.toSeconds(time));
         return this;
     }
 
@@ -171,8 +170,8 @@ public class TemporalEvaluator {
      * @param seconds default rebuild period in seconds
      * @return Itself for  method chaining
      */
-    public TemporalEvaluator setRebuildPeriod(Long seconds) {
-        rebuildPeriod = seconds;
+    public TemporalEvaluator setRebuildPeriod(long seconds) {
+        spec.setRebuildPeriod(seconds);
         return this;
     }
 
@@ -183,61 +182,60 @@ public class TemporalEvaluator {
      * @return returns itself
      */
     public TemporalEvaluator setListSize(int lSize) {
-        listSize = lSize;
+        spec.setListSize(lSize);
         return this;
     }
 
     /**
      * @return Returns prediction output file
      */
-    public File getPredictOutputFile() {
-        return predictOutputFile;
+    public Path getPredictOutputFile() {
+        return spec.getOutputFile();
     }
 
     /**
      * @return Returns rebuild period
      */
-    public Long getRebuildPeriod() {
-        return rebuildPeriod;
+    public long getRebuildPeriod() {
+        return spec.getRebuildPeriod();
     }
 
     /**
      * @return size of recommendation list
      */
     public int getListSize() {
-        return listSize;
+        return spec.getListSize();
+    }
+
+    private void loadInputs() throws IOException {
+        Path dataFile = spec.getInputFile();
+        Preconditions.checkState(dataSource != null && dataFile != null, "no data file specified");
+        AlgorithmSpec algoSpec = spec.getAlgorithm();
+        Preconditions.checkState(algorithm != null && algoSpec != null,
+                                 "no algorithm specified");
+
+        if (dataSource == null) {
+            dataSource = BinaryRatingDAO.open(dataFile.toFile());
+        }
+        if (algorithm == null) {
+            // FIXME Support multiple algorithms
+            algorithm = AlgorithmInstance.fromSpec(spec.getAlgorithm(), null).get(0);
+        }
     }
 
     /**
      * During the evaluation, it will replay the ratings, try to predict each one, and
      * write the prediction, TARMSE and the rating to the output file
      */
-
     public void execute() throws IOException, RecommenderBuildException {
-        Preconditions.checkState(algorithm != null, "no algorithm specified");
-        Preconditions.checkState(dataSource != null, "no input data specified");
-        Preconditions.checkState(predictOutputFile != null, "no output file specified");
-        //Builds file layout
-        TableLayoutBuilder tlb = new TableLayoutBuilder();
-        //file headers
-        tlb.addColumn("User")
-           .addColumn("Item")
-           .addColumn("Rating")
-           .addColumn("Timestamp")
-           .addColumn("Prediction")
-           .addColumn("TARMSE")
-           .addColumn("ModelAge")
-           .addColumn("Rank")
-           .addColumn("Rebuilds");
-
-        TableLayout tl = tlb.build();
+        loadInputs();
 
         //Initialize recommender engine and recommender
         LenskitRecommenderEngine lre = null;
         Recommender recommender = null;
 
         //Start try block -- will try to write output on file
-        try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO);
+        try (TableWriter tableWriter = openOutput();
              SequenceWriter extWriter = openExtendedOutput()) {
 
             List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
@@ -264,7 +262,7 @@ public class TemporalEvaluator {
                     config.addComponent(limitedDao);
 
                     //rebuild recommender system if its older then rebuild period set or null
-                    if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
+                    if ((r.getTimestamp() - buildTime >= spec.getRebuildPeriod()) || lre == null) {
                         buildTime = r.getTimestamp();
                         lre = LenskitRecommenderEngine.newBuilder()
                                                       .addConfiguration(algorithm.getConfigurations().get(0))
@@ -350,10 +348,10 @@ public class TemporalEvaluator {
         }
 
         // Add a random set of decoy items
-        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), listSize - 1, excludes, rng));
+        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), spec.getListSize() - 1, excludes, rng));
 
         // get list of recommendations
-        List<Long> recs = irec.recommend(rating.getUserId(), listSize, candidates, null);
+        List<Long> recs = irec.recommend(rating.getUserId(), spec.getListSize(), candidates, null);
         json.put("recommendations", recs);
         rank = recs.indexOf(rating.getItemId());
         if (rank >= 0) {
@@ -366,14 +364,39 @@ public class TemporalEvaluator {
     }
 
     @Nullable
-    private SequenceWriter openExtendedOutput() throws IOException {
-        if (extOutputFile == null) {
+    private TableWriter openOutput() throws IOException {
+        Path path = spec.getOutputFile();
+        if (path == null) {
             return null;
-        } else {
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectWriter w = mapper.writer();
-            return w.writeValues(extOutputFile);
         }
+
+        TableLayoutBuilder tlb = new TableLayoutBuilder();
+
+        tlb.addColumn("User")
+           .addColumn("Item")
+           .addColumn("Rating")
+           .addColumn("Timestamp")
+           .addColumn("Prediction")
+           .addColumn("TARMSE")
+           .addColumn("ModelAge")
+           .addColumn("Rank")
+           .addColumn("Rebuilds");
+
+        TableLayout layout = tlb.build();
+
+        return CSVWriter.open(path.toFile(), layout, CompressionMode.AUTO);
+    }
+
+    @Nullable
+    private SequenceWriter openExtendedOutput() throws IOException {
+        Path path = spec.getExtendedOutputFile();
+        if (path == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter w = mapper.writer();
+        return w.writeValues(path.toFile());
     }
 }
 
