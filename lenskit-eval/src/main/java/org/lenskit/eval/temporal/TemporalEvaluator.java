@@ -27,22 +27,23 @@ import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.ModelDisposition;
+import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
 import org.lenskit.data.dao.SortOrder;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.packed.BinaryRatingDAO;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.io.ObjectStreams;
-import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.TableWriter;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -259,35 +260,43 @@ public class TemporalEvaluator {
                     rmse = sqrt(sse / n);
                 }
 
-                /***calculate recommendation rank***/
-                // item rank
-                int rank = -1; //rank < 0 indicates item not found
-                /* set of all items in limited DAO */
-                LongSet itemsInDao = new LongOpenHashSet(limitedDao.getItemIds());
-                /* set of all items rated by user */
-                LongSet itemsByUser = new LongOpenHashSet();
-                /* set of candidates that includes current item +
-                   listsize-1 random values from (items from dao - items rated by user) */
-                LongSet candidates = new LongOpenHashSet();
+                // Compute recommendations
+                Integer rank = null;
+                ItemRecommender irec = recommender.getItemRecommender();
+                if (irec != null) {
+                    /***calculate recommendation rank***/
+                    /* set of all items in limited DAO */
+                    LongSet itemsInDao = new LongOpenHashSet(limitedDao.getItemIds());
+                    /* set of candidates that includes current item +
+                       listsize-1 random values from (items from dao - items rated by user) */
+                    LongSet candidates = new LongOpenHashSet();
+                    /* Users *not* to include in candidate set */
+                    LongSet excludes = new LongOpenHashSet();
+                    // include the target item...
+                    candidates.add(r.getItemId());
+                    // .. and exlude it from being added again
+                    excludes.add(r.getItemId());
 
-                //Check if events for users exists to avoid NULL exception
-                if (limitedDao.getEventsForUser(r.getUserId()) != null) {
-                    itemsByUser.addAll(limitedDao.getEventsForUser(r.getUserId()).itemSet());
-                    candidates.addAll(LongUtils.randomSubset(itemsInDao, listSize - 1, itemsByUser, rng));
+                    //Check if events for users exists to avoid NULL exception
+                    UserHistory<Event> profile = limitedDao.getEventsForUser(r.getUserId());
+                    if (profile != null) {
+                        excludes.addAll(profile.itemSet());
+                    }
+
+                    // Add a random set of decoy items
+                    candidates.addAll(LongUtils.randomSubset(itemsInDao, listSize - 1, excludes, rng));
+
+                    // get list of recommendations
+                    List<Long> recs = irec.recommend(r.getUserId(), listSize, candidates, null);
+                    rank = recs.indexOf(r.getItemId());
+                    if (rank >= 0) {
+                        //increment index to get correct rank
+                        rank++;
+                    } else {
+                        rank = null;
+                    }
                 }
 
-                //Check size to avoid exception
-                if (candidates.size() > 0) {
-                    //if current item is removed from candidates, add it again
-                    if (!candidates.contains(r.getItemId())) {
-                        candidates.add(r.getItemId());
-                    }
-                    // get list of recommendations
-                    List<Long> recs = recommender.getItemRecommender().recommend(r.getUserId(), listSize, candidates, itemsByUser);
-                    rank = recs.indexOf(r.getItemId());
-                 }
-                //increment index to get correct rank
-                rank++;
                 /**writes the Prediction Score, Rank and TARMSE on file.**/
                 tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(),
                                      predict, rmse, r.getTimestamp() - buildTime, rank, buildsCount);
