@@ -20,7 +20,11 @@
  */
 package org.lenskit.eval.temporal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.google.common.base.Preconditions;
+import com.sun.istack.internal.Nullable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.io.CompressionMode;
@@ -44,9 +48,13 @@ import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.TableWriter;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -56,6 +64,8 @@ public class TemporalEvaluator {
     private BinaryRatingDAO dataSource;
     private AlgorithmInstance algorithm;
     private File predictOutputFile;
+    @Nullable
+    private File extOutputFile;
     private Long rebuildPeriod;
     private Integer listSize;
     private Random rng;
@@ -127,6 +137,25 @@ public class TemporalEvaluator {
     //TODO Set compression mode in file
     public TemporalEvaluator setPredictOutputFile(File file, CompressionMode cMode) {
         predictOutputFile = file;
+        return this;
+    }
+
+    /**
+     * Get the output file for extended output (lines of JSON).
+     * @return the output file.
+     */
+    @Nullable
+    public File getExtendedOutputFile() {
+        return extOutputFile;
+    }
+
+    /**
+     * Set the output file for extended output (lines of JSON).
+     * @param file The output file name.
+     * @return The evaluator (for chaining).
+     */
+    public TemporalEvaluator setExtendedOutputFile(@Nullable File file) {
+        extOutputFile = file;
         return this;
     }
 
@@ -210,7 +239,9 @@ public class TemporalEvaluator {
         Recommender recommender = null;
 
         //Start try block -- will try to write output on file
-        try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO)) {
+        try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO);
+             SequenceWriter extWriter = openExtendedOutput()) {
+
             List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
             BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
 
@@ -223,6 +254,12 @@ public class TemporalEvaluator {
 
             //Loop through ratings
             for (Rating r : ratings) {
+                Map<String,Object> json = new HashMap<>();
+                json.put("userId", r.getUserId());
+                json.put("itemId", r.getItemId());
+                json.put("timestamp", r.getTimestamp());
+                json.put("rating", r.getValue());
+
                 if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
                     limitedDao = dataSource.createWindowedView(r.getTimestamp());
                     LenskitConfiguration config = new LenskitConfiguration();
@@ -250,7 +287,11 @@ public class TemporalEvaluator {
                 //check result to avoid null exception
                 if (predictionResult != null) {
                     predict = predictionResult.getScore();
+                    json.put("prediction", predict);
+                } else {
+                    json.put("prediction", null);
                 }
+
                 /***calculate Time Averaged RMSE***/
                 double rmse = 0.0;
                 if (!Double.isNaN(predict)) {
@@ -288,6 +329,7 @@ public class TemporalEvaluator {
 
                     // get list of recommendations
                     List<Long> recs = irec.recommend(r.getUserId(), listSize, candidates, null);
+                    json.put("recommendations", recs);
                     rank = recs.indexOf(r.getItemId());
                     if (rank >= 0) {
                         //increment index to get correct rank
@@ -300,11 +342,26 @@ public class TemporalEvaluator {
                 /**writes the Prediction Score, Rank and TARMSE on file.**/
                 tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(),
                                      predict, rmse, r.getTimestamp() - buildTime, rank, buildsCount);
-            }//ratings loop end here
+                if (extWriter != null) {
+                    extWriter.write(json);
+                }
+            } // loop ratings
+
         } finally {
             if (recommender != null) {
                 recommender.close();
             }
+        }
+    }
+
+    @Nullable
+    private SequenceWriter openExtendedOutput() throws IOException {
+        if (extOutputFile == null) {
+            return null;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectWriter w = mapper.writer();
+            return w.writeValues(extOutputFile);
         }
     }
 }
