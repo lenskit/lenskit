@@ -32,11 +32,12 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.config.ConfigHelpers;
-import org.lenskit.config.ConfigurationLoader;
-import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.config.LenskitConfigScript;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.config.ConfigHelpers;
+import org.lenskit.eval.traintest.predict.PredictEvalTask;
+import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
+import org.lenskit.specs.eval.*;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
 import org.lenskit.util.table.TableLayout;
@@ -44,9 +45,6 @@ import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.lenskit.util.table.writer.TableWriter;
-import org.lenskit.eval.traintest.predict.PredictEvalTask;
-import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
-import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,23 +167,7 @@ public class TrainTestExperiment {
      * @param file The config file to load.
      */
     public void addAlgorithm(String name, Path file) {
-        ConfigurationLoader loader = new ConfigurationLoader(classLoader);
-        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
-        MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(loader, aib);
-        try {
-            LenskitConfigScript script = loader.loadScript(file.toFile());
-            dsl.setBaseURI(script.getDelegate().getBaseURI());
-            script.setDelegate(dsl);
-            script.configure();
-        } catch (IOException e) {
-            throw new RuntimeException("cannot load configuration from " + file);
-        }
-        List<AlgorithmInstance> multi = dsl.getInstances();
-        if (multi.isEmpty()) {
-            addAlgorithm(aib.build());
-        } else {
-            addAlgorithms(multi);
-        }
+        addAlgorithms(AlgorithmInstance.load(file, name, classLoader));
     }
 
     /**

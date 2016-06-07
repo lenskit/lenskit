@@ -20,36 +20,67 @@
  */
 package org.lenskit.eval.temporal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.ModelDisposition;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.api.Result;
+import org.lenskit.api.*;
 import org.lenskit.data.dao.SortOrder;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.packed.BinaryRatingDAO;
-import org.lenskit.eval.traintest.AlgorithmInstance;
-import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.eval.traintest.AlgorithmInstance;
+import org.lenskit.specs.eval.AlgorithmSpec;
+import org.lenskit.specs.eval.SimulateSpec;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.TableWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.sqrt;
 
 public class TemporalEvaluator {
-    private BinaryRatingDAO dataSource;
+    private static final Logger logger = LoggerFactory.getLogger(TemporalEvaluator.class);
+    private final SimulateSpec spec;
+    @Nonnull
+    private Random rng;
     private AlgorithmInstance algorithm;
-    private File predictOutputFile;
-    private Long rebuildPeriod;
+    private BinaryRatingDAO dataSource;
+
+    public TemporalEvaluator(SimulateSpec spec) {
+        this.spec = spec;
+        rng = new Random();
+    }
+
+    public TemporalEvaluator() {
+        spec = new SimulateSpec();
+        spec.setRebuildPeriod(24 * 3600);
+        spec.setListSize(10);
+        rng = new Random();
+    }
 
     /**
      * Adds an algorithmInfo
@@ -97,21 +128,35 @@ public class TemporalEvaluator {
      * @return Itself for  method chaining
      */
     public TemporalEvaluator setPredictOutputFile(File file) {
-        predictOutputFile = file;
+        spec.setOutputFile(file.toPath());
         return this;
     }
 
     /**
-     * *
-     *
-     * @param file  The file set as the output of the command
-     * @param cMode Compression Mode
-     * @return Itself for  method chaining
+     * Get the output file for extended output (lines of JSON).
+     * @return the output file.
      */
+    @Nullable
+    public Path getExtendedOutputFile() {
+        return spec.getExtendedOutputFile();
+    }
 
-    //TODO Set compression mode in file
-    public TemporalEvaluator setPredictOutputFile(File file, CompressionMode cMode) {
-        predictOutputFile = file;
+    /**
+     * Set the output file for extended output (lines of JSON).
+     * @param file The output file name.
+     * @return The evaluator (for chaining).
+     */
+    public TemporalEvaluator setExtendedOutputFile(@Nullable File file) {
+        return setExtendedOutputFile(file != null ? file.toPath() : null);
+    }
+
+    /**
+     * Set the output file for extended output (lines of JSON).
+     * @param file The output file name.
+     * @return The evaluator (for chaining).
+     */
+    public TemporalEvaluator setExtendedOutputFile(@Nullable Path file) {
+        spec.setExtendedOutputFile(file);
         return this;
     }
 
@@ -121,7 +166,7 @@ public class TemporalEvaluator {
      * @return Itself for  method chaining
      */
     public TemporalEvaluator setRebuildPeriod(Long time, TimeUnit unit) {
-        rebuildPeriod = unit.toSeconds(time);
+        spec.setRebuildPeriod(unit.toSeconds(time));
         return this;
     }
 
@@ -129,102 +174,250 @@ public class TemporalEvaluator {
      * @param seconds default rebuild period in seconds
      * @return Itself for  method chaining
      */
-    public TemporalEvaluator setRebuildPeriod(Long seconds) {
-        rebuildPeriod = seconds;
+    public TemporalEvaluator setRebuildPeriod(long seconds) {
+        spec.setRebuildPeriod(seconds);
+        return this;
+    }
+
+    /**
+     * sets the size of recommendationss list size
+     *
+     * @param lSize size of list to be set
+     * @return returns itself
+     */
+    public TemporalEvaluator setListSize(int lSize) {
+        spec.setListSize(lSize);
         return this;
     }
 
     /**
      * @return Returns prediction output file
      */
-    public File getPredictOutputFile() {
-        return predictOutputFile;
+    public Path getPredictOutputFile() {
+        return spec.getOutputFile();
     }
 
     /**
      * @return Returns rebuild period
      */
-    public Long getRebuildPeriod() {
-        return rebuildPeriod;
+    public long getRebuildPeriod() {
+        return spec.getRebuildPeriod();
+    }
+
+    /**
+     * @return size of recommendation list
+     */
+    public int getListSize() {
+        return spec.getListSize();
+    }
+
+    private void loadInputs() throws IOException {
+        Path dataFile = spec.getInputFile();
+        Preconditions.checkState(dataSource != null || dataFile != null, "no data file specified");
+        AlgorithmSpec algoSpec = spec.getAlgorithm();
+        Preconditions.checkState(algorithm != null || algoSpec != null,
+                                 "no algorithm specified");
+
+        if (dataSource == null) {
+            dataSource = BinaryRatingDAO.open(dataFile.toFile());
+        }
+        if (algorithm == null) {
+            // FIXME Support multiple algorithms
+            algorithm = AlgorithmInstance.fromSpec(spec.getAlgorithm(), null).get(0);
+        }
     }
 
     /**
      * During the evaluation, it will replay the ratings, try to predict each one, and
      * write the prediction, TARMSE and the rating to the output file
-     *
-     * @return Itself for  method chaining
      */
-
     public void execute() throws IOException, RecommenderBuildException {
-        Preconditions.checkState(algorithm != null, "no algorithm specified");
-        Preconditions.checkState(dataSource != null, "no input data specified");
-        Preconditions.checkState(predictOutputFile != null, "no output file specified");
-        //Builds file layout
-        TableLayoutBuilder tlb = new TableLayoutBuilder();
-        //file headers
-        tlb.addColumn("User")
-           .addColumn("Item")
-           .addColumn("Rating")
-           .addColumn("Timestamp")
-           .addColumn("Prediction")
-           .addColumn("TARMSE");
+        loadInputs();
 
-        TableLayout tl = tlb.build();
-
+        //Initialize recommender engine and recommender
         LenskitRecommenderEngine lre = null;
         Recommender recommender = null;
 
-        try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO)) {
+        //Start try block -- will try to write output on file
+        try (TableWriter tableWriter = openOutput();
+             SequenceWriter extWriter = openExtendedOutput()) {
+
             List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
             BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
 
+            //Initialize local variables, will use to calculate RMSE
             double sse = 0;
             int n = 0;
+            // Initialize build parameters
             long buildTime = 0L;
+            int buildsCount = 0;
+            int ratingsSinceLastBuild = 0;
 
+            //Loop through ratings
             for (Rating r : ratings) {
-                if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
+                Map<String,Object> json = new HashMap<>();
+                json.put("userId", r.getUserId());
+                json.put("itemId", r.getItemId());
+                json.put("timestamp", r.getTimestamp());
+                json.put("rating", r.getValue());
+
+                if (recommender == null || (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp())) {
                     limitedDao = dataSource.createWindowedView(r.getTimestamp());
                     LenskitConfiguration config = new LenskitConfiguration();
                     config.addComponent(limitedDao);
 
-                    if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
+                    //rebuild recommender system if its older then rebuild period set or null
+                    if ((r.getTimestamp() - buildTime >= spec.getRebuildPeriod()) || lre == null) {
                         buildTime = r.getTimestamp();
+                        buildsCount++;
+
+                        logger.info("building model {} at time {}, {} ratings since last build",
+                                    buildsCount, buildTime, ratingsSinceLastBuild);
+
+                        Stopwatch timer = Stopwatch.createStarted();
                         lre = LenskitRecommenderEngine.newBuilder()
                                                       .addConfiguration(algorithm.getConfigurations().get(0))
                                                       .addConfiguration(config, ModelDisposition.EXCLUDED)
                                                       .build();
+                        timer.stop();
+                        logger.info("built model {} in {}", buildsCount, timer);
+
+                        ratingsSinceLastBuild = 0;
                     }
                     if (recommender != null) {
                         recommender.close();
                     }
-
                     recommender = lre.createRecommender(config);
                 }
-                //gets prediction score
-                Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
-                double predict = Double.NaN;
+                ratingsSinceLastBuild += 1;
+
+                json.put("modelAge", r.getTimestamp() - buildTime);
+
+                // get rating prediction if available
+                Double predict = null;
+                RatingPredictor predictor = recommender.getRatingPredictor();
+                Result predictionResult = null;
+                if (predictor != null) {
+                    predictionResult = predictor.predict(r.getUserId(), r.getItemId());
+                }
+
                 if (predictionResult != null) {
                     predict = predictionResult.getScore();
+                    logger.debug("predicted {} for rating {}", predict, r);
+                    json.put("prediction", predict);
+                } else {
+                    json.put("prediction", null);
                 }
-                //calculates time averaged RMSE
-                if (!Double.isNaN(predict)) {
+
+                /***calculate Time Averaged RMSE***/
+                double rmse = 0.0;
+                if (predict != null && !Double.isNaN(predict)) {
                     double err = predict - r.getValue();
                     sse += err * err;
                     n++;
-                }
-                double rmse = 0.0;
-                if (n > 0) {
                     rmse = sqrt(sse / n);
                 }
-                //writes the Prediction Score and TARMSE on file
-                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), predict, rmse);
-            }
+
+                // Compute recommendations
+                Integer rank = null;
+                ItemRecommender irec = recommender.getItemRecommender();
+                if (irec != null) {
+                    rank = getRecommendationRank(limitedDao, r, json, irec);
+
+                }
+
+                /**writes the Prediction Score, Rank and TARMSE on file.**/
+                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(),
+                                     predict, rmse, r.getTimestamp() - buildTime, rank, buildsCount);
+                if (extWriter != null) {
+                    extWriter.write(json);
+                }
+            } // loop ratings
+
         } finally {
             if (recommender != null) {
                 recommender.close();
             }
         }
+    }
+
+    /**
+     * Get the rank of the recommended item.
+     * @param dao The limited DAO.
+     * @param rating The rating.
+     * @param json The JSON object being built.
+     * @param irec The item recommender.
+     * @return The rank, or `null` if the item is not recommended.
+     */
+    @Nullable
+    private Integer getRecommendationRank(BinaryRatingDAO dao, Rating rating, Map<String, Object> json, ItemRecommender irec) {
+        Integer rank; /***calculate recommendation rank***/
+                    /* set of candidates that includes current item +
+                       listsize-1 random values from (items from dao - items rated by user) */
+        LongSet candidates = new LongOpenHashSet();
+                    /* Users *not* to include in candidate set */
+        LongSet excludes = new LongOpenHashSet();
+        // include the target item...
+        candidates.add(rating.getItemId());
+        // .. and exlude it from being added again
+        excludes.add(rating.getItemId());
+
+        //Check if events for users exists to avoid NULL exception
+        UserHistory<Event> profile = dao.getEventsForUser(rating.getUserId());
+        if (profile != null) {
+            excludes.addAll(profile.itemSet());
+        }
+
+        // Add a random set of decoy items
+        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), spec.getListSize() - 1, excludes, rng));
+
+        // get list of recommendations
+        List<Long> recs = irec.recommend(rating.getUserId(), spec.getListSize(), candidates, null);
+        json.put("recommendations", recs);
+        rank = recs.indexOf(rating.getItemId());
+        if (rank >= 0) {
+            //increment index to get correct rank
+            rank++;
+        } else {
+            rank = null;
+        }
+        return rank;
+    }
+
+    @Nullable
+    private TableWriter openOutput() throws IOException {
+        Path path = spec.getOutputFile();
+        if (path == null) {
+            return null;
+        }
+
+        TableLayoutBuilder tlb = new TableLayoutBuilder();
+
+        tlb.addColumn("User")
+           .addColumn("Item")
+           .addColumn("Rating")
+           .addColumn("Timestamp")
+           .addColumn("Prediction")
+           .addColumn("TARMSE")
+           .addColumn("ModelAge")
+           .addColumn("Rank")
+           .addColumn("Rebuilds");
+
+        TableLayout layout = tlb.build();
+
+        return CSVWriter.open(path.toFile(), layout, CompressionMode.AUTO);
+    }
+
+    @Nullable
+    private SequenceWriter openExtendedOutput() throws IOException {
+        Path path = spec.getExtendedOutputFile();
+        if (path == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter w = mapper.writer().withRootValueSeparator(System.lineSeparator());
+        return w.writeValues(path.toFile());
     }
 }
 
