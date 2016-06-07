@@ -1,23 +1,32 @@
 package org.lenskit.featurizer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Entity {
     @JsonProperty
-    final private Map<String, List<String>> catAttrs = new HashMap<>();
+    final private Map<String, Set<String>> catAttrs = new HashMap<>();
 
     @JsonProperty
     final private Map<String, Double> numAttrs = new HashMap<>();
 
     public Entity() {}
 
+    @JsonIgnore
+    public Set<String> getCatAttrNames() {
+        return catAttrs.keySet();
+    }
+
+    @JsonIgnore
+    public Set<String> getNumAttrNames() {
+        return numAttrs.keySet();
+    }
+
+    @JsonIgnore
     public void setCatAttr(String name, List<String> values) {
-        List<String> vals = new ArrayList<>(values);
+        Set<String> vals = new HashSet<>(values);
         catAttrs.put(name, vals);
     }
 
@@ -25,7 +34,7 @@ public class Entity {
         if (catAttrs.containsKey(name)) {
             catAttrs.get(name).add(value);
         } else {
-            List<String> vals = new ArrayList<>();
+            Set<String> vals = new HashSet<>();
             vals.add(value);
             catAttrs.put(name, vals);
         }
@@ -37,15 +46,18 @@ public class Entity {
         }
     }
 
+    @JsonIgnore
     public void setNumAttr(String name, double value) {
         numAttrs.put(name, value);
     }
 
+    @JsonIgnore
     public List<String> getCatAttr(String name) {
         List<String> vals = new ArrayList<>(catAttrs.get(name));
         return vals;
     }
 
+    @JsonIgnore
     public double getNumAttr(String name) {
         return numAttrs.get(name);
     }
