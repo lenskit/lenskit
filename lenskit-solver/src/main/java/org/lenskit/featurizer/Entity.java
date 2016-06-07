@@ -1,12 +1,17 @@
 package org.lenskit.featurizer;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Entity {
+    @JsonProperty
     final private Map<String, List<String>> catAttrs = new HashMap<>();
+
+    @JsonProperty
     final private Map<String, Double> numAttrs = new HashMap<>();
 
     public Entity() {}

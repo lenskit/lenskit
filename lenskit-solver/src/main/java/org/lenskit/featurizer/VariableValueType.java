@@ -3,7 +3,7 @@ package org.lenskit.featurizer;
 public enum VariableValueType implements EntityAttrAdder {
     CATEGORICAL("categorical") {
         public void addIntoEntity(Entity entity, String name, String value) {
-           entity.addCatAttr(name, value.substring(1, value.length() - 1));
+           entity.addCatAttr(name, value);
         }
     },
     NUMERICAL("numerical") {
