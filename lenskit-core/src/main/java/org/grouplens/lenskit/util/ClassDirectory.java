@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 
@@ -50,6 +51,7 @@ public class ClassDirectory {
      * @return The class directory.
      */
     public static ClassDirectory forClassLoader(ClassLoader loader) {
+        Preconditions.checkNotNull(loader, "classLoader");
         ImmutableSetMultimap.Builder<String,String> mapping = ImmutableSetMultimap.builder();
         try {
             Enumeration<URL> urls = loader.getResources("META-INF/classes.lst");
