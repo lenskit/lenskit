@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.data.text.Formats;
+import org.lenskit.data.dao.ItemNameDAO;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.slf4j.Logger;
@@ -136,6 +137,7 @@ public class InputData {
         if (src != null) {
             src.configure(config);
         }
+        config.addRoot(ItemNameDAO.class);
         return config;
     }
 

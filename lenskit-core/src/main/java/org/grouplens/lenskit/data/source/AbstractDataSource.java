@@ -131,6 +131,10 @@ public abstract class AbstractDataSource implements DataSource {
     public void configure(LenskitConfiguration config) {
         logger.debug("generating configuration for {}", this);
         config.addComponent(getEventDAO());
+        ItemNameDAO dao = getItemNameDAO();
+        if (dao != null) {
+            config.addComponent(dao);
+        }
         PreferenceDomain dom = getPreferenceDomain();
         if (dom != null) {
             logger.debug("using preference domain {}", dom);
