@@ -40,6 +40,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -177,7 +178,7 @@ public class AlgorithmInstance {
         }
         List<AlgorithmInstance> multi = dsl.getInstances();
         if (multi.isEmpty()) {
-            multi.add(aib.build());
+            multi = Collections.singletonList(aib.build());
         }
         logger.info("loaded {} algorithms from {}", multi.size(), file);
         return multi;
