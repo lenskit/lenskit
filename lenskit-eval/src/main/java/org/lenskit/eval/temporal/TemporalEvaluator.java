@@ -49,6 +49,7 @@ import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.TableWriter;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +64,7 @@ import static java.lang.Math.sqrt;
 
 public class TemporalEvaluator {
     private final SimulateSpec spec;
+    @Nonnull
     private Random rng;
     private AlgorithmInstance algorithm;
     private BinaryRatingDAO dataSource;
@@ -76,6 +78,7 @@ public class TemporalEvaluator {
         spec = new SimulateSpec();
         spec.setRebuildPeriod(24 * 3600);
         spec.setListSize(10);
+        rng = new Random();
     }
 
     /**
@@ -209,9 +212,9 @@ public class TemporalEvaluator {
 
     private void loadInputs() throws IOException {
         Path dataFile = spec.getInputFile();
-        Preconditions.checkState(dataSource != null && dataFile != null, "no data file specified");
+        Preconditions.checkState(dataSource != null || dataFile != null, "no data file specified");
         AlgorithmSpec algoSpec = spec.getAlgorithm();
-        Preconditions.checkState(algorithm != null && algoSpec != null,
+        Preconditions.checkState(algorithm != null || algoSpec != null,
                                  "no algorithm specified");
 
         if (dataSource == null) {

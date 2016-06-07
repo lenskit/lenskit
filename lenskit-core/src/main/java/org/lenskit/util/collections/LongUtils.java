@@ -27,6 +27,7 @@ import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.LongSortedArraySet;
 import org.lenskit.util.keys.SortedKeyIndex;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
@@ -353,7 +354,8 @@ public final class LongUtils {
      * @return An item selector that selects the items selected by {@code base} plus an additional
      * {@code nRandom} items.
      */
-    public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude, Random rng) {
+    public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude,
+                                             @Nonnull Random rng) {
         // FIXME The RNG should come from configuration
         LongSet initial = exclude;
         LongList selected = new LongArrayList(num);
