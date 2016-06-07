@@ -118,7 +118,7 @@ public class MavenRepublish extends ConventionTask {
             logger.info("copying {} artifacts for {}", e.value.size(), e.key)
             def path = getComponentPath(e.key)
             project.copy {
-                from project.files(e.value)
+                from project.files(e.value.toList())
                 into "$root/$path"
             }
         }
