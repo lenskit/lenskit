@@ -24,16 +24,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.ModelDisposition;
-import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.api.Result;
+import org.lenskit.api.*;
 import org.lenskit.data.dao.SortOrder;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.UserHistory;
@@ -48,6 +46,8 @@ import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.TableWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.Math.sqrt;
 
 public class TemporalEvaluator {
+    private static final Logger logger = LoggerFactory.getLogger(TemporalEvaluator.class);
     private final SimulateSpec spec;
     @Nonnull
     private Random rng;
@@ -250,6 +251,7 @@ public class TemporalEvaluator {
             // Initialize build parameters
             long buildTime = 0L;
             int buildsCount = 0;
+            int ratingsSinceLastBuild = 0;
 
             //Loop through ratings
             for (Rating r : ratings) {
@@ -259,7 +261,7 @@ public class TemporalEvaluator {
                 json.put("timestamp", r.getTimestamp());
                 json.put("rating", r.getValue());
 
-                if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
+                if (recommender == null || (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp())) {
                     limitedDao = dataSource.createWindowedView(r.getTimestamp());
                     LenskitConfiguration config = new LenskitConfiguration();
                     config.addComponent(limitedDao);
@@ -267,25 +269,41 @@ public class TemporalEvaluator {
                     //rebuild recommender system if its older then rebuild period set or null
                     if ((r.getTimestamp() - buildTime >= spec.getRebuildPeriod()) || lre == null) {
                         buildTime = r.getTimestamp();
+                        buildsCount++;
+
+                        logger.info("building model {} at time {}, {} ratings since last build",
+                                    buildsCount, buildTime, ratingsSinceLastBuild);
+
+                        Stopwatch timer = Stopwatch.createStarted();
                         lre = LenskitRecommenderEngine.newBuilder()
                                                       .addConfiguration(algorithm.getConfigurations().get(0))
                                                       .addConfiguration(config, ModelDisposition.EXCLUDED)
                                                       .build();
-                        buildsCount++;
+                        timer.stop();
+                        logger.info("built model {} in {}", buildsCount, timer);
+
+                        ratingsSinceLastBuild = 0;
                     }
                     if (recommender != null) {
                         recommender.close();
                     }
                     recommender = lre.createRecommender(config);
                 }
+                ratingsSinceLastBuild += 1;
 
-                 //get prediction score
-                double predict = Double.NaN;
-                Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
+                json.put("modelAge", r.getTimestamp() - buildTime);
 
-                //check result to avoid null exception
+                // get rating prediction if available
+                Double predict = null;
+                RatingPredictor predictor = recommender.getRatingPredictor();
+                Result predictionResult = null;
+                if (predictor != null) {
+                    predictionResult = predictor.predict(r.getUserId(), r.getItemId());
+                }
+
                 if (predictionResult != null) {
                     predict = predictionResult.getScore();
+                    logger.debug("predicted {} for rating {}", predict, r);
                     json.put("prediction", predict);
                 } else {
                     json.put("prediction", null);
@@ -293,7 +311,7 @@ public class TemporalEvaluator {
 
                 /***calculate Time Averaged RMSE***/
                 double rmse = 0.0;
-                if (!Double.isNaN(predict)) {
+                if (predict != null && !Double.isNaN(predict)) {
                     double err = predict - r.getValue();
                     sse += err * err;
                     n++;
@@ -398,7 +416,7 @@ public class TemporalEvaluator {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        ObjectWriter w = mapper.writer();
+        ObjectWriter w = mapper.writer().withRootValueSeparator(System.lineSeparator());
         return w.writeValues(path.toFile());
     }
 }

@@ -28,6 +28,7 @@ import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.lenskit.eval.temporal.TemporalEvaluator;
+import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.AlgorithmSpec;
 import org.lenskit.specs.eval.SimulateSpec;
 import org.slf4j.Logger;
@@ -72,9 +73,14 @@ public class Simulate implements Command {
               .setDefault(86400L)
               .metavar("SECONDS")
               .help("Rebuild Period for next build");
+        parser.addArgument("--spec-file")
+              .type(File.class)
+              .metavar("SPEC")
+              .help("load from spec file SPEC");
         parser.addArgument("config")
               .type(File.class)
               .metavar("CONFIG")
+              .nargs("?")
               .help("load algorithm configuration from CONFIG");
     }
 
@@ -92,25 +98,32 @@ public class Simulate implements Command {
     public void execute(Namespace opts) throws IOException, RecommenderBuildException {
 
         Context ctx = new Context(opts);
-        SimulateSpec spec = new SimulateSpec();
+        SimulateSpec spec;
 
-        spec.setListSize(ctx.getListSize());
-        spec.setRebuildPeriod(ctx.getRebuildPeriod());
+        File specFile = opts.get("spec_file");
+        if (specFile != null) {
+            spec = SpecUtils.load(SimulateSpec.class, specFile.toPath());
+        } else {
+            spec = new SimulateSpec();
 
-        spec.setInputFile(ctx.getInputFile().toPath());
-        File out = ctx.getOutputFile();
-        if (out != null) {
-            spec.setOutputFile(out.toPath());
+            spec.setListSize(ctx.getListSize());
+            spec.setRebuildPeriod(ctx.getRebuildPeriod());
+
+            spec.setInputFile(ctx.getInputFile().toPath());
+            File out = ctx.getOutputFile();
+            if (out != null) {
+                spec.setOutputFile(out.toPath());
+            }
+            out = ctx.getExtendedOutputFile();
+            if (out != null) {
+                spec.setExtendedOutputFile(out.toPath());
+            }
+
+            AlgorithmSpec algo = new AlgorithmSpec();
+            File cfg = ctx.getConfigFile();
+            algo.setName(cfg.getName());
+            algo.setConfigFile(cfg.toPath());
         }
-        out = ctx.getExtendedOutputFile();
-        if (out != null) {
-            spec.setExtendedOutputFile(out.toPath());
-        }
-
-        AlgorithmSpec algo = new AlgorithmSpec();
-        File cfg = ctx.getConfigFile();
-        algo.setName(cfg.getName());
-        algo.setConfigFile(cfg.toPath());
 
         TemporalEvaluator eval = new TemporalEvaluator(spec);
         Stopwatch timer = Stopwatch.createStarted();

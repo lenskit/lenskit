@@ -181,7 +181,6 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
 
     @Override
     public AlgorithmInstance build() {
-        AlgorithmInstance instance = new AlgorithmInstance(getName(), getConfigurations(), getAllAttributes());
-        return instance;
+        return new AlgorithmInstance(getName(), getConfigurations(), getAllAttributes());
     }
 }
