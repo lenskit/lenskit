@@ -20,6 +20,7 @@
  */
 package org.lenskit.gradle
 
+import com.google.common.io.Files
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.delegates.DataSetSpecDelegate
@@ -104,8 +105,9 @@ class TrainTest extends LenskitTask {
      */
     void algorithm(String name, file) {
         def aspec = new AlgorithmSpec()
-        aspec.name = name
-        aspec.configFile = project.file(file).toPath()
+        def theFile = project.file(file)
+        aspec.name = name ?: Files.getNameWithoutExtension(theFile.name)
+        aspec.configFile = theFile.toPath()
         spec.addAlgorithm(aspec)
     }
 
