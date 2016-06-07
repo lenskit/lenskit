@@ -102,9 +102,8 @@ allprojects {
 
                 links 'http://docs.oracle.com/javase/7/docs/api/'
                 links 'http://fastutil.di.unimi.it/docs/'
-                links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
+                links "http://google.github.io/guava/releases/$guavaVersion/api/docs/"
                 links 'http://grapht.grouplens.org/apidocs/'
-                links 'https://www.javadoc.io/doc/com.google.auto.service/auto-service/1.0-rc2'
 
                 footer "<script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>"
             }

@@ -42,6 +42,8 @@ apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
 
+ext.guavaVersion = '19.0'
+
 configurations {
     allDeps // collect all external dependencies of all modules
 }
