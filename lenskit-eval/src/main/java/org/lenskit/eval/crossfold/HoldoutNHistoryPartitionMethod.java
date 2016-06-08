@@ -46,4 +46,8 @@ public class HoldoutNHistoryPartitionMethod implements HistoryPartitionMethod {
         return max(0, data.size() - count);
     }
 
+    @Override
+    public String toString() {
+        return String.format("holdout(%d)", count);
+    }
 }

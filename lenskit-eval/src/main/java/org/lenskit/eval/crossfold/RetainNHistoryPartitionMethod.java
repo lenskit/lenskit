@@ -47,4 +47,8 @@ public class RetainNHistoryPartitionMethod implements HistoryPartitionMethod {
         return min(count, data.size());
     }
 
+    @Override
+    public String toString() {
+        return String.format("retain(%d)", count);
+    }
 }
