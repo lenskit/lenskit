@@ -132,10 +132,14 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     @OutputFiles
-    FileCollection getOutputFiles() {
-        return project.fileTree(getOutputDir()) {
-            exclude 'crossfold.json'
+    Collection<File> getOutputFiles() {
+        def files = []
+        for (ds in spec.dataSets) {
+            files.addAll ds.trainSource.inputFiles
+            files.addAll ds.testSource.inputFiles
         }
+        files << getSpecFile()
+        return files
     }
 
     @Override
