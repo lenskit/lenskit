@@ -27,23 +27,23 @@ class ItemMeanData(object):
         return self.global_sum / self.global_count
 
     def item_set(self):
-        return set(self.item_counts.iterkeys())
+        return set(self.item_counts.keys())
 
     def item_mean_offsets(self):
         means = {}
         gmean = self.global_mean()
-        for item, n in self.item_counts.iteritems():
+        for item, n in self.item_counts.items():
             means[item] = self.item_sums[item] / n - gmean
         return gmean, means
 
     def score_items(self, to_score, output):
         global_mean, item_means = self.item_mean_offsets()
-        for user, items in to_score.iteritems():
+        for user, items in to_score.items():
             for item in items:
                 pred = global_mean
                 if item in item_means:
                     pred += item_means[item]
-                print >> output, "%s,%s,%.3f" % (user, item, pred)
+                output.write("%s,%s,%.3f\n" % (user, item, pred))
 
 
 def load_test_pairs(testfile):
