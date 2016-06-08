@@ -45,7 +45,7 @@ import java.nio.file.Path
  *
  * <pre><code class="groovy">
  * includeTimestamps false
- * partitions 10
+ * partitionCount 10
  * </code></pre>
  *
  * @see CrossfoldSpec
