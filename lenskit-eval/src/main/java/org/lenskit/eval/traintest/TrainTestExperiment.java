@@ -35,6 +35,7 @@ import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
 import org.lenskit.specs.eval.*;
+import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
 import org.lenskit.util.table.TableLayout;

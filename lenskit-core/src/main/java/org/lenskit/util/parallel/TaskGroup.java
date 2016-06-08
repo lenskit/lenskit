@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.traintest;
+package org.lenskit.util.parallel;
 
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
@@ -32,7 +32,8 @@ import java.util.concurrent.RecursiveAction;
 /**
  * A group of tasks to be executed in a fork-join tree.
  */
-class TaskGroup extends RecursiveAction {
+public class TaskGroup extends RecursiveAction {
+    private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(TaskGroup.class);
 
     private boolean parallel;
