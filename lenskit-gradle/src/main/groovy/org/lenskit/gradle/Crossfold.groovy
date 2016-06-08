@@ -65,6 +65,31 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         conventionMapping.outputDir = {
             "$project.buildDir/${name}.out"
         }
+        spec.name = name
+    }
+
+    /**
+     * Set the data set name.
+     * @param name The data set name.
+     */
+    void dataSetName(String name) {
+        spec.name = name;
+    }
+
+    /**
+     * Set the data set name.
+     * @param name The data set name.
+     */
+    void setDataSetName(String name) {
+        spec.name = name
+    }
+
+    /**
+     * Get the data set name.
+     * @return The data set name.
+     */
+    String getDataSetName() {
+        return spec.name
     }
 
     /**
@@ -122,7 +147,6 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     void doPrepare() {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
-        spec.name = name
         SpecUtils.write(spec, specFile)
     }
 
