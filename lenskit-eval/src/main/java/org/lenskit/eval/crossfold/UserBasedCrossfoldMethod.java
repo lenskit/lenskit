@@ -22,6 +22,8 @@ package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.history.UserHistory;
@@ -46,7 +48,7 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
 
     public void crossfold(DataSource input, CrossfoldOutput output) throws IOException {
         final int count = output.getCount();
-        logger.info("splitting data source {} to {} partitions by users using {}",
+        logger.info("splitting data source {} to {} partitions by users with method {}",
                     input.getName(), count, partition);
         Long2IntMap splits = splitUsers(input.getUserDAO().getUserIds(), count, output.getRandom());
         splits.defaultReturnValue(-1); // unpartitioned users should only be trained
@@ -89,4 +91,12 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
      * @return A mapping of users to their test partitions.
      */
     protected abstract Long2IntMap splitUsers(LongSet users, int np, Random rng);
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("order", order)
+                .append("partition", partition)
+                .toString();
+    }
 }
