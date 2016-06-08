@@ -21,6 +21,7 @@
 package org.lenskit.gradle
 
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.delegates.SpecDelegate
@@ -131,12 +132,17 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         } ?: []
     }
 
+    @Input
+    CrossfoldSpec getFinalSpec() {
+        def copy = SpecUtils.copySpec(spec)
+        copy.outputDir = getOutputDir()
+        copy
+    }
+
     @OutputFiles
     Collection<File> getOutputFiles() {
-        def copy = SpecUtils.copySpec(spec)
-        copy.setOutputDir(project.file(getOutputDir()).toPath())
         def files = []
-        for (ds in copy.dataSets) {
+        for (ds in finalSpec.dataSets) {
             files.addAll ds.trainSource.inputFiles*.toFile()
             files.addAll ds.testSource.inputFiles*.toFile()
         }
@@ -169,9 +175,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     List<DataSetSpec> getDataSets() {
-        def copy = SpecUtils.copySpec(spec)
-        copy.setOutputDir(project.file(getOutputDir()).toPath())
-        return copy.dataSets
+        return finalSpec.dataSets
     }
 
     /**
