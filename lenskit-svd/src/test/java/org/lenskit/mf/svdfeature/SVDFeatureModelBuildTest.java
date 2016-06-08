@@ -57,6 +57,7 @@ public class SVDFeatureModelBuildTest {
                                                                          new HashSet<>(Arrays.asList(iFeas)),
                                                                          biasSize, factSize, factDim,
                                                                          "rating", "weight", loss, method);
+        entityDAO.close();
         SVDFeatureModel model = modelBuilder.get();
         ObjectOutputStream fout = new ObjectOutputStream(new FileOutputStream(modelFile));
         fout.writeObject(model);

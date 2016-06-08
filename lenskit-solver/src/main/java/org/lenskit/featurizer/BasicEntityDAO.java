@@ -48,4 +48,12 @@ public class BasicEntityDAO implements EntityDAO {
             //TODO: add logging
         }
     }
+
+    public void close() {
+        try {
+            reader.close();
+        } catch (IOException e) {
+
+        }
+    }
 }
