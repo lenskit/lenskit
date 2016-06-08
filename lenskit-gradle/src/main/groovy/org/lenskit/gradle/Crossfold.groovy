@@ -163,14 +163,12 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     void doPrepare() {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
-        SpecUtils.write(spec, specFile)
+        SpecUtils.write(finalSpec, specFile)
     }
 
     @Override
     List getCommandArgs() {
         def args = []
-        args << '-o'
-        args << project.file(getOutputDir())
         args << specFile
     }
 

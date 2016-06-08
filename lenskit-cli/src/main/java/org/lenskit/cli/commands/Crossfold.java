@@ -127,12 +127,12 @@ public class Crossfold implements Command {
                 } else if (method.equals("sample-users")) {
                     cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
                 }
-            }
-        }
 
-        String dir = options.get("output_dir");
-        if (dir != null) {
-            cf.setOutputDir(dir);
+                String dir = options.get("output_dir");
+                if (dir != null) {
+                    cf.setOutputDir(dir);
+                }
+            }
         }
 
         cf.execute();
