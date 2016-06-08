@@ -21,10 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import groovy.lang.Closure;
@@ -52,11 +49,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Sets up and runs train-test evaluations.  This class can be used directly, but it will usually be controlled from
@@ -92,6 +86,8 @@ public class TrainTestExperiment {
     private TableBuilder resultBuilder;
     private Closer resultCloser;
     private ExperimentOutputLayout outputLayout;
+    private List<ExperimentJob> allJobs;
+    private TaskGroup rootJob;
 
     /**
      * Set the primary output file.
@@ -361,8 +357,15 @@ public class TrainTestExperiment {
                 }
 
                 logger.debug("gathering jobs");
-                ListMultimap<UUID,Runnable> jobs = makeJobList();
-                runJobList(jobs);
+                buildJobGraph();
+                int nthreads = getThreadCount();
+                if (nthreads > 1) {
+                    logger.info("running with {} threads", nthreads);
+                    runJobGraph(nthreads);
+                } else {
+                    logger.info("running in a single thread");
+                    runJobList();
+                }
 
                 logger.info("train-test evaluation complete");
                 // done before closing, but that is ok
@@ -441,17 +444,17 @@ public class TrainTestExperiment {
 
 
     /**
-     * Create the list of jobs to run in this experiment.
-     * @return The jobs, as a multimap from isolation group IDs to tasks.
+     * Create the tree of jobs to run in this experiment.
+     * @return The job tree, as a root fork-join task.
      */
-    private ListMultimap<UUID,Runnable> makeJobList() {
+    @Nonnull
+    private void buildJobGraph() {
+        allJobs = new ArrayList<>();
         ComponentCache cache = null;
         if (shareModelComponents) {
             cache = new ComponentCache(cacheDir, classLoader);
         }
-        ListMultimap<UUID, Runnable> jobs = MultimapBuilder.linkedHashKeys()
-                                                           .linkedListValues()
-                                                           .build();
+        Map<UUID,TaskGroup> groups = new HashMap<>();
 
         // set up the roots
         LenskitConfiguration config = new LenskitConfiguration();
@@ -464,75 +467,53 @@ public class TrainTestExperiment {
         // make tasks
         for (DataSet ds: getDataSets()) {
             // TODO support global isolation
-            UUID group = ds.getIsolationGroup();
+            UUID gid = ds.getIsolationGroup();
+            TaskGroup group = groups.get(gid);
+            if (group == null) {
+                group = new TaskGroup(true);
+                groups.put(gid, group);
+            }
             MergePool<Component,Dependency> pool = null;
             if (cache != null) {
                 pool = MergePool.create();
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
                 ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool);
-                jobs.put(group, job);
+                allJobs.add(job);
+                group.addTask(job);
             }
         }
 
-        return jobs;
+        TaskGroup root;
+        if (groups.size() > 1) {
+            root = new TaskGroup(false);
+            for (TaskGroup g: groups.values()) {
+                root.addTask(g);
+            }
+        } else {
+            root = FluentIterable.from(groups.values()).first().orNull();
+        }
+        if (root == null) {
+            throw new IllegalStateException("no jobs defined");
+        }
+        rootJob = root;
     }
 
     /**
-     * Run the jobs.
-     * @param jobs The jobs to run.
+     * Run the jobs in sequence.
      */
-    private void runJobList(ListMultimap<UUID, Runnable> jobs) {
-        ExecutorService service = null;
-        ExecutorCompletionService<Void> ecs = null;
-        int nthreads = getThreadCount();
-        if (nthreads > 1) {
-            logger.info("running with {} threads", nthreads);
-            service = Executors.newFixedThreadPool(nthreads);
-            ecs = new ExecutorCompletionService<>(service);
-        } else {
-            logger.info("running in a single thread");
+    private void runJobList() {
+        Preconditions.checkState(allJobs != null, "job graph not built");
+
+        for (ExperimentJob job: allJobs) {
+            job.execute();
         }
-        try {
-            for (UUID group: jobs.keySet()) {
-                logger.info("running group {}", group);
-                List<Future<?>> results = new ArrayList<>();
-                for (Runnable job: jobs.get(group)) {
-                    if (ecs == null) {
-                        job.run();
-                    } else {
-                        results.add(ecs.submit(job, null));
-                    }
-                }
-                if (ecs != null) {
-                    // handle completion in order, cancelling tasks if we are interrupted or if there is an errors
-                    int remaining = results.size();
-                    while (remaining > 0) {
-                        try {
-                            Future<Void> r = ecs.take();
-                            r.get();
-                            remaining -= 1;
-                        } catch (InterruptedException ex) {
-                            logger.debug("thread interrupted, cancelling", ex);
-                            for (Future<?> r: results) {
-                                r.cancel(true);
-                            }
-                            // FIXME What should we do with remaining here?
-                        } catch (ExecutionException ex) {
-                            Throwables.propagateIfInstanceOf(ex.getCause(), EvaluationException.class);
-                            for (Future<?> r: results) {
-                                r.cancel(true);
-                            }
-                            throw new EvaluationException("error running evaluation", ex.getCause());
-                        }
-                    }
-                }
-            }
-        } finally{
-            if (service != null) {
-                service.shutdown();
-            }
-        }
+    }
+
+    private void runJobGraph(int nthreads) {
+        Preconditions.checkState(rootJob != null, "job graph not built");
+        ForkJoinPool pool = new ForkJoinPool(nthreads);
+        pool.invoke(rootJob);
     }
 
     public static TrainTestExperiment fromSpec(TrainTestExperimentSpec spec) {

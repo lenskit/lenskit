@@ -53,12 +53,13 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Individual job evaluating a single experimental condition.
  */
-class ExperimentJob implements Runnable {
+class ExperimentJob extends RecursiveAction {
     private static final Logger logger = LoggerFactory.getLogger(ExperimentJob.class);
 
     private final TrainTestExperiment experiment;
@@ -85,7 +86,7 @@ class ExperimentJob implements Runnable {
     }
 
     @Override
-    public void run() {
+    protected void compute() {
         ExperimentOutputLayout layout = experiment.getOutputLayout();
         TableWriter globalOutput = layout.prefixTable(experiment.getGlobalOutput(),
                                                       dataSet, algorithm);
@@ -222,5 +223,12 @@ class ExperimentJob implements Runnable {
             }
         }
         return new LenskitRecommender(graph);
+    }
+
+    /**
+     * Execute this job immediately.
+     */
+    public void execute() {
+        compute();
     }
 }
