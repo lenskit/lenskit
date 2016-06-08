@@ -133,12 +133,14 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     @OutputFiles
     Collection<File> getOutputFiles() {
+        def copy = SpecUtils.copySpec(spec)
+        copy.setOutputDir(project.file(getOutputDir()).toPath())
         def files = []
-        for (ds in spec.dataSets) {
-            files.addAll ds.trainSource.inputFiles
-            files.addAll ds.testSource.inputFiles
+        for (ds in copy.dataSets) {
+            files.addAll ds.trainSource.inputFiles*.toFile()
+            files.addAll ds.testSource.inputFiles*.toFile()
         }
-        files << getSpecFile()
+        files << getSpecFile().toFile()
         return files
     }
 
