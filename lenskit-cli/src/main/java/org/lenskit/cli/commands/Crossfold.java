@@ -79,59 +79,60 @@ public class Crossfold implements Command {
             cf = Crossfolder.fromSpec(spec);
         } else {
             cf = new Crossfolder();
-        }
 
-        DataSource src = input.getSource();
-        if (src != null) {
-            cf.setSource(src);
-        }
-        Integer k = options.get("partitions");
-        if (k != null) {
-            cf.setPartitionCount(k);
+            DataSource src = input.getSource();
+            if (src != null) {
+                cf.setSource(src);
+            }
+            Integer k = options.get("partitions");
+            if (k != null) {
+                cf.setPartitionCount(k);
+            }
+
+            if (options.getBoolean("pack_output")) {
+                cf.setOutputFormat(OutputFormat.PACK);
+            }
+            if (!options.getBoolean("use_timestamps")) {
+                cf.setWriteTimestamps(false);
+            }
+
+            String method = options.get("crossfold_mode");
+            if (method == null) {
+                method = "partition-users";
+            }
+
+            if (method.equals("partition-ratings")) {
+                cf.setMethod(CrossfoldMethods.partitionRatings());
+            } else {
+                String order = options.get("order");
+                SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.TIMESTAMP;
+
+                HistoryPartitionMethod part = HistoryPartitions.holdout(10);
+                Integer n;
+                Double v;
+                if ((n = options.get("holdout_count")) != null) {
+                    part = HistoryPartitions.holdout(n);
+                }
+                if ((n = options.get("retain_count")) != null) {
+                    part = HistoryPartitions.retain(n);
+                }
+                if ((v = options.get("holdout_fraction")) != null) {
+                    part = HistoryPartitions.holdoutFraction(v);
+                }
+
+                n = options.get("sample_size");
+
+                if (method.equals("partition-users")) {
+                    cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
+                } else if (method.equals("sample-users")) {
+                    cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
+                }
+            }
         }
 
         String dir = options.get("output_dir");
         if (dir != null) {
             cf.setOutputDir(dir);
-        }
-        if (options.getBoolean("pack_output")) {
-            cf.setOutputFormat(OutputFormat.PACK);
-        }
-        if (!options.getBoolean("use_timestamps")) {
-            cf.setWriteTimestamps(false);
-        }
-
-        String method = options.get("crossfold_mode");
-        if (method == null) {
-            method = "partition-users";
-        }
-
-        if (method.equals("partition-ratings")) {
-            cf.setMethod(CrossfoldMethods.partitionRatings());
-        } else {
-            String order = options.get("order");
-            SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.TIMESTAMP;
-
-            HistoryPartitionMethod part = HistoryPartitions.holdout(10);
-            Integer n;
-            Double v;
-            if ((n = options.get("holdout_count")) != null) {
-                part = HistoryPartitions.holdout(n);
-            }
-            if ((n = options.get("retain_count")) != null) {
-                part = HistoryPartitions.retain(n);
-            }
-            if ((v = options.get("holdout_fraction")) != null) {
-                part = HistoryPartitions.holdoutFraction(v);
-            }
-
-            n = options.get("sample_size");
-
-            if (method.equals("partition-users")) {
-                cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
-            } else if (method.equals("sample-users")) {
-                cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
-            }
         }
 
         cf.execute();
