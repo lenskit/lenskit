@@ -135,7 +135,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Input
     CrossfoldSpec getFinalSpec() {
         def copy = SpecUtils.copySpec(spec)
-        copy.outputDir = getOutputDir()
+        copy.outputDir = getOutputDir()?.toPath()
         copy
     }
 
