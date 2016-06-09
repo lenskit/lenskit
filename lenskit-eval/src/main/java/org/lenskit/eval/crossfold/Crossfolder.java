@@ -92,13 +92,20 @@ public class Crossfolder {
         HistoryPartitionMethod part = null;
         PartitionMethodSpec pm = spec.getUserPartitionMethod();
         if (pm != null) {
+            logger.debug("configuring partition method");
             order = SortOrder.fromString(pm.getOrder());
             if (pm instanceof PartitionMethodSpec.Holdout) {
-                part = HistoryPartitions.holdout(((PartitionMethodSpec.Holdout) pm).getCount());
+                int count = ((PartitionMethodSpec.Holdout) pm).getCount();
+                logger.debug("configuring holdout of {}", count);
+                part = HistoryPartitions.holdout(count);
             } else if (pm instanceof PartitionMethodSpec.HoldoutFraction) {
-                part = HistoryPartitions.holdoutFraction(((PartitionMethodSpec.HoldoutFraction) pm).getFraction());
+                double fraction = ((PartitionMethodSpec.HoldoutFraction) pm).getFraction();
+                logger.debug("configuring fraction of {}", fraction);
+                part = HistoryPartitions.holdoutFraction(fraction);
             } else if (pm instanceof PartitionMethodSpec.Retain) {
-                part = HistoryPartitions.retain(((PartitionMethodSpec.Retain) pm).getCount());
+                int count = ((PartitionMethodSpec.Retain) pm).getCount();
+                logger.debug("configuring retain of {}", count);
+                part = HistoryPartitions.retain(count);
             } else {
                 throw new IllegalArgumentException("invalid partition method " + pm);
             }
@@ -106,12 +113,15 @@ public class Crossfolder {
 
         switch (spec.getMethod()) {
         case PARTITION_RATINGS:
+            logger.debug("will partition ratings");
             cf.setMethod(CrossfoldMethods.partitionRatings());
             break;
         case PARTITION_USERS:
+            logger.debug("will partition users");
             cf.setMethod(CrossfoldMethods.partitionUsers(order, part));
             break;
         case SAMPLE_USERS:
+            logger.debug("will sample users");
             cf.setMethod(CrossfoldMethods.sampleUsers(order, part, spec.getSampleSize()));
             break;
         }
@@ -345,6 +355,7 @@ public class Crossfolder {
     private void createTTFiles() throws IOException {
         Files.createDirectories(outputDir);
         try (CrossfoldOutput out = new CrossfoldOutput(this, rng)) {
+            logger.info("running crossfold method {}", method);
             method.crossfold(source, out);
         }
 

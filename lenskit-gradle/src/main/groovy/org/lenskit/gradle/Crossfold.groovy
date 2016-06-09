@@ -21,6 +21,7 @@
 package org.lenskit.gradle
 
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.delegates.SpecDelegate
@@ -45,7 +46,7 @@ import java.nio.file.Path
  *
  * <pre><code class="groovy">
  * includeTimestamps false
- * partitions 10
+ * partitionCount 10
  * </code></pre>
  *
  * @see CrossfoldSpec
@@ -65,6 +66,31 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         conventionMapping.outputDir = {
             "$project.buildDir/${name}.out"
         }
+        spec.name = name
+    }
+
+    /**
+     * Set the data set name.
+     * @param name The data set name.
+     */
+    void dataSetName(String name) {
+        spec.name = name;
+    }
+
+    /**
+     * Set the data set name.
+     * @param name The data set name.
+     */
+    void setDataSetName(String name) {
+        spec.name = name
+    }
+
+    /**
+     * Get the data set name.
+     * @return The data set name.
+     */
+    String getDataSetName() {
+        return spec.name
     }
 
     /**
@@ -106,11 +132,26 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         } ?: []
     }
 
+    CrossfoldSpec getFinalSpec() {
+        def copy = SpecUtils.copySpec(spec)
+        copy.outputDir = project.file(getOutputDir()).toPath()
+        copy
+    }
+
+    @Input
+    String getFinalSpecJSON() {
+        SpecUtils.stringify(finalSpec)
+    }
+
     @OutputFiles
-    FileCollection getOutputFiles() {
-        return project.fileTree(getOutputDir()) {
-            exclude 'crossfold.json'
+    Collection<File> getOutputFiles() {
+        def files = []
+        for (ds in finalSpec.dataSets) {
+            files.addAll ds.trainSource.inputFiles*.toFile()
+            files.addAll ds.testSource.inputFiles*.toFile()
         }
+        files << getSpecFile().toFile()
+        return files
     }
 
     @Override
@@ -122,15 +163,12 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     void doPrepare() {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
-        spec.name = name
-        SpecUtils.write(spec, specFile)
+        SpecUtils.write(finalSpec, specFile)
     }
 
     @Override
     List getCommandArgs() {
         def args = []
-        args << '-o'
-        args << project.file(getOutputDir())
         args << specFile
     }
 
@@ -139,9 +177,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     List<DataSetSpec> getDataSets() {
-        def copy = SpecUtils.copySpec(spec)
-        copy.setOutputDir(project.file(getOutputDir()).toPath())
-        return copy.dataSets
+        return finalSpec.dataSets
     }
 
     /**
