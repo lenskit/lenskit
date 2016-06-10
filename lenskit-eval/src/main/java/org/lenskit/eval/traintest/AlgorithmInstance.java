@@ -131,16 +131,16 @@ public class AlgorithmInstance {
     /**
      * Build a recommender graph (but don't instantiate any objects).
      *
-     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
-     *                 algorithm's configuration, so it is overridden if appropriate.  It is used
+     * @param defaults Additional configurations.  These configurations come <em>before</em> the
+     *                 algorithm's configuration, so they are overridden if appropriate.  They are used
      *                 for providing things such as DAOs.
      * @return The recommender graph.
      * @throws RecommenderConfigurationException if there is an error configuring the recommender.
      */
-    public DAGNode<Component,Dependency> buildRecommenderGraph(@Nullable LenskitConfiguration defaults) throws RecommenderConfigurationException {
+    public DAGNode<Component,Dependency> buildRecommenderGraph(@Nullable LenskitConfiguration... defaults) throws RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-        if (defaults != null) {
-            rgb.addConfiguration(defaults);
+        for (LenskitConfiguration dft: defaults) {
+            rgb.addConfiguration(dft);
         }
         for (LenskitConfiguration cfg: configurations) {
             rgb.addConfiguration(cfg);

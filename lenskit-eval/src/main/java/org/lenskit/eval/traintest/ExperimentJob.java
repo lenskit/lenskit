@@ -32,6 +32,8 @@ import org.grouplens.grapht.graph.MergePool;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.ItemListItemDAO;
 import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.History;
@@ -196,6 +198,17 @@ class ExperimentJob extends RecursiveAction {
         logger.debug("Starting recommender build");
         LenskitConfiguration dataConfig = new LenskitConfiguration(sharedConfig);
         dataSet.configure(dataConfig);
+
+        LenskitConfiguration extraConfig = new LenskitConfiguration();
+
+        // Fix the train items
+        LongSet trainItems = dataSet.getTrainingData().getItemDAO().getItemIds();
+        LongSet allItems = dataSet.getAllItems();
+        if (!trainItems.containsAll(allItems)) {
+            logger.info("train data is missing items, overriding item DAO");
+            extraConfig.bind(ItemDAO.class).to(new ItemListItemDAO(allItems));
+        }
+
         DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(dataConfig);
         if (mergePool != null) {
             logger.debug("deduplicating configuration graph");
