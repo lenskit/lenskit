@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.*;
@@ -33,22 +32,19 @@ import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.math.Scalars;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**
- *Measure the nDPM of the top-N recommendations, using rankings.
-
+ * Measure the nDPM of the top-N recommendations, using rankings.
  * This metric is registered with the type name `ndpm`.
-
- * Created by VaibhavMahant on 2/1/16.
+ * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf.
  */
-
 public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
     public static final String DEFAULT_COLUMN = "TopN.nDPM";
-    private final String columnName;
 
     /**
      * Construct a top-N nDCG metric from a spec.
@@ -58,16 +54,14 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
     public TopNNDPMMetric(Spec spec) {this(spec.getColumnName());
     }
 
-
     /**
      * Construct a new nDPM Top-N metric.
-     * @param name The column name to use.
      */
     public TopNNDPMMetric(String name) {
         super(Collections.singletonList(StringUtils.defaultString(name, DEFAULT_COLUMN)),
               Collections.singletonList(StringUtils.defaultString(name, DEFAULT_COLUMN)));
-        columnName = StringUtils.defaultString(name, DEFAULT_COLUMN);
     }
+
     @Nullable
     @Override
     public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
@@ -77,64 +71,97 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(MeanAccumulator context) {
-        return MetricResult.singleton(columnName, context.getMean());
+        return MetricResult.singleton(DEFAULT_COLUMN, context.getMean());
     }
-
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
 
         Long2DoubleMap ratings = user.getTestRatings();
-        long[] ideal = ratings.keySet().toLongArray();
-        LongArrays.quickSort(ideal, LongComparators.oppositeComparator(LongUtils.keyValueComparator(ratings)));
 
         long[] actual = LongUtils.asLongCollection(recommendations.idList()).toLongArray();
 
-        double dpm = computeDPM(ideal, actual, ratings);
+        double dpm = computeDPM(actual, ratings);
 
-        double nDPM = dpm / 2 * dpm; // Normalized nDPM
+        double normalizingFactor = computeNormalizingFactor(actual, ratings);
+
+        double nDPM = dpm / normalizingFactor; // Normalized nDPM
 
         context.add(nDPM);
-        return MetricResult.singleton(columnName, nDPM);
 
-
+        return MetricResult.singleton(DEFAULT_COLUMN, nDPM);
     }
+
     /**
      * Compute dpm of list of items, with respect to user's ratings.
      */
 
-    double computeDPM(long [] ideal_items, long [] actual_item, Long2DoubleFunction value) {
-        double dpm;
-        int counterOne = 0;
-        int counterTwo = 0;
-        double valueOne = 0;
-        double valueTwo = 0;
+    double computeDPM(long [] actual_item, Long2DoubleFunction value) {
+        int nCompatible = 0;
+        int nDisagree = 0;
+
         for(int i = 0; i < actual_item.length; i++){
-            for(int j = i+1; i < actual_item.length; i++){
-                for(int k = 0; k < ideal_items.length; k++) {
-                    if (actual_item[i] == ideal_items[k]) {
-                        valueOne = value.get(ideal_items[k]);
-                        for(int l = 0; l < ideal_items.length; l++) {
-                            if (actual_item[j] == ideal_items[l]) {
-                                valueTwo = value.get(ideal_items[k]);
-                            }
+            for(int j = i+1; j < actual_item.length; j++){
+                double valueOne;
+                double valueTwo;
+
+                if (value.containsKey(actual_item[i])) {
+                    valueOne = value.get(actual_item[i]);
+
+                    if (value.containsKey(actual_item[j])) {
+                        valueTwo = value.get(actual_item[j]);
+
+                        if (Scalars.isZero(valueOne - valueTwo)) {
+                            nCompatible++;
+                        }
+                        if(valueOne < valueTwo){
+                            nDisagree++;
                         }
                     }
                 }
-                if(valueOne < valueTwo)
-                    counterOne++;
-                if(valueOne == valueTwo)
-                    counterTwo++;
             }
         }
 
-        dpm = (2 * counterOne) + counterTwo;
+        double dpm = (2 * nDisagree) + nCompatible;
 
         return dpm;
+    }
+
+    double computeNormalizingFactor(long [] actual_item, Long2DoubleFunction value) {
+        int npairs = 0;
+
+        for(int i = 0; i < actual_item.length; i++) {
+            for(int j = i+1; j < actual_item.length; j++) {
+                double valueOne;
+                double valueTwo;
+
+                if (value.containsKey(actual_item[i])) {
+                    valueOne = value.get(actual_item[i]);
+
+                    if (value.containsKey(actual_item[j])) {
+                        valueTwo = value.get(actual_item[j]);
+                        if(valueOne < valueTwo || valueOne > valueTwo) {
+                            npairs++;
+                        }
+                    }
+                }
+            }
+        }
+
+        double denominator;
+
+        if(npairs > 0){
+            denominator = 2 * npairs;
+        }
+        else{
+            denominator = 1;
+        }
+
+        return denominator;
     }
 
     /**
@@ -143,13 +170,8 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
     @JsonIgnoreProperties("type")
     public static class Spec extends AbstractSpec {
 
-        private String name;
-
         public String getColumnName() {
-            return name;
+            return DEFAULT_COLUMN;
         }
-        public void setColumnName(String name) { this.name = name; }
     }
 }
-
-

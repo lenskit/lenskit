@@ -18,7 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.hybrid;
+
+import org.grouplens.grapht.annotation.DefaultDouble;
+import org.lenskit.inject.Parameter;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
 /**
- * Utilities for parallel computation.
+ * Blending weight for two-element hybrids.
+ *
+ * For a blending weight $0 \le 0 \le 1$, a blending hybrid will mix scores from *left* and *right* recommenders such
+ * that $s = w s_l + (1-w) s_r$.
+ *
+ * @see RankBlendingItemRecommender.Left
+ * @see RankBlendingItemRecommender.Right
  */
-package org.grouplens.lenskit.util.parallel;
+@Qualifier
+@Documented
+@Parameter(Double.class)
+@DefaultDouble(0.5)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+public @interface BlendWeight {
+}

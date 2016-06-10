@@ -48,7 +48,7 @@ public abstract class MetricResult {
             return this;
         }
 
-        Map<String,Object> newData = new HashMap();
+        Map<String,Object> newData = new HashMap<>();
         for (Map.Entry<String,Object> e: getValues().entrySet()) {
             newData.put(e.getKey() + "." + sfx, e.getValue());
         }
@@ -67,7 +67,7 @@ public abstract class MetricResult {
             return this;
         }
 
-        Map<String,Object> newData = new HashMap();
+        Map<String,Object> newData = new HashMap<>();
         for (Map.Entry<String,Object> e: getValues().entrySet()) {
             newData.put(pfx + "." + e.getKey(), e.getValue());
         }

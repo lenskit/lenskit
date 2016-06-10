@@ -24,8 +24,9 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.grouplens.lenskit.collections.LongUtils;
+import org.lenskit.api.Recommender;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.util.collections.LongUtils;
 
 import java.util.Random;
 import java.util.Set;
@@ -34,7 +35,14 @@ import java.util.Set;
  * Select items for use in recommendation or
  */
 public abstract class ItemSelector {
-    public abstract LongSet selectItems(LongSet universe, TestUser user);
+    /**
+     * Select a set of items for recommendation.
+     * @param universe The universe of all items.
+     * @param recommender The recommender, in case additional information is needed form it.
+     * @param user The user being tested.
+     * @return A set of items.
+     */
+    public abstract LongSet selectItems(LongSet universe, Recommender recommender, TestUser user);
 
     /**
      * Get an item selector that returns null.  When used as the set of candidate items, this will select the default
@@ -83,31 +91,70 @@ public abstract class ItemSelector {
         return new GroovyItemSelector((ItemSelectScript) script, expr);
     }
 
+    public static ItemSelector allItems() {
+        return compileSelector("allItems");
+    }
+
     public static ItemSelector userTestItems() {
         // FIXME Cache this selector
         return compileSelector("user.testItems");
     }
 
+    /**
+     * Base class defining the environment in which item selectors are evaluated.
+     */
     public abstract static class ItemSelectScript extends Script {
         private final Random random = new Random();
         private LongSet allItems;
         private TestUser testUser;
+        private Recommender recommender;
 
-        void setup(LongSet universe, TestUser user) {
+        void setup(LongSet universe, Recommender rec, TestUser user) {
             allItems = universe;
             testUser = user;
+            recommender = rec;
         }
 
+        /**
+         * Get the recommender object.
+         * @return The recommender object.
+         */
+        public Recommender getRecommender() {
+            return recommender;
+        }
+
+        /**
+         * Get the set of all items.
+         * @return The set of all items.
+         */
         public LongSet getAllItems() {
             return allItems;
         }
 
+        /**
+         * Get the user being tested.
+         * @return The user being tested, with their training and test data.
+         */
         public TestUser getUser() {
             return testUser;
         }
 
+        /**
+         * Pick a random subset of a set of items.
+         * @param items The set of items to pick from.
+         * @param n the number of items to select.
+         * @return A random subset of `items` of size at most `n`.
+         */
         public LongSet pickRandom(Set<Long> items, int n) {
             return LongUtils.randomSubset(LongUtils.asLongSet(items), n, random);
+        }
+
+        /**
+         * Method that returns all items except the ones present in the user's test
+         * or train sets.
+         */
+        public LongSet getUnseenItems(TestUser user){
+            return LongUtils.setDifference(allItems, user.getSeenItems());
         }
     }
 
@@ -133,8 +180,8 @@ public abstract class ItemSelector {
 
         @SuppressWarnings("unchecked")
         @Override
-        public LongSet selectItems(LongSet universe, TestUser user) {
-            script.setup(universe, user);
+        public LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
+            script.setup(universe, recommender, user);
             Set<Long> set = (Set<Long>) script.run();
             return LongUtils.asLongSet(set);
         }
@@ -147,7 +194,7 @@ public abstract class ItemSelector {
 
     private static class NullItemSelector extends ItemSelector {
         @Override
-        public LongSet selectItems(LongSet universe, TestUser user) {
+        public LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
             return null;
         }
 
@@ -165,7 +212,7 @@ public abstract class ItemSelector {
         }
 
         @Override
-        public LongSet selectItems(LongSet universe, TestUser user) {
+        public LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
             return items;
         }
 

@@ -32,6 +32,8 @@ import org.grouplens.grapht.graph.MergePool;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.ItemListItemDAO;
 import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.History;
@@ -53,12 +55,13 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Individual job evaluating a single experimental condition.
  */
-class ExperimentJob implements Runnable {
+class ExperimentJob extends RecursiveAction {
     private static final Logger logger = LoggerFactory.getLogger(ExperimentJob.class);
 
     private final TrainTestExperiment experiment;
@@ -85,7 +88,7 @@ class ExperimentJob implements Runnable {
     }
 
     @Override
-    public void run() {
+    protected void compute() {
         ExperimentOutputLayout layout = experiment.getOutputLayout();
         TableWriter globalOutput = layout.prefixTable(experiment.getGlobalOutput(),
                                                       dataSet, algorithm);
@@ -195,6 +198,17 @@ class ExperimentJob implements Runnable {
         logger.debug("Starting recommender build");
         LenskitConfiguration dataConfig = new LenskitConfiguration(sharedConfig);
         dataSet.configure(dataConfig);
+
+        LenskitConfiguration extraConfig = new LenskitConfiguration();
+
+        // Fix the train items
+        LongSet trainItems = dataSet.getTrainingData().getItemDAO().getItemIds();
+        LongSet allItems = dataSet.getAllItems();
+        if (!trainItems.containsAll(allItems)) {
+            logger.info("train data is missing items, overriding item DAO");
+            extraConfig.bind(ItemDAO.class).to(new ItemListItemDAO(allItems));
+        }
+
         DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(dataConfig);
         if (mergePool != null) {
             logger.debug("deduplicating configuration graph");
@@ -222,5 +236,12 @@ class ExperimentJob implements Runnable {
             }
         }
         return new LenskitRecommender(graph);
+    }
+
+    /**
+     * Execute this job immediately.
+     */
+    public void execute() {
+        compute();
     }
 }

@@ -138,7 +138,7 @@ public class ItemItemScorer extends AbstractItemScorer {
 
     protected ItemItemResult scoreItem(Long2DoubleMap userData, long item) {
         SparseVector allNeighbors = model.getNeighbors(item);
-        ScoredItemAccumulator acc = null;
+        ScoredItemAccumulator acc;
         if (neighborhoodSize > 0) {
             // FIXME Abstract accumulator selection logic
             acc = new TopNScoredItemAccumulator(neighborhoodSize);

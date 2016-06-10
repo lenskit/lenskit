@@ -74,6 +74,7 @@ public class Main {
             logger.info("If you use LensKit in published research, please see http://lenskit.org/research/");
         } catch (ArgumentParserException e) {
             parser.handleError(e);
+            System.exit(1);
         } catch (Exception e) {
             logger.error("error running command: " + e, e);
             System.exit(2);

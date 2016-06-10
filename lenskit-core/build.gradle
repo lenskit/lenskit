@@ -41,7 +41,7 @@ dependencies {
     compile project(':lenskit-api')
     compile project(':lenskit-specs')
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.11.0-SNAPSHOT'
-    compile group: 'com.google.guava', name: 'guava', version: '18.0'
+    compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     compile group: 'org.joda', name: 'joda-convert', version: '1.8.1'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
@@ -64,7 +64,8 @@ task checkAnnotations(type: JavaCompile, dependsOn: classes) {
     source sourceSets.main.java
     classpath = sourceSets.main.compileClasspath
     destinationDir = file("$buildDir/check-output")
-    
+
+    options.fork = false
     options.compilerArgs << '-proc:only'
 }
 check.dependsOn checkAnnotations

@@ -43,7 +43,7 @@ class TopNPrecisionRecallMetricTest {
     @Before
     public void createMetric() {
         metric = new TopNPrecisionRecallMetric(ItemSelector.compileSelector('user.testItems'), null)
-        accum = new TopNPrecisionRecallMetric.Context(universe)
+        accum = new TopNPrecisionRecallMetric.Context(universe, null)
         user = TestUser.newBuilder()
                        .setUserId(42)
                        .addTestEvent(Rating.create(42L, 1L, 3.5),
@@ -69,7 +69,7 @@ class TopNPrecisionRecallMetricTest {
     public void testAllGood() {
         def recs = Results.newResultList([Results.create(1, 4.0),
                                           Results.create(5, 3.5)])
-        def result = metric.measureUser(user, recs, accum) as TopNPrecisionRecallMetric.PresRecResult
+        def result = metric.measureUser(user, -1, recs, accum) as TopNPrecisionRecallMetric.PresRecResult
         assertThat result.precision, closeTo(1.0d, 0.00001d)
         assertThat result.recall, closeTo(1.0d, 0.00001d)
         assertThat result.f1, closeTo(1.0d, 0.00001d)
@@ -83,7 +83,7 @@ class TopNPrecisionRecallMetricTest {
     public void testNoGood() {
         def recs = Results.newResultList([Results.create(10, 4.0),
                                           Results.create(25, 3.5)])
-        def result = metric.measureUser(user, recs, accum) as TopNPrecisionRecallMetric.PresRecResult
+        def result = metric.measureUser(user, -1, recs, accum) as TopNPrecisionRecallMetric.PresRecResult
         assertThat result.precision, closeTo(0.0d, 0.00001d)
         assertThat result.recall, closeTo(0.0d, 0.00001d)
         assertThat result.f1, closeTo(0.0d, 0.00001d)
@@ -98,7 +98,7 @@ class TopNPrecisionRecallMetricTest {
         def recs = Results.newResultList([Results.create(1, 4.0),
                                           Results.create(25, 3.5),
                                           Results.create(32, 2.5)])
-        def result = metric.measureUser(user, recs, accum) as TopNPrecisionRecallMetric.PresRecResult
+        def result = metric.measureUser(user, -1, recs, accum) as TopNPrecisionRecallMetric.PresRecResult
         assertThat result.precision, closeTo(1.0d / 3, 0.00001d)
         assertThat result.recall, closeTo(0.5d, 0.00001d)
         assertThat result.f1, closeTo(0.4d, 0.00001d)

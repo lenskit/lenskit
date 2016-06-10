@@ -57,7 +57,6 @@ public abstract class TypedMetricResult extends MetricResult {
         if (type == null) {
             return Collections.emptyList();
         }
-
         List<ColumnDesc> columns = getColumnInfo(type);
 
         Ordering<ColumnDesc> order = Ordering.natural()
@@ -96,7 +95,7 @@ public abstract class TypedMetricResult extends MetricResult {
 
     private static List<ColumnDesc> getColumnInfo(Class<?> cls) {
         Class<?> type = cls;
-        List<ColumnDesc> columns = new ArrayList();
+        List<ColumnDesc> columns = new ArrayList<>();
         while (type != null) {
             for (Field f: type.getDeclaredFields()) {
                 MetricColumn info = f.getAnnotation(MetricColumn.class);

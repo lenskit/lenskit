@@ -18,28 +18,42 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.parallel;
+package org.lenskit.gradle.delegates
 
-import org.grouplens.grapht.graph.DAGNode;
+import org.gradle.api.Project
+import org.lenskit.gradle.traits.DataSources
+import org.lenskit.specs.eval.DataSetSpec
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+class DataSetSpecDelegate extends SpecDelegate implements DataSources {
+    DataSetSpec dss
 
-/**
- * Single-threaded (sequential) task graph executor.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-class SequentialTaskGraphExecutor extends TaskGraphExecutor {
-    @Override
-    public <T extends Callable<?>,E> void execute(DAGNode<T,E> graph) throws ExecutionException, InterruptedException {
-        for (DAGNode<T,?> node: graph.getSortedNodes()) {
-            try {
-                node.getLabel().call();
-            } catch (InterruptedException ex) {
-                throw ex;
-            } catch (Throwable th) { // NOSONAR propagating error
-                throw new ExecutionException("error in graph task", th);
-            }
-        }
+    public DataSetSpecDelegate(Project prj, DataSetSpec spec) {
+        super(prj, spec);
+        dss = spec;
+    }
+
+    /**
+     * Get the map of attributes in the spec.
+     * @return The spec's attributes
+     */
+    public Map<String,Object> getAttributes() {
+        return dss.attributes
+    }
+
+    /**
+     * Add an attribute.
+     * @param name The attribute name.
+     * @param val The attribute value.
+     */
+    public void attribute(String name, Object val) {
+        dss.attributes[name] = val
+    }
+
+    /**
+     * Add one or more attributes.
+     * @param attrs The attributes to add.
+     */
+    public void attributes(Map<String,Object> attrs) {
+        dss.attributes.putAll(attrs);
     }
 }

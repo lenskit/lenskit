@@ -22,11 +22,13 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
+import org.lenskit.util.collections.LongUtils;
 
 /**
  * A test user's data.
@@ -37,6 +39,7 @@ public class TestUser {
     private final UserHistory<Event> trainHistory;
     private final UserHistory<Event> testHistory;
     private transient volatile Long2DoubleMap testRatings;
+    private transient volatile LongSet seenItems;
 
     /**
      * Construct a new test user object.
@@ -98,8 +101,20 @@ public class TestUser {
     }
 
     /**
+     * The set of items this user has *seen* in either training or test.
+     * @return The set of all seen items (training and test).
+     */
+    public LongSet getSeenItems() {
+        if (seenItems == null) {
+            LongSet items = new LongOpenHashSet(getTrainItems());
+            items.addAll(getTestItems());
+            seenItems = items;
+        }
+        return seenItems;
+    }
+
+    /**
      * Get the user's test ratings.
-     * <p/>
      * Summarizes the user's ratings from the history.
      *
      * @return The user's ratings for the test items.
@@ -111,8 +126,3 @@ public class TestUser {
         return testRatings;
     }
 }
-    /**
-     * Method that returns all items except the ones present in the user's test
-     * or train sets.
-     */
-

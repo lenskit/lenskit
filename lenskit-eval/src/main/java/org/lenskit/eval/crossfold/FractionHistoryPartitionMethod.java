@@ -48,4 +48,9 @@ public class FractionHistoryPartitionMethod implements HistoryPartitionMethod {
         int n = (int) round(data.size() * fraction);
         return max(0, data.size() - n);
     }
+
+    @Override
+    public String toString() {
+        return String.format("fraction(%f)", fraction);
+    }
 }

@@ -20,6 +20,7 @@
  */
 package org.lenskit;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,13 +41,15 @@ public final class LenskitInfo {
     private static final Logger logger = LoggerFactory.getLogger(LenskitInfo.class);
     private static SoftReference<Set<String>> revisionSet;
 
+    private LenskitInfo() {
+    }
+
     private static Set<String> loadRevisionSet() {
         ImmutableSet.Builder<String> revisions = ImmutableSet.builder();
         InputStream input = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/git-commits.lst");
         if (input != null) {
-            try {
-                Reader reader = new InputStreamReader(input);
-                BufferedReader lines = new BufferedReader(reader);
+            try (Reader reader = new InputStreamReader(input, Charsets.UTF_8);
+                 BufferedReader lines = new BufferedReader(reader)) {
                 String line;
                 while ((line = lines.readLine()) != null) {
                     revisions.add(StringUtils.trim(line));

@@ -23,6 +23,7 @@ package org.lenskit.gradle.traits
 import org.gradle.api.Project
 import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.data.DataSourceSpec
+import org.lenskit.specs.data.PackedDataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 
 /**
@@ -33,12 +34,38 @@ trait DataSources {
 
     /**
      * Configure a text file data source.
-     * @param block The configuration block, used to configure a {@link TextDataSourceSpec}.
+     * @param block The configuration block, used to configureSpec a {@link TextDataSourceSpec}.
      * @return A JSON specification of a text file data source.
      * @see TextDataSourceSpec
      * @see SpecDelegate
      */
     DataSourceSpec textFile(Closure block) {
-        SpecDelegate.configure(TextDataSourceSpec, block)
+        SpecDelegate.configureSpec(project, TextDataSourceSpec, block)
+    }
+
+    /**
+     * Configure a rating CSV file data source.
+     * @param fn The file to use.
+     * @return A JSON specification of a text file data source.
+     * @see TextDataSourceSpec
+     * @see SpecDelegate
+     */
+    DataSourceSpec textFile(Object fn) {
+        def f = project.file(fn)
+        return textFile {
+            file f.toPath()
+        }
+    }
+
+    /**
+     * Construct a data source for a pack file.
+     * @param fn The name of the pack file.
+     * @return The data source spec.
+     */
+    DataSourceSpec packFile(Object fn) {
+        def f = project.file(fn)
+        def spec = new PackedDataSourceSpec()
+        spec.file = f.toPath()
+        return spec
     }
 }

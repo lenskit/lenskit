@@ -12,6 +12,6 @@ local.gradle
 *.iml
 *.ipr
 *.iws
-
+.DS_Store
 TAGS
 ERRS

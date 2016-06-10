@@ -60,7 +60,7 @@ public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, Context context) {
         context.addUser(recommendations);
         return MetricResult.empty();
     }

@@ -20,21 +20,22 @@
  */
 package org.lenskit.gradle
 
+import com.google.common.io.Files
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.delegates.DataSetSpecDelegate
 import org.lenskit.gradle.delegates.EvalTaskDelegate
 import org.lenskit.gradle.delegates.SpecDelegate
+import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.*
 
 /**
  * Run a train-test evaluation.
- *
- * @see http://mooc.lenskit.org/documentation/evaluator/train-test/
  */
 class TrainTest extends LenskitTask {
     private def spec = new TrainTestExperimentSpec()
-    private def specDelegate = new SpecDelegate(spec)
+    private def specDelegate = new SpecDelegate(project, spec)
     def File specFile
     private Deque<Closure<?>> deferredInput = new ArrayDeque<>()
 
@@ -42,6 +43,7 @@ class TrainTest extends LenskitTask {
         conventionMapping.specFile = {
             project.file("$project.buildDir/${name}.json")
         }
+        spec.setThreadCount(project.lenskit.threadCount)
     }
 
     /**
@@ -62,7 +64,15 @@ class TrainTest extends LenskitTask {
     }
 
     /**
-     * Add a data sets produced by a crossfold task.
+     * Configure a train-test data set.
+     * @param block A block which will be used to configureSpec a {@link DataSetSpec}.
+     */
+    void dataSet(@DelegatesTo(DataSetSpecDelegate) Closure block) {
+        dataSet SpecDelegate.configureSpec(project, DataSetSpec, DataSetSpecDelegate, block)
+    }
+
+    /**
+     * Add a data sets produced by a crossfold task or other data set provider.
      *
      * <p>This method supports options for adding the crossfolded data sets:
      *
@@ -95,8 +105,9 @@ class TrainTest extends LenskitTask {
      */
     void algorithm(String name, file) {
         def aspec = new AlgorithmSpec()
-        aspec.name = name
-        aspec.configFile = project.file(file).toPath()
+        def theFile = project.file(file)
+        aspec.name = name ?: Files.getNameWithoutExtension(theFile.name)
+        aspec.configFile = theFile.toPath()
         spec.addAlgorithm(aspec)
     }
 
@@ -114,7 +125,7 @@ class TrainTest extends LenskitTask {
      * @see PredictEvalTaskSpec
      */
     void predict(@DelegatesTo(EvalTaskDelegate) Closure block) {
-        def task = SpecDelegate.configure(PredictEvalTaskSpec, EvalTaskDelegate, block)
+        def task = SpecDelegate.configureSpec(project, PredictEvalTaskSpec, EvalTaskDelegate, block)
         spec.addTask(task)
     }
 
@@ -124,7 +135,7 @@ class TrainTest extends LenskitTask {
      * @see PredictEvalTaskSpec
      */
     void recommend(@DelegatesTo(EvalTaskDelegate) Closure block) {
-        def task = SpecDelegate.configure(RecommendEvalTaskSpec, EvalTaskDelegate, block)
+        def task = SpecDelegate.configureSpec(project, RecommendEvalTaskSpec, EvalTaskDelegate, block)
         spec.addTask(task)
     }
 

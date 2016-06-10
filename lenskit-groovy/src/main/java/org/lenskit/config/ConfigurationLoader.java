@@ -25,15 +25,17 @@ import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.grouplens.lenskit.util.ClassDirectory;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.RecommenderConfigurationException;
-import org.grouplens.lenskit.util.ClassDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -54,7 +56,7 @@ public class ConfigurationLoader {
      * Construct a new configuration loader. It uses the current thread's class loader.
      */
     public ConfigurationLoader() {
-        this(ClassLoaders.inferDefault(ConfigurationLoader.class));
+        this(null);
     }
 
     /**
@@ -62,7 +64,7 @@ public class ConfigurationLoader {
      * @param loader The class loader to use.
      */
     public ConfigurationLoader(ClassLoader loader) {
-        classLoader = loader;
+        classLoader = loader != null ? loader : ClassLoaders.inferDefault(ConfigurationLoader.class);
         binding = new Binding();
         CompilerConfiguration config = new CompilerConfiguration();
         config.setScriptBaseClass(LenskitConfigScript.class.getName());
@@ -71,7 +73,7 @@ public class ConfigurationLoader {
         imports.addStarImports("org.lenskit.basic");
         config.addCompilationCustomizers(imports);
         shell = new GroovyShell(loader, binding, config);
-        directory = ClassDirectory.forClassLoader(loader);
+        directory = ClassDirectory.forClassLoader(classLoader);
     }
 
     public ClassDirectory getDirectory() {
@@ -83,10 +85,11 @@ public class ConfigurationLoader {
      * scripts are loaded.
      *
      * @param source The source
+     * @param base   The base URI for this configuration
      * @return the configuration script.
      * @throws RecommenderConfigurationException
      */
-    public LenskitConfigScript loadScript(GroovyCodeSource source) throws RecommenderConfigurationException {
+    public LenskitConfigScript loadScript(GroovyCodeSource source, URI base) throws RecommenderConfigurationException {
         logger.info("loading script from {}", source.getName());
         LenskitConfigScript script;
         try {
@@ -94,7 +97,7 @@ public class ConfigurationLoader {
         } catch (GroovyRuntimeException e) {
             throw new RecommenderConfigurationException("Error loading Groovy script", e);
         }
-        script.setDelegate(new LenskitConfigDSL(this));;
+        script.setDelegate(new LenskitConfigDSL(this, base));
         return script;
     }
 
@@ -137,7 +140,7 @@ public class ConfigurationLoader {
      */
     public LenskitConfigScript loadScript(@Nonnull File file) throws IOException, RecommenderConfigurationException {
         Preconditions.checkNotNull(file, "Configuration file");
-        return loadScript(new GroovyCodeSource(file));
+        return loadScript(new GroovyCodeSource(file), file.toURI());
     }
 
     /**
@@ -147,7 +150,11 @@ public class ConfigurationLoader {
      */
     public LenskitConfigScript loadScript(@Nonnull URL url) throws IOException, RecommenderConfigurationException {
         Preconditions.checkNotNull(url, "Configuration URL");
-        return loadScript(new GroovyCodeSource(url));
+        try {
+            return loadScript(new GroovyCodeSource(url), url.toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid URI", e);
+        }
     }
 
     /**
@@ -158,7 +165,7 @@ public class ConfigurationLoader {
     public LenskitConfigScript loadScript(@Nonnull String source) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(source, "Configuration source text");
         return loadScript(new GroovyCodeSource(source, "LKConfig" + (++scriptNumber),
-                                               GroovyShell.DEFAULT_CODE_BASE));
+                                               GroovyShell.DEFAULT_CODE_BASE), null);
     }
 
     /**

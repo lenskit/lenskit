@@ -33,10 +33,28 @@ public class TrainTestExperimentSpec extends AbstractSpec {
     private Path outputFile;
     private Path userOutputFile;
     private Path cacheDirectory;
+    private int threadCount = 0;
     private boolean shareModelComponents = true;
     private List<DataSetSpec> dataSets = new ArrayList<>();
     private List<AlgorithmSpec> algorithms = new ArrayList<>();
     private List<EvalTaskSpec> tasks = new ArrayList<>();
+
+    /**
+     * Get the thread count this configuration will use.
+     *
+     * @return The thread count to use.
+     */
+    public int getThreadCount() {
+        return threadCount;
+    }
+
+    /**
+     * Set the thread count to be used by the experiment.
+     * @param threadCount The number of threads to use, or 0 for unlimited.
+     */
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
+    }
 
     /**
      * Get the global output file.

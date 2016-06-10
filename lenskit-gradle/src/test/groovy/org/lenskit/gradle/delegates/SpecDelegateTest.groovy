@@ -20,28 +20,19 @@
  */
 package org.lenskit.gradle.delegates
 
-import org.gradle.util.ConfigureUtil
-import org.junit.Before
 import org.junit.Test
-import org.lenskit.specs.AbstractSpec
 import org.lenskit.specs.data.PrefDomainSpec
 import org.lenskit.specs.data.TextDataSourceSpec
-import org.lenskit.specs.eval.PredictEvalTaskSpec
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
-class SpecDelegateTest {
-    public <T extends AbstractSpec> T configure(Class<T> cls, Closure block) {
-        def spec = cls.newInstance()
-        def delegate = new SpecDelegate(spec)
-        ConfigureUtil.configure(block, delegate)
-        return spec
-    }
+import static org.lenskit.gradle.delegates.SpecDelegate.configureSpec
 
+class SpecDelegateTest {
     @Test
     public void testTextData() {
-        def spec = configure(TextDataSourceSpec) {
+        def spec = configureSpec(null, TextDataSourceSpec) {
             delimiter '::'
             file 'data/ratings.csv'
         }
@@ -50,7 +41,7 @@ class SpecDelegateTest {
 
     @Test
     public void testBlocks() {
-        def spec = configure(TextDataSourceSpec) {
+        def spec = configureSpec(null, TextDataSourceSpec) {
             delimiter '::'
             file 'data/ratings.csv'
             domain {

@@ -33,8 +33,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.gradle.process.internal.ExecException
-
 apply plugin: 'groovy'
 apply from: "$rootDir/gradle/test-utils.gradle"
 
@@ -73,10 +71,13 @@ fetchData << {
 test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
-    onlyIf {
-        System.getenv("SONAR_BUILD") != 'true'
+    maxHeapSize = '384m';
+    testLogging {
+        events = ["passed", "failed", "started", "skipped"]
     }
 }
+
+task crossCheck(group: 'verification')
 
 // import code to run the integration tests
 apply from: 'gradle-tests.gradle'
