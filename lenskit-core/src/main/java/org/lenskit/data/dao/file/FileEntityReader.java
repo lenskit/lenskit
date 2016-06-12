@@ -45,13 +45,53 @@ public class FileEntityReader {
     }
 
     /**
+     * Get the name of this data source.
+     * @return The data source name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set the source file for this reader.
+     * @param file The source file.
+     */
+    public void setFile(Path file) {
+        this.sourceFile = file;
+    }
+
+    /**
+     * Get the source file for this data source.
+     * @return The source file.
+     */
+    public Path getFile() {
+        return sourceFile;
+    }
+
+    /**
+     * Set the entity format for the reader.
+     * @param format The entity format.
+     */
+    public void setFormat(EntityFormat format) {
+        this.format = format;
+    }
+
+    /**
+     * Get the entity format for the reader.
+     * @return The entity format.
+     */
+    public EntityFormat getFormat() {
+        return format;
+    }
+
+    /**
      * Create a file reader.
      * @param name The reader name.
      * @param object The configuring object.
      * @param dir The base directory.
      * @return The new entity reader.
      */
-    static FileEntityReader createFileReader(String name, JsonNode object, Path dir) {
+    static FileEntityReader fromJSON(String name, JsonNode object, Path dir) {
         FileEntityReader source = new FileEntityReader(name);
         source.setFile(dir.resolve(object.get("file").asText()));
         logger.info("loading text file source {} to read from {}", name, source.getFile());
@@ -160,45 +200,5 @@ public class FileEntityReader {
         } else {
             throw new IllegalArgumentException("invalid attribute specification: " + col.toString());
         }
-    }
-
-    /**
-     * Get the name of this data source.
-     * @return The data source name.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Set the source file for this reader.
-     * @param file The source file.
-     */
-    public void setFile(Path file) {
-        this.sourceFile = file;
-    }
-
-    /**
-     * Get the source file for this data source.
-     * @return The source file.
-     */
-    public Path getFile() {
-        return sourceFile;
-    }
-
-    /**
-     * Set the entity format for the reader.
-     * @param format The entity format.
-     */
-    public void setFormat(EntityFormat format) {
-        this.format = format;
-    }
-
-    /**
-     * Get the entity format for the reader.
-     * @return The entity format.
-     */
-    public EntityFormat getFormat() {
-        return format;
     }
 }

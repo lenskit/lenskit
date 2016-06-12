@@ -86,6 +86,14 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     }
 
     /**
+     * Query whether this format uses the header line(s).
+     * @return `true` if the reader will parse a header line.
+     */
+    boolean usesHeader() {
+        return readHeader;
+    }
+
+    /**
      * Set the entity type.
      * @param type The entity type.
      */

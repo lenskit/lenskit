@@ -121,7 +121,7 @@ public class DataManifest {
             throw new IllegalArgumentException("unsupported data type " + type);
         }
 
-        FileEntityReader source = FileEntityReader.createFileReader(name, object, dir);
+        FileEntityReader source = FileEntityReader.fromJSON(name, object, dir);
 
         layout.addSource(source);
     }
