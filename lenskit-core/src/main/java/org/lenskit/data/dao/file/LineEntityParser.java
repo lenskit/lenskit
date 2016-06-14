@@ -20,22 +20,18 @@
  */
 package org.lenskit.data.dao.file;
 
-import java.util.List;
+import org.lenskit.data.entities.Entity;
 
 /**
- * Entity format interface.  This is used for line-based text files.
+ * Interface for parsers that parse an entity from a line of text.  A fresh line parser
+ * must be created for each pass through a file, as it may be stateful (e.g. tracking
+ * line numbers).
  */
-public interface EntityFormat {
+public interface LineEntityParser {
     /**
-     * Get the number of header lines this format uses.
-     * @return The number of header lines to read at the beginning of the file.
+     * Parse an entity from a line of text.
+     * @param line The entity to parse.
+     * @return The line of text.
      */
-    int getHeaderLines();
-
-    /**
-     * Create an entity parser for a file.
-     * @param header The header lines.
-     * @return A parser that will make entity lines from entities.
-     */
-    LineEntityParser makeParser(List<String> header);
+    Entity parse(String line);
 }

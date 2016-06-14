@@ -21,9 +21,8 @@
 package org.lenskit.data.dao.file;
 
 import com.google.common.base.Preconditions;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.EntityBuilder;
-import org.lenskit.data.entities.EntityType;
+import org.apache.commons.lang3.text.StrTokenizer;
+import org.lenskit.data.entities.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -35,11 +34,11 @@ import java.util.Map;
  * Delimited text column entity format.
  */
 public class DelimitedColumnEntityFormat implements EntityFormat {
-    private String delimiter;
+    private String delimiter = "\t";
     private int headerLines;
     private boolean readHeader;
-    private EntityType entityType;
-    private Class<? extends EntityBuilder> entityBuilder;
+    private EntityType entityType = EntityType.forName("rating");
+    private Class<? extends EntityBuilder> entityBuilder = BasicEntityBuilder.class;
     private List<Attribute<?>> columns;
     private Map<String,Attribute<?>> labeledColumns;
 
@@ -162,5 +161,53 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             labeledColumns = new LinkedHashMap<>();
         }
         labeledColumns.put(label, attr);
+    }
+
+    @Override
+    public LineEntityParser makeParser(List<String> header) {
+        assert header.size() == getHeaderLines();
+
+        if (usesHeader() && labeledColumns != null) {
+            assert header.size() == 1;
+            List<Attribute<?>> cols = new ArrayList<>();
+            StrTokenizer tok = new StrTokenizer(header.get(0), delimiter);
+            while (tok.hasNext()) {
+                String label = tok.next();
+                cols.add(labeledColumns.get(label));
+            }
+            return new OrderedParser(cols, tok);
+        } else {
+            return new OrderedParser(columns, new StrTokenizer("", delimiter));
+        }
+    }
+
+    private class OrderedParser implements LineEntityParser {
+        int lineNo = 0;
+        StrTokenizer tokenizer;
+        List<Attribute<?>> fileColumns;
+
+        public OrderedParser(List<Attribute<?>> columns, StrTokenizer tok) {
+            fileColumns = columns;
+            tokenizer = tok;
+        }
+
+        @Override
+        public Entity parse(String line) {
+            tokenizer.reset(line);
+            lineNo += 1;
+
+            EntityBuilder builder = newEntityBuilder()
+                    .setType(getEntityType())
+                    .setId(lineNo);
+
+            for (Attribute column: fileColumns) {
+                String value = tokenizer.nextToken();
+                if (value != null && column != null) {
+                    builder.setAttribute(column, column.parseString(value));
+                }
+            }
+
+            return builder.build();
+        }
     }
 }
