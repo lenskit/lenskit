@@ -34,13 +34,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class FileEntityReader {
-    private static final Logger logger = LoggerFactory.getLogger(FileEntityReader.class);
+/**
+ * Entity reader that loads entities from text data, often stored in a file.
+ */
+public class TextEntityReader {
+    private static final Logger logger = LoggerFactory.getLogger(TextEntityReader.class);
     private final String name;
     private Path sourceFile;
     private EntityFormat format;
 
-    public FileEntityReader(String name) {
+    public TextEntityReader(String name) {
         this.name = name;
     }
 
@@ -91,8 +94,8 @@ public class FileEntityReader {
      * @param dir The base directory.
      * @return The new entity reader.
      */
-    static FileEntityReader fromJSON(String name, JsonNode object, Path dir) {
-        FileEntityReader source = new FileEntityReader(name);
+    static TextEntityReader fromJSON(String name, JsonNode object, Path dir) {
+        TextEntityReader source = new TextEntityReader(name);
         source.setFile(dir.resolve(object.get("file").asText()));
         logger.info("loading text file source {} to read from {}", name, source.getFile());
 

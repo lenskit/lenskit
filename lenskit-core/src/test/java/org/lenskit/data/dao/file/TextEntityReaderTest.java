@@ -32,13 +32,13 @@ import java.nio.file.Paths;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class FileEntityReaderTest {
+public class TextEntityReaderTest {
     private ObjectReader reader = new ObjectMapper().reader();;
 
     @Test
     public void testMinimalJSONConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\"}");
-        FileEntityReader fr = FileEntityReader.fromJSON("test", node, Paths.get(""));
+        TextEntityReader fr = TextEntityReader.fromJSON("test", node, Paths.get(""));
         assertThat(fr, notNullValue());
         assertThat(fr.getFile(), equalTo(Paths.get("ratings.tsv")));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
@@ -54,7 +54,7 @@ public class FileEntityReaderTest {
     @Test
     public void testMinimalCSVConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.csv\", \"format\": \"csv\"}");
-        FileEntityReader fr = FileEntityReader.fromJSON("test", node, Paths.get(""));
+        TextEntityReader fr = TextEntityReader.fromJSON("test", node, Paths.get(""));
         assertThat(fr, notNullValue());
         assertThat(fr.getFile(), equalTo(Paths.get("ratings.csv")));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
@@ -70,7 +70,7 @@ public class FileEntityReaderTest {
     @Test
     public void testWeirdDelimiterConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.dat\", \"format\": \"delimited\", \"delimiter\": \"::\"}");
-        FileEntityReader fr = FileEntityReader.fromJSON("test", node, Paths.get(""));
+        TextEntityReader fr = TextEntityReader.fromJSON("test", node, Paths.get(""));
         assertThat(fr, notNullValue());
         assertThat(fr.getFile(), equalTo(Paths.get("ratings.dat")));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
@@ -86,7 +86,7 @@ public class FileEntityReaderTest {
     @Test
     public void testHeaderConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"header\": true}");
-        FileEntityReader fr = FileEntityReader.fromJSON("test", node, Paths.get(""));
+        TextEntityReader fr = TextEntityReader.fromJSON("test", node, Paths.get(""));
         assertThat(fr, notNullValue());
         assertThat(fr.getFile(), equalTo(Paths.get("ratings.tsv")));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
@@ -102,7 +102,7 @@ public class FileEntityReaderTest {
     @Test
     public void testSkipHeaderConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"header\": 2}");
-        FileEntityReader fr = FileEntityReader.fromJSON("test", node, Paths.get(""));
+        TextEntityReader fr = TextEntityReader.fromJSON("test", node, Paths.get(""));
         assertThat(fr, notNullValue());
         assertThat(fr.getFile(), equalTo(Paths.get("ratings.tsv")));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));

@@ -59,7 +59,7 @@ public class DataManifest {
         // TODO Implement
     }
 
-    private void addSource(FileEntityReader source) {
+    private void addSource(TextEntityReader source) {
         // FIXME Add the source
     }
 
@@ -121,7 +121,7 @@ public class DataManifest {
             throw new IllegalArgumentException("unsupported data type " + type);
         }
 
-        FileEntityReader source = FileEntityReader.fromJSON(name, object, dir);
+        TextEntityReader source = TextEntityReader.fromJSON(name, object, dir);
 
         layout.addSource(source);
     }
