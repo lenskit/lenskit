@@ -20,27 +20,30 @@
  */
 package org.lenskit.data.dao.file;
 
-import com.google.common.base.Function;
-import org.lenskit.data.entities.Entity;
-
-import javax.annotation.Nullable;
+import org.lenskit.data.entities.BasicEntityBuilder;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
 
 /**
- * Interface for parsers that parse an entity from a line of text.  A fresh line parser
- * must be created for each pass through a file, as it may be stateful (e.g. tracking
- * line numbers).
+ * Utility methods relating to entity formats.
  */
-public abstract class LineEntityParser implements Function<String,Entity> {
+public final class Formats {
     /**
-     * Parse an entity from a line of text.
-     * @param line The entity to parse.
-     * @return The line of text.
+     * Read a CSV file of ratings without a header.  The ratings are assumed to be in `user, item, rating[, timestamp]`
+     * format.
+     *
+     * @return An event format reading ratings without a header.
      */
-    public abstract Entity parse(String line);
-
-    @Nullable
-    @Override
-    public Entity apply(@Nullable String input) {
-        return parse(input);
+    public static EntityFormat csvRatings() {
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setEntityType(CommonTypes.RATING);
+        // FIXME Use rating builder
+        format.setEntityBuilder(BasicEntityBuilder.class);
+        format.addColumns(CommonAttributes.USER_ID,
+                          CommonAttributes.ITEM_ID,
+                          CommonAttributes.RATING,
+                          CommonAttributes.TIMESTAMP);
+        format.setDelimiter(",");
+        return format;
     }
 }

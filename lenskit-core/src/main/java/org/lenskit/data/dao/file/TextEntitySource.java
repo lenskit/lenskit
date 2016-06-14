@@ -21,15 +21,21 @@
 package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.io.CharSource;
+import com.google.common.io.Files;
 import org.apache.commons.lang3.ClassUtils;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.BasicEntityBuilder;
-import org.lenskit.data.entities.EntityDefaults;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
+import org.lenskit.util.io.LineStream;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +43,14 @@ import java.util.Map;
 /**
  * Entity reader that loads entities from text data, often stored in a file.
  */
-public class TextEntityReader {
-    private static final Logger logger = LoggerFactory.getLogger(TextEntityReader.class);
+public class TextEntitySource {
+    private static final Logger logger = LoggerFactory.getLogger(TextEntitySource.class);
     private final String name;
+    private CharSource source;
     private Path sourceFile;
     private EntityFormat format;
 
-    public TextEntityReader(String name) {
+    public TextEntitySource(String name) {
         this.name = name;
     }
 
@@ -60,7 +67,8 @@ public class TextEntityReader {
      * @param file The source file.
      */
     public void setFile(Path file) {
-        this.sourceFile = file;
+        source = Files.asCharSource(file.toFile(), Charset.defaultCharset());
+        sourceFile = file;
     }
 
     /**
@@ -69,6 +77,14 @@ public class TextEntityReader {
      */
     public Path getFile() {
         return sourceFile;
+    }
+
+    /**
+     * Set a string from which to read entities.
+     */
+    public void setSource(CharSequence text) {
+        source = CharSource.wrap(text);
+        sourceFile = null;
     }
 
     /**
@@ -88,14 +104,40 @@ public class TextEntityReader {
     }
 
     /**
+     * Open a stream to read entities from this source.
+     * @return A stream of entities.
+     */
+    public ObjectStream<Entity> openStream() throws IOException {
+        BufferedReader reader = source.openBufferedStream();
+        ObjectStream<String> lines = new LineStream(reader);
+        int headerLines = format.getHeaderLines();
+        List<String> header = new ArrayList<>();
+        while (header.size() < headerLines) {
+            String line = lines.readObject();
+            if (line == null) {
+                IOException ex = new IOException(String.format("expected %d header lines, found %d", headerLines, header.size()));
+                try {
+                    lines.close();
+                } catch (Throwable th) {
+                    ex.addSuppressed(th);
+                }
+                throw ex;
+            }
+            header.add(line);
+        }
+        LineEntityParser parser = format.makeParser(header);
+        return ObjectStreams.transform(lines, parser);
+    }
+
+    /**
      * Create a file reader.
      * @param name The reader name.
      * @param object The configuring object.
      * @param dir The base directory.
      * @return The new entity reader.
      */
-    static TextEntityReader fromJSON(String name, JsonNode object, Path dir) {
-        TextEntityReader source = new TextEntityReader(name);
+    static TextEntitySource fromJSON(String name, JsonNode object, Path dir) {
+        TextEntitySource source = new TextEntitySource(name);
         source.setFile(dir.resolve(object.get("file").asText()));
         logger.info("loading text file source {} to read from {}", name, source.getFile());
 

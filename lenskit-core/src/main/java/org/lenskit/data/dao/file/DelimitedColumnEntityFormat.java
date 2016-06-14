@@ -150,6 +150,16 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     }
 
     /**
+     * Add columns to a format.
+     * @param columns The columns to add.
+     */
+    public void addColumns(Attribute<?>... columns) {
+        for (Attribute<?> col: columns) {
+            addColumn(col);
+        }
+    }
+
+    /**
      * Add a column.
      * @param label The header label.
      * @param attr The attribute to add as a column, or `null` to skip the next column.
@@ -181,7 +191,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         }
     }
 
-    private class OrderedParser implements LineEntityParser {
+    private class OrderedParser extends LineEntityParser {
         int lineNo = 0;
         StrTokenizer tokenizer;
         List<Attribute<?>> fileColumns;
