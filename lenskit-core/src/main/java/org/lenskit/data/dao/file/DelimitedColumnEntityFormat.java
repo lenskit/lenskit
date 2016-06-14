@@ -200,6 +200,8 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
                     .setType(getEntityType())
                     .setId(lineNo);
 
+            // since ID is already set, a subsequent ID column will properly override
+
             for (Attribute column: fileColumns) {
                 String value = tokenizer.nextToken();
                 if (value != null && column != null) {

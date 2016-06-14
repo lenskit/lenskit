@@ -98,4 +98,33 @@ public class DelimitedColumnEntityFormatTest {
         assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(78L));
         assertThat(pc.get(CommonAttributes.COUNT), equalTo(2));
     }
+
+    @Test
+    public void testFileWithIds() {
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setDelimiter(",");
+
+        EntityType pcType = EntityType.forName("pop_count");
+        format.setEntityType(pcType);
+
+        format.addColumn(CommonAttributes.ENTITY_ID);
+        format.addColumn(CommonAttributes.ITEM_ID);
+        format.addColumn(CommonAttributes.COUNT);
+
+        LineEntityParser parser = format.makeParser(Collections.<String>emptyList());
+        assertThat(parser, notNullValue());
+
+        Entity pc = parser.parse("1001,42,10");
+        assertThat(pc, notNullValue());
+        assertThat(pc.getId(), equalTo(1001L));
+        assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(42L));
+        assertThat(pc.get(CommonAttributes.COUNT), equalTo(10));
+
+        // make sure the ID (row count) advances
+        pc = parser.parse("1010,78,2");
+        assertThat(pc, notNullValue());
+        assertThat(pc.getId(), equalTo(1010L));
+        assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(78L));
+        assertThat(pc.get(CommonAttributes.COUNT), equalTo(2));
+    }
 }
