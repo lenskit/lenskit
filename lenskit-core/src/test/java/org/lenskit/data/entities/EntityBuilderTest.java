@@ -36,8 +36,10 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), hasSize(0));
-        assertThat(e.getAttributeNames(), hasSize(0));
+        assertThat(e.getAttributes(), contains((Attribute) CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeNames(), contains("id"));
+        assertThat(e.get(CommonAttributes.ENTITY_ID), equalTo(42L));
+        assertThat(e.get("id"), equalTo((Object) 42L));
     }
 
     @Test
@@ -49,10 +51,26 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), hasSize(0));
-        assertThat(e.getAttributeNames(), hasSize(0));
+        assertThat(e.getAttributes(), contains((Attribute) CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeNames(), contains("id"));
         assertThat(e.hasAttribute("user"), equalTo(false));
         assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
+    }
+
+    @Test
+    public void testAttributeSetters() {
+        EntityBuilder eb = Entities.newBuilder()
+                                   .setType(CommonTypes.USER)
+                                   .setAttribute(CommonAttributes.ENTITY_ID, 42L);
+        Entity e = eb.build();
+        assertThat(e, notNullValue());
+        assertThat(e.getType(), equalTo(CommonTypes.USER));
+        assertThat(e.getId(), equalTo(42L));
+        assertThat(e.getAttributes(), contains((Attribute) CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeNames(), contains("id"));
+        assertThat(e.hasAttribute("user"), equalTo(false));
+        assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
+        assertThat(e.get(CommonAttributes.ENTITY_ID), equalTo(42L));
     }
 
     @Test
@@ -63,14 +81,15 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), contains((Attribute) CommonAttributes.NAME));
-        assertThat(e.getAttributeNames(), contains("name"));
+        assertThat(e.getAttributes(), containsInAnyOrder((Attribute) CommonAttributes.NAME,
+                                                         CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeNames(), containsInAnyOrder("name", "id"));
         assertThat(e.get("name"), equalTo((Object) "HACKEM MUCHE"));
         assertThat(e.get(CommonAttributes.NAME), equalTo("HACKEM MUCHE"));
         assertThat(e.hasAttribute("name"), equalTo(true));
         assertThat(e.hasAttribute("user"), equalTo(false));
         assertThat(e.hasAttribute(CommonAttributes.NAME), equalTo(true));
         assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
-
+        assertThat(e.get(CommonAttributes.ENTITY_ID), equalTo(42L));
     }
 }

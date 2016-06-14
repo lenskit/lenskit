@@ -22,6 +22,7 @@ package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,14 +56,21 @@ public class BasicEntityBuilder extends EntityBuilder {
     public <T> EntityBuilder setAttribute(Attribute<T> attr, T val) {
         Preconditions.checkNotNull(attr, "attribute");
         Preconditions.checkNotNull(val, "value");
-        attributes.put(attr, val);
-        return this;
+        if (attr == CommonAttributes.ENTITY_ID) {
+            return setId(((Long) val).longValue());
+        } else {
+            attributes.put(attr, val);
+            return this;
+        }
     }
 
     @Override
     public EntityBuilder clearAttribute(Attribute<?> attr) {
         Preconditions.checkNotNull(attr, "attribute");
         attributes.remove(attr);
+        if (attr == CommonAttributes.ENTITY_ID) {
+            idSet = false;
+        }
         return this;
     }
 
@@ -70,7 +78,7 @@ public class BasicEntityBuilder extends EntityBuilder {
     public Entity build() {
         Preconditions.checkState(type != null, "Entity type not set");
         Preconditions.checkState(idSet, "ID not set");
-        if (attributes.isEmpty()) {
+        if (attributes.isEmpty() || attributes.keySet().equals(Collections.singleton(CommonAttributes.ENTITY_ID))) {
             return new BareEntity(type, id);
         } else {
             return new BasicEntity(type, id, attributes);

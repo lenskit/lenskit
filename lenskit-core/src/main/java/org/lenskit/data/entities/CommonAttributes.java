@@ -27,11 +27,18 @@ public final class CommonAttributes {
     private CommonAttributes() {}
 
     /**
-     * The user ID associated with an entity.
+     * Attribute indicating the entity ID.
+     */
+    public static final Attribute<Long> ENTITY_ID = Attribute.create("id", Long.class);
+
+    /**
+     * The user ID associated with an entity.  This is for when the user is a *foreign key*; in user
+     * entities, the user ID is stored as the entity ID.
      */
     public static final Attribute<Long> USER_ID = Attribute.create("user", Long.class);
     /**
-     * The user ID associated with an entity.
+     * The item ID associated with an entity. This is for when the user is a *foreign key*; in item
+     * entities, the item ID is stored as the entity ID.
      */
     public static final Attribute<Long> ITEM_ID = Attribute.create("item", Long.class);
     /**

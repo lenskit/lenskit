@@ -50,33 +50,35 @@ class BareEntity extends AbstractEntity {
 
     @Override
     public Set<String> getAttributeNames() {
-        return Collections.emptySet();
+        return Collections.singleton("id");
     }
 
     @Override
     public Set<Attribute<?>> getAttributes() {
-        return Collections.emptySet();
+        return Collections.<Attribute<?>>singleton(CommonAttributes.ENTITY_ID);
     }
 
     @Override
     public boolean hasAttribute(String name) {
-        return false;
+        return "id".equals(name);
     }
 
     @Override
     public boolean hasAttribute(Attribute<?> attribute) {
-        return false;
+        return attribute == CommonAttributes.ENTITY_ID;
     }
 
     @Nullable
     @Override
     public <T> T maybeGet(Attribute<T> attribute) {
-        return null;
+        return attribute == CommonAttributes.ENTITY_ID
+                ? attribute.getType().cast(getId())
+                : null;
     }
 
     @Nullable
     @Override
     public Object maybeGet(String attr) {
-        return null;
+        return "id".equals(attr) ? getId() : null;
     }
 }

@@ -40,7 +40,11 @@ class BasicEntity extends AbstractEntity {
     public BasicEntity(EntityType t, long eid, Map<Attribute<?>, Object> attrs) {
         type = t;
         id = eid;
-        attributes = ImmutableMap.copyOf(attrs);
+        attributes = ImmutableMap.<Attribute<?>,Object>builder()
+                                 .put(CommonAttributes.ENTITY_ID, eid)
+                                 .putAll(attrs)
+                                 .build();
+        assert id == (Long) attributes.get(CommonAttributes.ENTITY_ID);
     }
 
     @Override
