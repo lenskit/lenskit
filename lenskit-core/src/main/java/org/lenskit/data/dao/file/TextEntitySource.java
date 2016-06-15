@@ -21,8 +21,10 @@
 package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import org.apache.commons.lang3.ClassUtils;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.LineStream;
@@ -33,6 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -47,7 +52,7 @@ public class TextEntitySource {
     private static final Logger logger = LoggerFactory.getLogger(TextEntitySource.class);
     private final String name;
     private CharSource source;
-    private Path sourceFile;
+    private URL sourceURL;
     private EntityFormat format;
 
     /**
@@ -79,15 +84,28 @@ public class TextEntitySource {
      */
     public void setFile(Path file) {
         source = Files.asCharSource(file.toFile(), Charset.defaultCharset());
-        sourceFile = file;
+        try {
+            sourceURL = file.toUri().toURL();
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("invalid URL " + file, e);
+        }
+    }
+
+    /**
+     * Set the URL of the input data.
+     * @param url The URL of the input data.
+     */
+    public void setURI(URL url) {
+        sourceURL = url;
+        source = Resources.asCharSource(url, Charsets.UTF_8);
     }
 
     /**
      * Get the source file for this data source.
      * @return The source file.
      */
-    public Path getFile() {
-        return sourceFile;
+    public URL getURL() {
+        return sourceURL;
     }
 
     /**
@@ -95,7 +113,7 @@ public class TextEntitySource {
      */
     public void setSource(CharSequence text) {
         source = CharSource.wrap(text);
-        sourceFile = null;
+        sourceURL = null;
     }
 
     /**
@@ -144,13 +162,18 @@ public class TextEntitySource {
      * Create a file reader.
      * @param name The reader name.
      * @param object The configuring object.
-     * @param dir The base directory.
+     * @param base The base URI for source data.
      * @return The new entity reader.
      */
-    static TextEntitySource fromJSON(String name, JsonNode object, Path dir) {
+    static TextEntitySource fromJSON(String name, JsonNode object, URI base) {
         TextEntitySource source = new TextEntitySource(name);
-        source.setFile(dir.resolve(object.get("file").asText()));
-        logger.info("loading text file source {} to read from {}", name, source.getFile());
+        URI uri = base.resolve(object.get("file").asText());
+        try {
+            source.setURI(uri.toURL());
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Cannot resolve URI " + uri, e);
+        }
+        logger.info("loading text file source {} to read from {}", name, source.getURL());
 
         String fmt = object.path("format").asText("delimited").toLowerCase();
         String delim;
@@ -250,7 +273,7 @@ public class TextEntitySource {
         } else if (col.isTextual()) {
             Attribute<?> attr = entityDefaults.getAttribute(col.asText());
             if (attr == null) {
-                attr = Attribute.create(col.asText(), String.class);
+                attr = Attribute.create(col.asText(), col.asText().equals("id") ? Long.class : String.class);
             }
             return attr;
         } else {

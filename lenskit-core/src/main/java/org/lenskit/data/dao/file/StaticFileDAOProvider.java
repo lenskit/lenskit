@@ -27,6 +27,7 @@ import org.lenskit.data.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
@@ -90,18 +91,18 @@ public class StaticFileDAOProvider {
      * @param object The JSON object.
      * @return The data layout.
      */
-    public static StaticFileDAOProvider fromJSON(JsonNode object, Path dir) {
+    public static StaticFileDAOProvider fromJSON(JsonNode object, URI base) {
         StaticFileDAOProvider layout = new StaticFileDAOProvider();
 
         if (object.isArray()) {
             for (JsonNode source: object) {
-                configureDataSource(layout, null, source, dir);
+                configureDataSource(layout, null, source, base);
             }
         } else if (object.isObject()) {
             Iterator<Map.Entry<String, JsonNode>> iter = object.fields();
             while (iter.hasNext()) {
                 Map.Entry<String, JsonNode> entry = iter.next();
-                configureDataSource(layout, entry.getKey(), entry.getValue(), dir);
+                configureDataSource(layout, entry.getKey(), entry.getValue(), base);
             }
         } else {
             throw new IllegalArgumentException("manifest must be array or object");
@@ -110,7 +111,7 @@ public class StaticFileDAOProvider {
         return layout;
     }
 
-    private static void configureDataSource(StaticFileDAOProvider layout, String name, JsonNode object, Path dir) {
+    private static void configureDataSource(StaticFileDAOProvider layout, String name, JsonNode object, URI base) {
         if (name == null) {
             name = object.path("name").asText("<unnamed>");
         }
@@ -121,7 +122,7 @@ public class StaticFileDAOProvider {
             throw new IllegalArgumentException("unsupported data type " + type);
         }
 
-        TextEntitySource source = TextEntitySource.fromJSON(name, object, dir);
+        TextEntitySource source = TextEntitySource.fromJSON(name, object, base);
 
         layout.addSource(source);
     }

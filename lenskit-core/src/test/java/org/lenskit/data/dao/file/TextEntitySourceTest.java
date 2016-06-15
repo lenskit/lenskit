@@ -28,6 +28,8 @@ import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.*;
@@ -39,9 +41,9 @@ public class TextEntitySourceTest {
     @Test
     public void testMinimalJSONConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\"}");
-        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get(""));
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
         assertThat(fr, notNullValue());
-        assertThat(fr.getFile(), equalTo(Paths.get("ratings.tsv")));
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
         DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
         assertThat(format.getDelimiter(), equalTo("\t"));
@@ -55,9 +57,9 @@ public class TextEntitySourceTest {
     @Test
     public void testMinimalCSVConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.csv\", \"format\": \"csv\"}");
-        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get(""));
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
         assertThat(fr, notNullValue());
-        assertThat(fr.getFile(), equalTo(Paths.get("ratings.csv")));
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.csv").toUri().toURL()));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
         DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
         assertThat(format.getDelimiter(), equalTo(","));
@@ -71,9 +73,9 @@ public class TextEntitySourceTest {
     @Test
     public void testWeirdDelimiterConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.dat\", \"format\": \"delimited\", \"delimiter\": \"::\"}");
-        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get(""));
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
         assertThat(fr, notNullValue());
-        assertThat(fr.getFile(), equalTo(Paths.get("ratings.dat")));
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.dat").toUri().toURL()));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
         DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
         assertThat(format.getDelimiter(), equalTo("::"));
@@ -87,9 +89,9 @@ public class TextEntitySourceTest {
     @Test
     public void testHeaderConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"header\": true}");
-        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get(""));
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
         assertThat(fr, notNullValue());
-        assertThat(fr.getFile(), equalTo(Paths.get("ratings.tsv")));
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
         DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
         assertThat(format.getDelimiter(), equalTo("\t"));
@@ -103,9 +105,9 @@ public class TextEntitySourceTest {
     @Test
     public void testSkipHeaderConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"header\": 2}");
-        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get(""));
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
         assertThat(fr, notNullValue());
-        assertThat(fr.getFile(), equalTo(Paths.get("ratings.tsv")));
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
         assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
         DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
         assertThat(format.getDelimiter(), equalTo("\t"));
@@ -161,6 +163,43 @@ public class TextEntitySourceTest {
         fmt.addColumn("rating", CommonAttributes.RATING);
         fmt.addColumn("id", CommonAttributes.ENTITY_ID);
         fr.setFormat(fmt);
+
+        try (ObjectStream<Entity> stream = fr.openStream()) {
+            Entity first = stream.readObject();
+            assertThat(first.getType(), equalTo(EntityType.forName("rating")));
+            assertThat(first.getId(), equalTo(101L));
+            assertThat(first.get(CommonAttributes.ENTITY_ID), equalTo(101L));
+            assertThat(first.get(CommonAttributes.ITEM_ID), equalTo(10L));
+            assertThat(first.get(CommonAttributes.USER_ID), equalTo(20L));
+            assertThat(first.get(CommonAttributes.RATING), equalTo(3.5));
+            assertThat(first.hasAttribute(CommonAttributes.TIMESTAMP),
+                       equalTo(false));
+
+            Entity second = stream.readObject();
+            assertThat(second.getType(), equalTo(EntityType.forName("rating")));
+            assertThat(second.getId(), equalTo(109L));
+            assertThat(second.get(CommonAttributes.ENTITY_ID), equalTo(109L));
+            assertThat(second.get(CommonAttributes.ITEM_ID), equalTo(11L));
+            assertThat(second.get(CommonAttributes.USER_ID), equalTo(20L));
+            assertThat(second.get(CommonAttributes.RATING), equalTo(4.0));
+            assertThat(second.hasAttribute(CommonAttributes.TIMESTAMP),
+                       equalTo(false));
+
+            assertThat(stream.readObject(), nullValue());
+        }
+    }
+
+    @Test
+    public void testConfigureRatingCSVWithHeaders() throws IOException, URISyntaxException {
+        URI baseURI = TextEntitySourceTest.class.getResource("header-ratings.csv").toURI();
+        JsonNode node = reader.readTree("{\"file\": \"header-ratings.csv\", \"header\": true, \"format\": \"csv\",\n" +
+                                                "\"columns\": {\n" +
+                                                "  \"id\": \"id\",\n" +
+                                                "  \"movie\": \"item\",\n" +
+                                                "  \"user\": \"user\",\n" +
+                                                "  \"rating\": \"rating\"\n" +
+                                                "}}");
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, baseURI);
 
         try (ObjectStream<Entity> stream = fr.openStream()) {
             Entity first = stream.readObject();
