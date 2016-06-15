@@ -120,7 +120,7 @@ public class TextEntitySourceTest {
 
     @Test
     public void testReadRatingCSV() throws IOException {
-        TextEntitySource fr = new TextEntitySource("test");
+        TextEntitySource fr = new TextEntitySource();
         fr.setSource("10,20,3.5\n11,20,4.0\n");
         fr.setFormat(Formats.csvRatings());
 
@@ -144,6 +144,8 @@ public class TextEntitySourceTest {
             assertThat(second.get(CommonAttributes.RATING), equalTo(4.0));
             assertThat(second.hasAttribute(CommonAttributes.TIMESTAMP),
                        equalTo(false));
+
+            assertThat(stream.readObject(), nullValue());
         }
     }
 }

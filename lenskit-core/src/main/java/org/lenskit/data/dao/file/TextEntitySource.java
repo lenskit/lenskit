@@ -50,6 +50,17 @@ public class TextEntitySource {
     private Path sourceFile;
     private EntityFormat format;
 
+    /**
+     * Construct a new text entity source.
+     */
+    public TextEntitySource() {
+        this("<unnamed>");
+    }
+
+    /**
+     * Construct a new text entity source.
+     * @param name The source's name.
+     */
     public TextEntitySource(String name) {
         this.name = name;
     }
