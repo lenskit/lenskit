@@ -24,9 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.junit.Test;
-import org.lenskit.data.entities.CommonAttributes;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
 
 import java.io.IOException;
@@ -141,6 +139,46 @@ public class TextEntitySourceTest {
             assertThat(second.get(CommonAttributes.ENTITY_ID), equalTo(2L));
             assertThat(second.get(CommonAttributes.USER_ID), equalTo(11L));
             assertThat(second.get(CommonAttributes.ITEM_ID), equalTo(20L));
+            assertThat(second.get(CommonAttributes.RATING), equalTo(4.0));
+            assertThat(second.hasAttribute(CommonAttributes.TIMESTAMP),
+                       equalTo(false));
+
+            assertThat(stream.readObject(), nullValue());
+        }
+    }
+
+    @Test
+    public void testReadRatingCSVWithHeaders() throws IOException {
+        TextEntitySource fr = new TextEntitySource();
+        fr.setSource("id,item,user,rating\n101,10,20,3.5\n109,11,20,4.0\n");
+        DelimitedColumnEntityFormat fmt = new DelimitedColumnEntityFormat();
+        fmt.setDelimiter(",");
+        fmt.setEntityType(CommonTypes.RATING);
+        fmt.setEntityBuilder(BasicEntityBuilder.class);
+        fmt.setHeader(true);
+        fmt.addColumn("user", CommonAttributes.USER_ID);
+        fmt.addColumn("item", CommonAttributes.ITEM_ID);
+        fmt.addColumn("rating", CommonAttributes.RATING);
+        fmt.addColumn("id", CommonAttributes.ENTITY_ID);
+        fr.setFormat(fmt);
+
+        try (ObjectStream<Entity> stream = fr.openStream()) {
+            Entity first = stream.readObject();
+            assertThat(first.getType(), equalTo(EntityType.forName("rating")));
+            assertThat(first.getId(), equalTo(101L));
+            assertThat(first.get(CommonAttributes.ENTITY_ID), equalTo(101L));
+            assertThat(first.get(CommonAttributes.ITEM_ID), equalTo(10L));
+            assertThat(first.get(CommonAttributes.USER_ID), equalTo(20L));
+            assertThat(first.get(CommonAttributes.RATING), equalTo(3.5));
+            assertThat(first.hasAttribute(CommonAttributes.TIMESTAMP),
+                       equalTo(false));
+
+            Entity second = stream.readObject();
+            assertThat(second.getType(), equalTo(EntityType.forName("rating")));
+            assertThat(second.getId(), equalTo(109L));
+            assertThat(second.get(CommonAttributes.ENTITY_ID), equalTo(109L));
+            assertThat(second.get(CommonAttributes.ITEM_ID), equalTo(11L));
+            assertThat(second.get(CommonAttributes.USER_ID), equalTo(20L));
             assertThat(second.get(CommonAttributes.RATING), equalTo(4.0));
             assertThat(second.hasAttribute(CommonAttributes.TIMESTAMP),
                        equalTo(false));
