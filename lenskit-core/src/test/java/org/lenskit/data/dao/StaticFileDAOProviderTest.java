@@ -22,15 +22,15 @@ package org.lenskit.data.dao;
 
 import com.google.common.collect.Lists;
 import org.junit.Test;
-import org.lenskit.data.dao.file.DataManifest;
+import org.lenskit.data.dao.file.StaticFileDAOProvider;
 import org.lenskit.data.entities.*;
 
-public class DataManifestTest {
+public class StaticFileDAOProviderTest {
     private EntityFactory factory = new EntityFactory();
 
     @Test
     public void testSomeEvents() {
-        DataManifest layout = new DataManifest();
+        StaticFileDAOProvider layout = new StaticFileDAOProvider();
         layout.addSource(Lists.newArrayList(factory.rating(1L, 20L, 3.5),
                                             factory.rating(1L, 21L, 4.5)));
     }

@@ -33,20 +33,20 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Description of the layout for a common entity DAO.  Layouts consist of entity sources,
- * indexes, and derived entities.
- *
- * These DAOs are only suitable for static data, such as CSV files and the like.
+ * Layout and builder for DAOs backed by static files.  This is used to read CSV files
+ * and the like; it controls a composite DAO that reads from files, caches them in
+ * memory, and can compute some derived entities from others (e.g. extracting items
+ * from the item IDs in a rating data set).
  */
-public class DataManifest {
-    private static final Logger logger = LoggerFactory.getLogger(DataManifest.class);
+public class StaticFileDAOProvider {
+    private static final Logger logger = LoggerFactory.getLogger(StaticFileDAOProvider.class);
     private ListMultimap<EntityType, ?> sources;
     private ListMultimap<EntityType, Attribute<?>> indexedAttributes;
 
     /**
      * Construct a new data layout object.
      */
-    public DataManifest() {
+    public StaticFileDAOProvider() {
         sources = ArrayListMultimap.create();
         indexedAttributes = ArrayListMultimap.create();
     }
@@ -90,8 +90,8 @@ public class DataManifest {
      * @param object The JSON object.
      * @return The data layout.
      */
-    public static DataManifest fromJSON(JsonNode object, Path dir) {
-        DataManifest layout = new DataManifest();
+    public static StaticFileDAOProvider fromJSON(JsonNode object, Path dir) {
+        StaticFileDAOProvider layout = new StaticFileDAOProvider();
 
         if (object.isArray()) {
             for (JsonNode source: object) {
@@ -110,7 +110,7 @@ public class DataManifest {
         return layout;
     }
 
-    private static void configureDataSource(DataManifest layout, String name, JsonNode object, Path dir) {
+    private static void configureDataSource(StaticFileDAOProvider layout, String name, JsonNode object, Path dir) {
         if (name == null) {
             name = object.path("name").asText("<unnamed>");
         }
