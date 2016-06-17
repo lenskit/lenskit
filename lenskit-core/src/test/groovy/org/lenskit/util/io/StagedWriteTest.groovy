@@ -89,4 +89,39 @@ class StagedWriteTest {
         assertThat file.text.trim(), equalTo("goodnight, moon")
         assertThat folder.root.listFiles().toList()*.name, contains('foo.txt')
     }
+
+    @Test
+    public void stressTest() {
+        // beat on the stager for a while to stress-test it
+        def threads = []
+        Exception err = null
+        for (i in 1..4) {
+            threads << Thread.start {
+                try {
+                    for (j in 1..50) {
+                        def uuid = UUID.randomUUID()
+                        def file = new File(folder.root, "${uuid}.txt")
+                        def stage = StagedWrite.begin(file)
+                        try {
+                            stage.stagingFile.text = "${uuid}\n"
+                            stage.commit()
+                        } finally {
+                            stage.close()
+                        }
+                        assertThat file.exists(), equalTo(true)
+                        assertThat file.text.trim(), equalTo(uuid.toString())
+                    }
+                } catch (InterruptedIOException ex) {
+                    return
+                } catch (Exception ex) {
+                    err = ex
+                    threads.each { it.interrupt() }
+                }
+            }
+        }
+        threads.each { it.join() }
+        if (err != null) {
+            throw err;
+        }
+    }
 }
