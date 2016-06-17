@@ -33,23 +33,12 @@ public class BasicEntityBuilder extends EntityBuilder {
     private Map<Attribute<?>, Object> attributes;
 
     /**
-     * Create a new, empty entity builder.
-     */
-    public BasicEntityBuilder() {
-        this(null, -1, false, new HashMap<Attribute<?>, Object>());
-    }
-
-    /**
      * Create a new entity builder for a type.
      * @param type The entity type.
      */
     public BasicEntityBuilder(EntityType type) {
-        this(type, -1, false, new HashMap<Attribute<?>, Object>());
-    }
-
-    BasicEntityBuilder(EntityType typ, long initId, boolean initIdSet, Map<Attribute<?>, Object> attrs) {
-        super(initId, initIdSet, typ);
-        attributes = attrs;
+        super(type);
+        attributes = new HashMap<>();
     }
 
     @Override

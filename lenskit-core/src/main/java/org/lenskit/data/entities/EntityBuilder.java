@@ -22,39 +22,20 @@ package org.lenskit.data.entities;
 
 /**
  * Base class for entity builders.  The standard implementation is {@link BasicEntityBuilder}, which can be created
- * with {@link Entities#newBuilder()}.
+ * with {@link Entities#newBuilder(EntityType)}.
  */
 public abstract class EntityBuilder {
-    protected EntityType type;
+    protected final EntityType type;
     protected long id;
     protected boolean idSet;
 
     /**
      * Construct a new entity builder.
      *
-     * **Note:** This constructor calls {@link #setId(long)} and {@link #setType(EntityType)}, so if those methods
-     * are overloaded, they should be able to run without the derived class constructor having finished.
-     *
-     * @param initId The initial ID.
-     * @param initIdSet Whether the ID is initially set.
      * @param typ The entity type.
      */
-    protected EntityBuilder(long initId, boolean initIdSet, EntityType typ) {
-        if (initIdSet) {
-            setId(initId);
-        }
-        setType(typ);
-    }
-
-    /**
-     * Set the entity type.
-     * @param typ The entity type.
-     * @return The entity builder (for chaining).
-     * @throws IllegalArgumentException if the type is not valid for this builder.
-     */
-    public EntityBuilder setType(EntityType typ) {
+    protected EntityBuilder(EntityType typ) {
         type = typ;
-        return this;
     }
 
     /**

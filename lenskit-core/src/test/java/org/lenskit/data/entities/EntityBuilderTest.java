@@ -44,8 +44,7 @@ public class EntityBuilderTest {
 
     @Test
     public void testBareSetters() {
-        EntityBuilder eb = Entities.newBuilder()
-                                   .setType(CommonTypes.USER)
+        EntityBuilder eb = Entities.newBuilder(CommonTypes.USER)
                                    .setId(42);
         Entity e = eb.build();
         assertThat(e, notNullValue());
@@ -59,8 +58,7 @@ public class EntityBuilderTest {
 
     @Test
     public void testAttributeSetters() {
-        EntityBuilder eb = Entities.newBuilder()
-                                   .setType(CommonTypes.USER)
+        EntityBuilder eb = Entities.newBuilder(CommonTypes.USER)
                                    .setAttribute(CommonAttributes.ENTITY_ID, 42L);
         Entity e = eb.build();
         assertThat(e, notNullValue());

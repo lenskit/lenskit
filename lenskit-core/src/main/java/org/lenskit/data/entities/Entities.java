@@ -36,20 +36,12 @@ public final class Entities {
     }
 
     /**
-     * Create a new, empty entity builder.
-     * @return An empty entity builder.
-     */
-    public static EntityBuilder newBuilder() {
-        return new BasicEntityBuilder();
-    }
-
-    /**
      * Create a new basic entity builder.
      * @param type The entity type.
      * @return The entity builder.
      */
     public static EntityBuilder newBuilder(EntityType type) {
-        return new BasicEntityBuilder(type, -1, false, new HashMap<Attribute<?>, Object>());
+        return new BasicEntityBuilder(type);
     }
 
     /**
@@ -58,7 +50,7 @@ public final class Entities {
      * @return The entity builder.
      */
     public static EntityBuilder newBuilder(EntityType type, long id) {
-        return new BasicEntityBuilder(type, id, true, new HashMap<Attribute<?>, Object>());
+        return newBuilder(type).setId(id);
     }
 
     /**
