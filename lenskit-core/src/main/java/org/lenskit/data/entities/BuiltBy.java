@@ -20,8 +20,6 @@
  */
 package org.lenskit.data.entities;
 
-import org.lenskit.data.events.EventBuilder;
-
 import java.lang.annotation.*;
 
 /**
