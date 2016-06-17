@@ -27,9 +27,7 @@ import com.google.common.collect.Interners;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * A type for an entity.  Obtain an entity from a named type with {@link #forName(String)}.
@@ -53,6 +51,20 @@ public final class EntityType implements Serializable {
     @JsonValue
     public String getName() {
         return name;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else {
+            return obj instanceof EntityType && name.equals(((EntityType) obj).name);
+        }
     }
 
     @Override
