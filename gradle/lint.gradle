@@ -58,7 +58,7 @@ if (lintMode != 'disabled') {
     ciTest.dependsOn report
 
     coveralls {
-        sourceDirs = jacocoMergedReport.sourceSets.main.allSource.srcDirs.flatten()
+        sourceDirs = jacocoMergedReport.sourceDirectories
         jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
     }
 
