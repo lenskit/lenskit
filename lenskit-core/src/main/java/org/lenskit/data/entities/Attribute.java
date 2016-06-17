@@ -28,49 +28,68 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import javax.annotation.Nonnull;
 
 /**
- * An attribute-value association.
+ * An attribute associated with an entity, consisting of its name, type, and value.
  * @param <T> The attribute type.
  */
-public final class AttributeValue<T> {
-    private final TypedName<T> attribute;
+public final class Attribute<T> {
+    private final TypedName<T> name;
     private final T value;
 
     /**
-     * Create a new attribute-value pair.
-     * @param name The attribute.
+     * Create a new attribute pair.
+     * @param name The attribute name.
      * @param val The value.
      */
-    private AttributeValue(@Nonnull TypedName<T> name, @Nonnull T val) {
-        Preconditions.checkNotNull(name, "attribute");
+    private Attribute(@Nonnull TypedName<T> name, @Nonnull T val) {
+        Preconditions.checkNotNull(name, "name");
         Preconditions.checkNotNull(val, "value");
-        attribute = name;
+        Preconditions.checkArgument(name.getType().isInstance(val), "value-type mismatch");
+        this.name = name;
         value = val;
     }
 
     /**
-     * Create a new attribute-value pair.
-     * @param name The attribute.
+     * Create a new attribute pair.
+     * @param name The attribute name.
      * @param val The value.
      * @param <T> The attribute type.
      * @return The attribute-value object.
      */
-    public static <T> AttributeValue<T> create(@Nonnull TypedName<T> name,
-                                               @Nonnull T val) {
-        return new AttributeValue<>(name, val);
+    public static <T> Attribute<T> create(@Nonnull TypedName<T> name,
+                                          @Nonnull T val) {
+        return new Attribute<>(name, val);
     }
 
     /**
-     * Get the attribute.
-     * @return The attribute associated with this value.
+     * Get the attribute's typed name.
+     * @return The typed name associated with this attribute.
      */
     @Nonnull
-    public TypedName<T> getAttribute() {
-        return attribute;
+    public TypedName<T> getTypedName() {
+        return name;
     }
 
     /**
-     * Get the value.
-     * @return The value associated with the attribute.
+     * Get the attribute's name.
+     * @return The attributge name.
+     */
+    @Nonnull
+    public String getName() {
+        return name.getName();
+    }
+
+    /**
+     * Get the attribute's type.
+     * @return The attribute's type.
+     */
+    @Nonnull
+    public Class<T> getType() {
+        return name.getType();
+    }
+
+    /**
+     * Get the attribute's value.
+     * @return The attribute value.
      */
     @Nonnull
     public T getValue() {
@@ -83,10 +102,10 @@ public final class AttributeValue<T> {
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        AttributeValue<?> that = (AttributeValue<?>) o;
+        Attribute<?> that = (Attribute<?>) o;
 
         return new EqualsBuilder()
-                .append(attribute, that.attribute)
+                .append(name, that.name)
                 .append(value, that.value)
                 .isEquals();
     }
@@ -94,7 +113,7 @@ public final class AttributeValue<T> {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(attribute)
+                .append(name)
                 .append(value)
                 .toHashCode();
     }
@@ -102,7 +121,7 @@ public final class AttributeValue<T> {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("attribute", attribute)
+                .append("attribute", name)
                 .append("value", value)
                 .toString();
     }

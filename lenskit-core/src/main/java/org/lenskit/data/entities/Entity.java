@@ -66,7 +66,7 @@ public interface Entity {
     /**
      * Get the attribute-value pairs.
      */
-    Collection<AttributeValue<?>> getAttributeValues();
+    Collection<Attribute<?>> getAttributeValues();
 
     /**
      * View this entity as a map.

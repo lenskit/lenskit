@@ -54,7 +54,7 @@ public abstract class AbstractEntity implements Entity {
     }
 
     @Override
-    public Collection<AttributeValue<?>> getAttributeValues() {
+    public Collection<Attribute<?>> getAttributeValues() {
         return new ValueCollection();
     }
 
@@ -141,8 +141,8 @@ public abstract class AbstractEntity implements Entity {
         ToStringBuilder tsb = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
         tsb.append("type", getType())
            .append("id", getId());
-        for (AttributeValue<?> av: getAttributeValues()) {
-            tsb.append(av.getAttribute().toString(), av.getValue());
+        for (Attribute<?> av: getAttributeValues()) {
+            tsb.append(av.getTypedName().toString(), av.getValue());
         }
         return tsb.toString();
     }
@@ -178,16 +178,16 @@ public abstract class AbstractEntity implements Entity {
         }
     }
 
-    private class ValueCollection extends AbstractCollection<AttributeValue<?>> {
+    private class ValueCollection extends AbstractCollection<Attribute<?>> {
         @Override
-        public Iterator<AttributeValue<?>> iterator() {
+        public Iterator<Attribute<?>> iterator() {
             return Iterators.transform(getAttributes().iterator(),
-                                       new Function<TypedName<?>, AttributeValue<?>>() {
+                                       new Function<TypedName<?>, Attribute<?>>() {
                                            @Nullable
                                            @Override
-                                           public AttributeValue<?> apply(@Nullable TypedName<?> input) {
+                                           public Attribute<?> apply(@Nullable TypedName<?> input) {
                                                assert input != null;
-                                               return AttributeValue.create((TypedName) input, get(input));
+                                               return Attribute.create((TypedName) input, get(input));
                                            }
                                        });
         }
