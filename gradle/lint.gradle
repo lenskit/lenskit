@@ -66,7 +66,7 @@ if (lintMode != 'disabled') {
         group = 'Coverage reports'
         description = 'Uploads the aggregated coverage report to Coveralls'
 
-        dependsOn jacocoRootReport
+        dependsOn jacocoMergedReport
         onlyIf { System.env.'CI' }
     }
 }
