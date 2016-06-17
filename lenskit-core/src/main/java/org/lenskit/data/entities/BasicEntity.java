@@ -37,7 +37,7 @@ class BasicEntity extends AbstractEntity {
     private final long id;
     private final Map<Attribute<?>, Object> attributes;
 
-    public BasicEntity(EntityType t, long eid, Map<Attribute<?>, Object> attrs) {
+    BasicEntity(EntityType t, long eid, Map<Attribute<?>, Object> attrs) {
         type = t;
         id = eid;
         attributes = ImmutableMap.<Attribute<?>,Object>builder()

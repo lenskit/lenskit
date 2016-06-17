@@ -35,8 +35,7 @@ import java.util.Set;
  * Two entities are equal if their types, IDs, and data are equal.
  *
  * Identifiers are scoped per-type; it is acceptable to LensKit for two entities with different types to have the same
- * identifier, and they are not considered to be the same entity.  However, individual data storage facilities are free
- * to require identifiers to be disjoint.
+ * identifier, and they are not considered to be the same entity.
  */
 @Immutable
 @BuiltBy(BasicEntityBuilder.class)
@@ -66,7 +65,7 @@ public interface Entity {
     Set<Attribute<?>> getAttributes();
 
     /**
-     * Get the attribtue-value pairs.
+     * Get the attribute-value pairs.
      */
     Collection<AttributeValue<?>> getAttributeValues();
 
