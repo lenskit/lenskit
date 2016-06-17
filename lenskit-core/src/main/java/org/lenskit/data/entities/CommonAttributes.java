@@ -21,21 +21,34 @@
 package org.lenskit.data.entities;
 
 /**
- * Exception thrown when a nonexistent field is requested.
+ * Definitions and utilities for common fields.
  */
-public class NoSuchFieldException extends IllegalArgumentException {
-    public NoSuchFieldException() {
-    }
+public final class CommonAttributes {
+    private CommonAttributes() {}
 
-    public NoSuchFieldException(String s) {
-        super(s);
-    }
+    /**
+     * The user ID associated with an entity.
+     */
+    public static final Attribute<Long> USER_ID = Attribute.create("user", Long.class);
+    /**
+     * The user ID associated with an entity.
+     */
+    public static final Attribute<Long> ITEM_ID = Attribute.create("item", Long.class);
+    /**
+     * A name associated with the entity.
+     */
+    public static final Attribute<String> NAME = Attribute.create("name", String.class);
 
-    public NoSuchFieldException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public NoSuchFieldException(Throwable cause) {
-        super(cause);
-    }
+    /**
+     * A timestamp associated with an event entity.
+     */
+    public static final Attribute<Long> TIMESTAMP = Attribute.create("timestamp", Long.class);
+    /**
+     * A rating value.
+     */
+    public static final Attribute<Double> RATING = Attribute.create("rating", Double.class);
+    /**
+     * A standard count, for events that may use them.
+     */
+    public static final Attribute<Integer> COUNT = Attribute.create("count", Integer.class);
 }

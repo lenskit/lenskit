@@ -74,7 +74,7 @@ public final class EntityType implements Serializable {
     @Nonnull
     @JsonCreator
     public static synchronized EntityType forName(String name) {
-        String normedName = name.toLowerCase(Locale.ROOT);
+        String normedName = name.toLowerCase(Locale.ROOT).intern();
         EntityType type = TYPE_CACHE.get(normedName);
         if (type == null) {
             type = new EntityType(normedName);

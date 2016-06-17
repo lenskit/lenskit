@@ -56,7 +56,7 @@ public interface Entity {
     /**
      * Get the fields in this entity.
      */
-    Set<Field<?>> getFields();
+    Set<Attribute<?>> getFields();
 
     /**
      * Check if the entity has a field with a particular name.
@@ -67,44 +67,44 @@ public interface Entity {
     boolean hasField(String name);
 
     /**
-     * Check if the entity has a field.
+     * Check if the entity has a attribute.
      *
-     * @param field The field to look for.
-     * @return `true` if the entity contains `field` (same name **and type**).
+     * @param attribute The attribute to look for.
+     * @return `true` if the entity contains `attribute` (same name **and type**).
      */
-    boolean hasField(Field<?> field);
+    boolean hasField(Attribute<?> attribute);
 
     /**
-     * Get the value of a field.
-     * @param field The field.
-     * @param <T> The field's type.
-     * @return The field's value.
-     * @throws NoSuchFieldException if the specified field is not present.
-     * @throws IllegalArgumentException if a field with the same name as `field` is present, but it is of an
+     * Get the value of a attribute.
+     * @param attribute The attribute.
+     * @param <T> The attribute's type.
+     * @return The attribute's value.
+     * @throws NoSuchAttributeException if the specified attribute is not present.
+     * @throws IllegalArgumentException if a attribute with the same name as `attribute` is present, but it is of an
      *         incompatible type.
      */
     @Nullable
-    <T> T get(Field<T> field);
+    <T> T get(Attribute<T> attribute);
 
     /**
      * Get the value of a field by name.
      * @param field The field name.
-     * @throws NoSuchFieldException if the specified field is not present.
+     * @throws NoSuchAttributeException if the specified field is not present.
      * @return The field value, or `null` if the field is missing.
      */
     @Nullable
     Object get(String field);
 
     /**
-     * Get the value of a possibly-missing field.
-     * @param field The field.
-     * @param <T> The field's type.
-     * @return The field's value, or `null` if it is not present.
-     * @throws IllegalArgumentException if a field with the same name as `field` is present, but it is of an
+     * Get the value of a possibly-missing attribute.
+     * @param attribute The attribute.
+     * @param <T> The attribute's type.
+     * @return The attribute's value, or `null` if it is not present.
+     * @throws IllegalArgumentException if a attribute with the same name as `attribute` is present, but it is of an
      *         incompatible type.
      */
     @Nullable
-    <T> T maybeGet(Field<T> field);
+    <T> T maybeGet(Attribute<T> attribute);
 
     /**
      * Get the value of a possibly-missing field by name.
@@ -117,20 +117,20 @@ public interface Entity {
     Object maybeGet(String field);
 
     /**
-     * Get the value of a field that contains a long.
-     * @param field The field.
-     * @return The field's value.
-     * @throws NoSuchFieldException if the specified field is not present.
-     * @throws IllegalArgumentException if the field is present but its type is not `Long`.
+     * Get the value of a attribute that contains a long.
+     * @param attribute The attribute.
+     * @return The attribute's value.
+     * @throws NoSuchAttributeException if the specified attribute is not present.
+     * @throws IllegalArgumentException if the attribute is present but its type is not `Long`.
      */
-    long getLong(Field<Long> field);
+    long getLong(Attribute<Long> attribute);
 
     /**
-     * Get the value of a field that contains a double.
-     * @param field The field.
-     * @return The field's value.
-     * @throws NoSuchFieldException if the specified field is not present.
-     * @throws IllegalArgumentException if the field is present but is not of type `Double`.
+     * Get the value of a attr that contains a double.
+     * @param attr The attr.
+     * @return The attr's value.
+     * @throws NoSuchAttributeException if the specified attr is not present.
+     * @throws IllegalArgumentException if the attr is present but is not of type `Double`.
      */
-    double getDouble(Field<Double> field);
+    double getDouble(Attribute<Double> attr);
 }

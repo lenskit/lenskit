@@ -31,17 +31,17 @@ import javax.annotation.Nonnull;
 import java.io.*;
 
 /**
- * Identifier for a field in an entity.
+ * Identifier for an attribute in an entity.
  */
-public final class Field<T> implements Serializable {
+public final class Attribute<T> implements Serializable {
     private static final long serialVersionUID = -1L;
-    private static final Interner<Field<?>> FIELD_CACHE = Interners.newStrongInterner();
+    private static final Interner<Attribute<?>> FIELD_CACHE = Interners.newStrongInterner();
 
     private final String name;
     private final Class<T> type;
     private transient volatile int hashCode;
 
-    private Field(String n, Class<T> t) {
+    private Attribute(String n, Class<T> t) {
         name = n;
         type = t;
     }
@@ -83,8 +83,8 @@ public final class Field<T> implements Serializable {
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        } else if (o instanceof Field) {
-            Field of = (Field) o;
+        } else if (o instanceof Attribute) {
+            Attribute of = (Attribute) o;
             return name.equals(of.getName()) && type.equals(of.getType());
         } else {
             return false;
@@ -93,7 +93,7 @@ public final class Field<T> implements Serializable {
 
     @Override
     public String toString() {
-        return "Field[" + name + ", type=" + type.getCanonicalName() + "]";
+        return "Attribute[" + name + ", type=" + type.getCanonicalName() + "]";
     }
 
     /**
@@ -105,14 +105,14 @@ public final class Field<T> implements Serializable {
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public static <T> Field<T> create(String name, Class<T> type) {
-        Preconditions.checkNotNull(name, "field name");
-        Preconditions.checkNotNull(type, "field type");
+    public static <T> Attribute<T> create(String name, Class<T> type) {
+        Preconditions.checkNotNull(name, "attribute name");
+        Preconditions.checkNotNull(type, "attribute type");
         if (type.isPrimitive()) {
             type = (Class<T>) ClassUtils.primitiveToWrapper(type);
         }
-        Field<T> field = new Field<>(name.intern(), type);
-        return (Field<T>) FIELD_CACHE.intern(field);
+        Attribute<T> attribute = new Attribute<>(name.intern(), type);
+        return (Attribute<T>) FIELD_CACHE.intern(attribute);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {

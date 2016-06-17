@@ -29,33 +29,33 @@ import static org.grouplens.lenskit.util.test.ExtraMatchers.matchesPattern;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class FieldTest {
+public class AttributeTest {
     @Test
     public void testBasicField() {
-        Field<String> field = Field.create("foo", String.class);
-        assertThat(field.getName(), equalTo("foo"));
-        assertThat(field.getType(), equalTo(String.class));
+        Attribute<String> attribute = Attribute.create("foo", String.class);
+        assertThat(attribute.getName(), equalTo("foo"));
+        assertThat(attribute.getType(), equalTo(String.class));
         // check equality to random other object
-        assertThat(field, not(equalTo((Object) "foo")));
+        assertThat(attribute, not(equalTo((Object) "foo")));
 
-        assertThat(Field.create("foo", String.class),
-                   sameInstance(field));
+        assertThat(Attribute.create("foo", String.class),
+                   sameInstance(attribute));
 
-        assertThat(field.toString(), notNullValue());
-        assertThat(field.toString(), matchesPattern("^Field\\[foo, type=.*\\]$"));
+        assertThat(attribute.toString(), notNullValue());
+        assertThat(attribute.toString(), matchesPattern("^Attribute\\[foo, type=.*\\]$"));
     }
 
     @Test
     public void testSerialize() {
-        Field<String> field = Field.create("foo", String.class);
-        assertThat(SerializationUtils.clone(field),
-                   sameInstance(field));
+        Attribute<String> attribute = Attribute.create("foo", String.class);
+        assertThat(SerializationUtils.clone(attribute),
+                   sameInstance(attribute));
     }
 
     @Test
     public void testDifferentTypes() {
-        Field<String> string = Field.create("foo", String.class);
-        Field<File> file = Field.create("foo", File.class);
-        assertThat(string, not(equalTo((Field) file)));
+        Attribute<String> string = Attribute.create("foo", String.class);
+        Attribute<File> file = Attribute.create("foo", File.class);
+        assertThat(string, not(equalTo((Attribute) file)));
     }
 }
