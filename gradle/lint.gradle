@@ -28,7 +28,6 @@ if (lintMode != 'disabled') {
 
     task jacocoMergedReport(type: JacocoReport) {
         for (prj in subprojects) {
-            if (prj.name == 'lenskit-integration-tests') continue;
             dependsOn prj.test
             sourceSets prj.sourceSets.test
             if (prj.sourceSets.test.allSource.files.isEmpty()) {
@@ -41,7 +40,6 @@ if (lintMode != 'disabled') {
         reports {
             csv.enabled = false
             xml.enabled = false
-            html.enabled = true
             html.destination = "$reporting.baseDir/jacoco"
         }
     }
