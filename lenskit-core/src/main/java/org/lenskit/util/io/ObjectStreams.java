@@ -134,7 +134,7 @@ public final class ObjectStreams {
      * @param <S>      The type of source stream rows
      * @param <T>      The type of output stream rows
      * @param objectStream   The source stream
-     * @param function A function to apply to each row in the stream.
+     * @param function A function to apply to each row in the stream.  It will be applied to each value at most once.
      * @return A new stream iterating the results of <var>function</var>.
      */
     public static <S, T> ObjectStream<T> transform(@WillCloseWhenClosed ObjectStream<S> objectStream, Function<? super S, ? extends T> function) {
