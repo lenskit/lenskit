@@ -23,6 +23,11 @@ if (lintMode != 'disabled') {
             jacoco {
                 toolVersion = '0.7.0.201403182114'
             }
+            jacocoTestReport {
+                reports {
+                    xml.enabled true
+                }
+            }
         }
     }
 
