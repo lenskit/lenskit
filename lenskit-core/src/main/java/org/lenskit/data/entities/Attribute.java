@@ -74,9 +74,10 @@ public final class Attribute<T> implements Serializable {
         int hc = hashCode;
         if (hc == 0) {
             HashCodeBuilder hcb = new HashCodeBuilder();
-            hashCode = hc = hcb.append(name)
-                               .append(type)
-                               .toHashCode();
+            hc = hcb.append(name)
+                    .append(type)
+                    .toHashCode();
+            hashCode = hc;
         }
         return hc;
     }
