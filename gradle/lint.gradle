@@ -30,6 +30,10 @@ if (lintMode != 'disabled') {
             }
         }
     }
+    apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = '0.7.0.201403182114'
+    }
 
     task jacocoMergedReport(type: JacocoReport) {
         for (prj in subprojects) {
