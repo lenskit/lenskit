@@ -24,12 +24,14 @@ allprojects {
 }
 
 subprojects {
-    tasks.withType(Test) { t ->
+    tasks.withType(Test).all { t ->
         t.jacoco {
             enabled = lintMode != 'disabled'
-            reports {
-                xml.enabled = true
-            }
+        }
+    }
+    tasks.withType(JacocoReport).all { rpt ->
+        rpt.reports {
+            xml.enabled = true
         }
     }
 }
