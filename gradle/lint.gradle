@@ -28,6 +28,7 @@ if (lintMode != 'disabled') {
                     xml.enabled true
                 }
             }
+            ciTest.dependsOn jacocoTestReport
         }
     }
     apply plugin: 'jacoco'
@@ -54,6 +55,7 @@ if (lintMode != 'disabled') {
     }
 
     report.dependsOn jacocoMergedReport
+    ciTest.dependsOn report
 }
 
 sonarqube {
