@@ -35,6 +35,24 @@ import java.util.*;
  * Base class to make it easier to implement entities.
  */
 public abstract class AbstractEntity implements Entity {
+    protected final EntityType type;
+    protected final long id;
+
+    protected AbstractEntity(EntityType t, long eid) {
+        type = t;
+        id = eid;
+    }
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public EntityType getType() {
+        return type;
+    }
+
     @Override
     public Collection<AttributeValue<?>> getAttributeValues() {
         return new ValueCollection();

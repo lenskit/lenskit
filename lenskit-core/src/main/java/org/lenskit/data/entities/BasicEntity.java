@@ -33,28 +33,15 @@ import java.util.Set;
  */
 @Immutable
 class BasicEntity extends AbstractEntity {
-    private final EntityType type;
-    private final long id;
     private final Map<Attribute<?>, Object> attributes;
 
     BasicEntity(EntityType t, long eid, Map<Attribute<?>, Object> attrs) {
-        type = t;
-        id = eid;
+        super(t, eid);
         attributes = ImmutableMap.<Attribute<?>,Object>builder()
                                  .put(CommonAttributes.ENTITY_ID, eid)
                                  .putAll(attrs)
                                  .build();
         assert id == (Long) attributes.get(CommonAttributes.ENTITY_ID);
-    }
-
-    @Override
-    public long getId() {
-        return id;
-    }
-
-    @Override
-    public EntityType getType() {
-        return type;
     }
 
     @Override

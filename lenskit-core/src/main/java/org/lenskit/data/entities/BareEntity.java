@@ -30,22 +30,9 @@ import java.util.Set;
  */
 @Immutable
 class BareEntity extends AbstractEntity {
-    private final EntityType type;
-    private final long id;
 
     public BareEntity(EntityType t, long eid) {
-        type = t;
-        id = eid;
-    }
-
-    @Override
-    public long getId() {
-        return id;
-    }
-
-    @Override
-    public EntityType getType() {
-        return type;
+        super(t, eid);
     }
 
     @Override
