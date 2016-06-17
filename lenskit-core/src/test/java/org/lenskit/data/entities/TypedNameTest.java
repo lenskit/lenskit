@@ -58,4 +58,38 @@ public class TypedNameTest {
         TypedName<File> file = TypedName.create("foo", File.class);
         assertThat(string, not(equalTo((TypedName) file)));
     }
+
+    @Test
+    public void testTypeNames() {
+        assertThat(TypedName.create("foo", "string"),
+                   equalTo(TypedName.create("foo", (Class) String.class)));
+        assertThat(TypedName.create("bar", "long"),
+                   equalTo(TypedName.create("bar", (Class) Long.class)));
+        assertThat(TypedName.create("bar", "int"),
+                   equalTo(TypedName.create("bar", (Class) Integer.class)));
+        assertThat(TypedName.create("bar", "double"),
+                   equalTo(TypedName.create("bar", (Class) Double.class)));
+        assertThat(TypedName.create("bar", "real"),
+                   equalTo(TypedName.create("bar", (Class) Double.class)));
+        assertThat(TypedName.create("bar", "Double"),
+                   equalTo(TypedName.create("bar", (Class) Double.class)));
+        assertThat(TypedName.create("bar", "Integer"),
+                   equalTo(TypedName.create("bar", (Class) Integer.class)));
+        assertThat(TypedName.create("bar", "String"),
+                   equalTo(TypedName.create("bar", (Class) String.class)));
+        assertThat(TypedName.create("file", "java.io.File"),
+                   equalTo(TypedName.create("file", (Class) File.class)));
+    }
+
+    @Test
+    public void testParseString() {
+        assertThat(TypedName.create("foo", String.class).parseString("wombat"),
+                   equalTo("wombat"));
+    }
+
+    @Test
+    public void testParseLong() {
+        assertThat(TypedName.create("foo", Long.class).parseString("3209"),
+                   equalTo(3209L));
+    }
 }

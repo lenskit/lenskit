@@ -26,6 +26,8 @@ import com.google.common.collect.Interners;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.util.ClassProxy;
+import org.joda.convert.StringConvert;
+import org.joda.convert.StringConverter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -46,6 +48,8 @@ public final class TypedName<T> implements Serializable {
     private final String name;
     private final Class<T> type;
     private transient volatile int hashCode;
+    private transient volatile StringConverter<T> converter;
+
 
     private TypedName(String n, Class<T> t) {
         name = n;
@@ -71,6 +75,19 @@ public final class TypedName<T> implements Serializable {
     public Class<T> getType() {
         return type;
     }
+
+    /**
+     * Parse a string containing this attribute's value.
+     * @return The attribute value.
+     */
+    public T parseString(String value) {
+        StringConverter<T> cvt = converter;
+        if (cvt == null) {
+            converter = cvt = StringConvert.INSTANCE.findConverter(type);
+        }
+        return cvt.convertFromString(type, value);
+    }
+
 
     @Override
     public int hashCode() {
@@ -127,6 +144,45 @@ public final class TypedName<T> implements Serializable {
         TypedName<T> attribute = new TypedName<>(name.intern(), type);
         return (TypedName<T>) FIELD_CACHE.intern(attribute);
     }
+
+    /**
+     * Create an typed name from a name and type name.
+     * @param name The name.
+     * @param typeName The type name.
+     * @return The attribute.
+     * @throws IllegalArgumentException if `typeName` is not a valid type name.
+     */
+    public static TypedName<?> create(String name, String typeName) {
+        Class<?> type;
+        switch (typeName) {
+        case "string":
+        case "String":
+            type = String.class;
+            break;
+        case "int":
+        case "Integer":
+            type = Integer.class;
+            break;
+        case "long":
+        case "Long":
+            type = Long.class;
+            break;
+        case "double":
+        case "real":
+        case "Double":
+            type = Double.class;
+            break;
+        default:
+            try {
+                type = ClassUtils.getClass(typeName);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException("Cannot load type name ", e);
+            }
+        }
+
+        return create(name, type);
+    }
+
 
     private void readObject(ObjectInputStream in) throws IOException {
         throw new InvalidObjectException("typed names must use serialization proxy");
