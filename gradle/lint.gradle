@@ -16,61 +16,57 @@ switch (getConfigProperty('lint', 'false').toLowerCase()) {
         break
 }
 
-if (lintMode != 'disabled') {
-    subprojects {
-        if (name != 'lenskit-integration-tests') {
-            apply plugin: 'jacoco'
-            jacoco {
-                toolVersion = '0.7.0.201403182114'
-            }
-            jacocoTestReport {
-                reports {
-                    xml.enabled true
-                }
-            }
-            ciTest.dependsOn jacocoTestReport
-        }
-    }
+allprojects {
     apply plugin: 'jacoco'
     jacoco {
-        toolVersion = '0.7.0.201403182114'
-    }
-
-    task jacocoMergedReport(type: JacocoReport) {
-        for (prj in subprojects) {
-            dependsOn prj.test
-            sourceSets prj.sourceSets.test
-            if (prj.sourceSets.test.allSource.files.isEmpty()) {
-                logger.info '{} has no tests', prj.name
-            } else {
-                logger.info 'aggregating tests from {}', prj.name
-                executionData prj.test
-            }
-        }
-        reports {
-            csv.enabled = false
-            xml.enabled = true
-            html.destination = "$reporting.baseDir/jacoco"
-        }
-    }
-
-    report.dependsOn jacocoMergedReport
-    ciTest.dependsOn report
-
-    coveralls {
-        sourceDirs = jacocoMergedReport.sourceDirectories
-        jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
-    }
-    ciTest.dependsOn coveralls
-
-    tasks.coveralls {
-        group = 'Coverage reports'
-        description = 'Uploads the aggregated coverage report to Coveralls'
-
-        dependsOn jacocoMergedReport
-        onlyIf { System.env.'CI' }
+        toolVersion = '0.7.7.201606060606'
     }
 }
+
+subprojects {
+    tasks.withType(Test) { t ->
+        t.jacoco {
+            enabled = lintMode != 'disabled'
+            reports {
+                xml.enabled = true
+            }
+        }
+    }
+}
+
+task jacocoMergedReport(type: JacocoReport) {
+    for (prj in subprojects) {
+        dependsOn prj.test
+        sourceSets prj.sourceSets.test
+        if (prj.sourceSets.test.allSource.files.isEmpty()) {
+            logger.info '{} has no tests', prj.name
+        } else {
+            logger.info 'aggregating tests from {}', prj.name
+            executionData prj.test
+        }
+    }
+    reports {
+        csv.enabled = false
+        xml.enabled = true
+        html.destination = "$reporting.baseDir/jacoco"
+    }
+}
+report.dependsOn jacocoMergedReport
+ciTest.dependsOn report
+
+coveralls {
+    sourceDirs = jacocoMergedReport.sourceDirectories
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
+}
+
+tasks.coveralls {
+    group = 'Coverage reports'
+    description = 'Uploads the aggregated coverage report to Coveralls'
+
+    dependsOn jacocoMergedReport
+    onlyIf { System.env.'CI' }
+}
+ciTest.dependsOn tasks.coveralls
 
 sonarqube {
     properties {

@@ -75,6 +75,9 @@ test {
     testLogging {
         events = ["passed", "failed", "started", "skipped"]
     }
+    jacoco {
+        enabled = false
+    }
 }
 
 task crossCheck(group: 'verification')
