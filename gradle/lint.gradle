@@ -17,7 +17,7 @@ switch (getConfigProperty('lint', 'false').toLowerCase()) {
 }
 
 if (lintMode != 'disabled') {
-    allprojects {
+    subprojects {
         if (name != 'lenskit-integration-tests') {
             apply plugin: 'jacoco'
             jacoco {
