@@ -52,4 +52,17 @@ env:
   - secure: "KZlIPTwPJwh3mbsk4M98YnY+Jf7B0on5MVK4Q+0nKR6HJS9cn5zAmO5NU7ouLfl6/HCzD7YftqQEybuV3w1S5WM2CJvSe1yS5RDilQ0cFSx8QZe6xDprcFPawMfQ+DN3fEtqXieu8lVcqGtKL+JqF7piTmrN26ojCCdC6zpiy24="
   # SONATYPE_PASSWORD
   - secure: "JSZlPX3fbNrbUfBRcH6OdfQfAk65G3l1diJ4vxu/VvKGsH+eAOt6gfaKVNe8JRuPyyzmArgSK4QlM2lwvxKwgSEblw2hF1VDotJwHeD//NxTQBjeeOu3dV8BtsJE7kxT66ywyLai5jcGxLgFgWEEiA1ZwZjmBaZzn1rCwJVGKHk="
+  # Coverity token
+  - secure: "Bj66Sq92T/khNFGwMU4JYExlycwrkogdsf35GFeB4YiEC7bhrDsshpFWMWcQstUMo5+tJmTBCuXY6YHOHMUcjxjr+RFSuetwluzCumklJGHQms3s83peqle4E8Lu6b5Y1VKekf8Iri6P2+efI2fii5Pr0BD1RozPdBCQfZGqQYc="
+
+addons:
+  coverity_scan:
+    project:
+      name: "lenskit/lenskit"
+      description: "<Your project description here>"
+    notification_email: md@ekstrandom.net
+    build_command_prepend: "./gradlew clean"
+    build_command:   "./gradlew classes"
+    branch_pattern: coverity_scan
+
 sudo: false
