@@ -22,6 +22,8 @@ package org.lenskit.data.entities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -36,7 +38,7 @@ import java.util.Map;
  */
 public final class EntityType implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Map<String,EntityType> TYPE_CACHE = new HashMap<>();
+    private static final Interner<EntityType> TYPE_CACHE = Interners.newStrongInterner();
 
     private final String name;
 
@@ -75,11 +77,7 @@ public final class EntityType implements Serializable {
     @JsonCreator
     public static synchronized EntityType forName(String name) {
         String normedName = name.toLowerCase(Locale.ROOT).intern();
-        EntityType type = TYPE_CACHE.get(normedName);
-        if (type == null) {
-            type = new EntityType(normedName);
-            TYPE_CACHE.put(normedName, type);
-        }
-        return type;
+        EntityType type = new EntityType(normedName);
+        return TYPE_CACHE.intern(type);
     }
 }
