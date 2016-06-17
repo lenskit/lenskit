@@ -36,7 +36,7 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), contains((TypedName) CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeTypedNames(), contains((TypedName) CommonAttributes.ENTITY_ID));
         assertThat(e.getAttributeNames(), contains("id"));
         assertThat(e.get(CommonAttributes.ENTITY_ID), equalTo(42L));
         assertThat(e.get("id"), equalTo((Object) 42L));
@@ -50,7 +50,7 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), contains((TypedName) CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeTypedNames(), contains((TypedName) CommonAttributes.ENTITY_ID));
         assertThat(e.getAttributeNames(), contains("id"));
         assertThat(e.hasAttribute("user"), equalTo(false));
         assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
@@ -64,7 +64,7 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), contains((TypedName) CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeTypedNames(), contains((TypedName) CommonAttributes.ENTITY_ID));
         assertThat(e.getAttributeNames(), contains("id"));
         assertThat(e.hasAttribute("user"), equalTo(false));
         assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
@@ -79,8 +79,8 @@ public class EntityBuilderTest {
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
-        assertThat(e.getAttributes(), containsInAnyOrder((TypedName) CommonAttributes.NAME,
-                                                         CommonAttributes.ENTITY_ID));
+        assertThat(e.getAttributeTypedNames(), containsInAnyOrder((TypedName) CommonAttributes.NAME,
+                                                                  CommonAttributes.ENTITY_ID));
         assertThat(e.getAttributeNames(), containsInAnyOrder("name", "id"));
         assertThat(e.get("name"), equalTo((Object) "HACKEM MUCHE"));
         assertThat(e.get(CommonAttributes.NAME), equalTo("HACKEM MUCHE"));

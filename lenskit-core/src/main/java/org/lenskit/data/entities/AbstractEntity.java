@@ -21,6 +21,7 @@
 package org.lenskit.data.entities;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -29,6 +30,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import javax.print.attribute.standard.MediaSize;
 import java.util.*;
 
 /**
@@ -53,8 +56,28 @@ public abstract class AbstractEntity implements Entity {
         return type;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Delegates to {@link #getAttributeTypedNames()} and extracts the names.
+     */
     @Override
-    public Collection<Attribute<?>> getAttributeValues() {
+    public Set<String> getAttributeNames() {
+        // TODO Make this more efficient
+        ImmutableSet.Builder<String> bld = ImmutableSet.builder();
+        for (TypedName<?> name: getAttributeTypedNames()) {
+            bld.add(name.getName());
+        }
+        return bld.build();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Delegates to {@link #getAttributeTypedNames()} and extracts the names.
+     */
+    @Override
+    public Collection<Attribute<?>> getAttributes() {
         return new ValueCollection();
     }
 
@@ -115,6 +138,26 @@ public abstract class AbstractEntity implements Entity {
         return get(name);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #get(TypedName)}.
+     */
+    @Override
+    public int getInteger(TypedName<Integer> name) {
+        return 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #get(TypedName)}.
+     */
+    @Override
+    public boolean getBoolean(TypedName<Boolean> name) {
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
@@ -139,9 +182,8 @@ public abstract class AbstractEntity implements Entity {
     @Override
     public String toString() {
         ToStringBuilder tsb = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-        tsb.append("type", getType())
-           .append("id", getId());
-        for (Attribute<?> av: getAttributeValues()) {
+        tsb.append("type", getType());
+        for (Attribute<?> av: getAttributes()) {
             tsb.append(av.getTypedName().toString(), av.getValue());
         }
         return tsb.toString();
@@ -181,7 +223,7 @@ public abstract class AbstractEntity implements Entity {
     private class ValueCollection extends AbstractCollection<Attribute<?>> {
         @Override
         public Iterator<Attribute<?>> iterator() {
-            return Iterators.transform(getAttributes().iterator(),
+            return Iterators.transform(getAttributeTypedNames().iterator(),
                                        new Function<TypedName<?>, Attribute<?>>() {
                                            @Nullable
                                            @Override
@@ -194,7 +236,7 @@ public abstract class AbstractEntity implements Entity {
 
         @Override
         public int size() {
-            return getAttributes().size();
+            return getAttributeTypedNames().size();
         }
     }
 

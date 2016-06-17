@@ -33,56 +33,65 @@ import java.util.Set;
  */
 @Immutable
 class BasicEntity extends AbstractEntity {
-    private final Map<TypedName<?>, Object> attributes;
+    private final Map<String, Attribute<?>> attributes;
 
-    BasicEntity(EntityType t, long eid, Map<TypedName<?>, Object> attrs) {
+    BasicEntity(EntityType t, long eid, Map<String, Attribute<?>> attrs) {
         super(t, eid);
-        attributes = ImmutableMap.<TypedName<?>,Object>builder()
-                                 .put(CommonAttributes.ENTITY_ID, eid)
+        attributes = ImmutableMap.<String,Attribute<?>>builder()
+                                 .put(CommonAttributes.ENTITY_ID.getName(),
+                                      Attribute.create(CommonAttributes.ENTITY_ID, eid))
                                  .putAll(attrs)
                                  .build();
-        assert id == (Long) attributes.get(CommonAttributes.ENTITY_ID);
+        assert id == (Long) attributes.get(CommonAttributes.ENTITY_ID.getName())
+                                      .getValue();
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        // FIXME Make this more efficient
-        ImmutableSet.Builder<String> names = ImmutableSet.builder();
-        for (TypedName<?> attr: attributes.keySet()) {
-            names.add(attr.getName());
-        }
-        return names.build();
-    }
-
-    @Override
-    public Set<TypedName<?>> getAttributes() {
         return attributes.keySet();
     }
 
     @Override
+    public Set<TypedName<?>> getAttributeTypedNames() {
+        // TODO Make this more efficient
+        ImmutableSet.Builder<TypedName<?>> bld = ImmutableSet.builder();
+        for (Attribute<?> name: attributes.values()) {
+            bld.add(name.getTypedName());
+        }
+        return bld.build();
+    }
+
+    @Override
     public boolean hasAttribute(String name) {
-        return getAttributeNames().contains(name);
+        return attributes.containsKey(name);
     }
 
     @Override
     public boolean hasAttribute(TypedName<?> name) {
-        return attributes.containsKey(name);
+        return attributes.containsKey(name.getName());
     }
 
     @Nullable
     @Override
     public <T> T maybeGet(TypedName<T> name) {
-        return name.getType().cast(attributes.get(name));
+        Attribute<?> attr = attributes.get(name.getName());
+        if (attr == null) {
+            return null;
+        } else {
+            Class<T> type = name.getType();
+            Object value = attr.getValue();
+            if (type.isInstance(value)) {
+                return type.cast(value);
+            } else {
+                return null;
+            }
+        }
     }
 
     @Nullable
     @Override
-    public Object maybeGet(String attr) {
-        for (Map.Entry<TypedName<?>, Object> e: attributes.entrySet()) {
-            if (e.getKey().getName().equals(attr)) {
-                return e.getValue();
-            }
-        }
-        return null;
+    public Object maybeGet(String name) {
+        Attribute<?> attr = attributes.get(name);
+        return attr != null ? attr.getValue() : null;
     }
 }

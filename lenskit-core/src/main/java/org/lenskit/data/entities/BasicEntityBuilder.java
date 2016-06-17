@@ -30,7 +30,7 @@ import java.util.Map;
  * General-purpose builder for {@linkplain Entity entities}.
  */
 public class BasicEntityBuilder extends EntityBuilder {
-    private Map<TypedName<?>, Object> attributes;
+    private Map<String,Attribute<?>> attributes;
 
     /**
      * Create a new entity builder for a type.
@@ -45,10 +45,12 @@ public class BasicEntityBuilder extends EntityBuilder {
     public <T> EntityBuilder setAttribute(TypedName<T> name, T val) {
         Preconditions.checkNotNull(name, "attribute");
         Preconditions.checkNotNull(val, "value");
+        Preconditions.checkArgument(name.getType().isInstance(val),
+                                    "value %s not of type %s", val, name.getType());
         if (name == CommonAttributes.ENTITY_ID) {
             return setId(((Long) val).longValue());
         } else {
-            attributes.put(name, val);
+            attributes.put(name.getName(), Attribute.create(name, val));
             return this;
         }
     }

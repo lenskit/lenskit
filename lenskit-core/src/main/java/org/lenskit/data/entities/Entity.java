@@ -29,12 +29,16 @@ import java.util.Set;
 
 /**
  * Base class for data entities in LensKit.  The LensKit data model consists of various entities, each of which has a
- * type, a numeric identifier (as a `long`), and additional data in a key-value mapping.
+ * type, a numeric identifier (as a `long`), and additional data (attributes) in a key-value mapping.
  *
  * Two entities are equal if their types, IDs, and data are equal.
  *
  * Identifiers are scoped per-type; it is acceptable to LensKit for two entities with different types to have the same
  * identifier, and they are not considered to be the same entity.
+ *
+ * Attributes are identified by name; for type safety, the are often accessed using {@linkplain TypedName typed names},
+ * such as those defined in {@link CommonAttributes}.  Attribute values cannot be null; if you must safely handle the
+ * absence of an attribute, test with {@link #hasAttribute(TypedName)} or use {@link #maybeGet(TypedName)}.
  */
 @Immutable
 @BuiltBy(BasicEntityBuilder.class)
@@ -54,19 +58,19 @@ public interface Entity {
     EntityType getType();
 
     /**
-     * Get the names of the fields in this entity.
+     * Get the names of the attributes in this entity.
      */
     Set<String> getAttributeNames();
 
     /**
-     * Get the fields in this entity.
+     * Get the attributes in this entity.
      */
-    Set<TypedName<?>> getAttributes();
+    Set<TypedName<?>> getAttributeTypedNames();
 
     /**
      * Get the attribute-value pairs.
      */
-    Collection<Attribute<?>> getAttributeValues();
+    Collection<Attribute<?>> getAttributes();
 
     /**
      * View this entity as a map.
@@ -86,7 +90,8 @@ public interface Entity {
      * Check if the entity has a attribute.
      *
      * @param name The attribute name to look for.
-     * @return `true` if the entity contains `attribute` (same name **and type**).
+     * @return `true` if the entity contains `attribute`. This only checks the attribute's name; it does not verify
+     * that the data is of a compatible type.
      */
     boolean hasAttribute(TypedName<?> name);
 
@@ -106,7 +111,7 @@ public interface Entity {
      * Get the value of an attribute by name.
      * @param attr The attribute name.
      * @throws NoSuchAttributeException if the specified attribute is not present.
-     * @return The field value, or `null` if the attribute is missing.
+     * @return The attribute value.
      */
     @Nonnull
     Object get(String attr);
@@ -126,8 +131,6 @@ public interface Entity {
      * Get the value of a possibly-missing attribute by name.
      * @param attr The attribute name.
      * @return The attribute's value, or `null` if it is not present.
-     * @throws IllegalArgumentException if an attribute with the same name as `attr` is present, but it is of an
-     *         incompatible type.
      */
     @Nullable
     Object maybeGet(String attr);
@@ -149,4 +152,22 @@ public interface Entity {
      * @throws IllegalArgumentException if the attr is present but is not of type `Double`.
      */
     double getDouble(TypedName<Double> name);
+
+    /**
+     * Get the value of a attr that contains a int.
+     * @param name The attribute name.
+     * @return The attribute's value.
+     * @throws NoSuchAttributeException if the specified attr is not present.
+     * @throws IllegalArgumentException if the attr is present but is not of type `Integer`.
+     */
+    int getInteger(TypedName<Integer> name);
+
+    /**
+     * Get the value of a attr that contains a boolean.
+     * @param name The attribute name.
+     * @return The attribute's value.
+     * @throws NoSuchAttributeException if the specified attr is not present.
+     * @throws IllegalArgumentException if the attr is present but is not of type `Boolean`.
+     */
+    boolean getBoolean(TypedName<Boolean> name);
 }
