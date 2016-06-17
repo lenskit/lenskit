@@ -40,7 +40,7 @@ public final class AttributeValue<T> {
      * @param attr The attribute.
      * @param val The value.
      */
-    public AttributeValue(@Nonnull Attribute<T> attr, @Nonnull T val) {
+    private AttributeValue(@Nonnull Attribute<T> attr, @Nonnull T val) {
         Preconditions.checkNotNull(attr, "attribute");
         Preconditions.checkNotNull(val, "value");
         attribute = attr;
