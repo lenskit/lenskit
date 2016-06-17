@@ -41,8 +41,8 @@ class BareEntity extends AbstractEntity {
     }
 
     @Override
-    public Set<Attribute<?>> getAttributes() {
-        return Collections.<Attribute<?>>singleton(CommonAttributes.ENTITY_ID);
+    public Set<TypedName<?>> getAttributes() {
+        return Collections.<TypedName<?>>singleton(CommonAttributes.ENTITY_ID);
     }
 
     @Override
@@ -51,15 +51,15 @@ class BareEntity extends AbstractEntity {
     }
 
     @Override
-    public boolean hasAttribute(Attribute<?> attribute) {
-        return attribute == CommonAttributes.ENTITY_ID;
+    public boolean hasAttribute(TypedName<?> name) {
+        return name == CommonAttributes.ENTITY_ID;
     }
 
     @Nullable
     @Override
-    public <T> T maybeGet(Attribute<T> attribute) {
-        return attribute == CommonAttributes.ENTITY_ID
-                ? attribute.getType().cast(getId())
+    public <T> T maybeGet(TypedName<T> name) {
+        return name == CommonAttributes.ENTITY_ID
+                ? name.getType().cast(getId())
                 : null;
     }
 

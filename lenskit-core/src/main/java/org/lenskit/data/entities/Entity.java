@@ -24,7 +24,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,7 +61,7 @@ public interface Entity {
     /**
      * Get the fields in this entity.
      */
-    Set<Attribute<?>> getAttributes();
+    Set<TypedName<?>> getAttributes();
 
     /**
      * Get the attribute-value pairs.
@@ -86,14 +85,14 @@ public interface Entity {
     /**
      * Check if the entity has a attribute.
      *
-     * @param attribute The attribute to look for.
+     * @param name The attribute name to look for.
      * @return `true` if the entity contains `attribute` (same name **and type**).
      */
-    boolean hasAttribute(Attribute<?> attribute);
+    boolean hasAttribute(TypedName<?> name);
 
     /**
      * Get the value of an attribute.
-     * @param attribute The attribute.
+     * @param name The attribute name.
      * @param <T> The attribute's type.
      * @return The attribute's value.
      * @throws NoSuchAttributeException if the specified attribute is not present.
@@ -101,7 +100,7 @@ public interface Entity {
      *         incompatible type.
      */
     @Nonnull
-    <T> T get(Attribute<T> attribute);
+    <T> T get(TypedName<T> name);
 
     /**
      * Get the value of an attribute by name.
@@ -114,14 +113,14 @@ public interface Entity {
 
     /**
      * Get the value of a possibly-missing attribute.
-     * @param attribute The attribute.
+     * @param name The attribute name.
      * @param <T> The attribute's type.
      * @return The attribute's value, or `null` if it is not present.
      * @throws IllegalArgumentException if a attribute with the same name as `attribute` is present, but it is of an
      *         incompatible type.
      */
     @Nullable
-    <T> T maybeGet(Attribute<T> attribute);
+    <T> T maybeGet(TypedName<T> name);
 
     /**
      * Get the value of a possibly-missing attribute by name.
@@ -135,19 +134,19 @@ public interface Entity {
 
     /**
      * Get the value of a attribute that contains a long.
-     * @param attribute The attribute.
+     * @param name The attribute name.
      * @return The attribute's value.
      * @throws NoSuchAttributeException if the specified attribute is not present.
      * @throws IllegalArgumentException if the attribute is present but its type is not `Long`.
      */
-    long getLong(Attribute<Long> attribute);
+    long getLong(TypedName<Long> name);
 
     /**
      * Get the value of a attr that contains a double.
-     * @param attr The attr.
-     * @return The attr's value.
+     * @param name The attribute name.
+     * @return The attribute's value.
      * @throws NoSuchAttributeException if the specified attr is not present.
      * @throws IllegalArgumentException if the attr is present but is not of type `Double`.
      */
-    double getDouble(Attribute<Double> attr);
+    double getDouble(TypedName<Double> name);
 }

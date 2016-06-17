@@ -32,31 +32,31 @@ import javax.annotation.Nonnull;
  * @param <T> The attribute type.
  */
 public final class AttributeValue<T> {
-    private final Attribute<T> attribute;
+    private final TypedName<T> attribute;
     private final T value;
 
     /**
      * Create a new attribute-value pair.
-     * @param attr The attribute.
+     * @param name The attribute.
      * @param val The value.
      */
-    private AttributeValue(@Nonnull Attribute<T> attr, @Nonnull T val) {
-        Preconditions.checkNotNull(attr, "attribute");
+    private AttributeValue(@Nonnull TypedName<T> name, @Nonnull T val) {
+        Preconditions.checkNotNull(name, "attribute");
         Preconditions.checkNotNull(val, "value");
-        attribute = attr;
+        attribute = name;
         value = val;
     }
 
     /**
      * Create a new attribute-value pair.
-     * @param attr The attribute.
+     * @param name The attribute.
      * @param val The value.
      * @param <T> The attribute type.
      * @return The attribute-value object.
      */
-    public static <T> AttributeValue<T> create(@Nonnull Attribute<T> attr,
+    public static <T> AttributeValue<T> create(@Nonnull TypedName<T> name,
                                                @Nonnull T val) {
-        return new AttributeValue<>(attr, val);
+        return new AttributeValue<>(name, val);
     }
 
     /**
@@ -64,7 +64,7 @@ public final class AttributeValue<T> {
      * @return The attribute associated with this value.
      */
     @Nonnull
-    public Attribute<T> getAttribute() {
+    public TypedName<T> getAttribute() {
         return attribute;
     }
 

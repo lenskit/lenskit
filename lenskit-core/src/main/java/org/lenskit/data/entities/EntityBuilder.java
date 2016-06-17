@@ -51,20 +51,20 @@ public abstract class EntityBuilder {
 
     /**
      * Set an attribute in the entity.
-     * @param attr The attribute to set.
+     * @param name The name of the attribute to set.
      * @param val The attribute value.
      * @param <T> The attribute type.
      * @return The entity builder (for chaining).
      * @throws NoSuchAttributeException if the specified attribute is not supported by this entity.
      */
-    public abstract <T> EntityBuilder setAttribute(Attribute<T> attr, T val);
+    public abstract <T> EntityBuilder setAttribute(TypedName<T> name, T val);
 
     /**
      * Clear an attribute.
-     * @param attr The attribute to clear.
+     * @param name The name of the attribute to clear.
      * @return The entity builder (for chaining).
      */
-    public abstract EntityBuilder clearAttribute(Attribute<?> attr);
+    public abstract EntityBuilder clearAttribute(TypedName<?> name);
 
     /**
      * Build the entity.

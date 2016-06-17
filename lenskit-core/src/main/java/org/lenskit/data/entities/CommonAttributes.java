@@ -29,33 +29,33 @@ public final class CommonAttributes {
     /**
      * Attribute indicating the entity ID.
      */
-    public static final Attribute<Long> ENTITY_ID = Attribute.create("id", Long.class);
+    public static final TypedName<Long> ENTITY_ID = TypedName.create("id", Long.class);
 
     /**
      * The user ID associated with an entity.  This is for when the user is a *foreign key*; in user
      * entities, the user ID is stored as the entity ID.
      */
-    public static final Attribute<Long> USER_ID = Attribute.create("user", Long.class);
+    public static final TypedName<Long> USER_ID = TypedName.create("user", Long.class);
     /**
      * The item ID associated with an entity. This is for when the user is a *foreign key*; in item
      * entities, the item ID is stored as the entity ID.
      */
-    public static final Attribute<Long> ITEM_ID = Attribute.create("item", Long.class);
+    public static final TypedName<Long> ITEM_ID = TypedName.create("item", Long.class);
     /**
      * A name associated with the entity.
      */
-    public static final Attribute<String> NAME = Attribute.create("name", String.class);
+    public static final TypedName<String> NAME = TypedName.create("name", String.class);
 
     /**
      * A timestamp associated with an event entity.
      */
-    public static final Attribute<Long> TIMESTAMP = Attribute.create("timestamp", Long.class);
+    public static final TypedName<Long> TIMESTAMP = TypedName.create("timestamp", Long.class);
     /**
      * A rating value.
      */
-    public static final Attribute<Double> RATING = Attribute.create("rating", Double.class);
+    public static final TypedName<Double> RATING = TypedName.create("rating", Double.class);
     /**
      * A standard count, for events that may use them.
      */
-    public static final Attribute<Integer> COUNT = Attribute.create("count", Integer.class);
+    public static final TypedName<Integer> COUNT = TypedName.create("count", Integer.class);
 }

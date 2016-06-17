@@ -33,11 +33,11 @@ import java.util.Set;
  */
 @Immutable
 class BasicEntity extends AbstractEntity {
-    private final Map<Attribute<?>, Object> attributes;
+    private final Map<TypedName<?>, Object> attributes;
 
-    BasicEntity(EntityType t, long eid, Map<Attribute<?>, Object> attrs) {
+    BasicEntity(EntityType t, long eid, Map<TypedName<?>, Object> attrs) {
         super(t, eid);
-        attributes = ImmutableMap.<Attribute<?>,Object>builder()
+        attributes = ImmutableMap.<TypedName<?>,Object>builder()
                                  .put(CommonAttributes.ENTITY_ID, eid)
                                  .putAll(attrs)
                                  .build();
@@ -48,14 +48,14 @@ class BasicEntity extends AbstractEntity {
     public Set<String> getAttributeNames() {
         // FIXME Make this more efficient
         ImmutableSet.Builder<String> names = ImmutableSet.builder();
-        for (Attribute<?> attr: attributes.keySet()) {
+        for (TypedName<?> attr: attributes.keySet()) {
             names.add(attr.getName());
         }
         return names.build();
     }
 
     @Override
-    public Set<Attribute<?>> getAttributes() {
+    public Set<TypedName<?>> getAttributes() {
         return attributes.keySet();
     }
 
@@ -65,20 +65,20 @@ class BasicEntity extends AbstractEntity {
     }
 
     @Override
-    public boolean hasAttribute(Attribute<?> attribute) {
-        return attributes.containsKey(attribute);
+    public boolean hasAttribute(TypedName<?> name) {
+        return attributes.containsKey(name);
     }
 
     @Nullable
     @Override
-    public <T> T maybeGet(Attribute<T> attribute) {
-        return attribute.getType().cast(attributes.get(attribute));
+    public <T> T maybeGet(TypedName<T> name) {
+        return name.getType().cast(attributes.get(name));
     }
 
     @Nullable
     @Override
     public Object maybeGet(String attr) {
-        for (Map.Entry<Attribute<?>, Object> e: attributes.entrySet()) {
+        for (Map.Entry<TypedName<?>, Object> e: attributes.entrySet()) {
             if (e.getKey().getName().equals(attr)) {
                 return e.getValue();
             }

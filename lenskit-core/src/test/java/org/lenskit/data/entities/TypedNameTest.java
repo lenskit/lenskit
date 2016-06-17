@@ -29,33 +29,33 @@ import static org.grouplens.lenskit.util.test.ExtraMatchers.matchesPattern;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class AttributeTest {
+public class TypedNameTest {
     @Test
     public void testBasicField() {
-        Attribute<String> attribute = Attribute.create("foo", String.class);
+        TypedName<String> attribute = TypedName.create("foo", String.class);
         assertThat(attribute.getName(), equalTo("foo"));
         assertThat(attribute.getType(), equalTo(String.class));
         // check equality to random other object
         assertThat(attribute, not(equalTo((Object) "foo")));
 
-        assertThat(Attribute.create("foo", String.class),
+        assertThat(TypedName.create("foo", String.class),
                    sameInstance(attribute));
 
         assertThat(attribute.toString(), notNullValue());
-        assertThat(attribute.toString(), matchesPattern("^Attribute\\[foo: .*\\]$"));
+        assertThat(attribute.toString(), matchesPattern("^TypedName\\[foo: .*\\]$"));
     }
 
     @Test
     public void testSerialize() {
-        Attribute<String> attribute = Attribute.create("foo", String.class);
+        TypedName<String> attribute = TypedName.create("foo", String.class);
         assertThat(SerializationUtils.clone(attribute),
                    sameInstance(attribute));
     }
 
     @Test
     public void testDifferentTypes() {
-        Attribute<String> string = Attribute.create("foo", String.class);
-        Attribute<File> file = Attribute.create("foo", File.class);
-        assertThat(string, not(equalTo((Attribute) file)));
+        TypedName<String> string = TypedName.create("foo", String.class);
+        TypedName<File> file = TypedName.create("foo", File.class);
+        assertThat(string, not(equalTo((TypedName) file)));
     }
 }

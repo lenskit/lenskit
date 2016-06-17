@@ -20,8 +20,6 @@
  */
 package org.lenskit.data.entities;
 
-import java.util.HashMap;
-
 public final class Entities {
     private Entities() {}
 
@@ -60,7 +58,7 @@ public final class Entities {
      */
     public static EntityBuilder copyBuilder(Entity e) {
         EntityBuilder eb = newBuilder(e.getType(), e.getId());
-        for (Attribute a: e.getAttributes()) {
+        for (TypedName a: e.getAttributes()) {
             eb.setAttribute(a, e.get(a));
         }
         return eb;

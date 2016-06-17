@@ -66,14 +66,14 @@ public abstract class AbstractEntity implements Entity {
     /**
      * {@inheritDoc}
      *
-     * This implementation delegates to {@link #maybeGet(Attribute)}.
+     * This implementation delegates to {@link #maybeGet(TypedName)}.
      */
     @Nonnull
     @Override
-    public <T> T get(Attribute<T> attribute) {
-        T val = maybeGet(attribute);
+    public <T> T get(TypedName<T> name) {
+        T val = maybeGet(name);
         if (val == null) {
-            throw new NoSuchAttributeException(attribute.toString());
+            throw new NoSuchAttributeException(name.toString());
         } else {
             return val;
         }
@@ -98,21 +98,21 @@ public abstract class AbstractEntity implements Entity {
     /**
      * {@inheritDoc}
      *
-     * This implementation delegates to {@link #get(Attribute)}.
+     * This implementation delegates to {@link #get(TypedName)}.
      */
     @Override
-    public long getLong(Attribute<Long> attribute) {
-        return get(attribute);
+    public long getLong(TypedName<Long> name) {
+        return get(name);
     }
 
     /**
      * {@inheritDoc}
      *
-     * This implementation delegates to {@link #get(Attribute)}.
+     * This implementation delegates to {@link #get(TypedName)}.
      */
     @Override
-    public double getDouble(Attribute<Double> attr) {
-        return get(attr);
+    public double getDouble(TypedName<Double> name) {
+        return get(name);
     }
 
     @Override
@@ -182,12 +182,12 @@ public abstract class AbstractEntity implements Entity {
         @Override
         public Iterator<AttributeValue<?>> iterator() {
             return Iterators.transform(getAttributes().iterator(),
-                                       new Function<Attribute<?>, AttributeValue<?>>() {
+                                       new Function<TypedName<?>, AttributeValue<?>>() {
                                            @Nullable
                                            @Override
-                                           public AttributeValue<?> apply(@Nullable Attribute<?> input) {
+                                           public AttributeValue<?> apply(@Nullable TypedName<?> input) {
                                                assert input != null;
-                                               return AttributeValue.create((Attribute) input, get(input));
+                                               return AttributeValue.create((TypedName) input, get(input));
                                            }
                                        });
         }

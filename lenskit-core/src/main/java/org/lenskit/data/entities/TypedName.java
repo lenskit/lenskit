@@ -32,25 +32,29 @@ import javax.annotation.concurrent.Immutable;
 import java.io.*;
 
 /**
- * Identifier for an attribute in an entity.
+ * An association of a type with a name.  This is used for type-safe (or at least type-suggested) access to entity
+ * attributes, and allows declarations of attribute names to also contain the type of data that will be stored in
+ * the specified attribute.
+ *
+ * When used consistently, they allow for type-safe access to entity attribute data.
  */
 @Immutable
-public final class Attribute<T> implements Serializable {
+public final class TypedName<T> implements Serializable {
     private static final long serialVersionUID = -1L;
-    private static final Interner<Attribute<?>> FIELD_CACHE = Interners.newStrongInterner();
+    private static final Interner<TypedName<?>> FIELD_CACHE = Interners.newStrongInterner();
 
     private final String name;
     private final Class<T> type;
     private transient volatile int hashCode;
 
-    private Attribute(String n, Class<T> t) {
+    private TypedName(String n, Class<T> t) {
         name = n;
         type = t;
     }
 
     /**
-     * Get the attribute's name.
-     * @return The attribute's name.
+     * Get the underlying name.
+     * @return The name.
      */
     @Nonnull
     public String getName() {
@@ -58,10 +62,10 @@ public final class Attribute<T> implements Serializable {
     }
 
     /**
-     * Get the attribute's type.  This will never be a primitive type class; primitive classes are
+     * Get the type.  This will never be a primitive type class; primitive classes are
      * always normalized to their wrapper classes (e.g. `long.class` becomes `Long.class`).
      *
-     * @return The attribute's type.
+     * @return The type.
      */
     @Nonnull
     public Class<T> getType() {
@@ -86,8 +90,8 @@ public final class Attribute<T> implements Serializable {
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        } else if (o instanceof Attribute) {
-            Attribute of = (Attribute) o;
+        } else if (o instanceof TypedName) {
+            TypedName of = (TypedName) o;
             return name.equals(of.getName()) && type.equals(of.getType());
         } else {
             return false;
@@ -102,34 +106,34 @@ public final class Attribute<T> implements Serializable {
         } else {
             tname = type.getCanonicalName();
         }
-        return "Attribute[" + name + ": " + tname + "]";
+        return "TypedName[" + name + ": " + tname + "]";
     }
 
     /**
-     * Create a attribute object.
+     * Create a typed name object.
      *
-     * @param name The attribute name.
-     * @param type The attribute type.
-     * @return An object encapsulating the specified attribute.
+     * @param name The name.
+     * @param type The type.
+     * @return An object encapsulating the specified name and type.
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public static <T> Attribute<T> create(String name, Class<T> type) {
-        Preconditions.checkNotNull(name, "attribute name");
-        Preconditions.checkNotNull(type, "attribute type");
+    public static <T> TypedName<T> create(String name, Class<T> type) {
+        Preconditions.checkNotNull(name, "name");
+        Preconditions.checkNotNull(type, "type");
         if (type.isPrimitive()) {
             type = (Class<T>) ClassUtils.primitiveToWrapper(type);
         }
-        Attribute<T> attribute = new Attribute<>(name.intern(), type);
-        return (Attribute<T>) FIELD_CACHE.intern(attribute);
+        TypedName<T> attribute = new TypedName<>(name.intern(), type);
+        return (TypedName<T>) FIELD_CACHE.intern(attribute);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
-        throw new InvalidObjectException("attributes must use serialization proxy");
+        throw new InvalidObjectException("typed names must use serialization proxy");
     }
 
     private void readObjectNoData() throws ObjectStreamException {
-        throw new InvalidObjectException("attributes must use serialization proxy");
+        throw new InvalidObjectException("typed names must use serialization proxy");
     }
 
     private Object writeReplace() {
