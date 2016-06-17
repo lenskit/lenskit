@@ -39,6 +39,7 @@ plugins {
 }
 apply plugin: 'base'
 apply plugin: 'project-report'
+apply plugin: 'build-dashboard'
 
 ext.webUrl = 'http://lenskit.org'
 
