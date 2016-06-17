@@ -49,8 +49,8 @@ public final class Attribute<T> implements Serializable {
     }
 
     /**
-     * Get the field's name.
-     * @return The field's name.
+     * Get the attribute's name.
+     * @return The attribute's name.
      */
     @Nonnull
     public String getName() {
@@ -58,10 +58,10 @@ public final class Attribute<T> implements Serializable {
     }
 
     /**
-     * Get the field's type.  Primitive field types are normalized to their wrapper types, so this is always a reference
-     * type.
+     * Get the attribute's type.  This will never be a primitive type class; primitive classes are
+     * always normalized to their wrapper classes (e.g. `long.class` becomes `Long.class`).
      *
-     * @return The field's type.
+     * @return The attribute's type.
      */
     @Nonnull
     public Class<T> getType() {
@@ -105,11 +105,11 @@ public final class Attribute<T> implements Serializable {
     }
 
     /**
-     * Create a field object.
+     * Create a attribute object.
      *
-     * @param name The field name.
-     * @param type The field type.
-     * @return An object encapsulating the specified field.
+     * @param name The attribute name.
+     * @param type The attribute type.
+     * @return An object encapsulating the specified attribute.
      */
     @SuppressWarnings("unchecked")
     @Nonnull
@@ -124,11 +124,11 @@ public final class Attribute<T> implements Serializable {
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
-        throw new InvalidObjectException("fields must use serialization proxy");
+        throw new InvalidObjectException("attributes must use serialization proxy");
     }
 
     private void readObjectNoData() throws ObjectStreamException {
-        throw new InvalidObjectException("fields must use serialization proxy");
+        throw new InvalidObjectException("attributes must use serialization proxy");
     }
 
     private Object writeReplace() {
