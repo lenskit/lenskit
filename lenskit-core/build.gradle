@@ -43,6 +43,8 @@ dependencies {
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.11.0-SNAPSHOT'
     compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     compile group: 'org.joda', name: 'joda-convert', version: '1.8.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.4'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.7.4'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
     compile group:'org.apache.commons', name:'commons-math3', version:'3.5'
