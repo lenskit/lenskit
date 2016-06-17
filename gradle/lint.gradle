@@ -49,13 +49,26 @@ if (lintMode != 'disabled') {
         }
         reports {
             csv.enabled = false
-            xml.enabled = false
+            xml.enabled = true
             html.destination = "$reporting.baseDir/jacoco"
         }
     }
 
     report.dependsOn jacocoMergedReport
     ciTest.dependsOn report
+
+    coveralls {
+        sourceDirs = jacocoMergedReport.sourceSets.main.allSource.srcDirs.flatten()
+        jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
+    }
+
+    tasks.coveralls {
+        group = 'Coverage reports'
+        description = 'Uploads the aggregated coverage report to Coveralls'
+
+        dependsOn jacocoRootReport
+        onlyIf { System.env.'CI' }
+    }
 }
 
 sonarqube {
