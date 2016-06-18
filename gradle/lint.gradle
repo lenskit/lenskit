@@ -46,7 +46,7 @@ task jacocoMergedReport(type: JacocoReport) {
         projects << prj
         dependsOn prj.test
         sourceSets prj.sourceSets.test
-        coveralls.sourceDirs << prj.sourceSets.main.srcDirs
+        coveralls.sourceDirs << prj.sourceSets.main.java.srcDirs
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
             logger.info '{} has no tests', prj.name
         } else {
