@@ -43,7 +43,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     @Override
     public ObjectStream<Entity> streamEntities(EntityType type) {
-        return streamEntities(EntityQuery.newBuilder().setEntityType(type).build());
+        return streamEntities(EntityQuery.newBuilder(type).setEntityType(type).build());
     }
 
     /**
@@ -53,9 +53,8 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     @Override
     public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, TypedName<Long> grpCol) {
-        EntityQueryBuilder qb = EntityQuery.newBuilder();
-        qb.setEntityType(query.getEntityType())
-          .addFilterFields(query.getFilterFields());
+        EntityQueryBuilder qb = EntityQuery.newBuilder(query.getEntityType());
+        qb.addFilterFields(query.getFilterFields());
         qb.addSortKey(grpCol);
         qb.addSortKeys(query.getSortKeys());
         ObjectStream<E> stream = streamEntities(qb.buildWithView(query.getViewType()));

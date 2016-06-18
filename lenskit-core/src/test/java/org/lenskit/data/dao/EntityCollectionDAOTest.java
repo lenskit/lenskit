@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStreams;
-import org.omg.IOP.ENCODING_CDR_ENCAPS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,8 +64,7 @@ public class EntityCollectionDAOTest {
     public void testNullQueryOneEntity() {
         EntityCollectionDAO dao = EntityCollectionDAO.create(Entities.create(CommonTypes.USER, 42));
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(CommonTypes.USER)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(CommonTypes.USER)
                                                .build();
         List<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, contains(Entities.create(CommonTypes.USER, 42)));
@@ -80,14 +78,12 @@ public class EntityCollectionDAOTest {
                            .build();
         EntityCollectionDAO dao = EntityCollectionDAO.create(e);
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(LIKE)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .build();
         List<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, contains(e));
 
-        query = EntityQuery.newBuilder()
-                           .setEntityType(LIKE)
+        query = EntityQuery.newBuilder(LIKE)
                            .addFilterField(CommonAttributes.USER_ID, 42L)
                            .build();
         results = ObjectStreams.makeList(dao.streamEntities(query));
@@ -102,8 +98,7 @@ public class EntityCollectionDAOTest {
                            .build();
         EntityCollectionDAO dao = EntityCollectionDAO.create(e);
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(LIKE)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .addFilterField(CommonAttributes.USER_ID, 39L)
                                                .build();
         ArrayList<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
@@ -135,21 +130,18 @@ public class EntityCollectionDAOTest {
         assertThat(dao.lookupEntity(CommonTypes.USER, 1),
                    nullValue());
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(LIKE)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .build();
         List<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, containsInAnyOrder(e1, e2));
 
-        query = EntityQuery.newBuilder()
-                           .setEntityType(LIKE)
+        query = EntityQuery.newBuilder(LIKE)
                            .addFilterField(CommonAttributes.USER_ID, 42L)
                            .build();
         results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, containsInAnyOrder(e1, e2));
 
-        query = EntityQuery.newBuilder()
-                           .setEntityType(LIKE)
+        query = EntityQuery.newBuilder(LIKE)
                            .addFilterField(CommonAttributes.ITEM_ID, 39L)
                            .build();
         results = ObjectStreams.makeList(dao.streamEntities(query));
@@ -168,8 +160,7 @@ public class EntityCollectionDAOTest {
                             .build();
         EntityCollectionDAO dao = EntityCollectionDAO.create(e1, e2);
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(LIKE)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .addSortKey(CommonAttributes.ITEM_ID)
                                                .build();
         List<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
@@ -184,8 +175,7 @@ public class EntityCollectionDAOTest {
                            .build();
         EntityCollectionDAO dao = EntityCollectionDAO.create(e);
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(LIKE)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .build();
         ArrayList<IdBox<List<Entity>>> results =
                 ObjectStreams.makeList(dao.streamEntityGroups(query, CommonAttributes.USER_ID));
@@ -212,8 +202,7 @@ public class EntityCollectionDAOTest {
                              .build());
         EntityCollectionDAO dao = EntityCollectionDAO.create(entities);
 
-        EntityQuery<Entity> query = EntityQuery.newBuilder()
-                                               .setEntityType(LIKE)
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .addSortKey(CommonAttributes.ITEM_ID)
                                                .build();
         ArrayList<IdBox<List<Entity>>> results =

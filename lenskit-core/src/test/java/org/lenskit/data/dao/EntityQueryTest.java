@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public class EntityQueryTest {
     @Test
     public void testUniversalQuery() {
-        EntityQuery<Entity> q = EntityQuery.newBuilder().setEntityType(CommonTypes.ITEM).build();
+        EntityQuery<Entity> q = EntityQuery.newBuilder(CommonTypes.ITEM).build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.ITEM));
         assertThat(q.getFilterFields(), hasSize(0));
         assertThat(q.getSortKeys(), hasSize(0));
@@ -39,8 +39,7 @@ public class EntityQueryTest {
 
     @Test
     public void testSingleAttrFilter() {
-        EntityQuery<Entity> q = EntityQuery.newBuilder()
-                                           .setEntityType(CommonTypes.RATING)
+        EntityQuery<Entity> q = EntityQuery.newBuilder(CommonTypes.RATING)
                                            .addFilterField(CommonAttributes.ITEM_ID, 42L)
                                            .build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.RATING));
@@ -52,8 +51,7 @@ public class EntityQueryTest {
 
     @Test
     public void testTwoAttrFilter() {
-        EntityQuery<Entity> q = EntityQuery.newBuilder()
-                                           .setEntityType(CommonTypes.RATING)
+        EntityQuery<Entity> q = EntityQuery.newBuilder(CommonTypes.RATING)
                                            .addFilterField(CommonAttributes.ITEM_ID, 42L)
                                            .addFilterField(CommonAttributes.USER_ID, 29L)
                                            .build();
@@ -67,8 +65,7 @@ public class EntityQueryTest {
 
     @Test
     public void testSortKey() {
-        EntityQuery<Entity> q = EntityQuery.newBuilder()
-                                           .setEntityType(CommonTypes.RATING)
+        EntityQuery<Entity> q = EntityQuery.newBuilder(CommonTypes.RATING)
                                            .addSortKey(CommonAttributes.ITEM_ID)
                                            .build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.RATING));
@@ -81,8 +78,7 @@ public class EntityQueryTest {
 
     @Test
     public void testUniversalMatch() {
-        EntityQuery<Entity> q = EntityQuery.newBuilder()
-                                           .setEntityType(CommonTypes.ITEM)
+        EntityQuery<Entity> q = EntityQuery.newBuilder(CommonTypes.ITEM)
                                            .build();
         assertThat(q.matches(Entities.create(CommonTypes.ITEM, 42L)),
                    equalTo(true));
@@ -92,8 +88,7 @@ public class EntityQueryTest {
 
     @Test
     public void testAttributeMatch() {
-        EntityQuery<Entity> q = EntityQuery.newBuilder()
-                                           .setEntityType(CommonTypes.RATING)
+        EntityQuery<Entity> q = EntityQuery.newBuilder(CommonTypes.RATING)
                                            .addFilterField(CommonAttributes.USER_ID, 42L)
                                            .build();
         assertThat(q.matches(Entities.create(CommonTypes.RATING, 42L)),

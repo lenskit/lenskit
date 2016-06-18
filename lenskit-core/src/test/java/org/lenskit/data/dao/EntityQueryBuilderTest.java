@@ -35,9 +35,8 @@ import static org.junit.Assert.*;
 public class EntityQueryBuilderTest {
     @Test
     public void testCopyEmpty() {
-        EntityQueryBuilder eqb = EntityQuery.newBuilder();
+        EntityQueryBuilder eqb = EntityQuery.newBuilder(CommonTypes.ITEM);
         EntityQueryBuilder copy = eqb.copy();
-        eqb.setEntityType(CommonTypes.ITEM);
         EntityQuery<Entity> q = copy.setEntityType(CommonTypes.USER).build();
         assertThat(q, notNullValue());
         assertThat(q.getEntityType(), equalTo(CommonTypes.USER));

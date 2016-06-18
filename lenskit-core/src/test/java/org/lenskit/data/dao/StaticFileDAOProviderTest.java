@@ -46,14 +46,12 @@ public class StaticFileDAOProviderTest {
                                                             CommonTypes.ITEM));
         assertThat(dao.lookupEntity(CommonTypes.RATING, ratings.get(0).getId()),
                    equalTo(ratings.get(0)));
-        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder()
-                                                                        .setEntityType(CommonTypes.RATING)
+        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder(CommonTypes.RATING)
                                                                         .addFilterField(CommonAttributes.ITEM_ID, 20L)
                                                                         .build())),
                    contains(ratings.get(0)));
 
-        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder()
-                                                                        .setEntityType(CommonTypes.RATING)
+        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder(CommonTypes.RATING)
                                                                         .addFilterField(CommonAttributes.USER_ID, 1L)
                                                                         .build())),
                    contains(ratings.toArray()));

@@ -40,8 +40,10 @@ public class EntityQueryBuilder {
 
     /**
      * Construct a new data query builder.
+     * @param type The entity type.
      */
-    public EntityQueryBuilder() {
+    public EntityQueryBuilder(EntityType type) {
+        entityType = type;
         filter = ImmutableList.builder();
         sortKey = ImmutableList.builder();
     }
@@ -50,7 +52,9 @@ public class EntityQueryBuilder {
      * Set the entity type.
      * @param type The entity type.
      * @return The query builder (for chaining).
+     * @deprecated Just provide a type at construction time.
      */
+    @Deprecated
     public EntityQueryBuilder setEntityType(EntityType type) {
         entityType = type;
         return this;
@@ -137,10 +141,7 @@ public class EntityQueryBuilder {
      * @return A new query builder.
      */
     public EntityQueryBuilder copy() {
-        EntityQueryBuilder eqb = new EntityQueryBuilder();
-        if (entityType != null) {
-            eqb.setEntityType(entityType);
-        }
+        EntityQueryBuilder eqb = new EntityQueryBuilder(entityType);
         eqb.addFilterFields(filter.build());
         eqb.addSortKeys(sortKey.build());
         return eqb;

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Representation of a query.
  * @param <E> The entity type.
- * @see #newBuilder()
+ * @see #newBuilder(EntityType)
  */
 public class EntityQuery<E extends Entity> implements Predicate<Entity> {
     private EntityType entityType;
@@ -49,10 +49,11 @@ public class EntityQuery<E extends Entity> implements Predicate<Entity> {
 
     /**
      * Construct a new data query builder.
+     * @param type The entity type
      * @return The query builder.
      */
-    public static EntityQueryBuilder newBuilder() {
-        return new EntityQueryBuilder();
+    public static EntityQueryBuilder newBuilder(EntityType type) {
+        return new EntityQueryBuilder(type);
     }
 
     /**
