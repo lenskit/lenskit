@@ -216,12 +216,12 @@ public class TextEntitySource {
 
         JsonNode columns = object.path("columns");
         if (columns.isMissingNode() || columns.isNull()) {
-            List<Attribute<?>> defColumns = entityDefaults != null ? entityDefaults.getDefaultColumns() : null;
+            List<TypedName<?>> defColumns = entityDefaults != null ? entityDefaults.getDefaultColumns() : null;
             if (defColumns == null) {
                 throw new IllegalArgumentException("no columns specified and no default columns available");
             }
 
-            for (Attribute<?> attr: entityDefaults.getDefaultColumns()) {
+            for (TypedName<?> attr: entityDefaults.getDefaultColumns()) {
                 format.addColumn(attr);
             }
         } else if (columns.isObject()) {
@@ -263,17 +263,17 @@ public class TextEntitySource {
         return source;
     }
 
-    private static Attribute<?> parseAttribute(EntityDefaults entityDefaults, JsonNode col) {
+    private static TypedName<?> parseAttribute(EntityDefaults entityDefaults, JsonNode col) {
         if (col.isNull() || col.isMissingNode()) {
             return null;
         } else if (col.isObject()) {
             String name = col.get("name").asText();
             String type = col.get("type").asText();
-            return Attribute.create(name, type);
+            return TypedName.create(name, type);
         } else if (col.isTextual()) {
-            Attribute<?> attr = entityDefaults.getAttribute(col.asText());
+            TypedName<?> attr = entityDefaults.getAttributeDefaults(col.asText());
             if (attr == null) {
-                attr = Attribute.create(col.asText(), col.asText().equals("id") ? Long.class : String.class);
+                attr = TypedName.create(col.asText(), col.asText().equals("id") ? Long.class : String.class);
             }
             return attr;
         } else {

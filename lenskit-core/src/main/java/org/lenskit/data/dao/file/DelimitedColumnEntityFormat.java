@@ -25,6 +25,8 @@ import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.entities.*;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,8 +41,9 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     private boolean readHeader;
     private EntityType entityType = EntityType.forName("rating");
     private Class<? extends EntityBuilder> entityBuilder = BasicEntityBuilder.class;
-    private List<Attribute<?>> columns;
-    private Map<String,Attribute<?>> labeledColumns;
+    private Constructor<? extends EntityBuilder> entityBuilderCtor;
+    private List<TypedName<?>> columns;
+    private Map<String,TypedName<?>> labeledColumns;
 
     /**
      * Get the delimiter for the entity format.
@@ -129,9 +132,16 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * @return A new entity builder.
      */
     public EntityBuilder newEntityBuilder() {
+        if (entityBuilderCtor == null || !entityBuilderCtor.getDeclaringClass().equals(entityBuilder)) {
+            try {
+                entityBuilderCtor = entityBuilder.getConstructor(EntityType.class);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException("cannot find suitable constructor for " + entityBuilder);
+            }
+        }
         try {
-            return entityBuilder.newInstance().setType(entityType);
-        } catch (InstantiationException | IllegalAccessException e) {
+            return entityBuilderCtor.newInstance(entityType);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("could not instantiate entity builder", e);
         }
     }
@@ -141,7 +151,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * @param attr The attribute to add as a column, or `null` to skip the next column.
      * @throws IllegalStateException if non-labeled columns have already been specified.
      */
-    public void addColumn(@Nullable Attribute<?> attr) {
+    public void addColumn(@Nullable TypedName<?> attr) {
         if (columns == null) {
             Preconditions.checkState(labeledColumns == null, "mixed labeled and unlabeled columns");
             columns = new ArrayList<>();
@@ -153,8 +163,8 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * Add columns to a format.
      * @param columns The columns to add.
      */
-    public void addColumns(Attribute<?>... columns) {
-        for (Attribute<?> col: columns) {
+    public void addColumns(TypedName<?>... columns) {
+        for (TypedName<?> col: columns) {
             addColumn(col);
         }
     }
@@ -165,7 +175,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * @param attr The attribute to add as a column, or `null` to skip the next column.
      * @throws IllegalStateException if non-labeled columns have already been specified.
      */
-    public void addColumn(String label, @Nullable Attribute<?> attr) {
+    public void addColumn(String label, @Nullable TypedName<?> attr) {
         if (labeledColumns == null) {
             Preconditions.checkState(columns == null, "mixed labeled and unlabeled columns");
             labeledColumns = new LinkedHashMap<>();
@@ -179,7 +189,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
 
         if (usesHeader() && labeledColumns != null) {
             assert header.size() == 1;
-            List<Attribute<?>> cols = new ArrayList<>();
+            List<TypedName<?>> cols = new ArrayList<>();
             StrTokenizer tok = new StrTokenizer(header.get(0), delimiter);
             while (tok.hasNext()) {
                 String label = tok.next();
@@ -194,9 +204,9 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     private class OrderedParser extends LineEntityParser {
         int lineNo = 0;
         StrTokenizer tokenizer;
-        List<Attribute<?>> fileColumns;
+        List<TypedName<?>> fileColumns;
 
-        public OrderedParser(List<Attribute<?>> columns, StrTokenizer tok) {
+        public OrderedParser(List<TypedName<?>> columns, StrTokenizer tok) {
             fileColumns = columns;
             tokenizer = tok;
         }
@@ -207,12 +217,11 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             lineNo += 1;
 
             EntityBuilder builder = newEntityBuilder()
-                    .setType(getEntityType())
                     .setId(lineNo);
 
             // since ID is already set, a subsequent ID column will properly override
 
-            for (Attribute column: fileColumns) {
+            for (TypedName column: fileColumns) {
                 String value = tokenizer.nextToken();
                 if (value != null && column != null) {
                     builder.setAttribute(column, column.parseString(value));
