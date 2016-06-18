@@ -46,6 +46,7 @@ task jacocoMergedReport(type: JacocoReport) {
         projects << prj
         dependsOn prj.test
         sourceSets prj.sourceSets.test
+        coveralls.sourceDirs << prj.sourceSets.main.srcDirs
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
             logger.info '{} has no tests', prj.name
         } else {
@@ -63,7 +64,6 @@ report.dependsOn jacocoMergedReport
 ciTest.dependsOn report
 
 coveralls {
-    sourceDirs = jacocoMergedReport.projects*.sourceSets*.main*.allSource*.srcDirs*.flatten()
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
 }
 
