@@ -20,7 +20,11 @@
  */
 package org.lenskit.util.keys;
 
-import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Builder for keyed object maps.
@@ -28,29 +32,44 @@ import com.google.common.collect.ImmutableList;
  */
 public class KeyedObjectMapBuilder<T> {
     private final KeyExtractor<? super T> extractor;
-    private final ImmutableList.Builder<T> builder;
+    private final List<T> builder;
+    private final Long2IntMap posMap;
 
     public KeyedObjectMapBuilder(KeyExtractor<? super T> ex) {
         extractor = ex;
-        builder = ImmutableList.builder();
+        builder = new ArrayList<>();
+        posMap = new Long2IntOpenHashMap();
+        posMap.defaultReturnValue(-1);
     }
 
     public KeyedObjectMapBuilder<T> add(T item) {
-        builder.add(item);
+        long key = extractor.getKey(item);
+        int pos = posMap.get(key);
+        if (pos < 0) {
+            pos = builder.size();
+            posMap.put(key, pos);
+            builder.add(item);
+        } else {
+            builder.set(pos, item);
+        }
         return this;
     }
 
     public KeyedObjectMapBuilder<T> addAll(Iterable<? extends T> items) {
-        builder.addAll(items);
+        for (T item: items) {
+            add(item);
+        }
         return this;
     }
 
     public KeyedObjectMapBuilder<T> add(T... items) {
-        builder.add(items);
+        for (T item: items) {
+            add(item);
+        }
         return this;
     }
 
     public KeyedObjectMap<T> build() {
-        return new KeyedObjectMap<>(builder.build(), extractor);
+        return new KeyedObjectMap<>(builder, extractor);
     }
 }

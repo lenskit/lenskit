@@ -128,6 +128,14 @@ public class KeyedObjectMapTest {
     }
 
     @Test
+    public void testAddDuplicates() {
+        KeyedObjectMap<String> m = createMap("37", "59", "37");
+        assertThat(m.size(), equalTo(2));
+        assertThat(m.keySet(),
+                   contains(37L, 59L));
+    }
+
+    @Test
     public void testContainsValue() {
         KeyedObjectMap<String> m = createMap("42", "39", "108");
         assertThat(m.containsValue("42"), equalTo(true));

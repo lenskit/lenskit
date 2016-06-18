@@ -28,10 +28,8 @@ import org.lenskit.util.io.ObjectStreams;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class StaticFileDAOProviderTest {
     private EntityFactory factory = new EntityFactory();
@@ -59,5 +57,15 @@ public class StaticFileDAOProviderTest {
                                                                         .addFilterField(CommonAttributes.USER_ID, 1L)
                                                                         .build())),
                    contains(ratings.toArray()));
+
+        assertThat(dao.getEntityIds(CommonTypes.USER),
+                   contains(1L));
+        assertThat(dao.getEntityIds(CommonTypes.ITEM),
+                   containsInAnyOrder(20L, 21L));
+        assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.USER)),
+                   contains(Entities.create(CommonTypes.USER, 1)));
+        assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.ITEM)),
+                   containsInAnyOrder(Entities.create(CommonTypes.ITEM, 20),
+                                      Entities.create(CommonTypes.ITEM, 21)));
     }
 }
