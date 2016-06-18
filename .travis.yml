@@ -17,8 +17,6 @@ before_install:
 install:
 - "./gradlew ciPrep --stacktrace"
 script: "./gradlew ciTest --stacktrace"
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
 after_failure:
 - jps -lvm
 before_cache:

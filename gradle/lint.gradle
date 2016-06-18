@@ -16,41 +16,71 @@ switch (getConfigProperty('lint', 'false').toLowerCase()) {
         break
 }
 
-if (lintMode != 'disabled') {
-    allprojects {
-        if (name != 'lenskit-integration-tests') {
-            apply plugin: 'jacoco'
-            jacoco {
-                toolVersion = '0.7.0.201403182114'
-            }
-            jacocoTestReport {
-                reports {
-                    xml.enabled true
-                }
-            }
-        }
+allprojects {
+    apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = '0.7.7.201606060606'
     }
-
-    task jacocoMergedReport(type: JacocoReport) {
-        for (prj in subprojects) {
-            dependsOn prj.test
-            sourceSets prj.sourceSets.test
-            if (prj.sourceSets.test.allSource.files.isEmpty()) {
-                logger.info '{} has no tests', prj.name
-            } else {
-                logger.info 'aggregating tests from {}', prj.name
-                executionData prj.test
-            }
-        }
-        reports {
-            csv.enabled = false
-            xml.enabled = false
-            html.destination = "$reporting.baseDir/jacoco"
-        }
-    }
-
-    report.dependsOn jacocoMergedReport
 }
+
+subprojects {
+    tasks.withType(Test).all { t ->
+        t.jacoco {
+            enabled = lintMode != 'disabled'
+        }
+    }
+    tasks.withType(JacocoReport).all { rpt ->
+        rpt.reports {
+            xml.enabled = true
+        }
+    }
+}
+
+task jacocoMergedReport(type: JacocoReport) {
+    ext.projects = []
+    onlyIf {
+        lintMode != 'disabled'
+    }
+    for (prj in subprojects) {
+        if (prj.name == 'lenskit-integration-tests') continue;
+        projects << prj
+        dependsOn prj.test
+        sourceSets prj.sourceSets.test
+        if (prj.sourceSets.test.allSource.files.isEmpty()) {
+            logger.info '{} has no tests', prj.name
+        } else {
+            logger.info 'aggregating tests from {}', prj.name
+            executionData prj.test
+        }
+    }
+    reports {
+        csv.enabled = false
+        xml.enabled = true
+        html.destination = "$reporting.baseDir/jacoco"
+    }
+}
+report.dependsOn jacocoMergedReport
+ciTest.dependsOn report
+
+coveralls {
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
+    sourceDirs = subprojects.collect({ prj ->
+        if (prj.name == 'lenskit-integration-tests') {
+            return []
+        } else {
+            return prj.sourceSets.main.java.srcDirs
+        }
+    }).flatten()
+}
+
+tasks.coveralls {
+    group = 'report'
+    description = 'Uploads the aggregated coverage report to Coveralls'
+
+    dependsOn jacocoMergedReport
+    onlyIf { System.env.'CI' && travis.activeJdk == 'oraclejdk8' }
+}
+ciTest.dependsOn tasks.coveralls
 
 sonarqube {
     properties {
