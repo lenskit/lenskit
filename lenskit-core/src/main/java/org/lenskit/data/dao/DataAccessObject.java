@@ -35,6 +35,8 @@ import java.util.Set;
  * Interface for accessing data in LensKit.
  *
  * LensKit data is represented by *entities*; see {@link org.lenskit.data.entities}
+ *
+ * DAOs **must** be thread-safe, but individual streams they return need not be.
  */
 public interface DataAccessObject {
     /**

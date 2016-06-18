@@ -48,7 +48,7 @@ import java.util.Map;
 /**
  * Entity reader that loads entities from text data, often stored in a file.
  */
-public class TextEntitySource {
+public class TextEntitySource implements EntitySource {
     private static final Logger logger = LoggerFactory.getLogger(TextEntitySource.class);
     private final String name;
     private CharSource source;
@@ -136,6 +136,7 @@ public class TextEntitySource {
      * Open a stream to read entities from this source.
      * @return A stream of entities.
      */
+    @Override
     public ObjectStream<Entity> openStream() throws IOException {
         BufferedReader reader = source.openBufferedStream();
         ObjectStream<String> lines = new LineStream(reader);

@@ -23,15 +23,21 @@ package org.lenskit.data.dao.file;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import org.lenskit.data.entities.*;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.EntityCollectionDAOBuilder;
+import org.lenskit.data.entities.Attribute;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Provider;
+import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.net.URI;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Layout and builder for DAOs backed by static files.  This is used to read CSV files
@@ -39,16 +45,17 @@ import java.util.Map;
  * memory, and can compute some derived entities from others (e.g. extracting items
  * from the item IDs in a rating data set).
  */
-public class StaticFileDAOProvider {
+public class StaticFileDAOProvider implements Provider<DataAccessObject> {
     private static final Logger logger = LoggerFactory.getLogger(StaticFileDAOProvider.class);
-    private ListMultimap<EntityType, ?> sources;
+    private List<EntitySource> sources;
     private ListMultimap<EntityType, Attribute<?>> indexedAttributes;
+    private transient volatile SoftReference<DataAccessObject> cachedDao;
 
     /**
      * Construct a new data layout object.
      */
     public StaticFileDAOProvider() {
-        sources = ArrayListMultimap.create();
+        sources = new ArrayList<>();
         indexedAttributes = ArrayListMultimap.create();
     }
 
@@ -57,11 +64,11 @@ public class StaticFileDAOProvider {
      * @param data The entities to add.
      */
     public void addSource(Collection<? extends Entity> data) {
-        // TODO Implement
+        sources.add(new CollectionEntitySource(data));
     }
 
-    private void addSource(TextEntitySource source) {
-        // FIXME Add the source
+    private void addSource(EntitySource source) {
+        sources.add(source);
     }
 
     /**
@@ -83,6 +90,43 @@ public class StaticFileDAOProvider {
      */
     public void addDerivedEntity(EntityType type, EntityType src, Attribute<Long> attr) {
         // TODO implement
+    }
+
+    /**
+     * Get the data access object. This method is thread-safe.
+     * @return The access object.
+     */
+    @Override
+    public DataAccessObject get() {
+        SoftReference<DataAccessObject> cache = cachedDao;
+        DataAccessObject dao = cache != null ? cache.get() : null;
+        if (dao == null) {
+            synchronized (this) {
+                // did someone else make a DAO?
+                cache = cachedDao;
+                dao = cache != null ? cache.get() : null;
+                if (dao == null) {
+                    try {
+                        dao = makeDAO();
+                    } catch (IOException e) {
+                        throw new DataAccessException("cannot load data", e);
+                    }
+                }
+            }
+        }
+
+        return dao;
+    }
+
+    private DataAccessObject makeDAO() throws IOException {
+        EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
+        for (EntitySource source: sources) {
+            try (ObjectStream<Entity> data = source.openStream()) {
+                builder.addEntities(data);
+            }
+        }
+
+        return builder.build();
     }
 
     /**

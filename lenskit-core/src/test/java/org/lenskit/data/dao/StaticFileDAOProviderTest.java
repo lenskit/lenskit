@@ -24,6 +24,13 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.lenskit.data.dao.file.StaticFileDAOProvider;
 import org.lenskit.data.entities.*;
+import org.lenskit.util.io.ObjectStreams;
+
+import java.util.List;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class StaticFileDAOProviderTest {
     private EntityFactory factory = new EntityFactory();
@@ -31,7 +38,24 @@ public class StaticFileDAOProviderTest {
     @Test
     public void testSomeEvents() {
         StaticFileDAOProvider layout = new StaticFileDAOProvider();
-        layout.addSource(Lists.newArrayList(factory.rating(1L, 20L, 3.5),
-                                            factory.rating(1L, 21L, 4.5)));
+        List<Entity> ratings = Lists.newArrayList(factory.rating(1L, 20L, 3.5),
+                                                  factory.rating(1L, 21L, 4.5));
+        layout.addSource(ratings);
+        DataAccessObject dao = layout.get();
+        assertThat(dao.getEntityTypes(), contains(CommonTypes.RATING));
+        assertThat(dao.lookupEntity(CommonTypes.RATING, ratings.get(0).getId()),
+                   equalTo(ratings.get(0)));
+        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder()
+                                                                        .setEntityType(CommonTypes.RATING)
+                                                                        .addFilterField(CommonAttributes.ITEM_ID, 20L)
+                                                                        .build())),
+                   contains(ratings.get(0)));
+
+        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder()
+                                                                        .setEntityType(CommonTypes.RATING)
+                                                                        .addFilterField(CommonAttributes.USER_ID, 1L)
+                                                                        .build())),
+                   contains(ratings.toArray()));
+
     }
 }

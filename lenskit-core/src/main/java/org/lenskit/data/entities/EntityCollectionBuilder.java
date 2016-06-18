@@ -25,7 +25,6 @@ import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Builder class for entity collections.
@@ -64,7 +63,7 @@ public class EntityCollectionBuilder {
      * @param entities The entity to add.
      * @return The builder (for chaining).
      */
-    public EntityCollectionBuilder addAll(Collection<Entity> entities) {
+    public EntityCollectionBuilder addAll(Iterable<Entity> entities) {
         for (Entity e: entities) {
             add(e);
         }
