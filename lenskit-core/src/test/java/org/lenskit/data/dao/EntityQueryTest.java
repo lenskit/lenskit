@@ -45,7 +45,7 @@ public class EntityQueryTest {
                                            .build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.RATING));
         assertThat(q.getFilterFields(),
-                   (Matcher) contains(AttributeValue.create(CommonAttributes.ITEM_ID, 42L)));
+                   (Matcher) contains(Attribute.create(CommonAttributes.ITEM_ID, 42L)));
         assertThat(q.getSortKeys(), hasSize(0));
         assertThat(q.getViewType(), equalTo(Entity.class));
     }
@@ -59,8 +59,8 @@ public class EntityQueryTest {
                                            .build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.RATING));
         assertThat(q.getFilterFields(),
-                   (Matcher) containsInAnyOrder(AttributeValue.create(CommonAttributes.ITEM_ID, 42L),
-                                                AttributeValue.create(CommonAttributes.USER_ID, 29L)));
+                   (Matcher) containsInAnyOrder(Attribute.create(CommonAttributes.ITEM_ID, 42L),
+                                                Attribute.create(CommonAttributes.USER_ID, 29L)));
         assertThat(q.getSortKeys(), hasSize(0));
         assertThat(q.getViewType(), equalTo(Entity.class));
     }

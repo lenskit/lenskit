@@ -63,8 +63,8 @@ public class EntityQueryBuilder {
      * @param <A> The attribute type.
      * @return The query builder (for chaining).
      */
-    public <A> EntityQueryBuilder addFilterField(Attribute<A> attr, @Nonnull A obj) {
-        return this.addFilterField(AttributeValue.create(attr, obj));
+    public <A> EntityQueryBuilder addFilterField(TypedName<A> name, @Nonnull A obj) {
+        return this.addFilterField(Attribute.create(name, obj));
     }
 
     /**
@@ -73,7 +73,7 @@ public class EntityQueryBuilder {
      * @param <A> The attribute type.
      * @return The query builder (for chaining).
      */
-    public <A> EntityQueryBuilder addFilterField(AttributeValue<?> condition) {
+    public <A> EntityQueryBuilder addFilterField(Attribute<?> condition) {
         filter.add(condition);
         return this;
     }
@@ -83,8 +83,8 @@ public class EntityQueryBuilder {
      * @param conditions The conditions to add.
      * @return The query builder (for chaining).
      */
-    public EntityQueryBuilder addFilterFields(List<AttributeValue<?>> conditions) {
-        for (AttributeValue<?> c: conditions) {
+    public EntityQueryBuilder addFilterFields(List<Attribute<?>> conditions) {
+        for (Attribute<?> c: conditions) {
             addFilterField(c);
         }
         return this;
@@ -95,7 +95,7 @@ public class EntityQueryBuilder {
      * @param attr The attribute to sort by.
      * @return The query builder (for chaining).
      */
-    public EntityQueryBuilder addSortKey(Attribute<? extends Comparable> attr) {
+    public EntityQueryBuilder addSortKey(TypedName<? extends Comparable> attr) {
         return addSortKey(attr, SortOrder.ASCENDING);
     }
 
@@ -105,8 +105,8 @@ public class EntityQueryBuilder {
      * @param order The sort order.
      * @return The query builder (for chaining).
      */
-    public EntityQueryBuilder addSortKey(Attribute<? extends Comparable> attr, SortOrder order) {
-        return addSortKey(new SortKey(attr, order));
+    public EntityQueryBuilder addSortKey(TypedName<? extends Comparable> name, SortOrder order) {
+        return addSortKey(new SortKey(name, order));
     }
 
     /**

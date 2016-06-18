@@ -99,12 +99,12 @@ public final class Entities {
         };
     }
 
-    public static <T> Function<Entity,T> attributeValueFunction(final Attribute<T> attr) {
+    public static <T> Function<Entity,T> attributeValueFunction(final TypedName<T> name) {
         return new Function<Entity, T>() {
             @Nullable
             @Override
             public T apply(@Nullable Entity input) {
-                return input == null ? null : input.maybeGet(attr);
+                return input == null ? null : input.maybeGet(name);
             }
         };
     }
