@@ -41,7 +41,7 @@ class BareEntity extends AbstractEntity {
     }
 
     @Override
-    public Set<TypedName<?>> getAttributeTypedNames() {
+    public Set<TypedName<?>> getTypedAttributeNames() {
         return Collections.<TypedName<?>>singleton(CommonAttributes.ENTITY_ID);
     }
 

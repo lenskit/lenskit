@@ -52,7 +52,7 @@ class BasicEntity extends AbstractEntity {
     }
 
     @Override
-    public Set<TypedName<?>> getAttributeTypedNames() {
+    public Set<TypedName<?>> getTypedAttributeNames() {
         // TODO Make this more efficient
         ImmutableSet.Builder<TypedName<?>> bld = ImmutableSet.builder();
         for (Attribute<?> name: attributes.values()) {

@@ -65,7 +65,7 @@ public interface Entity {
     /**
      * Get the attributes in this entity.
      */
-    Set<TypedName<?>> getAttributeTypedNames();
+    Set<TypedName<?>> getTypedAttributeNames();
 
     /**
      * Get the attribute-value pairs.

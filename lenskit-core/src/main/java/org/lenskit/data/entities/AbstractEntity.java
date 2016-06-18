@@ -30,8 +30,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.print.attribute.standard.MediaSize;
 import java.util.*;
 
 /**
@@ -59,13 +57,13 @@ public abstract class AbstractEntity implements Entity {
     /**
      * {@inheritDoc}
      *
-     * Delegates to {@link #getAttributeTypedNames()} and extracts the names.
+     * Delegates to {@link #getTypedAttributeNames()} and extracts the names.
      */
     @Override
     public Set<String> getAttributeNames() {
         // TODO Make this more efficient
         ImmutableSet.Builder<String> bld = ImmutableSet.builder();
-        for (TypedName<?> name: getAttributeTypedNames()) {
+        for (TypedName<?> name: getTypedAttributeNames()) {
             bld.add(name.getName());
         }
         return bld.build();
@@ -74,7 +72,7 @@ public abstract class AbstractEntity implements Entity {
     /**
      * {@inheritDoc}
      *
-     * Delegates to {@link #getAttributeTypedNames()} and extracts the names.
+     * Delegates to {@link #getTypedAttributeNames()} and extracts the names.
      */
     @Override
     public Collection<Attribute<?>> getAttributes() {
@@ -223,7 +221,7 @@ public abstract class AbstractEntity implements Entity {
     private class ValueCollection extends AbstractCollection<Attribute<?>> {
         @Override
         public Iterator<Attribute<?>> iterator() {
-            return Iterators.transform(getAttributeTypedNames().iterator(),
+            return Iterators.transform(getTypedAttributeNames().iterator(),
                                        new Function<TypedName<?>, Attribute<?>>() {
                                            @Nullable
                                            @Override
@@ -236,7 +234,7 @@ public abstract class AbstractEntity implements Entity {
 
         @Override
         public int size() {
-            return getAttributeTypedNames().size();
+            return getTypedAttributeNames().size();
         }
     }
 

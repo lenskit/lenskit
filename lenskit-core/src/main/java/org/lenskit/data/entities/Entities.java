@@ -58,7 +58,7 @@ public final class Entities {
      */
     public static EntityBuilder copyBuilder(Entity e) {
         EntityBuilder eb = newBuilder(e.getType(), e.getId());
-        for (TypedName a: e.getAttributeTypedNames()) {
+        for (TypedName a: e.getTypedAttributeNames()) {
             eb.setAttribute(a, e.get(a));
         }
         return eb;
