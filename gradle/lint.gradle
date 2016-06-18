@@ -46,9 +46,6 @@ task jacocoMergedReport(type: JacocoReport) {
         projects << prj
         dependsOn prj.test
         sourceSets prj.sourceSets.test
-        rootProject.coveralls {
-            sourceDirs.addAll(prj.sourceSets.main.java.srcDirs)
-        }
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
             logger.info '{} has no tests', prj.name
         } else {
@@ -67,6 +64,13 @@ ciTest.dependsOn report
 
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
+    sourceDirs = subprojects.collectNested { prj ->
+        if (prj.name == 'lenskit-integration-tests') {
+            return []
+        } else {
+            return prj.sourceSets.main.java.srcDirs
+        }
+    }
 }
 
 tasks.coveralls {
