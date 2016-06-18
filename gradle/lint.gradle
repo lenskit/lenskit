@@ -37,7 +37,12 @@ subprojects {
 }
 
 task jacocoMergedReport(type: JacocoReport) {
+d    onlyIf {
+        lintMode != 'disabled'
+    }
     for (prj in subprojects) {
+        if (prj.name == 'lenskit-integration-tests') continue;
+
         dependsOn prj.test
         sourceSets prj.sourceSets.test
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
