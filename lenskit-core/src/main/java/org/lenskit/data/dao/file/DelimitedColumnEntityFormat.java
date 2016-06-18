@@ -107,6 +107,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * Get the entity type.
      * @return The entity type.
      */
+    @Override
     public EntityType getEntityType() {
         return entityType;
     }

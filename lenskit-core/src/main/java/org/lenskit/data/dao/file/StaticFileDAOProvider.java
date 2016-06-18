@@ -25,10 +25,9 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.EntityCollectionDAO;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,14 +118,54 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
     }
 
     private DataAccessObject makeDAO() throws IOException {
+        Set<EntityType> types = new HashSet<>();
+
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
         for (EntitySource source: sources) {
             try (ObjectStream<Entity> data = source.openStream()) {
-                builder.addEntities(data);
+                for (Entity e: data) {
+                    builder.addEntity(e);
+                    types.add(e.getType());
+                }
             }
         }
 
-        return builder.build();
+        EntityCollectionDAO dao = builder.build();
+        boolean added = false;
+
+        for (EntityType type: types) {
+            EntityDefaults defaults = EntityDefaults.lookup(type);
+            if (defaults == null) {
+                continue;
+            }
+            for (EntityDerivation deriv: defaults.getDefaultDerivations()) {
+                EntityType derived = deriv.getType();
+                if (types.contains(derived)) {
+                    continue;
+                }
+                TypedName<Long> column = deriv.getAttribute();
+                logger.info("deriving entity type {} from {} (column {})",
+                            derived, deriv.getSourceTypes(), column);
+                added = true;
+                for (EntityType src: deriv.getSourceTypes()) {
+                    try (ObjectStream<Entity> stream = dao.streamEntities(src)) {
+                        for (Entity se: stream) {
+                            try {
+                                builder.addEntity(Entities.create(derived, se.getLong(column)));
+                            } catch (NoSuchAttributeException ex) {
+                                /* no-op */
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (added) {
+            dao = builder.build();
+        }
+
+        return dao;
     }
 
     /**

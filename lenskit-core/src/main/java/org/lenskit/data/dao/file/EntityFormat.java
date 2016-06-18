@@ -20,12 +20,20 @@
  */
 package org.lenskit.data.dao.file;
 
+import org.lenskit.data.entities.EntityType;
+
 import java.util.List;
 
 /**
  * Entity format interface.  This is used for line-based text files.
  */
 public interface EntityFormat {
+    /**
+     * Get the type of entities returned by this format.
+     * @return The type of entities returned by this format.
+     */
+    EntityType getEntityType();
+
     /**
      * Get the number of header lines this format uses.
      * @return The number of header lines to read at the beginning of the file.

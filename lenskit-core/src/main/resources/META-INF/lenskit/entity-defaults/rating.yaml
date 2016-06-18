@@ -5,4 +5,7 @@ attributes:
   item: long
   rating: double
   timestamp: long
+derivations:
+  user: user
+  item: item
 columns: [user, item, rating, timestamp]

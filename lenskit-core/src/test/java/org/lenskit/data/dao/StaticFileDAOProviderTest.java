@@ -29,6 +29,7 @@ import org.lenskit.util.io.ObjectStreams;
 import java.util.List;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -42,7 +43,9 @@ public class StaticFileDAOProviderTest {
                                                   factory.rating(1L, 21L, 4.5));
         layout.addSource(ratings);
         DataAccessObject dao = layout.get();
-        assertThat(dao.getEntityTypes(), contains(CommonTypes.RATING));
+        assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,
+                                                            CommonTypes.USER,
+                                                            CommonTypes.ITEM));
         assertThat(dao.lookupEntity(CommonTypes.RATING, ratings.get(0).getId()),
                    equalTo(ratings.get(0)));
         assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder()
@@ -56,6 +59,5 @@ public class StaticFileDAOProviderTest {
                                                                         .addFilterField(CommonAttributes.USER_ID, 1L)
                                                                         .build())),
                    contains(ratings.toArray()));
-
     }
 }

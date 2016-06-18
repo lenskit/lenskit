@@ -42,6 +42,7 @@ public class EntityDefaults {
     private final Map<String, TypedName<?>> attributes;
     private final List<TypedName<?>> defaultColumns;
     private final Class<? extends EntityBuilder> defaultBuilder;
+    private final List<EntityDerivation> defaultDerivations;
 
     /**
      * Construct a set of entity defaults where all common attributes are default columns.
@@ -49,7 +50,7 @@ public class EntityDefaults {
      * @param cols The default column layout.
      */
     public EntityDefaults(EntityType type, List<TypedName<?>> cols) {
-        this(type, cols, cols, BasicEntityBuilder.class);
+        this(type, cols, cols, BasicEntityBuilder.class, Collections.<EntityDerivation>emptyList());
     }
 
 
@@ -60,7 +61,7 @@ public class EntityDefaults {
      * @param cols The default column layout.
      */
     public EntityDefaults(EntityType type, Collection<TypedName<?>> attrs, List<TypedName<?>> cols,
-                          Class<? extends EntityBuilder> bld) {
+                          Class<? extends EntityBuilder> bld, List<EntityDerivation> derivs) {
         entityType = type;
         ImmutableMap.Builder<String,TypedName<?>> abld = ImmutableMap.builder();
         for (TypedName<?> a: attrs) {
@@ -69,6 +70,7 @@ public class EntityDefaults {
         attributes = abld.build();
         defaultColumns = ImmutableList.copyOf(cols);
         defaultBuilder = bld;
+        defaultDerivations = ImmutableList.copyOf(derivs);
     }
 
     /**
@@ -137,6 +139,14 @@ public class EntityDefaults {
     }
 
     /**
+     * Get the default entity derivations.
+     * @return The default entity derivations.
+     */
+    public List<EntityDerivation> getDefaultDerivations() {
+        return defaultDerivations;
+    }
+
+    /**
      * Create an entity defaults object from a bean.
      * @param type The entity type.
      * @param bean The bean.
@@ -153,6 +163,16 @@ public class EntityDefaults {
             cols.add(attrs.get(col));
         }
 
+        List<EntityDerivation> derivs = new ArrayList<>();
+        for (Map.Entry<String,String> d: bean.getDerivations().entrySet()) {
+            EntityType et = EntityType.forName(d.getKey());
+            TypedName<?> attr = attrs.get(d.getValue());
+            if (!attr.getType().equals(Long.class)) {
+                throw new RuntimeException("derived entity derives from non-Long column");
+            }
+            derivs.add(EntityDerivation.create(et, type, (TypedName<Long>) attr));
+        }
+
         Class<?> builder;
         String builderName = bean.getBuilder();
         if (builderName != null) {
@@ -165,20 +185,38 @@ public class EntityDefaults {
             builder = BasicEntityBuilder.class;
         }
 
-        return new EntityDefaults(type, attrs.values(), cols, builder.asSubclass(EntityBuilder.class));
+        return new EntityDefaults(type, attrs.values(), cols, builder.asSubclass(EntityBuilder.class),
+                                  derivs);
     }
 
     private static class DefaultsBean {
         private Map<String, String> attributes;
+        private Map<String, String> derivations;
         private List<String> columns;
         private String builder;
 
         public Map<String, String> getAttributes() {
-            return attributes;
+            if (attributes != null) {
+                return attributes;
+            } else {
+                return ImmutableMap.of();
+            }
         }
 
         public void setAttributes(Map<String,String> attributes) {
             this.attributes = attributes;
+        }
+
+        public Map<String, String> getDerivations() {
+            if (derivations != null) {
+                return derivations;
+            } else {
+                return ImmutableMap.of();
+            }
+        }
+
+        public void setDerivations(Map<String,String> deriv) {
+            this.derivations = deriv;
         }
 
         public List<String> getColumns() {
