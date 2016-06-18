@@ -20,29 +20,23 @@
  */
 package org.lenskit.data.dao;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
-import org.lenskit.util.IdBox;
-import org.lenskit.util.io.GroupingObjectStream;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.keys.KeyedObjectMap;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.WillCloseWhenClosed;
 import java.util.*;
 
 /**
  * A DAO backed by one or more collections of entities.
  */
-public class EntityCollectionDAO implements DataAccessObject {
+public class EntityCollectionDAO extends AbstractDataAccessObject {
     private final Map<EntityType, KeyedObjectMap<Entity>> storage;
 
     EntityCollectionDAO(Map<EntityType, KeyedObjectMap<Entity>> data) {
@@ -152,50 +146,4 @@ public class EntityCollectionDAO implements DataAccessObject {
         return ObjectStreams.wrap(list);
     }
 
-    @Override
-    public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, TypedName<Long> grpCol) {
-        EntityQueryBuilder qb = EntityQuery.newBuilder();
-        qb.setEntityType(query.getEntityType())
-          .addFilterFields(query.getFilterFields());
-        qb.addSortKey(grpCol);
-        qb.addSortKeys(query.getSortKeys());
-        ObjectStream<E> stream = streamEntities(qb.buildWithView(query.getViewType()));
-        return new GroupStream<>(stream, grpCol);
-    }
-
-    private static class GroupStream<E extends Entity> extends GroupingObjectStream<IdBox<List<E>>, E> {
-        private final TypedName<Long> attribute;
-        private long id;
-        private ImmutableList.Builder<E> builder;
-
-        GroupStream(@WillCloseWhenClosed ObjectStream<E> base, TypedName<Long> attr) {
-            super(base);
-            attribute = attr;
-        }
-
-        @Override
-        protected void clearGroup() {
-            builder = null;
-        }
-
-        @Override
-        protected boolean handleItem(@Nonnull E item) {
-            if (builder == null) {
-                id = item.getLong(attribute);
-                builder = ImmutableList.builder();
-            } else if (id != item.getLong(attribute)) {
-                return false;
-            }
-            builder.add(item);
-            return true;
-        }
-
-        @Nonnull
-        @Override
-        protected IdBox<List<E>> finishGroup() {
-            IdBox<List<E>> box = IdBox.create(id, (List<E>) builder.build());
-            builder = null;
-            return box;
-        }
-    }
 }

@@ -1,0 +1,100 @@
+/*
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+package org.lenskit.data.dao;
+
+import com.google.common.collect.ImmutableList;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.TypedName;
+import org.lenskit.util.IdBox;
+import org.lenskit.util.io.GroupingObjectStream;
+import org.lenskit.util.io.ObjectStream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.WillCloseWhenClosed;
+import java.util.List;
+
+/**
+ * Helper class to make it easier to create DAOs.
+ */
+public abstract class AbstractDataAccessObject implements DataAccessObject {
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #streamEntities(EntityQuery)}
+     */
+    @Override
+    public ObjectStream<Entity> streamEntities(EntityType type) {
+        return streamEntities(EntityQuery.newBuilder().setEntityType(type).build());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #streamEntities(EntityType)} and groups the result.
+     */
+    @Override
+    public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, TypedName<Long> grpCol) {
+        EntityQueryBuilder qb = EntityQuery.newBuilder();
+        qb.setEntityType(query.getEntityType())
+          .addFilterFields(query.getFilterFields());
+        qb.addSortKey(grpCol);
+        qb.addSortKeys(query.getSortKeys());
+        ObjectStream<E> stream = streamEntities(qb.buildWithView(query.getViewType()));
+        return new GroupStream<>(stream, grpCol);
+    }
+
+    private static class GroupStream<E extends Entity> extends GroupingObjectStream<IdBox<List<E>>, E> {
+        private final TypedName<Long> attribute;
+        private long id;
+        private ImmutableList.Builder<E> builder;
+
+        GroupStream(@WillCloseWhenClosed ObjectStream<E> base, TypedName<Long> attr) {
+            super(base);
+            attribute = attr;
+        }
+
+        @Override
+        protected void clearGroup() {
+            builder = null;
+        }
+
+        @Override
+        protected boolean handleItem(@Nonnull E item) {
+            if (builder == null) {
+                id = item.getLong(attribute);
+                builder = ImmutableList.builder();
+            } else if (id != item.getLong(attribute)) {
+                return false;
+            }
+            builder.add(item);
+            return true;
+        }
+
+        @Nonnull
+        @Override
+        protected IdBox<List<E>> finishGroup() {
+            IdBox<List<E>> box = IdBox.create(id, (List<E>) builder.build());
+            builder = null;
+            return box;
+        }
+    }
+}
