@@ -37,7 +37,7 @@ subprojects {
 }
 
 task jacocoMergedReport(type: JacocoReport) {
-d    onlyIf {
+    onlyIf {
         lintMode != 'disabled'
     }
     for (prj in subprojects) {
