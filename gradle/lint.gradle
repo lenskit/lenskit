@@ -37,12 +37,13 @@ subprojects {
 }
 
 task jacocoMergedReport(type: JacocoReport) {
+    ext.projects = []
     onlyIf {
         lintMode != 'disabled'
     }
     for (prj in subprojects) {
         if (prj.name == 'lenskit-integration-tests') continue;
-
+        projects << prj
         dependsOn prj.test
         sourceSets prj.sourceSets.test
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
@@ -62,7 +63,7 @@ report.dependsOn jacocoMergedReport
 ciTest.dependsOn report
 
 coveralls {
-    sourceDirs = jacocoMergedReport.sourceDirectories
+    sourceDirs = jacocoMergedReport.projects*.sourceSets*.main*.allSource*.srcDirs*.flatten()
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
 }
 
@@ -71,7 +72,7 @@ tasks.coveralls {
     description = 'Uploads the aggregated coverage report to Coveralls'
 
     dependsOn jacocoMergedReport
-    onlyIf { System.env.'CI' }
+    onlyIf { System.env.'CI' && travis.activeJdk == 'oraclejdk8' }
 }
 ciTest.dependsOn tasks.coveralls
 
