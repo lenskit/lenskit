@@ -46,7 +46,9 @@ task jacocoMergedReport(type: JacocoReport) {
         projects << prj
         dependsOn prj.test
         sourceSets prj.sourceSets.test
-        coveralls.sourceDirs.addAll(prj.sourceSets.main.java.srcDirs)
+        rootProject.coveralls {
+            sourceDirs.addAll(prj.sourceSets.main.java.srcDirs)
+        }
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
             logger.info '{} has no tests', prj.name
         } else {
@@ -68,7 +70,7 @@ coveralls {
 }
 
 tasks.coveralls {
-    group = 'Coverage reports'
+    group = 'report'
     description = 'Uploads the aggregated coverage report to Coveralls'
 
     dependsOn jacocoMergedReport
