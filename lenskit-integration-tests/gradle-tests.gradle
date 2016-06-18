@@ -85,6 +85,9 @@ file('src/it/gradle').eachDir { testDir ->
         onlyIf {
             !file("$testDir/ignore").exists()
         }
+        onlyIf {
+            travis.branch != 'coverity_scan'
+        }
         doFirst {
             copy {
                 from 'src/it/gradle'

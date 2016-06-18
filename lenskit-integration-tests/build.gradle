@@ -78,6 +78,9 @@ test {
     jacoco {
         enabled = false
     }
+    onlyIf {
+        travis.branch != 'coverity_scan'
+    }
 }
 
 task crossCheck(group: 'verification')
