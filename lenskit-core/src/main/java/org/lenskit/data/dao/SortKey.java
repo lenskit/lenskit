@@ -24,9 +24,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.lenskit.data.entities.Attribute;
 import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.TypedName;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -35,7 +35,7 @@ import java.util.Comparator;
  * A sort key describing a sort operation.
  */
 public final class SortKey {
-    private final Attribute<?> attribute;
+    private final TypedName<?> attribute;
     private final SortOrder order;
     private final Comparator<?> comparator;
 
@@ -43,7 +43,7 @@ public final class SortKey {
      * Create a new sort key in ascending order.
      * @param attr The attribute.
      */
-    public SortKey(Attribute<? extends Comparable> attr) {
+    SortKey(TypedName<? extends Comparable> attr) {
         this(attr, SortOrder.ASCENDING);
     }
 
@@ -52,7 +52,7 @@ public final class SortKey {
      * @param attr The attribute.
      * @param ord The sort order.
      */
-    public SortKey(Attribute<? extends Comparable> attr, SortOrder ord) {
+    SortKey(TypedName<? extends Comparable> attr, SortOrder ord) {
         attribute = attr;
         order = ord;
         comparator = null;
@@ -63,7 +63,7 @@ public final class SortKey {
      * @param attr The attribute.
      * @param comp A comparator to use.
      */
-    private SortKey(Attribute<?> attr, Comparator<?> comp) {
+    private SortKey(TypedName<?> attr, Comparator<?> comp) {
         attribute = attr;
         comparator = comp;
         order = null;
@@ -73,7 +73,7 @@ public final class SortKey {
      * Create a new sort key in ascending order.
      * @param attr The attribute.
      */
-    public static SortKey create(Attribute<? extends Comparable> attr) {
+    public static SortKey create(TypedName<? extends Comparable> attr) {
         return new SortKey(attr, SortOrder.ASCENDING);
     }
 
@@ -82,7 +82,7 @@ public final class SortKey {
      * @param attr The attribute.
      * @param ord The sort order.
      */
-    public static SortKey create(Attribute<? extends Comparable> attr, SortOrder ord) {
+    public static SortKey create(TypedName<? extends Comparable> attr, SortOrder ord) {
         return new SortKey(attr, ord);
     }
 
@@ -91,7 +91,7 @@ public final class SortKey {
      * @param attr The attribute.
      * @param comp A comparator to use.
      */
-    public static <T> SortKey create(Attribute<T> attr, Comparator<? super T> comp) {
+    public static <T> SortKey create(TypedName<T> attr, Comparator<? super T> comp) {
         return new SortKey(attr, comp);
     }
 
@@ -99,7 +99,7 @@ public final class SortKey {
      * Get the attribute to sort by.
      * @return The attribute to sort by.
      */
-    public Attribute<?> getAttribute() {
+    public TypedName<?> getAttribute() {
         return attribute;
     }
 
