@@ -96,6 +96,24 @@ public class Query<E extends Entity> {
     }
 
     /**
+     * Group the results of this query by an attribute.
+     * @param name The attribute name to group by.
+     * @return A grouped query.
+     */
+    public GroupedQuery<E> groupBy(TypedName<Long> name) {
+        return new GroupedQuery<>(dao, builder.buildWithView(viewClass), name);
+    }
+
+    /**
+     * Group the results of this query by an attribute.
+     * @param name The attribute name to group by.
+     * @return A grouped query.
+     */
+    public GroupedQuery<E> groupBy(String name) {
+        return groupBy(TypedName.create(name, Long.class));
+    }
+
+    /**
      * Stream the results of this query.
      * @return A stream of the results of this query.
      */
@@ -113,13 +131,5 @@ public class Query<E extends Entity> {
             builder.addAll(stream);
         }
         return builder.build();
-    }
-
-    /**
-     * Stream the results of this query as a list, grouped by an attribute.
-     * @return A list of the results of this query.
-     */
-    public ObjectStream<IdBox<List<E>>> streamGrouped(TypedName<Long> attr) {
-        return dao.streamEntityGroups(builder.buildWithView(viewClass), attr);
     }
 }

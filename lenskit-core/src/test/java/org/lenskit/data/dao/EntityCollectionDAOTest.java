@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.IdBox;
-import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import java.util.ArrayList;
@@ -288,10 +287,9 @@ public class EntityCollectionDAOTest {
         EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .addSortKey(CommonAttributes.ITEM_ID)
                                                .build();
-        List<IdBox<List<Entity>>> results =
-                ObjectStreams.makeList(dao.query(LIKE)
-                                          .orderBy(CommonAttributes.ITEM_ID)
-                                          .streamGrouped(CommonAttributes.USER_ID));
+        List<IdBox<List<Entity>>> results = dao.query(LIKE)
+                                               .orderBy(CommonAttributes.ITEM_ID)
+                                               .groupBy(CommonAttributes.USER_ID).get();
         assertThat(results, hasSize(2));
         assertThat(results,
                    containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(0))),
