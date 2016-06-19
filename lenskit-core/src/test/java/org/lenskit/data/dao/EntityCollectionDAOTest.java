@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.IdBox;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import java.util.ArrayList;
@@ -250,5 +251,50 @@ public class EntityCollectionDAOTest {
 
         assertThat(dao.getEntityTypes(),
                    containsInAnyOrder(RATING, LIKE));
+    }
+
+    @Test
+    public void testQueryRejectOneEntityFluent() {
+        Entity e = Entities.newBuilder(LIKE, 1)
+                           .setAttribute(CommonAttributes.USER_ID, 42L)
+                           .setAttribute(CommonAttributes.ITEM_ID, 39L)
+                           .build();
+        EntityCollectionDAO dao = EntityCollectionDAO.create(e);
+
+        List<Entity> results = dao.query(LIKE)
+                                  .withAttribute(CommonAttributes.USER_ID, 39L)
+                                  .get();
+
+        assertThat(results, hasSize(0));
+    }
+
+    @Test
+    public void testGroupEntitiesFluently() {
+        List<Entity> entities = new ArrayList<>();
+        entities.add(Entities.newBuilder(LIKE, 1)
+                             .setAttribute(CommonAttributes.USER_ID, 42L)
+                             .setAttribute(CommonAttributes.ITEM_ID, 39L)
+                             .build());
+        entities.add(Entities.newBuilder(LIKE, 2)
+                             .setAttribute(CommonAttributes.USER_ID, 67L)
+                             .setAttribute(CommonAttributes.ITEM_ID, 28L)
+                             .build());
+        entities.add(Entities.newBuilder(LIKE, 3)
+                             .setAttribute(CommonAttributes.USER_ID, 42L)
+                             .setAttribute(CommonAttributes.ITEM_ID, 28L)
+                             .build());
+        EntityCollectionDAO dao = EntityCollectionDAO.create(entities);
+
+        EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
+                                               .addSortKey(CommonAttributes.ITEM_ID)
+                                               .build();
+        List<IdBox<List<Entity>>> results =
+                ObjectStreams.makeList(dao.query(LIKE)
+                                          .orderBy(CommonAttributes.ITEM_ID)
+                                          .streamGrouped(CommonAttributes.USER_ID));
+        assertThat(results, hasSize(2));
+        assertThat(results,
+                   containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(0))),
+                                      IdBox.create(67L, ImmutableList.of(entities.get(1)))));
     }
 }

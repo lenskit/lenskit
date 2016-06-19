@@ -36,6 +36,11 @@ import java.util.List;
  * Helper class to make it easier to create DAOs.
  */
 public abstract class AbstractDataAccessObject implements DataAccessObject {
+    @Override
+    public Query<Entity> query(EntityType type) {
+        return new Query<>(this, type, Entity.class);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -43,7 +48,7 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     @Override
     public ObjectStream<Entity> streamEntities(EntityType type) {
-        return streamEntities(EntityQuery.newBuilder(type).setEntityType(type).build());
+        return streamEntities(EntityQuery.newBuilder(type).build());
     }
 
     /**

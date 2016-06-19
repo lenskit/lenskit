@@ -98,4 +98,11 @@ public interface DataAccessObject {
      * @throws UnsupportedQueryException if the query cannot be satisfied
      */
     <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, TypedName<Long> grpCol);
+
+    /**
+     * Start a query using the fluent query interface.
+     * @param type The type of entity to retrieve.
+     * @return The query.
+     */
+    Query<Entity> query(EntityType type);
 }
