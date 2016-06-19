@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.lenskit.data.dao.file.StaticFileDAOProvider;
 import org.lenskit.data.entities.*;
-import org.lenskit.util.io.ObjectStreams;
 
 import java.util.List;
 
@@ -46,23 +45,23 @@ public class StaticFileDAOProviderTest {
                                                             CommonTypes.ITEM));
         assertThat(dao.lookupEntity(CommonTypes.RATING, ratings.get(0).getId()),
                    equalTo(ratings.get(0)));
-        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder(CommonTypes.RATING)
-                                                                        .addFilterField(CommonAttributes.ITEM_ID, 20L)
-                                                                        .build())),
+        assertThat(dao.query(CommonTypes.RATING)
+                      .withAttribute(CommonAttributes.ITEM_ID, 20L)
+                      .get(),
                    contains(ratings.get(0)));
 
-        assertThat(ObjectStreams.makeList(dao.streamEntities(EntityQuery.newBuilder(CommonTypes.RATING)
-                                                                        .addFilterField(CommonAttributes.USER_ID, 1L)
-                                                                        .build())),
+        assertThat(dao.query(CommonTypes.RATING)
+                      .withAttribute(CommonAttributes.USER_ID, 1L)
+                      .get(),
                    contains(ratings.toArray()));
 
         assertThat(dao.getEntityIds(CommonTypes.USER),
                    contains(1L));
         assertThat(dao.getEntityIds(CommonTypes.ITEM),
                    containsInAnyOrder(20L, 21L));
-        assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.USER)),
+        assertThat(dao.query(CommonTypes.USER).get(),
                    contains(Entities.create(CommonTypes.USER, 1)));
-        assertThat(ObjectStreams.makeList(dao.streamEntities(CommonTypes.ITEM)),
+        assertThat(dao.query(CommonTypes.ITEM).get(),
                    containsInAnyOrder(Entities.create(CommonTypes.ITEM, 20),
                                       Entities.create(CommonTypes.ITEM, 21)));
     }
