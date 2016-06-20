@@ -356,7 +356,6 @@ public final class LongUtils {
      */
     public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude,
                                              @Nonnull Random rng) {
-        // FIXME The RNG should come from configuration
         LongSet initial = exclude;
         LongList selected = new LongArrayList(num);
         int n = 0;
@@ -385,6 +384,5 @@ public final class LongUtils {
             }
         }
         return LongUtils.packedSet(selected);
-
     }
 }
