@@ -98,7 +98,7 @@ sonarqube {
     }
 }
 
-tasks.sonarAnalyze.onlyIf {
+tasks.sonarqube.onlyIf {
     travis.isReleaseBuild && travis.branch == 'master'
 }
 
