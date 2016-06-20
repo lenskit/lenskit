@@ -99,7 +99,7 @@ sonarqube {
 }
 
 tasks.sonarqube.onlyIf {
-    travis.isReleaseBuild() && travis.branch == 'master'
+    lintMode == 'preview' || (travis.isReleaseBuild() && travis.branch == 'master')
 }
 
 if (lintMode == 'enabled') {
