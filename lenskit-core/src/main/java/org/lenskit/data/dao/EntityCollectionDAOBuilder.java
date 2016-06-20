@@ -21,10 +21,7 @@
 package org.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableMap;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityCollection;
-import org.lenskit.data.entities.EntityCollectionBuilder;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Arrays;
@@ -38,8 +35,20 @@ import java.util.Map;
 public class EntityCollectionDAOBuilder {
     private Map<EntityType, EntityCollectionBuilder> entitySets = new HashMap<>();
     // remember the last builder used as a fast path
-    private EntityCollectionBuilder bld = null;
+    private EntityCollectionBuilder lastBuilder = null;
     private EntityType last = null;
+
+    /**
+     * Index entities by an attribute.
+     * @param et The entity type.
+     * @param attr The attribute to index.
+     * @return The builder (for chaining).
+     */
+    public EntityCollectionDAOBuilder addIndex(EntityType et, TypedName<?> attr) {
+        EntityCollectionBuilder builder = findBuilder(et);
+        builder.addIndex(attr);
+        return this;
+    }
 
     /**
      * Add an entity to the DAO.
@@ -48,18 +57,23 @@ public class EntityCollectionDAOBuilder {
      */
     public EntityCollectionDAOBuilder addEntity(Entity e) {
         EntityType type = e.getType();
-        if (type != last) {
-            bld = entitySets.get(type);
-            last = type;
-            if (bld == null) {
-                bld = new EntityCollectionBuilder(type);
-                entitySets.put(type, bld);
-            }
-        }
-        assert bld != null;
+        EntityCollectionBuilder bld = findBuilder(type);
         bld.add(e);
 
         return this;
+    }
+
+    private EntityCollectionBuilder findBuilder(EntityType type) {
+        if (type != last) {
+            lastBuilder = entitySets.get(type);
+            last = type;
+            if (lastBuilder == null) {
+                lastBuilder = new EntityCollectionBuilder(type);
+                entitySets.put(type, lastBuilder);
+            }
+        }
+        assert lastBuilder != null;
+        return lastBuilder;
     }
 
     /**

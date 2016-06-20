@@ -21,10 +21,13 @@
 package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Builder class for entity collections.
@@ -32,10 +35,46 @@ import java.util.Arrays;
 public class EntityCollectionBuilder {
     private final EntityType type;
     private final KeyedObjectMapBuilder<Entity> store;
+    private final Map<String,IndexBuilder> indexes;
 
     public EntityCollectionBuilder(EntityType type) {
         this.type = type;
         store = KeyedObjectMap.newBuilder(Entities.idKeyExtractor());
+        indexes = new HashMap<>();
+    }
+
+    /**
+     * Add an index to an entity collection to speed up lookups.
+     * @param attribute The attribute to index.
+     * @param <T> The attribute type
+     * @return The builder (for chaining).
+     */
+    public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
+        if (indexes.containsKey(attribute.getName())) {
+            throw new IllegalStateException("attribute " + attribute.getName() + " already indexed");
+        }
+        IndexBuilder ib;
+        if (attribute.getType().equals(LongIndexBuilder.class)) {
+            ib = new LongIndexBuilder((TypedName<Long>) attribute);
+        } else {
+            ib = new GenericIndexBuilder(attribute);
+        }
+        indexes.put(attribute.getName(), ib);
+
+        for (Entity e: store.build()) {
+            ib.add(e);
+        }
+
+        return this;
+    }
+
+    /**
+     * Add an index to an entity collection to speed up lookups.
+     * @param attrName The name of the attribute to index.
+     * @return The builder (for chaining).
+     */
+    public EntityCollectionBuilder addIndex(String attrName) {
+        return addIndex(TypedName.create(attrName, Object.class));
     }
 
     /**
@@ -46,6 +85,9 @@ public class EntityCollectionBuilder {
     public EntityCollectionBuilder add(Entity e) {
         Preconditions.checkArgument(e.getType().equals(type));
         store.add(e);
+        for (IndexBuilder ib: indexes.values()) {
+            ib.add(e);
+        }
         return this;
     }
 
@@ -76,5 +118,51 @@ public class EntityCollectionBuilder {
      */
     public EntityCollection build() {
         return new EntityCollection(type, store.build());
+    }
+
+    static interface IndexBuilder {
+        void add(Entity e);
+    }
+
+    static class GenericIndexBuilder implements IndexBuilder {
+        TypedName<?> attribute;
+        Map<Object,ImmutableList.Builder<Entity>> data;
+
+        GenericIndexBuilder(TypedName<?> attr) {
+            attribute = attr;
+            data = new HashMap<>();
+        }
+
+        @Override
+        public void add(Entity e) {
+            Object value = e.get(attribute);
+            ImmutableList.Builder<Entity> lb = data.get(value);
+            if (lb == null) {
+                lb = ImmutableList.builder();
+                data.put(value, lb);
+            }
+            lb.add(e);
+        }
+    }
+
+    static class LongIndexBuilder implements IndexBuilder {
+        TypedName<Long> attribute;
+        Long2ObjectMap<ImmutableList.Builder<Entity>> data;
+
+        LongIndexBuilder(TypedName<Long> attr) {
+            attribute = attr;
+            data = new Long2ObjectOpenHashMap<>();
+        }
+
+        @Override
+        public void add(Entity e) {
+            long value = e.getLong(attribute);
+            ImmutableList.Builder<Entity> lb = data.get(value);
+            if (lb == null) {
+                lb = ImmutableList.builder();
+                data.put(value, lb);
+            }
+            lb.add(e);
+        }
     }
 }

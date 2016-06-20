@@ -80,4 +80,52 @@ public class EntityCollectionTest {
         assertThat(ec.find(CommonAttributes.ITEM_ID, 10L),
                    hasSize(0));
     }
+
+    @Test
+    public void testFindIndexedEntity() {
+        Entity rating = Entities.newBuilder(CommonTypes.RATING)
+                                .setId(37)
+                                .setAttribute(CommonAttributes.USER_ID, 10L)
+                                .setAttribute(CommonAttributes.ITEM_ID, 203L)
+                                .setAttribute(CommonAttributes.RATING, 3.5)
+                                .build();
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+                                              .addIndex(CommonAttributes.USER_ID)
+                                              .add(rating)
+                                              .build();
+        assertThat(ec.getType(), equalTo(CommonTypes.RATING));
+        assertThat(ec.size(), equalTo(1));
+        assertThat(ec.lookup(37),
+                   equalTo(rating));
+        assertThat(Lists.newArrayList(ec),
+                   contains(rating));
+        assertThat(ec.find(CommonAttributes.USER_ID, 10L),
+                   contains(rating));
+        assertThat(ec.find(CommonAttributes.ITEM_ID, 10L),
+                   hasSize(0));
+    }
+
+    @Test
+    public void testIndexEntityAfterAddStarted() {
+        Entity rating = Entities.newBuilder(CommonTypes.RATING)
+                                .setId(37)
+                                .setAttribute(CommonAttributes.USER_ID, 10L)
+                                .setAttribute(CommonAttributes.ITEM_ID, 203L)
+                                .setAttribute(CommonAttributes.RATING, 3.5)
+                                .build();
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+                                              .add(rating)
+                                              .addIndex(CommonAttributes.USER_ID)
+                                              .build();
+        assertThat(ec.getType(), equalTo(CommonTypes.RATING));
+        assertThat(ec.size(), equalTo(1));
+        assertThat(ec.lookup(37),
+                   equalTo(rating));
+        assertThat(Lists.newArrayList(ec),
+                   contains(rating));
+        assertThat(ec.find(CommonAttributes.USER_ID, 10L),
+                   contains(rating));
+        assertThat(ec.find(CommonAttributes.ITEM_ID, 10L),
+                   hasSize(0));
+    }
 }
