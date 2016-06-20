@@ -47,7 +47,7 @@ import java.util.*;
 public class StaticFileDAOProvider implements Provider<DataAccessObject> {
     private static final Logger logger = LoggerFactory.getLogger(StaticFileDAOProvider.class);
     private List<EntitySource> sources;
-    private ListMultimap<EntityType, Attribute<?>> indexedAttributes;
+    private ListMultimap<EntityType, TypedName<?>> indexedAttributes;
     private transient volatile SoftReference<DataAccessObject> cachedDao;
 
     /**
@@ -75,7 +75,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
      * @param type The entity type to index.
      * @param attr The attribute to index.
      */
-    public void addIndex(EntityType type, Attribute<?> attr) {
+    public void addIndex(EntityType type, TypedName<?> attr) {
         // TODO Implement
     }
 

@@ -65,4 +65,38 @@ public class StaticFileDAOProviderTest {
                    containsInAnyOrder(Entities.create(CommonTypes.ITEM, 20),
                                       Entities.create(CommonTypes.ITEM, 21)));
     }
+
+    @Test
+    public void testIndexedEvents() {
+        StaticFileDAOProvider layout = new StaticFileDAOProvider();
+        layout.addIndex(CommonTypes.RATING, CommonAttributes.USER_ID);
+        List<Entity> ratings = Lists.newArrayList(factory.rating(1L, 20L, 3.5),
+                                                  factory.rating(1L, 21L, 4.5));
+        layout.addSource(ratings);
+        DataAccessObject dao = layout.get();
+        assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,
+                                                            CommonTypes.USER,
+                                                            CommonTypes.ITEM));
+        assertThat(dao.lookupEntity(CommonTypes.RATING, ratings.get(0).getId()),
+                   equalTo(ratings.get(0)));
+        assertThat(dao.query(CommonTypes.RATING)
+                      .withAttribute(CommonAttributes.ITEM_ID, 20L)
+                      .get(),
+                   contains(ratings.get(0)));
+
+        assertThat(dao.query(CommonTypes.RATING)
+                      .withAttribute(CommonAttributes.USER_ID, 1L)
+                      .get(),
+                   contains(ratings.toArray()));
+
+        assertThat(dao.getEntityIds(CommonTypes.USER),
+                   contains(1L));
+        assertThat(dao.getEntityIds(CommonTypes.ITEM),
+                   containsInAnyOrder(20L, 21L));
+        assertThat(dao.query(CommonTypes.USER).get(),
+                   contains(Entities.create(CommonTypes.USER, 1)));
+        assertThat(dao.query(CommonTypes.ITEM).get(),
+                   containsInAnyOrder(Entities.create(CommonTypes.ITEM, 20),
+                                      Entities.create(CommonTypes.ITEM, 21)));
+    }
 }
