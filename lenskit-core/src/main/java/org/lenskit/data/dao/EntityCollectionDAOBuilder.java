@@ -21,11 +21,10 @@
 package org.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableMap;
-import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityCollection;
+import org.lenskit.data.entities.EntityCollectionBuilder;
 import org.lenskit.data.entities.EntityType;
-import org.lenskit.util.keys.KeyedObjectMap;
-import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Arrays;
@@ -37,9 +36,9 @@ import java.util.Map;
  */
 @NotThreadSafe
 public class EntityCollectionDAOBuilder {
-    private Map<EntityType, KeyedObjectMapBuilder<Entity>> entitySets = new HashMap<>();
+    private Map<EntityType, EntityCollectionBuilder> entitySets = new HashMap<>();
     // remember the last builder used as a fast path
-    private KeyedObjectMapBuilder<Entity> bld = null;
+    private EntityCollectionBuilder bld = null;
     private EntityType last = null;
 
     /**
@@ -53,7 +52,7 @@ public class EntityCollectionDAOBuilder {
             bld = entitySets.get(type);
             last = type;
             if (bld == null) {
-                bld = KeyedObjectMap.newBuilder(Entities.idKeyExtractor());
+                bld = new EntityCollectionBuilder(type);
                 entitySets.put(type, bld);
             }
         }
@@ -86,8 +85,8 @@ public class EntityCollectionDAOBuilder {
     }
 
     public EntityCollectionDAO build() {
-        ImmutableMap.Builder<EntityType, KeyedObjectMap<Entity>> mb = ImmutableMap.builder();
-        for (Map.Entry<EntityType, KeyedObjectMapBuilder<Entity>> e: entitySets.entrySet()) {
+        ImmutableMap.Builder<EntityType, EntityCollection> mb = ImmutableMap.builder();
+        for (Map.Entry<EntityType, EntityCollectionBuilder> e: entitySets.entrySet()) {
             mb.put(e.getKey(), e.getValue().build());
         }
 

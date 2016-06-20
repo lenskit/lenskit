@@ -23,12 +23,9 @@ package org.lenskit.data.dao;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
-import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -37,9 +34,9 @@ import java.util.*;
  * A DAO backed by one or more collections of entities.
  */
 public class EntityCollectionDAO extends AbstractDataAccessObject {
-    private final Map<EntityType, KeyedObjectMap<Entity>> storage;
+    private final Map<EntityType, EntityCollection> storage;
 
-    EntityCollectionDAO(Map<EntityType, KeyedObjectMap<Entity>> data) {
+    EntityCollectionDAO(Map<EntityType, EntityCollection> data) {
         storage = data;
     }
 
@@ -77,9 +74,9 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
 
     @Override
     public LongSet getEntityIds(EntityType type) {
-        KeyedObjectMap<Entity> entities = storage.get(type);
+        EntityCollection entities = storage.get(type);
         if (entities != null) {
-            return entities.keySet();
+            return entities.idSet();
         } else {
             return LongSets.EMPTY_SET;
         }
@@ -88,9 +85,9 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
     @Nullable
     @Override
     public Entity lookupEntity(EntityType type, long id) {
-        KeyedObjectMap<Entity> entities = storage.get(type);
+        EntityCollection entities = storage.get(type);
         if (entities != null) {
-            return entities.get(id);
+            return entities.lookup(id);
         } else {
             return null;
         }
@@ -119,13 +116,24 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
 
     @Override
     public <E extends Entity> ObjectStream<E> streamEntities(EntityQuery<E> query) {
-        Iterable<Entity> data = storage.get(query.getEntityType());
+        EntityCollection data = storage.get(query.getEntityType());
         if (data == null) {
             return ObjectStreams.empty();
         }
 
+        Collection<Entity> candidates;
+        List<Attribute<?>> filters = query.getFilterFields();
+        if (filters.isEmpty()) {
+            candidates = data;
+        } else {
+            // optimize by trying to look up the first condition
+            Attribute<?> f1 = filters.get(0);
+            candidates = data.find(f1);
+        }
+
+        // FIXME don't filter if we don't need to
         ObjectStream<E> stream =
-                ObjectStreams.transform(ObjectStreams.filter(ObjectStreams.wrap(data.iterator()), query),
+                ObjectStreams.transform(ObjectStreams.filter(ObjectStreams.wrap(candidates), query),
                                         Entities.projection(query.getViewType()));
         List<SortKey> sort = query.getSortKeys();
         if (sort.isEmpty()) {
@@ -145,5 +153,4 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
         Collections.sort(list, ord);
         return ObjectStreams.wrap(list);
     }
-
 }

@@ -21,6 +21,7 @@
 package org.lenskit.data.entities;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;
@@ -60,6 +61,10 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
         return type;
     }
 
+    public LongSet idSet() {
+        return store.keySet();
+    }
+
     /**
      * Look up an entity by ID.
      * @param id The entity ID.
@@ -79,6 +84,17 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
     @Nonnull
     public <T> List<Entity> find(TypedName<T> name, T value) {
         return find(name.getName(), value);
+    }
+
+    /**
+     * Find entities with an attribute.
+     * @param attr The attribute to look for.
+     * @param <T> The attribute type.
+     * @return A list of entities with the specified attribute.
+     */
+    @Nonnull
+    public <T> List<Entity> find(Attribute<T> attr) {
+        return find(attr.getTypedName(), attr.getValue());
     }
 
     /**

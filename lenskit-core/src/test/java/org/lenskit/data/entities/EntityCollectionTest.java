@@ -38,6 +38,7 @@ public class EntityCollectionTest {
         assertThat(ec.size(), equalTo(0));
         assertThat(ec.lookup(42), nullValue());
         assertThat(ec.getType(), equalTo(CommonTypes.USER));
+        assertThat(ec.idSet(), hasSize(0));
     }
 
     @Test
@@ -54,6 +55,7 @@ public class EntityCollectionTest {
         assertThat(ec.find(CommonAttributes.ENTITY_ID, 42L),
                    contains(Entities.create(CommonTypes.USER, 42)));
         assertThat(ec.getType(), equalTo(CommonTypes.USER));
+        assertThat(ec.idSet(), contains(42L));
     }
 
     @Test
