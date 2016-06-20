@@ -70,10 +70,17 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
     }
 
     /**
-     * Get the underlying key set implementation.  Warning, this allows you to modify the long
-     * sorted array set.  This should only be used in data structure code.
-     * @return The key set backing this set.
+     * Get the underlying key index implementation.
      */
+    public SortedKeyIndex getIndex() {
+        return keys;
+    }
+
+    /**
+     * Get the index backing this array set.
+     * @deprecated Use {@link #getIndex()}.
+     */
+    @Deprecated
     public SortedKeyIndex getDomain() {
         return keys;
     }

@@ -275,6 +275,7 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
      * Get the key at an index.
      * @param idx The index to query.
      * @return The key at the specified index.
+     * @throws IndexOutOfBoundsException if `idx` is outside the range `[lowerBound, upperBound)]`.
      */
     @Override
     public abstract long getKey(int idx);

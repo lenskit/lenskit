@@ -244,7 +244,7 @@ public final class LongUtils {
      * Count the common items in two sets.
      * @param a The first set.
      * @param b The second set.
-     * @param max The maximum number of common items to count; nonpositive values mean no limit.
+     * @param max The maximum number of common items to count; negative means no limit.
      * @return The number of common items, or `max` if there are at least `max` common items.
      */
     private static int countCommonItems(LongSortedSet a, LongSortedSet b, int max) {
