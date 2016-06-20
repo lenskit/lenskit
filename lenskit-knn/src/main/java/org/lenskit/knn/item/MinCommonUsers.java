@@ -34,7 +34,7 @@ import java.lang.annotation.*;
 @Qualifier
 @Documented
 @Parameter(int.class)
-@DefaultInteger(1)
+@DefaultInteger(0)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 public @interface MinCommonUsers {
