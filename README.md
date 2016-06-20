@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/lenskit/lenskit.png?branch=master)](https://travis-ci.org/lenskit/lenskit)
 [![Windows build status](https://ci.appveyor.com/api/projects/status/github/lenskit/lenskit?branch=master)](https://ci.appveyor.com/project/elehack/lenskit)
-[![SonarQube test coverage](https://img.shields.io/sonar/https/sonar.cs.txstate.edu/org.grouplens.lenskit:lenskit/coverage.svg)](https://sonar.cs.txstate.edu/dashboard/index/1)
+[![SonarQube test coverage](https://img.shields.io/sonar/https/sonarqube.com/lenskit/coverage.svg)](https://sonarqube.com/overview?id=1068589)
 [![Join the chat at https://gitter.im/lenskit/lenskit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lenskit/lenskit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 LensKit is an implementation of collaborative filtering algorithms and
