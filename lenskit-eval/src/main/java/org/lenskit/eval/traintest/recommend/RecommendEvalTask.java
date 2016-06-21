@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
@@ -39,6 +40,7 @@ import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.specs.DynamicSpec;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.RecommendEvalTaskSpec;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -303,13 +305,17 @@ public class RecommendEvalTask implements EvalTask {
             return null;
         }
 
+        boolean useDetails = tlb != null; // writing requires details
         List<MetricContext<?>> contexts = new ArrayList<>(topNMetrics.size());
         for (TopNMetric<?> metric: topNMetrics) {
             logger.debug("setting up metric {}", metric);
-            contexts.add(MetricContext.create(metric, algorithm, dataSet, rec));
+            MetricContext<?> mc = MetricContext.create(metric, algorithm, dataSet, rec);
+            contexts.add(mc);
+            // does this metric require details?
+            useDetails |= mc.usesDetails();
         }
 
-        return new TopNConditionEvaluator(tlb, rec, irec, contexts, items);
+        return new TopNConditionEvaluator(tlb, rec, irec, contexts, items, useDetails);
     }
 
     static class MetricContext<X> {
@@ -321,9 +327,18 @@ public class RecommendEvalTask implements EvalTask {
             context = ctx;
         }
 
+        public boolean usesDetails() {
+            return !(metric instanceof ListOnlyTopNMetric);
+        }
+
         @Nonnull
         public MetricResult measureUser(TestUser user, int n, ResultList recommendations) {
             return metric.measureUser(user, n, recommendations, context);
+        }
+
+        @Nonnull
+        public MetricResult measureUser(TestUser user, int n, LongList recommendations) {
+            return ((ListOnlyTopNMetric<X>) metric).measureUser(user, n, recommendations, context);
         }
 
         @Nonnull
@@ -347,13 +362,16 @@ public class RecommendEvalTask implements EvalTask {
         private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         private final List<MetricContext<?>> predictMetricContexts;
         private final LongSet allItems;
+        private final boolean useDetails;
 
-        public TopNConditionEvaluator(TableWriter tw, Recommender rec, ItemRecommender irec, List<MetricContext<?>> mcs, LongSet items) {
+        public TopNConditionEvaluator(TableWriter tw, Recommender rec, ItemRecommender irec,
+                                      List<MetricContext<?>> mcs, LongSet items, boolean details) {
             writer = tw;
             recommender = rec;
             itemRecommender = irec;
             predictMetricContexts = mcs;
             allItems = items;
+            useDetails = details;
         }
 
         @Nonnull
@@ -362,27 +380,41 @@ public class RecommendEvalTask implements EvalTask {
             LongSet candidates = getCandidateSelector().selectItems(allItems, recommender, testUser);
             LongSet excludes = getExcludeSelector().selectItems(allItems, recommender, testUser);
             int n = getListSize();
-            ResultList results = itemRecommender.recommendWithDetails(testUser.getUserId(), n,
-                                                                      candidates, excludes);
+            ResultList results = null;
+            LongList items = null;
+            if (useDetails) {
+                results = itemRecommender.recommendWithDetails(testUser.getUserId(), n,
+                                                               candidates, excludes);
+            } else {
+                // no one needs details, save time collecting them
+                items = LongUtils.asLongList(itemRecommender.recommend(testUser.getUserId(), n,
+                                                                       candidates, excludes));
+            }
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                row.putAll(mc.measureUser(testUser, n, results)
-                             .withPrefix(getLabelPrefix())
-                             .getValues());
+                MetricResult res;
+                if (useDetails) {
+                    res = mc.measureUser(testUser, n, results);
+                } else {
+                    res = mc.measureUser(testUser, n, items);
+                }
+                row.putAll(res.withPrefix(getLabelPrefix())
+                              .getValues());
             }
 
             // Write all attempted predictions
-            int rank = 0;
-            for (Result rec: results) {
-                try {
-                    rank += 1;
-                    if (writer != null) {
+            if (writer != null) {
+                assert results != null; // we use details when writer is nonnull
+                int rank = 0;
+                for (Result rec : results) {
+                    try {
+                        rank += 1;
                         writer.writeRow(testUser.getUserId(), rank, rec.getId(), rec.getScore());
+                    } catch (IOException ex) {
+                        throw new EvaluationException("error writing prediction row", ex);
                     }
-                } catch (IOException ex) {
-                    throw new EvaluationException("error writing prediction row", ex);
                 }
             }
 
