@@ -24,10 +24,7 @@ import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CompactableLongArrayList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
@@ -225,6 +222,26 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         clear();
 
         return longs;
+    }
+
+    @Override
+    public LongList finishList() {
+        assert size == heap.size();
+        int[] indices = new int[size];
+        // Copy backwards so the scored list is sorted.
+        for (int i = size - 1; i >= 0; i--) {
+            indices[i] = heap.dequeue();
+        }
+        LongList list = new LongArrayList(size);
+        for (int i : indices) {
+            list.add(items.getLong(i));
+        }
+
+        assert heap.isEmpty();
+
+        clear();
+
+        return list;
     }
 
     private void clear() {

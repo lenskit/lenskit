@@ -20,12 +20,14 @@
  */
 package org.grouplens.lenskit.util;
 
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -61,5 +63,14 @@ public class UnlimitedScoredItemAccumulatorTest {
         assertThat(out.get(1).getScore(), equalTo(4.2));
         assertThat(out.get(2).getId(), equalTo(3L));
         assertThat(out.get(2).getScore(), equalTo(2.9));
+    }
+
+    @Test
+    public void testAccumList() {
+        accum.put(5, 4.2);
+        accum.put(3, 2.9);
+        accum.put(2, 9.8);
+        LongList out = accum.finishList();
+        assertThat(out, contains(2L, 5L, 3L));
     }
 }

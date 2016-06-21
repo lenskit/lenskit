@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -94,4 +95,10 @@ public interface ScoredItemAccumulator {
      * @return The set of items accumulated.
      */
     LongSet finishSet();
+
+    /**
+     * Accumulate the scored items into a list.
+     * @return The list of items accumulated, in decreasing order of score.
+     */
+    LongList finishList();
 }
