@@ -31,6 +31,10 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.config.ConfigHelpers
+import org.lenskit.eval.traintest.SimpleEvaluator
+import org.lenskit.eval.traintest.TrainTestExperiment
+import org.lenskit.eval.traintest.recommend.RecommendEvalTask
+import org.lenskit.eval.traintest.recommend.TopNMAPMetric
 import org.lenskit.knn.NeighborhoodSize
 import org.lenskit.util.table.Table
 
@@ -43,6 +47,14 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ItemItemAccuracyTest extends CrossfoldTestSuite {
+    @Override
+    void addExtraConfig(SimpleEvaluator eval) {
+        def rec = new RecommendEvalTask()
+        rec.listSize = 50
+        rec.addMetric(new TopNMAPMetric())
+        eval.experiment.addTask(rec)
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
