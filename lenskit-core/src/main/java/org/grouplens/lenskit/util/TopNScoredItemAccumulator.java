@@ -154,7 +154,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         }
         ScoredIdListBuilder bld = ScoredIds.newListBuilder(size);
         for (int i : indices) {
-            bld.add(items.get(i), scores.get(i));
+            bld.add(items.getLong(i), scores.getDouble(i));
         }
 
         assert heap.isEmpty();
@@ -181,8 +181,8 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         long[] keys = new long[indices.length];
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
-            keys[i] = items.get(indices[i]);
-            values[i] = scores.get(indices[i]);
+            keys[i] = items.getLong(indices[i]);
+            values[i] = scores.getDouble(indices[i]);
         }
         clear();
 
@@ -206,8 +206,8 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         long[] keys = new long[indices.length];
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
-            keys[i] = items.get(indices[i]);
-            values[i] = scores.get(indices[i]);
+            keys[i] = items.getLong(indices[i]);
+            values[i] = scores.getDouble(indices[i]);
         }
         clear();
 
@@ -220,7 +220,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
 
         LongSet longs = new LongOpenHashSet(size);
         while (!heap.isEmpty()) {
-            longs.add(items.get(heap.dequeue()));
+            longs.add(items.getLong(heap.dequeue()));
         }
         clear();
 
@@ -240,7 +240,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private class SlotComparator extends AbstractIntComparator {
         @Override
         public int compare(int i, int j) {
-            return Doubles.compare(scores.get(i), scores.get(j));
+            return Doubles.compare(scores.getDouble(i), scores.getDouble(j));
         }
     }
 }
