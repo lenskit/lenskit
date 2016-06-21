@@ -28,6 +28,9 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -47,21 +50,36 @@ public class SimilaritySumNeighborhoodScorerTest {
     public void testEmpty() {
         Long2DoubleMap nbrs = Long2DoubleMaps.EMPTY_MAP;
         Long2DoubleMap scores = Long2DoubleMaps.EMPTY_MAP;
-        assertThat(scorer.score(42, nbrs, scores, accum), nullValue());
+        List<ItemItemResult> results = new ArrayList<>();
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
+
+        scorer.score(42, nbrs, scores, accum);
+
+        assertThat(results, hasSize(0));
     }
 
     @Test
     public void testEmptyNbrs() {
         Long2DoubleMap nbrs = Long2DoubleMaps.EMPTY_MAP;
         Long2DoubleMap scores = Long2DoubleMaps.singleton(5, 3.7);
-        assertThat(scorer.score(42, nbrs, scores, accum), nullValue());
+        List<ItemItemResult> results = new ArrayList<>();
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
+
+        scorer.score(42, nbrs, scores, accum);
+
+        assertThat(results, hasSize(0));
     }
 
     @Test
     public void testOneNbr() {
         Long2DoubleMap nbrs = Long2DoubleMaps.singleton(5, 1.0);
         Long2DoubleMap scores = Long2DoubleMaps.singleton(5, 3.7);
-        assertThat(scorer.score(42, nbrs, scores, accum).getScore(), closeTo(1.0));
+        List<ItemItemResult> results = new ArrayList<>();
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
+
+        scorer.score(42, nbrs, scores, accum);
+        assertThat(results, hasSize(1));
+        assertThat(results.get(0).getScore(), closeTo(1.0));
     }
 
     @Test
@@ -76,6 +94,12 @@ public class SimilaritySumNeighborhoodScorerTest {
         scores.put(3, 4.2);
         scores.put(5, 1.2);
         scores.put(7, 7.8);
-        assertThat(scorer.score(42, nbrs, scores, accum).getScore(), closeTo(2.42));
+
+        List<ItemItemResult> results = new ArrayList<>();
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
+
+        scorer.score(42, nbrs, scores, accum);
+        assertThat(results, hasSize(1));
+        assertThat(results.get(0).getScore(), closeTo(2.42));
     }
 }
