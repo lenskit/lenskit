@@ -21,12 +21,12 @@
 package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Recommender;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -53,7 +53,7 @@ import javax.annotation.Nullable;
  * `goodItems`
  * :   an item selector expression. The default is the user's test items.
  */
-public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
+public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
     private static final Logger logger = LoggerFactory.getLogger(TopNMAPMetric.class);
 
     private final String suffix;
@@ -102,7 +102,7 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recs, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recs, Context context) {
         LongSet good = goodItems.selectItems(context.universe, context.recommender, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
@@ -116,9 +116,10 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
         int n = 0;
         double ngood = 0;
         double sum = 0;
-        for(Result res : recs) {
+        LongIterator iter = recs.iterator();
+        while (iter.hasNext()) {
             n += 1;
-            if(good.contains(res.getId())) {
+            if(good.contains(iter.nextLong())) {
                 // it is good
                 ngood += 1;
                 // add to MAP sum

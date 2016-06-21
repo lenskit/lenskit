@@ -47,21 +47,21 @@ public class SimilaritySumNeighborhoodScorerTest {
     public void testEmpty() {
         Long2DoubleMap nbrs = Long2DoubleMaps.EMPTY_MAP;
         Long2DoubleMap scores = Long2DoubleMaps.EMPTY_MAP;
-        assertThat(scorer.score(42, nbrs, scores), nullValue());
+        assertThat(scorer.score(42, nbrs, scores, accum), nullValue());
     }
 
     @Test
     public void testEmptyNbrs() {
         Long2DoubleMap nbrs = Long2DoubleMaps.EMPTY_MAP;
         Long2DoubleMap scores = Long2DoubleMaps.singleton(5, 3.7);
-        assertThat(scorer.score(42, nbrs, scores), nullValue());
+        assertThat(scorer.score(42, nbrs, scores, accum), nullValue());
     }
 
     @Test
     public void testOneNbr() {
         Long2DoubleMap nbrs = Long2DoubleMaps.singleton(5, 1.0);
         Long2DoubleMap scores = Long2DoubleMaps.singleton(5, 3.7);
-        assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(1.0));
+        assertThat(scorer.score(42, nbrs, scores, accum).getScore(), closeTo(1.0));
     }
 
     @Test
@@ -76,6 +76,6 @@ public class SimilaritySumNeighborhoodScorerTest {
         scores.put(3, 4.2);
         scores.put(5, 1.2);
         scores.put(7, 7.8);
-        assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(2.42));
+        assertThat(scorer.score(42, nbrs, scores, accum).getScore(), closeTo(2.42));
     }
 }
