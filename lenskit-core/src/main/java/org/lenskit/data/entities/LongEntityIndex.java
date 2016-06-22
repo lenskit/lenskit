@@ -21,6 +21,8 @@
 package org.lenskit.data.entities;
 
 import com.google.common.collect.ImmutableList;
+import org.lenskit.util.IdBox;
+import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
@@ -31,11 +33,9 @@ import java.util.List;
  * Generic implementation of the entity index.
  */
 class LongEntityIndex implements EntityIndex {
-    private final SortedKeyIndex attributeValues;
-    private final ImmutableList<ImmutableList<Entity>> entityLists;
+    private final KeyedObjectMap<IdBox<ImmutableList<Entity>>> entityLists;
 
-    LongEntityIndex(SortedKeyIndex keys, ImmutableList<ImmutableList<Entity>> lists) {
-        attributeValues = keys;
+    LongEntityIndex(KeyedObjectMap<IdBox<ImmutableList<Entity>>> lists) {
         entityLists = lists;
     }
 
@@ -45,12 +45,11 @@ class LongEntityIndex implements EntityIndex {
         if (!(value instanceof Long)) {
             return Collections.emptyList();
         }
-        Long lv = (Long) value;
-        int idx = attributeValues.tryGetIndex(lv);
-        if (idx >= 0) {
-            return entityLists.get(idx);
-        } else {
+        IdBox<ImmutableList<Entity>> box = entityLists.get(value);
+        if (box == null) {
             return Collections.emptyList();
+        } else {
+            return box.getValue();
         }
     }
 }

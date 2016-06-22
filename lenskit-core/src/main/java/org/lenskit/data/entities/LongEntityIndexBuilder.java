@@ -24,7 +24,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.lenskit.util.keys.SortedKeyIndex;
+import org.lenskit.util.IdBox;
+import org.lenskit.util.keys.KeyedObjectMap;
+import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
 /**
  * A generic entity index builder.
@@ -68,15 +70,13 @@ class LongEntityIndexBuilder extends EntityIndexBuilder {
     public EntityIndex build() {
         Preconditions.checkState(entityLists != null, "build() already called");
         // arrange compact storage of the index
-        SortedKeyIndex keys = SortedKeyIndex.fromCollection(entityLists.keySet());
-        int n = keys.size();
-        ImmutableList.Builder<ImmutableList<Entity>> lists = ImmutableList.builder();
-        for (int i = 0; i < n; i++) {
-            long value = keys.getKey(i);
-            lists.add(entityLists.get(value).build());
-            entityLists.put(value, null);
+        KeyedObjectMapBuilder<IdBox<ImmutableList<Entity>>> bld = KeyedObjectMap.newBuilder();
+        for (Long2ObjectMap.Entry<ImmutableList.Builder<Entity>> entry: entityLists.long2ObjectEntrySet()) {
+            long value = entry.getLongKey();
+            bld.add(IdBox.create(value, entry.getValue().build()));
+            entry.setValue(null);
         }
         entityLists = null;
-        return new LongEntityIndex(keys, lists.build());
+        return new LongEntityIndex(bld.build());
     }
 }
