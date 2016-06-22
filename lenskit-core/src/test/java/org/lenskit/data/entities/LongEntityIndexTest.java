@@ -18,21 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.dao;
+package org.lenskit.data.entities;
 
 import org.junit.Test;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityFactory;
+import org.lenskit.data.entities.EntityIndex;
+import org.lenskit.data.entities.LongEntityIndexBuilder;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
-public class GenericEntityIndexTest {
+public class LongEntityIndexTest {
     private EntityFactory factory = new EntityFactory();
 
     @Test
     public void testEmpty() {
-        GenericEntityIndexBuilder bld = new GenericEntityIndexBuilder("user");
+        LongEntityIndexBuilder bld = new LongEntityIndexBuilder("user");
         EntityIndex index = bld.build();
         assertThat(index, notNullValue());
         assertThat(index.getEntities(20L), hasSize(0));
@@ -40,7 +42,7 @@ public class GenericEntityIndexTest {
 
     @Test
     public void testAddEntity() {
-        GenericEntityIndexBuilder bld = new GenericEntityIndexBuilder("user");
+        LongEntityIndexBuilder bld = new LongEntityIndexBuilder("user");
         Entity rating = factory.rating(10, 100, 3.5);
         bld.add(rating);
         EntityIndex index = bld.build();
@@ -50,8 +52,18 @@ public class GenericEntityIndexTest {
     }
 
     @Test
+    public void testNonLongValueEntity() {
+        LongEntityIndexBuilder bld = new LongEntityIndexBuilder("user");
+        Entity rating = factory.rating(10, 100, 3.5);
+        bld.add(rating);
+        EntityIndex index = bld.build();
+        assertThat(index, notNullValue());
+        assertThat(index.getEntities("10"), hasSize(0));
+    }
+
+    @Test
     public void testAddEntities() {
-        GenericEntityIndexBuilder bld = new GenericEntityIndexBuilder("user");
+        LongEntityIndexBuilder bld = new LongEntityIndexBuilder("user");
         Entity r1 = factory.rating(10, 100, 3.5);
         Entity r2 = factory.rating(10, 50, 4.5);
         Entity r3 = factory.rating(15, 100, 2.5);

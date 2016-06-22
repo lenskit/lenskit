@@ -18,10 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.dao;
-
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.TypedName;
+package org.lenskit.data.entities;
 
 /**
  * Builder for {@linkplain EntityIndex entity indexes}.  These builders are *destructive*: their {@link #build()}

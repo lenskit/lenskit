@@ -18,12 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.dao;
+package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.TypedName;
 
 /**
  * A generic entity index builder.

@@ -22,8 +22,6 @@ package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import org.lenskit.data.dao.EntityIndex;
-import org.lenskit.data.dao.EntityIndexBuilder;
 import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
 

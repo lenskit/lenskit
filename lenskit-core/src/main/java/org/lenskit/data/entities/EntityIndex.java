@@ -18,40 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.dao;
-
-import com.google.common.collect.ImmutableList;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.util.keys.SortedKeyIndex;
+package org.lenskit.data.entities;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.List;
 
 /**
- * Generic implementation of the entity index.
+ * An index to look up entities by attribute value.
+ *
+ * @see EntityIndexBuilder
  */
-class LongEntityIndex implements EntityIndex {
-    private final SortedKeyIndex attributeValues;
-    private final ImmutableList<ImmutableList<Entity>> entityLists;
-
-    LongEntityIndex(SortedKeyIndex keys, ImmutableList<ImmutableList<Entity>> lists) {
-        attributeValues = keys;
-        entityLists = lists;
-    }
-
+public interface EntityIndex {
+    /**
+     * Get the entities with the associated attribute value.
+     * @param value The attribute value.
+     * @return The list of entities.
+     */
     @Nonnull
-    @Override
-    public List<Entity> getEntities(@Nonnull Object value) {
-        if (!(value instanceof Long)) {
-            return Collections.emptyList();
-        }
-        Long lv = (Long) value;
-        int idx = attributeValues.tryGetIndex(lv);
-        if (idx >= 0) {
-            return entityLists.get(idx);
-        } else {
-            return Collections.emptyList();
-        }
-    }
+    List<Entity> getEntities(@Nonnull Object value);
 }

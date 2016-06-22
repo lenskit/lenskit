@@ -23,7 +23,6 @@ package org.lenskit.data.entities;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.dao.EntityIndex;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;
