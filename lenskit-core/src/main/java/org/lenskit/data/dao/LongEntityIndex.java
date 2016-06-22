@@ -20,33 +20,38 @@
  */
 package org.lenskit.data.dao;
 
+import com.google.common.collect.ImmutableList;
 import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.TypedName;
+import org.lenskit.util.keys.SortedKeyIndex;
+
+import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * Builder for {@linkplain EntityIndex entity indexes}.  These builders are *destructive*: their {@link #build()}
- * method will destroy the builder's internal state to free memory.
+ * Generic implementation of the entity index.
  */
-public abstract class EntityIndexBuilder {
-    /**
-     * Add an entity to the index.
-     * @param e The entity to add.
-     * @throws IllegalStateException if {@link #build()} has been called.
-     */
-    public abstract void add(Entity e);
+class LongEntityIndex implements EntityIndex {
+    private final SortedKeyIndex attributeValues;
+    private final ImmutableList<ImmutableList<Entity>> entityLists;
 
-    /**
-     * Build the entity index.
-     * @return The entity index.
-     */
-    public abstract EntityIndex build();
+    LongEntityIndex(SortedKeyIndex keys, ImmutableList<ImmutableList<Entity>> lists) {
+        attributeValues = keys;
+        entityLists = lists;
+    }
 
-    /**
-     * Create an entity index builder for an attribute.
-     * @param name The attribute.
-     * @return The index builder.
-     */
-    public static EntityIndexBuilder create(TypedName<?> name) {
-        return new GenericEntityIndexBuilder(name);
+    @Nonnull
+    @Override
+    public List<Entity> getEntities(@Nonnull Object value) {
+        if (!(value instanceof Long)) {
+            return Collections.emptyList();
+        }
+        Long lv = (Long) value;
+        int idx = attributeValues.tryGetIndex(lv);
+        if (idx >= 0) {
+            return entityLists.get(idx);
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

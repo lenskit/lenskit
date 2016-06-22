@@ -21,47 +21,63 @@
 package org.lenskit.data.dao;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.TypedName;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 /**
  * A generic entity index builder.
  */
-class GenericEntityIndexBuilder extends EntityIndexBuilder {
-    private final TypedName<?> attributeName;
-    private ImmutableListMultimap.Builder<Object,Entity> builder;
+class LongEntityIndexBuilder extends EntityIndexBuilder {
+    private final TypedName<Long> attributeName;
+    private Long2ObjectMap<ImmutableList.Builder<Entity>> entityLists;
 
     /**
      * Construct a new index builder.
      * @param name The attribute name to index.
      */
-    GenericEntityIndexBuilder(String name) {
-        this(TypedName.create(name, Object.class));
+    LongEntityIndexBuilder(String name) {
+        this(TypedName.create(name, Long.class));
     }
 
     /**
      * Construct a new index builder.
      * @param name The attribute name to index.
      */
-    GenericEntityIndexBuilder(TypedName<?> name) {
+    LongEntityIndexBuilder(TypedName<Long> name) {
         attributeName = name;
-        builder = ImmutableListMultimap.builder();
+        entityLists = new Long2ObjectOpenHashMap<>();
     }
 
     @Override
     public void add(Entity e) {
-        Preconditions.checkState(builder != null, "build() already called");
-        Object value = e.maybeGet(attributeName);
-        if (value != null) {
-            builder.put(value, e);
+        Preconditions.checkState(entityLists != null, "build() already called");
+        if (e.hasAttribute(attributeName)) {
+            long value = e.getLong(attributeName);
+            ImmutableList.Builder<Entity> lb = entityLists.get(value);
+            if (lb == null) {
+                lb = ImmutableList.builder();
+                entityLists.put(value, lb);
+            }
+            lb.add(e);
         }
     }
 
     @Override
     public EntityIndex build() {
-        ImmutableListMultimap<Object, Entity> data = builder.build();
-        builder = null;
-        return new GenericEntityIndex(data);
+        // arrange compact storage of the index
+        SortedKeyIndex keys = SortedKeyIndex.fromCollection(entityLists.keySet());
+        int n = keys.size();
+        ImmutableList.Builder<ImmutableList<Entity>> lists = ImmutableList.builder();
+        for (int i = 0; i < n; i++) {
+            long value = keys.getKey(i);
+            lists.add(entityLists.get(value).build());
+            entityLists.put(value, null);
+        }
+        entityLists = null;
+        return new LongEntityIndex(keys, lists.build());
     }
 }
