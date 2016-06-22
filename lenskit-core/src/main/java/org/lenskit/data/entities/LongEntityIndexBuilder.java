@@ -66,6 +66,7 @@ class LongEntityIndexBuilder extends EntityIndexBuilder {
 
     @Override
     public EntityIndex build() {
+        Preconditions.checkState(entityLists != null, "build() already called");
         // arrange compact storage of the index
         SortedKeyIndex keys = SortedKeyIndex.fromCollection(entityLists.keySet());
         int n = keys.size();

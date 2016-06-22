@@ -26,16 +26,18 @@ import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Builder class for entity collections.
+ * Builder class for entity collections.  These builders are *destructive*: their {@link #build()} methods destroy the
+ * internal storage, so the builder is single-use.
  */
 public class EntityCollectionBuilder {
     private final EntityType type;
-    private final KeyedObjectMapBuilder<Entity> store;
-    private final Map<String,EntityIndexBuilder> indexBuilders;
+    private KeyedObjectMapBuilder<Entity> store;
+    private Map<String,EntityIndexBuilder> indexBuilders;
 
     public EntityCollectionBuilder(EntityType type) {
         this.type = type;
@@ -50,6 +52,7 @@ public class EntityCollectionBuilder {
      * @return The builder (for chaining).
      */
     public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
+        Preconditions.checkState(indexBuilders != null, "build() already called");
         if (indexBuilders.containsKey(attribute.getName())) {
             throw new IllegalStateException("attribute " + attribute.getName() + " already indexed");
         }
@@ -78,7 +81,23 @@ public class EntityCollectionBuilder {
      * @return The builder (for chaining).
      */
     public EntityCollectionBuilder add(Entity e) {
+        return add(e, true);
+    }
+
+    /**
+     * Add an entity to the collection.
+     * @param e The entity to add.
+     * @param replace Whether to replace. If `false`, and an entity with the same ID as `e` has already been added,
+     *                this entity is **silently** ignored.
+     * @return The builder (for chaining).
+     */
+    public EntityCollectionBuilder add(Entity e, boolean replace) {
+        Preconditions.checkState(store != null, "build() already called");
         Preconditions.checkArgument(e.getType().equals(type));
+        if (!replace && store.containsKey(e.getId())) {
+            return this;
+        }
+
         store.add(e);
         for (EntityIndexBuilder ib: indexBuilders.values()) {
             ib.add(e);
@@ -108,14 +127,27 @@ public class EntityCollectionBuilder {
     }
 
     /**
+     * Get a view of the entities added, for iteration and re-processing.
+     * @return The view of entities added.
+     */
+    public Collection<Entity> entities() {
+        return store.objects();
+    }
+
+    /**
      * Build the entity collection.
      * @return The collection of entities.
      */
     public EntityCollection build() {
+        Preconditions.checkState(store != null, "build() already called");
         ImmutableMap.Builder<String,EntityIndex> indexes = ImmutableMap.builder();
         for (Map.Entry<String,EntityIndexBuilder> e: indexBuilders.entrySet()) {
             indexes.put(e.getKey(), e.getValue().build());
         }
-        return new EntityCollection(type, store.build(), indexes.build());
+        KeyedObjectMap<Entity> map = store.build();
+        ImmutableMap<String, EntityIndex> idxMap = indexes.build();
+        store = null;
+        indexBuilders = null;
+        return new EntityCollection(type, map, idxMap);
     }
 }

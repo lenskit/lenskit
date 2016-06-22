@@ -20,16 +20,20 @@
  */
 package org.lenskit.data.dao;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.lenskit.data.entities.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Builder for entity collection DAOs.
+ * Builder for entity collection DAOs.  These builders are *destructive*: their {@link #build()} method cannot be called
+ * more than once.
  */
 @NotThreadSafe
 public class EntityCollectionDAOBuilder {
@@ -45,9 +49,18 @@ public class EntityCollectionDAOBuilder {
      * @return The builder (for chaining).
      */
     public EntityCollectionDAOBuilder addIndex(EntityType et, TypedName<?> attr) {
+        Preconditions.checkState(entitySets != null, "build() already called");
         EntityCollectionBuilder builder = findBuilder(et);
         builder.addIndex(attr);
         return this;
+    }
+
+    /**
+     * Get the entity types registered with this builder so far.
+     * @return The entity types registered so far.
+     */
+    public Set<EntityType> getEntityTypes() {
+        return ImmutableSet.copyOf(entitySets.keySet());
     }
 
     /**
@@ -56,6 +69,7 @@ public class EntityCollectionDAOBuilder {
      * @return The DAO builder (for chaining).
      */
     public EntityCollectionDAOBuilder addEntity(Entity e) {
+        Preconditions.checkState(entitySets != null, "build() already called");
         EntityType type = e.getType();
         EntityCollectionBuilder bld = findBuilder(type);
         bld.add(e);
@@ -98,11 +112,43 @@ public class EntityCollectionDAOBuilder {
         return this;
     }
 
+    /**
+     * Derive bare entities from the values in another type of entity.  This method only consults the entities added
+     * so far, so it should be called *after* all other calls to {@link #addEntity(Entity)} and friends.  If an entity
+     * has already been added with the same type and ID as one of the derived entites, it is kept instead of the derived
+     * entity.
+     *
+     * @param derived The derived entity type.
+     * @param source The source entity type.
+     * @param attr The source attribute.
+     * @return The builder (for chaining).
+     */
+    public EntityCollectionDAOBuilder deriveEntities(EntityType derived, EntityType source, TypedName<Long> attr) {
+        EntityCollectionBuilder src = entitySets.get(source);
+        if (src == null) {
+            // no source entities, skip
+            return this;
+        }
+
+        EntityCollectionBuilder ecb = findBuilder(derived);
+        for (Entity e: src.entities()) {
+            if (e.hasAttribute(attr)) {
+                long key = e.getLong(attr);
+                ecb.add(Entities.create(derived, key), false);
+            }
+        }
+
+        return this;
+    }
+
     public EntityCollectionDAO build() {
+        Preconditions.checkState(entitySets != null, "build() already called");
         ImmutableMap.Builder<EntityType, EntityCollection> mb = ImmutableMap.builder();
         for (Map.Entry<EntityType, EntityCollectionBuilder> e: entitySets.entrySet()) {
             mb.put(e.getKey(), e.getValue().build());
         }
+
+        entitySets = null;
 
         return new EntityCollectionDAO(mb.build());
     }

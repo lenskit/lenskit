@@ -25,7 +25,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.EntityCollectionDAO;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
@@ -76,7 +75,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
      * @param attr The attribute to index.
      */
     public void addIndex(EntityType type, TypedName<?> attr) {
-        // TODO Implement
+        indexedAttributes.put(type, attr);
     }
 
     /**
@@ -121,6 +120,9 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
         Set<EntityType> types = new HashSet<>();
 
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
+        for (Map.Entry<EntityType,TypedName<?>> iae: indexedAttributes.entries()) {
+            builder.addIndex(iae.getKey(), iae.getValue());
+        }
         for (EntitySource source: sources) {
             try (ObjectStream<Entity> data = source.openStream()) {
                 for (Entity e: data) {
@@ -129,9 +131,6 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
                 }
             }
         }
-
-        EntityCollectionDAO dao = builder.build();
-        boolean added = false;
 
         for (EntityType type: types) {
             EntityDefaults defaults = EntityDefaults.lookup(type);
@@ -146,26 +145,11 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
                 TypedName<Long> column = deriv.getAttribute();
                 logger.info("deriving entity type {} from {} (column {})",
                             derived, deriv.getSourceTypes(), column);
-                added = true;
-                for (EntityType src: deriv.getSourceTypes()) {
-                    try (ObjectStream<Entity> stream = dao.streamEntities(src)) {
-                        for (Entity se: stream) {
-                            try {
-                                builder.addEntity(Entities.create(derived, se.getLong(column)));
-                            } catch (NoSuchAttributeException ex) {
-                                /* no-op */
-                            }
-                        }
-                    }
-                }
+                builder.deriveEntities(derived, type, column);
             }
         }
 
-        if (added) {
-            dao = builder.build();
-        }
-
-        return dao;
+        return builder.build();
     }
 
     /**

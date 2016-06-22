@@ -43,7 +43,12 @@ public abstract class EntityIndexBuilder {
      * @param name The attribute.
      * @return The index builder.
      */
+    @SuppressWarnings("unchecked")
     public static EntityIndexBuilder create(TypedName<?> name) {
-        return new GenericEntityIndexBuilder(name);
+        if (name.getType().equals(Long.class)) {
+            return new LongEntityIndexBuilder((TypedName<Long>) name);
+        } else {
+            return new GenericEntityIndexBuilder(name);
+        }
     }
 }

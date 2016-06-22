@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -67,6 +69,23 @@ public class KeyedObjectMapBuilder<T> {
             add(item);
         }
         return this;
+    }
+
+    /**
+     * Get the objects that have been added so far.  Useful for re-processing them before finalizing the builder.
+     * @return The objects added so far.
+     */
+    public Collection<T> objects() {
+        return Collections.unmodifiableList(builder);
+    }
+
+    /**
+     * Query whether an object with the specified key has been added.
+     * @param key The key to query.
+     * @return `true` if an object with key `key` has been added.
+     */
+    public boolean containsKey(long key) {
+        return posMap.containsKey(key);
     }
 
     public KeyedObjectMap<T> build() {

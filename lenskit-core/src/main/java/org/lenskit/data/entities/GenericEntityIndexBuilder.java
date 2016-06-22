@@ -58,6 +58,7 @@ class GenericEntityIndexBuilder extends EntityIndexBuilder {
 
     @Override
     public EntityIndex build() {
+        Preconditions.checkState(builder != null, "build() already called");
         ImmutableListMultimap<Object, Entity> data = builder.build();
         builder = null;
         return new GenericEntityIndex(data);
