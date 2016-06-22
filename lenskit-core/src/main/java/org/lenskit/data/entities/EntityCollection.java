@@ -20,8 +20,10 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.dao.EntityIndex;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;
@@ -30,6 +32,7 @@ import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A collection of entities of a single type.  This collection augments the `Collection` interface with logic for
@@ -39,10 +42,12 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
     private static long serialVersionUID = 1L;
     private final EntityType type;
     private final KeyedObjectMap<Entity> store;
+    private final Map<String, EntityIndex> indexes;
 
-    EntityCollection(EntityType type, KeyedObjectMap<Entity> entities) {
+    EntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes) {
         this.type = type;
         store = entities;
+        indexes = idxes;
     }
 
     /**
@@ -100,21 +105,24 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
     /**
      * Find entities by attribute.
      * @param name The attribute name.
-     * @param value The attribute value; if `null`, returns entities that do not have attribute `name`.
+     * @param value The attribute value.
      * @return A list of entities for which attribute `name` has value `value`.
      */
     @Nonnull
     public List<Entity> find(String name, Object value) {
+        Preconditions.checkNotNull(name, "attribute name");
+        Preconditions.checkNotNull(value, "attribute value");
+
+        EntityIndex index = indexes.get(name);
+        if (index != null) {
+            return index.getEntities(value);
+        }
+
+        // no index, go ahead and search
         ImmutableList.Builder<Entity> results = ImmutableList.builder();
         for (Entity e: store) {
-            if (value == null) {
-                if (!e.hasAttribute(name)) {
-                    results.add(e);
-                }
-            } else {
-                if (value.equals(e.maybeGet(name))) {
-                    results.add(e);
-                }
+            if (value.equals(e.maybeGet(name))) {
+                results.add(e);
             }
         }
         return results.build();

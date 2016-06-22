@@ -21,13 +21,15 @@
 package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import com.google.common.collect.ImmutableMap;
+import org.lenskit.data.dao.EntityIndex;
+import org.lenskit.data.dao.EntityIndexBuilder;
 import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Builder class for entity collections.
@@ -35,12 +37,12 @@ import java.util.*;
 public class EntityCollectionBuilder {
     private final EntityType type;
     private final KeyedObjectMapBuilder<Entity> store;
-    private final Map<String,IndexBuilder> indexes;
+    private final Map<String,EntityIndexBuilder> indexBuilders;
 
     public EntityCollectionBuilder(EntityType type) {
         this.type = type;
         store = KeyedObjectMap.newBuilder(Entities.idKeyExtractor());
-        indexes = new HashMap<>();
+        indexBuilders = new HashMap<>();
     }
 
     /**
@@ -50,16 +52,11 @@ public class EntityCollectionBuilder {
      * @return The builder (for chaining).
      */
     public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
-        if (indexes.containsKey(attribute.getName())) {
+        if (indexBuilders.containsKey(attribute.getName())) {
             throw new IllegalStateException("attribute " + attribute.getName() + " already indexed");
         }
-        IndexBuilder ib;
-        if (attribute.getType().equals(LongIndexBuilder.class)) {
-            ib = new LongIndexBuilder((TypedName<Long>) attribute);
-        } else {
-            ib = new GenericIndexBuilder(attribute);
-        }
-        indexes.put(attribute.getName(), ib);
+        EntityIndexBuilder ib = EntityIndexBuilder.create(attribute);
+        indexBuilders.put(attribute.getName(), ib);
 
         for (Entity e: store.build()) {
             ib.add(e);
@@ -85,7 +82,7 @@ public class EntityCollectionBuilder {
     public EntityCollectionBuilder add(Entity e) {
         Preconditions.checkArgument(e.getType().equals(type));
         store.add(e);
-        for (IndexBuilder ib: indexes.values()) {
+        for (EntityIndexBuilder ib: indexBuilders.values()) {
             ib.add(e);
         }
         return this;
@@ -117,52 +114,10 @@ public class EntityCollectionBuilder {
      * @return The collection of entities.
      */
     public EntityCollection build() {
-        return new EntityCollection(type, store.build());
-    }
-
-    static interface IndexBuilder {
-        void add(Entity e);
-    }
-
-    static class GenericIndexBuilder implements IndexBuilder {
-        TypedName<?> attribute;
-        Map<Object,ImmutableList.Builder<Entity>> data;
-
-        GenericIndexBuilder(TypedName<?> attr) {
-            attribute = attr;
-            data = new HashMap<>();
+        ImmutableMap.Builder<String,EntityIndex> indexes = ImmutableMap.builder();
+        for (Map.Entry<String,EntityIndexBuilder> e: indexBuilders.entrySet()) {
+            indexes.put(e.getKey(), e.getValue().build());
         }
-
-        @Override
-        public void add(Entity e) {
-            Object value = e.get(attribute);
-            ImmutableList.Builder<Entity> lb = data.get(value);
-            if (lb == null) {
-                lb = ImmutableList.builder();
-                data.put(value, lb);
-            }
-            lb.add(e);
-        }
-    }
-
-    static class LongIndexBuilder implements IndexBuilder {
-        TypedName<Long> attribute;
-        Long2ObjectMap<ImmutableList.Builder<Entity>> data;
-
-        LongIndexBuilder(TypedName<Long> attr) {
-            attribute = attr;
-            data = new Long2ObjectOpenHashMap<>();
-        }
-
-        @Override
-        public void add(Entity e) {
-            long value = e.getLong(attribute);
-            ImmutableList.Builder<Entity> lb = data.get(value);
-            if (lb == null) {
-                lb = ImmutableList.builder();
-                data.put(value, lb);
-            }
-            lb.add(e);
-        }
+        return new EntityCollection(type, store.build(), indexes.build());
     }
 }
