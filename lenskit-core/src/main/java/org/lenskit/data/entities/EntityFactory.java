@@ -20,6 +20,8 @@
  */
 package org.lenskit.data.entities;
 
+import org.lenskit.data.ratings.Rating;
+
 /**
  * Class for quickly building common entity types.  This class automatically assigns entity IDs and makes it quick
  * and easy to build entities.
@@ -31,20 +33,22 @@ public class EntityFactory {
 
     }
 
-    public Entity rating(long uid, long iid, double rating) {
-        return Entities.newBuilder(CommonTypes.RATING, ++entityId)
-                       .setAttribute(CommonAttributes.USER_ID, uid)
-                       .setAttribute(CommonAttributes.ITEM_ID, iid)
-                       .setAttribute(CommonAttributes.RATING, rating)
-                       .build();
+    public Rating rating(long uid, long iid, double rating) {
+        return Rating.newBuilder()
+                     .setId(++entityId)
+                     .setUserId(uid)
+                     .setItemId(iid)
+                     .setRating(rating)
+                     .build();
     }
 
-    public Entity rating(long uid, long iid, double rating, long timestamp) {
-        return Entities.newBuilder(CommonTypes.RATING, ++entityId)
-                       .setAttribute(CommonAttributes.USER_ID, uid)
-                       .setAttribute(CommonAttributes.ITEM_ID, iid)
-                       .setAttribute(CommonAttributes.RATING, rating)
-                       .setAttribute(CommonAttributes.TIMESTAMP, timestamp)
-                       .build();
+    public Rating rating(long uid, long iid, double rating, long timestamp) {
+        return Rating.newBuilder()
+                     .setId(++entityId)
+                     .setUserId(uid)
+                     .setItemId(iid)
+                     .setRating(rating)
+                     .setTimestamp(timestamp)
+                     .build();
     }
 }

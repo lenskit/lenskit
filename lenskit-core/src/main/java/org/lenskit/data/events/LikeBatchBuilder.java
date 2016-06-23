@@ -38,9 +38,10 @@ public class LikeBatchBuilder implements EventBuilder<LikeBatch>, Cloneable {
     private boolean hasUserId, hasItemId;
 
     @Override
-    public void reset() {
+    public LikeBatchBuilder reset() {
         hasUserId = hasItemId = false;
         count = 1;
+        return this;
     }
 
     @Override

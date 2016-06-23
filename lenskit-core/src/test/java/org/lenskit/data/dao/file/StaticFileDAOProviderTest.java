@@ -44,8 +44,8 @@ public class StaticFileDAOProviderTest {
     @Test
     public void testSomeEvents() {
         StaticFileDAOProvider layout = new StaticFileDAOProvider();
-        List<Entity> ratings = Lists.newArrayList(factory.rating(1L, 20L, 3.5),
-                                                  factory.rating(1L, 21L, 4.5));
+        List<Entity> ratings = Lists.<Entity>newArrayList(factory.rating(1L, 20L, 3.5),
+                                                          factory.rating(1L, 21L, 4.5));
         layout.addSource(ratings);
         DataAccessObject dao = layout.get();
         assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,
@@ -78,8 +78,8 @@ public class StaticFileDAOProviderTest {
     public void testIndexedEvents() {
         StaticFileDAOProvider layout = new StaticFileDAOProvider();
         layout.addIndex(CommonTypes.RATING, CommonAttributes.USER_ID);
-        List<Entity> ratings = Lists.newArrayList(factory.rating(1L, 20L, 3.5),
-                                                  factory.rating(1L, 21L, 4.5));
+        List<Entity> ratings = Lists.<Entity>newArrayList(factory.rating(1L, 20L, 3.5),
+                                                          factory.rating(1L, 21L, 4.5));
         layout.addSource(ratings);
         DataAccessObject dao = layout.get();
         assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,

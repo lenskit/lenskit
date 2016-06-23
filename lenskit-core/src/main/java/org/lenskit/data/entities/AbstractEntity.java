@@ -57,6 +57,16 @@ public abstract class AbstractEntity implements Entity {
     /**
      * {@inheritDoc}
      *
+     * This implementation delegates to {@link #hasAttribute(String)}
+     */
+    @Override
+    public boolean hasAttribute(TypedName<?> name) {
+        return hasAttribute(name.getName());
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * Delegates to {@link #getTypedAttributeNames()} and extracts the names.
      */
     @Override

@@ -38,9 +38,10 @@ public class LikeBuilder implements EventBuilder<Like>, Cloneable {
     private boolean hasUserId, hasItemId;
 
     @Override
-    public void reset() {
+    public LikeBuilder reset() {
         hasUserId = hasItemId = false;
         timestamp = -1;
+        return this;
     }
 
     @Override
