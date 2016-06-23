@@ -27,6 +27,10 @@ import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityBuilder;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.events.EventBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Build a {@link Rating}.
@@ -36,6 +40,9 @@ import org.lenskit.data.events.EventBuilder;
  */
 @DefaultFields({"userId", "itemId", "rating", "timestamp?"})
 public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
+    private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
+    private static final AtomicLong idGenerator = new AtomicLong();
+
     private boolean hasId;
     private long id;
     private boolean hasUserId;
@@ -234,10 +241,13 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
 
     @Override
     public Rating build() {
-        Preconditions.checkState(hasId, "no rating ID set");
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
         Preconditions.checkState(hasRating, "no rating set");
+        if (!hasId) {
+            logger.warn("creating rating without ID");
+            id = idGenerator.incrementAndGet();
+        }
         return new Rating(id, userId, itemId, rating, timestamp);
     }
 
