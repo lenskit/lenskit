@@ -101,4 +101,17 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         }
         return set;
     }
+
+    @Override
+    public LongList finishList() {
+        if (scores == null) {
+            return LongLists.EMPTY_LIST;
+        }
+
+        LongList list = new LongArrayList(scores.size());
+        for (ScoredId id: finish()) {
+            list.add(id.getId());
+        }
+        return list;
+    }
 }

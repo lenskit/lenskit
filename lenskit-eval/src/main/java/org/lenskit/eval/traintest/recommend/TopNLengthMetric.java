@@ -20,9 +20,9 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Recommender;
-import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
  *
  * This metric is registered with the type name `length`.
  */
-public class TopNLengthMetric extends TopNMetric<MeanAccumulator> {
+public class TopNLengthMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     /**
      * Construct a new length metric.
      */
@@ -48,7 +48,7 @@ public class TopNLengthMetric extends TopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
         int n = recommendations.size();
         context.add(n);
         return new LengthResult(n);

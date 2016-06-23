@@ -21,11 +21,11 @@
 package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.lenskit.api.Recommender;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -53,7 +53,7 @@ import javax.annotation.Nullable;
  * `goodItems`
  * :   an item selector expression. The default is the user's test items.
  */
-public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMetric.Context> {
+public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionRecallMetric.Context> {
     private final String suffix;
     private final ItemSelector goodItems;
 
@@ -87,13 +87,14 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recs, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recs, Context context) {
         int tp = 0;
 
         LongSet items = goodItems.selectItems(context.universe, context.recommender, user);
 
-        for(Result res: recs) {
-            if(items.contains(res.getId())) {
+        LongIterator iter = recs.iterator();
+        while (iter.hasNext()) {
+            if(items.contains(iter.nextLong())) {
                 tp += 1;
             }
         }

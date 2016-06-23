@@ -27,7 +27,8 @@ import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.LongSortedArraySet;
 import org.lenskit.util.keys.SortedKeyIndex;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
 /**
@@ -37,6 +38,7 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
+@ParametersAreNonnullByDefault
 public final class LongUtils {
     private LongUtils() {}
 
@@ -164,7 +166,7 @@ public final class LongUtils {
      * @return {@code longs} as a fastutil {@link LongSet}. If {@code longs} is already
      *         a LongSet, it is cast.
      */
-    public static LongSet asLongSet(final Set<Long> longs) {
+    public static LongSet asLongSet(@Nullable final Set<Long> longs) {
         if (longs == null) {
             return null;
         } else if (longs instanceof LongSet) {
@@ -355,7 +357,7 @@ public final class LongUtils {
      * {@code nRandom} items.
      */
     public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude,
-                                             @Nonnull Random rng) {
+                                             Random rng) {
         LongSet initial = exclude;
         LongList selected = new LongArrayList(num);
         int n = 0;

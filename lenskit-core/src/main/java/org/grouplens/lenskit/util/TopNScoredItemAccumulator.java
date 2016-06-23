@@ -24,10 +24,7 @@ import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CompactableLongArrayList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
@@ -154,7 +151,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         }
         ScoredIdListBuilder bld = ScoredIds.newListBuilder(size);
         for (int i : indices) {
-            bld.add(items.get(i), scores.get(i));
+            bld.add(items.getLong(i), scores.getDouble(i));
         }
 
         assert heap.isEmpty();
@@ -181,8 +178,8 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         long[] keys = new long[indices.length];
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
-            keys[i] = items.get(indices[i]);
-            values[i] = scores.get(indices[i]);
+            keys[i] = items.getLong(indices[i]);
+            values[i] = scores.getDouble(indices[i]);
         }
         clear();
 
@@ -206,8 +203,8 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         long[] keys = new long[indices.length];
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
-            keys[i] = items.get(indices[i]);
-            values[i] = scores.get(indices[i]);
+            keys[i] = items.getLong(indices[i]);
+            values[i] = scores.getDouble(indices[i]);
         }
         clear();
 
@@ -220,11 +217,31 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
 
         LongSet longs = new LongOpenHashSet(size);
         while (!heap.isEmpty()) {
-            longs.add(items.get(heap.dequeue()));
+            longs.add(items.getLong(heap.dequeue()));
         }
         clear();
 
         return longs;
+    }
+
+    @Override
+    public LongList finishList() {
+        assert size == heap.size();
+        int[] indices = new int[size];
+        // Copy backwards so the scored list is sorted.
+        for (int i = size - 1; i >= 0; i--) {
+            indices[i] = heap.dequeue();
+        }
+        LongList list = new LongArrayList(size);
+        for (int i : indices) {
+            list.add(items.getLong(i));
+        }
+
+        assert heap.isEmpty();
+
+        clear();
+
+        return list;
     }
 
     private void clear() {
@@ -240,7 +257,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private class SlotComparator extends AbstractIntComparator {
         @Override
         public int compare(int i, int j) {
-            return Doubles.compare(scores.get(i), scores.get(j));
+            return Doubles.compare(scores.getDouble(i), scores.getDouble(j));
         }
     }
 }

@@ -22,14 +22,10 @@ package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrays;
-import it.unimi.dsi.fastutil.longs.LongComparators;
+import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Recommender;
-import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -51,7 +47,7 @@ import java.util.Collections;
  *
  * This metric is registered with the type name `ndcg`.
  */
-public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
+public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(TopNNDCGMetric.class);
     public static final String DEFAULT_COLUMN = "TopN.nDCG";
     private final String columnName;
@@ -107,7 +103,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -120,7 +116,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
         }
         double idealGain = computeDCG(ideal, ratings);
 
-        long[] actual = LongUtils.asLongCollection(recommendations.idList()).toLongArray();
+        long[] actual = recommendations.toLongArray();
         double gain = computeDCG(actual, ratings);
 
         double score = gain / idealGain;
