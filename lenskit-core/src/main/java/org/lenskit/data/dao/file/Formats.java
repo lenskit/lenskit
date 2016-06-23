@@ -35,6 +35,27 @@ public final class Formats {
      * @return An event format reading ratings without a header.
      */
     public static EntityFormat csvRatings() {
+        return delimitedRatings(",");
+    }
+
+    /**
+     * Read a TSV file of ratings without a header.  The ratings are assumed to be in `user, item, rating[, timestamp]`
+     * format.
+     *
+     * @return An event format reading ratings without a header.
+     */
+    public static EntityFormat tsvRatings() {
+        return delimitedRatings("\t");
+    }
+
+    /**
+     * Read a delimited text file of ratings without a header.  The ratings are assumed to be in `user, item, rating[, timestamp]`
+     * format.
+     *
+     * @param delim The delimiter.
+     * @return An event format reading ratings without a header.
+     */
+    public static EntityFormat delimitedRatings(String delim) {
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
         format.setEntityType(CommonTypes.RATING);
         // FIXME Use rating builder
@@ -43,7 +64,7 @@ public final class Formats {
                           CommonAttributes.ITEM_ID,
                           CommonAttributes.RATING,
                           CommonAttributes.TIMESTAMP);
-        format.setDelimiter(",");
+        format.setDelimiter(delim);
         return format;
     }
 }
