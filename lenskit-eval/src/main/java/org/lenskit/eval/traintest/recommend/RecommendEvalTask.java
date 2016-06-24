@@ -297,7 +297,7 @@ public class RecommendEvalTask implements EvalTask {
     @Override
     public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
         Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
-        TableWriter tlb = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
+        TableWriter recTable = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
         LongSet items = dataSet.getAllItems();
         ItemRecommender irec = rec.getItemRecommender();
         if (irec == null) {
@@ -305,7 +305,8 @@ public class RecommendEvalTask implements EvalTask {
             return null;
         }
 
-        boolean useDetails = tlb != null; // writing requires details
+        // we need details to write recommendation output
+        boolean useDetails = recTable != null;
         List<MetricContext<?>> contexts = new ArrayList<>(topNMetrics.size());
         for (TopNMetric<?> metric: topNMetrics) {
             logger.debug("setting up metric {}", metric);
@@ -315,7 +316,7 @@ public class RecommendEvalTask implements EvalTask {
             useDetails |= mc.usesDetails();
         }
 
-        return new TopNConditionEvaluator(tlb, rec, irec, contexts, items, useDetails);
+        return new TopNConditionEvaluator(recTable, rec, irec, contexts, items, useDetails);
     }
 
     static class MetricContext<X> {
