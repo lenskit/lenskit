@@ -69,7 +69,7 @@ public class LenskitRecommender implements Recommender {
         try {
             return injector.tryGetInstance(cls);
         } catch (InjectionException e) {
-            throw new RuntimeException("error instantiating component", e);
+            throw new RecommenderBuildException("error instantiating component", e);
         }
     }
 
@@ -88,7 +88,7 @@ public class LenskitRecommender implements Recommender {
         try {
             return injector.tryGetInstance(qual, cls);
         } catch (InjectionException e) {
-            throw new RuntimeException("error instantiating component", e);
+            throw new RecommenderBuildException("error instantiating component", e);
         }
     }
 
@@ -107,7 +107,7 @@ public class LenskitRecommender implements Recommender {
         try {
             return injector.getInstance(qual, cls);
         } catch (InjectionException e) {
-            throw new RuntimeException("error instantiating component", e);
+            throw new RecommenderBuildException("error instantiating component", e);
         }
     }
 
