@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.test;
 
+import com.google.common.base.Throwables;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -38,10 +39,16 @@ public class LineCountMatcher extends BaseMatcher<File> {
 
     @Override
     public boolean matches(Object o) {
-        return o instanceof File && lineCount.matches(getLineCount((File) o));
+        try {
+            return o instanceof File && lineCount.matches(getLineCount((File) o));
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
-    private int getLineCount(File file) {
+    private int getLineCount(File file) throws IOException {
         try (Reader reader = new FileReader(file);
              BufferedReader lines = new BufferedReader(reader)) {
             int n = 0;
@@ -49,10 +56,6 @@ public class LineCountMatcher extends BaseMatcher<File> {
                 n++;
             }
             return n;
-        } catch (FileNotFoundException ex) {
-            throw new RuntimeException("file " + file + " not found", ex);
-        } catch (IOException ex) {
-            throw new RuntimeException("error reading file " + file, ex);
         }
     }
 
@@ -65,8 +68,14 @@ public class LineCountMatcher extends BaseMatcher<File> {
     @Override
     public void describeMismatch(Object item, Description description) {
         if (item instanceof File) {
-            int lines = getLineCount((File) item);
-            description.appendText("had " + lines + " lines");
+            try {
+                int lines = getLineCount((File) item);
+                description.appendText("had " + lines + " lines");
+            } catch (FileNotFoundException e) {
+                description.appendText("did not exist");
+            } catch (IOException e) {
+                description.appendText("could not be read");
+            }
         } else {
             description.appendText("was non-file object " + item);
         }
