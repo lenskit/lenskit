@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.text;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -365,7 +366,7 @@ public final class Fields {
                 try {
                     setter.invoke(builder, converter.convertFromString(argType, token));
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                    throw Throwables.propagate(e);
                 }
             }
         }

@@ -21,13 +21,13 @@
 package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Supplier;
+import org.grouplens.lenskit.util.MoreSuppliers;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.*;
 import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.grouplens.lenskit.util.MoreSuppliers;
-import org.grouplens.lenskit.util.io.Describable;
-import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.lenskit.specs.data.PackedDataSourceSpec;
 import org.slf4j.Logger;
@@ -183,7 +183,7 @@ public class PackedDataSource implements DataSource {
             try {
                 return BinaryRatingDAO.open(packedFile);
             } catch (IOException ex) {
-                throw new RuntimeException("error opening " + packedFile, ex);
+                throw new DataAccessException("error opening " + packedFile, ex);
             }
         }
 

@@ -20,7 +20,9 @@
  */
 package org.grouplens.lenskit.data.text;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.data.events.Event;
@@ -109,7 +111,7 @@ public final class DelimitedColumnEventFormat implements EventFormat, Serializab
             for (String name: dft.value()) {
                 Field field = Fields.byName(builder, name);
                 if (field == null) {
-                    throw new RuntimeException("cannot find field " + name);
+                    throw new IllegalArgumentException("class " + builder + " does not have field " + name);
                 }
                 fields.add(field);
             }
