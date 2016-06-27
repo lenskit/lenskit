@@ -22,8 +22,8 @@ package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -50,7 +50,7 @@ import javax.annotation.Nullable;
  *
  * This metric is registered with the type name `entropy`.
  */
-public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
+public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Context> {
     /**
      * Construct a new length metric.
      */
@@ -60,7 +60,7 @@ public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, Context context) {
         context.addUser(recommendations);
         return MetricResult.empty();
     }
@@ -89,9 +89,11 @@ public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
         private Long2IntMap counts = new Long2IntOpenHashMap();
         private int recCount = 0;
 
-        private void addUser(ResultList recs) {
-            for (Result s: recs) {
-                counts.put(s.getId(), counts.get(s.getId()) +1);
+        private void addUser(LongList recs) {
+            LongIterator iter = recs.iterator();
+            while (iter.hasNext()) {
+                long item = iter.nextLong();
+                counts.put(item, counts.get(item) +1);
                 recCount +=1;
             }
         }

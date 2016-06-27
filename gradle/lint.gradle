@@ -84,18 +84,11 @@ ciTest.dependsOn tasks.coveralls
 
 sonarqube {
     properties {
-        def branch = travis.branch
-        def m = branch != null ? branch =~ /release\/(.*)/ : null
-        if (m) {
-            def bk = m.group(1)
-            property "sonar.projectKey", "$project.group:$project.name-$bk"
-        }
-        property "sonar.host.url", "https://sonar.cs.txstate.edu"
+        property "sonar.projectKey", "lenskit"
+        property "sonar.host.url", "https://sonarqube.com"
         property "sonar.sourceEncoding", "UTF-8"
-        if (System.getenv("SONAR_USER")) {
-            logger.lifecycle("using Sonar user {}", System.getenv("SONAR_USER"))
-            property "sonar.login", System.getenv("SONAR_USER")
-            property "sonar.password", System.getenv("SONAR_PASSWORD")
+        if (System.getenv("SONAR_TOKEN")) {
+            property "sonar.login", System.getenv("SONAR_TOKEN")
         }
         if (lintMode == 'preview') {
             logger.info 'configuring Sonar for preview mode'
@@ -103,6 +96,10 @@ sonarqube {
             property "sonar.issuesReport.html.enable", "true"
         }
     }
+}
+
+tasks.sonarqube.onlyIf {
+    lintMode == 'preview' || (travis.isReleaseBuild() && travis.branch == 'master')
 }
 
 if (lintMode == 'enabled') {

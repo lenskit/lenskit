@@ -21,6 +21,7 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
@@ -51,6 +52,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -103,17 +105,45 @@ public class ItemItemScorer extends AbstractItemScorer {
         return normalizer;
     }
 
+    @Nonnull
+    @Override
+    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
+        logger.debug("scoring {} items for user {}", items.size(), user);
+        Long2DoubleMap results = new Long2DoubleOpenHashMap(items.size());
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.basic(results);
+
+        scoreItems(user, items, accum);
+
+        return results;
+    }
+
     /**
      * Score items by computing predicted ratings.
      */
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        logger.debug("scoring {} items for user {}", items.size(), user);
+        logger.debug("scoring {} items for user {} with details", items.size(), user);
+        List<ItemItemResult> results = new ArrayList<>(items.size());
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
+
+        scoreItems(user, items, accum);
+
+        return Results.newResultMap(results);
+    }
+
+    /**
+     * Score all items into an accumulator.
+     * @param user The user.
+     * @param items The items to score.
+     * @param accum The accumulator.
+     */
+    private void scoreItems(long user, @Nonnull Collection<Long> items, ItemItemScoreAccumulator accum) {
         UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
         if (history == null) {
             history = History.forUser(user);
         }
+
         SparseVector summary = summarizer.summarize(history);
         logger.trace("user has {} ratings", summary.size());
         VectorTransformation transform = normalizer.makeTransformation(user, summary);
@@ -121,22 +151,16 @@ public class ItemItemScorer extends AbstractItemScorer {
         transform.apply(normed);
         Long2DoubleMap itemScores = normed.asMap();
 
-        List<ItemItemResult> results = new ArrayList<>(items.size());
         LongIterator iter = LongIterators.asLongIterator(items.iterator());
         while (iter.hasNext()) {
             final long item = iter.nextLong();
-            ItemItemResult score = scoreItem(itemScores, item);
-            if (score != null) {
-                results.add(new ItemItemResult(item, transform.unapply(item, score.getScore()),
-                                               score.getNeighborhoodSize(),
-                                               score.getNeighborWeight()));
-            }
+            scoreItem(itemScores, item, accum);
         }
 
-        return Results.newResultMap(results);
+        accum.applyReversedTransform(transform);
     }
 
-    protected ItemItemResult scoreItem(Long2DoubleMap userData, long item) {
+    protected void scoreItem(Long2DoubleMap userData, long item, ItemItemScoreAccumulator accum) {
         SparseVector allNeighbors = model.getNeighbors(item);
         ScoredItemAccumulator acc;
         if (neighborhoodSize > 0) {
@@ -155,12 +179,11 @@ public class ItemItemScorer extends AbstractItemScorer {
         Long2DoubleMap neighborhood = acc.finishMap();
         assert neighborhoodSize <= 0 || neighborhood.size() <= neighborhoodSize;
         if (neighborhood.size() < minNeighbors) {
-            return null;
+            return;
         }
         logger.trace("scoring item {} with {} of {} neighbors",
                      item, neighborhood.size(), allNeighbors.size());
-        ItemItemResult score = scorer.score(item, neighborhood, userData);
-        logger.trace("computed score {}", score);
-        return score;
+        scorer.score(item, neighborhood, userData, accum);
+        // logger.trace("computed score {}", score);
     }
 }

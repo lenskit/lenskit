@@ -22,16 +22,16 @@ package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
-import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.specs.AbstractSpec;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Scalars;
 
 import javax.annotation.Nonnull;
@@ -43,7 +43,7 @@ import java.util.Collections;
  * This metric is registered with the type name `ndpm`.
  * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf.
  */
-public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
+public class TopNNDPMMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     public static final String DEFAULT_COLUMN = "TopN.nDPM";
 
     /**
@@ -76,14 +76,14 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
 
         Long2DoubleMap ratings = user.getTestRatings();
 
-        long[] actual = LongUtils.asLongCollection(recommendations.idList()).toLongArray();
+        long[] actual = recommendations.toLongArray();
 
         double dpm = computeDPM(actual, ratings);
 
