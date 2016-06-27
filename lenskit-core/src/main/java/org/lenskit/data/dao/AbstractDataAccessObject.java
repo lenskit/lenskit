@@ -33,7 +33,10 @@ import javax.annotation.WillCloseWhenClosed;
 import java.util.List;
 
 /**
- * Helper class to make it easier to create DAOs.
+ * Helper class to make it easier to create DAOs.  This base class implements several of the DAO
+ * convenience methods in terms of the master {@link #streamEntities(EntityQuery)} method, so that
+ * DAO implementers only need to translate {@link EntityQuery} objects into their underlying query
+ * framework (collection predicates, Jooq queries, HQL, or whatever).
  */
 public abstract class AbstractDataAccessObject implements DataAccessObject {
     @Override
