@@ -18,13 +18,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.dao;
+package org.lenskit.data.dao.file;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.JsonNodeCreator;
 import com.google.common.collect.Lists;
 import org.junit.Test;
-import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.*;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -32,6 +39,7 @@ import static org.junit.Assert.*;
 
 public class StaticFileDAOProviderTest {
     private EntityFactory factory = new EntityFactory();
+    private ObjectReader reader = new ObjectMapper().reader();
 
     @Test
     public void testSomeEvents() {
@@ -98,5 +106,85 @@ public class StaticFileDAOProviderTest {
         assertThat(dao.query(CommonTypes.ITEM).get(),
                    containsInAnyOrder(Entities.create(CommonTypes.ITEM, 20),
                                       Entities.create(CommonTypes.ITEM, 21)));
+    }
+
+    @Test
+    public void testLoadRatings() throws IOException, URISyntaxException {
+        URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
+        JsonNode node = reader.readTree("{\"file\": \"ratings.csv\", \"format\": \"csv\"}");
+        StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+
+        DataAccessObject dao = daoProvider.get();
+        verifyRatingsCsvData(dao);
+    }
+
+    @Test
+    public void testLoadRatingsList() throws IOException, URISyntaxException {
+        URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
+        JsonNode node = reader.readTree("[{\"file\": \"ratings.csv\", \"format\": \"csv\"}]");
+        StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+
+        DataAccessObject dao = daoProvider.get();
+        verifyRatingsCsvData(dao);
+    }
+
+    @Test
+    public void testLoadRatingsMap() throws IOException, URISyntaxException {
+        URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
+        JsonNode node = reader.readTree("{\"ratings\":{\"file\": \"ratings.csv\", \"format\": \"csv\"}}");
+        StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+
+        DataAccessObject dao = daoProvider.get();
+        verifyRatingsCsvData(dao);
+    }
+
+    @Test
+    public void testLoadInvalidDataSource() throws URISyntaxException, IOException {
+        URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
+        JsonNode node = reader.readTree("\"foobar\"");
+        try {
+            StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+            fail("JSON parsing succeeded, should have failed on string");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
+    }
+
+    private void verifyRatingsCsvData(DataAccessObject dao) {
+        assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,
+                                                            CommonTypes.USER,
+                                                            CommonTypes.ITEM));
+
+        List<Entity> ratings = dao.query(CommonTypes.RATING).get();
+        assertThat(ratings, hasSize(2));
+
+        Entity first = ratings.get(0);
+        assertThat(first.getType(), equalTo(EntityType.forName("rating")));
+        assertThat(first.getId(), equalTo(1L));
+        assertThat(first.get(CommonAttributes.ENTITY_ID), equalTo(1L));
+        assertThat(first.get(CommonAttributes.ITEM_ID), equalTo(20L));
+        assertThat(first.get(CommonAttributes.USER_ID), equalTo(10L));
+        assertThat(first.get(CommonAttributes.RATING), equalTo(3.5));
+        assertThat(first.hasAttribute(CommonAttributes.TIMESTAMP),
+                   equalTo(false));
+
+        Entity second = ratings.get(1);
+        assertThat(second.getType(), equalTo(EntityType.forName("rating")));
+        assertThat(second.getId(), equalTo(2L));
+        assertThat(second.get(CommonAttributes.ENTITY_ID), equalTo(2L));
+        assertThat(second.get(CommonAttributes.ITEM_ID), equalTo(20L));
+        assertThat(second.get(CommonAttributes.USER_ID), equalTo(11L));
+        assertThat(second.get(CommonAttributes.RATING), equalTo(4.0));
+        assertThat(second.hasAttribute(CommonAttributes.TIMESTAMP),
+                   equalTo(false));
+
+        // we have two users
+        assertThat(dao.query(CommonTypes.USER).get(),
+                   containsInAnyOrder(Entities.create(CommonTypes.USER, 10),
+                                      Entities.create(CommonTypes.USER, 11)));
+
+        // and one item
+        assertThat(dao.query(CommonTypes.ITEM).get(),
+                   contains(Entities.create(CommonTypes.ITEM, 20)));
     }
 }

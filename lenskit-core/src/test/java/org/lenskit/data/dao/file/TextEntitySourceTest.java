@@ -36,7 +36,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class TextEntitySourceTest {
-    private ObjectReader reader = new ObjectMapper().reader();;
+    private ObjectReader reader = new ObjectMapper().reader();
 
     @Test
     public void testMinimalJSONConfig() throws IOException {

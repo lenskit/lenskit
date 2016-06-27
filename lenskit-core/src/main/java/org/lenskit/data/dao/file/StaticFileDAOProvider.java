@@ -145,7 +145,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
      * Parse a JSON description of a data set.
      *
      * @param object The JSON object.
-     * @return The data layout.
+     * @return A DAO provider configured from the JSON data.
      */
     public static StaticFileDAOProvider fromJSON(JsonNode object, URI base) {
         StaticFileDAOProvider layout = new StaticFileDAOProvider();
@@ -155,10 +155,16 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
                 configureDataSource(layout, null, source, base);
             }
         } else if (object.isObject()) {
-            Iterator<Map.Entry<String, JsonNode>> iter = object.fields();
-            while (iter.hasNext()) {
-                Map.Entry<String, JsonNode> entry = iter.next();
-                configureDataSource(layout, entry.getKey(), entry.getValue(), base);
+            if (object.has("file") || object.has("type")) {
+                // the whole object describes one data source
+                configureDataSource(layout, null, object, base);
+            } else {
+                // the object describes multiple data sources
+                Iterator<Map.Entry<String, JsonNode>> iter = object.fields();
+                while (iter.hasNext()) {
+                    Map.Entry<String, JsonNode> entry = iter.next();
+                    configureDataSource(layout, entry.getKey(), entry.getValue(), base);
+                }
             }
         } else {
             throw new IllegalArgumentException("manifest must be array or object");
