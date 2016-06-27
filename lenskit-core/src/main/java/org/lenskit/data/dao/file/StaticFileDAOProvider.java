@@ -79,18 +79,6 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
     }
 
     /**
-     * Add an entity to be derived from a column in another entity.  These entities will have
-     * no additional data, but their IDs will be available.
-     *
-     * @param type The entity type to derive.
-     * @param src The entity type from which to source entities.
-     * @param attr The column to use.
-     */
-    public void addDerivedEntity(EntityType type, EntityType src, Attribute<Long> attr) {
-        // TODO implement
-    }
-
-    /**
      * Get the data access object. This method is thread-safe.
      * @return The access object.
      */
@@ -106,6 +94,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
                 if (dao == null) {
                     try {
                         dao = makeDAO();
+                        cachedDao = new SoftReference<>(dao);
                     } catch (IOException e) {
                         throw new DataAccessException("cannot load data", e);
                     }
