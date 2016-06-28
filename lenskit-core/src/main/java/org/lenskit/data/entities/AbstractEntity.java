@@ -61,7 +61,8 @@ public abstract class AbstractEntity implements Entity {
      */
     @Override
     public boolean hasAttribute(TypedName<?> name) {
-        return hasAttribute(name.getName());
+        Object value = maybeGet(name.getName());
+        return value != null && name.getType().isInstance(value);
     }
 
     /**

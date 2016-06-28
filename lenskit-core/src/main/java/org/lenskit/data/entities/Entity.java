@@ -90,7 +90,7 @@ public interface Entity {
      * Check if the entity has a attribute.
      *
      * @param name The attribute name to look for.
-     * @return `true` if the entity contains `attribute`. This only checks the attribute's name; it does not verify
+     * @return `true` if the entity contains `attribute` and the value is of the associated type.
      * that the data is of a compatible type.
      */
     boolean hasAttribute(TypedName<?> name);
