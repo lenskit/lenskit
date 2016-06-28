@@ -20,9 +20,9 @@
  */
 package org.lenskit.data.dao.file;
 
-import org.lenskit.data.entities.BasicEntityBuilder;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.ratings.RatingBuilder;
 
 /**
  * Utility methods relating to entity formats.
@@ -58,8 +58,7 @@ public final class Formats {
     public static EntityFormat delimitedRatings(String delim) {
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
         format.setEntityType(CommonTypes.RATING);
-        // FIXME Use rating builder
-        format.setEntityBuilder(BasicEntityBuilder.class);
+        format.setEntityBuilder(RatingBuilder.class);
         format.addColumns(CommonAttributes.USER_ID,
                           CommonAttributes.ITEM_ID,
                           CommonAttributes.RATING,

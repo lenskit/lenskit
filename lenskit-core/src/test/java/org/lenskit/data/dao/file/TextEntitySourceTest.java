@@ -25,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 import org.lenskit.util.io.ObjectStream;
 
 import java.io.IOException;
@@ -50,8 +52,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
-        // FIXME Enable this test when rating builders work
-        // assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
     @Test
@@ -66,8 +67,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
-        // FIXME Enable this test when rating builders work
-        // assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
     @Test
@@ -82,8 +82,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
-        // FIXME Enable this test when rating builders work
-        // assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
     @Test
@@ -98,8 +97,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(1));
         assertThat(format.usesHeader(), equalTo(true));
-        // FIXME Enable this test when rating builders work
-        // assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
     @Test
@@ -114,8 +112,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(2));
         assertThat(format.usesHeader(), equalTo(false));
-        // FIXME Enable this test when rating builders work
-        // assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
     @Test
@@ -126,6 +123,7 @@ public class TextEntitySourceTest {
 
         try (ObjectStream<Entity> stream = fr.openStream()) {
             Entity first = stream.readObject();
+            assertThat(first, instanceOf(Rating.class));
             assertThat(first.getType(), equalTo(EntityType.forName("rating")));
             assertThat(first.getId(), equalTo(1L));
             assertThat(first.get(CommonAttributes.ENTITY_ID), equalTo(1L));
@@ -136,6 +134,7 @@ public class TextEntitySourceTest {
                        equalTo(false));
 
             Entity second = stream.readObject();
+            assertThat(second, instanceOf(Rating.class));
             assertThat(second.getType(), equalTo(EntityType.forName("rating")));
             assertThat(second.getId(), equalTo(2L));
             assertThat(second.get(CommonAttributes.ENTITY_ID), equalTo(2L));
@@ -144,6 +143,12 @@ public class TextEntitySourceTest {
             assertThat(second.get(CommonAttributes.RATING), equalTo(4.0));
             assertThat(second.hasAttribute(CommonAttributes.TIMESTAMP),
                        equalTo(false));
+            assertThat(((Rating) second).getUserId(),
+                       equalTo(11L));
+            assertThat(((Rating) second).getItemId(),
+                       equalTo(20L));
+            assertThat(((Rating) second).getValue(),
+                       equalTo(4.0));
 
             assertThat(stream.readObject(), nullValue());
         }
@@ -203,6 +208,7 @@ public class TextEntitySourceTest {
 
         try (ObjectStream<Entity> stream = fr.openStream()) {
             Entity first = stream.readObject();
+            assertThat(first, instanceOf(Rating.class));
             assertThat(first.getType(), equalTo(EntityType.forName("rating")));
             assertThat(first.getId(), equalTo(101L));
             assertThat(first.get(CommonAttributes.ENTITY_ID), equalTo(101L));
@@ -213,6 +219,7 @@ public class TextEntitySourceTest {
                        equalTo(false));
 
             Entity second = stream.readObject();
+            assertThat(second, instanceOf(Rating.class));
             assertThat(second.getType(), equalTo(EntityType.forName("rating")));
             assertThat(second.getId(), equalTo(109L));
             assertThat(second.get(CommonAttributes.ENTITY_ID), equalTo(109L));

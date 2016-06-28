@@ -1,5 +1,4 @@
-# FIXME Re-enable this setting when rating builders work
-# builder: org.lenskit.data.ratings.RatingBuilder
+builder: org.lenskit.data.ratings.RatingBuilder
 attributes:
   user: long
   item: long
