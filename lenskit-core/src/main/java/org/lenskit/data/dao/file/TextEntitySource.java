@@ -26,6 +26,7 @@ import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import org.apache.commons.lang3.ClassUtils;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.LineStream;
 import org.lenskit.util.io.ObjectStream;
@@ -167,6 +168,17 @@ public class TextEntitySource implements EntitySource {
      * @return The new entity reader.
      */
     static TextEntitySource fromJSON(String name, JsonNode object, URI base) {
+        return fromJSON(name, object, base, ClassLoaders.inferDefault(TextEntitySource.class));
+    }
+
+    /**
+     * Create a file reader.
+     * @param name The reader name.
+     * @param object The configuring object.
+     * @param base The base URI for source data.
+     * @return The new entity reader.
+     */
+    static TextEntitySource fromJSON(String name, JsonNode object, URI base, ClassLoader loader) {
         TextEntitySource source = new TextEntitySource(name);
         URI uri = base.resolve(object.get("file").asText());
         try {
@@ -250,8 +262,7 @@ public class TextEntitySource implements EntitySource {
             } else {
                 Class bld;
                 try {
-                    // FIXME Use a configurable class loader
-                    bld = ClassUtils.getClass(ebName);
+                    bld = ClassUtils.getClass(loader, ebName);
                 } catch (ClassNotFoundException e) {
                     throw new IllegalArgumentException("cannot load class " + ebName, e);
                 }
