@@ -202,7 +202,7 @@ public final class Rating extends AbstractEntity implements Event, Preference, S
         case "rating":
             return value;
         case "timestamp":
-            return timestamp;
+            return timestamp >= 0 ? timestamp : null;
         default:
             return null;
         }
