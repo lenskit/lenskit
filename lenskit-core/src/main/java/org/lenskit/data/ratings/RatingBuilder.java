@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.text.DefaultFields;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityBuilder;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.events.EventBuilder;
 import org.slf4j.Logger;
@@ -61,6 +62,17 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
     }
 
     /**
+     * Create an unitialized rating builder.
+     * @param type The rating builder.
+     */
+    public RatingBuilder(EntityType type) {
+        super(type);
+        if (type != CommonTypes.RATING) {
+            throw new IllegalArgumentException("only 'rating' entities can be viewed as ratings");
+        }
+    }
+
+    /**
      * Construct a new rating builder that is a copy of a particular rating.
      * @param r The rating to copy.
      * @return A rating builder that will initially build a copy of the specified rating.
@@ -91,6 +103,7 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      */
     public RatingBuilder setId(long id) {
         this.id = id;
+        hasId = true;
         return this;
     }
 

@@ -26,10 +26,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 
 public final class Entities {
     private Entities() {}
@@ -148,6 +150,21 @@ public final class Entities {
         if (viewClass.isInstance(e)) {
             return viewClass.cast(e);
         } else {
+            BuiltBy bb = viewClass.getAnnotation(BuiltBy.class);
+            if (bb != null) {
+                // FIXME Cache constructors
+                Class<? extends EntityBuilder> ebClass = bb.value();
+                EntityBuilder builder;
+                try {
+                    builder = ConstructorUtils.invokeConstructor(ebClass, e.getType());
+                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
+                    throw new RuntimeException("Cannot instantiate builder", ex);
+                }
+                for (Attribute<?> attr: e.getAttributes()) {
+                    builder.setAttribute(attr);
+                }
+                return viewClass.cast(builder.build());
+            }
             throw new IllegalArgumentException("entity type " + e.getClass() + " cannot be projected to " + viewClass);
         }
     }

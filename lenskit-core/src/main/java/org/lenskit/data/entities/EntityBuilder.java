@@ -62,6 +62,18 @@ public abstract class EntityBuilder {
     public abstract <T> EntityBuilder setAttribute(TypedName<T> name, T val);
 
     /**
+     * Set an attribute in the entity.
+     * @param attr The attributre to set.
+     * @param <T> The attribute type.
+     * @return The entity builder (for chaining).
+     * @throws NoSuchAttributeException if the specified attribute is not supported by this entity.
+     */
+    public <T> EntityBuilder setAttribute(Attribute<T> attr) {
+        setAttribute(attr.getTypedName(), attr.getValue());
+        return this;
+    }
+
+    /**
      * Clear an attribute.
      * @param name The name of the attribute to clear.
      * @return The entity builder (for chaining).

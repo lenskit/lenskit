@@ -20,12 +20,9 @@
  */
 package org.lenskit.data.ratings;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.lenskit.data.entities.AbstractEntity;
-import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.EntityFactory;
-import org.lenskit.data.entities.TypedName;
-import org.lenskit.data.events.BuiltBy;
+import org.lenskit.data.entities.*;
 import org.lenskit.data.events.Event;
 
 import javax.annotation.Nullable;
@@ -43,10 +40,23 @@ import java.util.Set;
  *
  * @compat Public
  */
+@org.lenskit.data.events.BuiltBy(RatingBuilder.class)
 @BuiltBy(RatingBuilder.class)
 public final class Rating extends AbstractEntity implements Event, Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
+    private static final Set<TypedName<?>> FULL_ATTR_NAMES =
+            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
+                                          CommonAttributes.USER_ID,
+                                          CommonAttributes.ITEM_ID,
+                                          CommonAttributes.RATING,
+                                          CommonAttributes.TIMESTAMP);
+    private static final Set<TypedName<?>> NOTIME_ATTR_NAMES =
+            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
+                                          CommonAttributes.USER_ID,
+                                          CommonAttributes.ITEM_ID,
+                                          CommonAttributes.RATING);
+
 
     private final long user;
     private final long item;
@@ -160,7 +170,7 @@ public final class Rating extends AbstractEntity implements Event, Preference, S
 
     @Override
     public Set<TypedName<?>> getTypedAttributeNames() {
-        return null;
+        return timestamp >= 0 ? FULL_ATTR_NAMES : NOTIME_ATTR_NAMES;
     }
 
     @Override
