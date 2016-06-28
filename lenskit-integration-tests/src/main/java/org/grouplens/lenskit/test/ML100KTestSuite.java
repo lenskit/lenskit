@@ -23,17 +23,17 @@ package org.grouplens.lenskit.test;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongLists;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.ItemListItemDAO;
-import org.lenskit.data.dao.PrefetchingItemDAO;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.Fields;
 import org.grouplens.lenskit.data.text.Formats;
 import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.ItemListItemDAO;
+import org.lenskit.data.dao.PrefetchingItemDAO;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -108,6 +108,7 @@ public class ML100KTestSuite {
         @Override
         public ItemDAO get() {
             LongList items = new LongArrayList(baseDAO.getItemIds());
+            assert items.size() > SUBSET_DROP_SIZE;
             LongLists.shuffle(items, rng);
             items = items.subList(0, items.size() - SUBSET_DROP_SIZE);
             return new ItemListItemDAO(items);
