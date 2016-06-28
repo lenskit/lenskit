@@ -148,7 +148,11 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     }
 
     /**
-     * Add a column.
+     * Associate an attribute with the next column.   The first time this is called it specifies the label for the
+     * first column. The second time this is called it specifies the second column label and so forth.
+     *
+     * Once this method has been called, {@link #addColumn(String, TypedName)} cannot be called.
+     *
      * @param attr The attribute to add as a column, or `null` to skip the next column.
      * @throws IllegalStateException if non-labeled columns have already been specified.
      */
@@ -161,7 +165,9 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     }
 
     /**
-     * Add columns to a format.
+     * Add columns to a format.  This is exactly equivalent to calling {@link #addColumn(TypedName)} for each
+     * column.
+     *
      * @param columns The columns to add.
      */
     public void addColumns(TypedName<?>... columns) {
