@@ -18,38 +18,38 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
 package org.lenskit.data.dao;
 
-import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
- * A DAO interface that provides access to item names.
- * <p>
- * The normal way to get item names, without writing your own DAOs, is to use a {@link org.lenskit.data.dao.MapItemNameDAO}, often
- * loaded from a CSV file:
- * </p>
- * <pre>{@code
- * bind MapItemNameDAO to CSVFileItemNameDAOProvider
- * set ItemFile to "item-names.csv"
- * }</pre>
- * <p>
- * Note that, while {@link org.lenskit.data.dao.MapItemNameDAO} implements both this
- * interface and {@link org.lenskit.data.dao.ItemDAO}, binding this interface to the
- * provider instead of the class means that the item name DAO will only be used to satisfy item name
- * DAO requests and not item list requests.
- * </p>
+ * Bridge implementation of the item name DAO.
  */
-@Deprecated
-@DefaultImplementation(value = BridgeItemNameDAO.class, skipIfUnusable = true)
-public interface ItemNameDAO {
+public class BridgeItemNameDAO implements ItemNameDAO {
+    private final DataAccessObject delegate;
+
     /**
-     * Get the name for an item.
-     * @param item The item ID.
-     * @return A display name for the item, or {@code null} if the item is unknown or has no name.
+     * Construct a new DAO.
+     * @param dao The underlying DAO.
      */
+    @Inject
+    public BridgeItemNameDAO(DataAccessObject dao) {
+        delegate = dao;
+    }
+
     @Nullable
-    String getItemName(long item);
+    @Override
+    public String getItemName(long id) {
+        Entity item = delegate.lookupEntity(CommonTypes.ITEM, id);
+        if (item == null) {
+            return null;
+        } else {
+            return item.maybeGet(CommonAttributes.NAME);
+        }
+    }
 }
