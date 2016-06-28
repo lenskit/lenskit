@@ -153,7 +153,7 @@ public abstract class AbstractEntity implements Entity {
      */
     @Override
     public int getInteger(TypedName<Integer> name) {
-        return 0;
+        return get(name);
     }
 
     /**
@@ -163,7 +163,22 @@ public abstract class AbstractEntity implements Entity {
      */
     @Override
     public boolean getBoolean(TypedName<Boolean> name) {
-        return false;
+        return get(name);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #maybeGet(String)} and checks the type.
+     */
+    @Nullable
+    @Override
+    public <T> T maybeGet(TypedName<T> name) {
+        try {
+            return name.getType().cast(maybeGet(name.getName()));
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override

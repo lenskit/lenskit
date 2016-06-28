@@ -191,16 +191,6 @@ public final class Rating extends AbstractEntity implements Event, Preference, S
 
     @Nullable
     @Override
-    public <T> T maybeGet(TypedName<T> name) {
-        try {
-            return name.getType().cast(maybeGet(name.getName()));
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    @Nullable
-    @Override
     public Object maybeGet(String attr) {
         switch (attr) {
         case "id":
