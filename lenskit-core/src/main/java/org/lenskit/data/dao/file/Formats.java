@@ -34,7 +34,7 @@ public final class Formats {
      *
      * @return An event format reading ratings without a header.
      */
-    public static EntityFormat csvRatings() {
+    public static DelimitedColumnEntityFormat csvRatings() {
         return delimitedRatings(",");
     }
 
@@ -44,7 +44,7 @@ public final class Formats {
      *
      * @return An event format reading ratings without a header.
      */
-    public static EntityFormat tsvRatings() {
+    public static DelimitedColumnEntityFormat tsvRatings() {
         return delimitedRatings("\t");
     }
 
@@ -55,7 +55,7 @@ public final class Formats {
      * @param delim The delimiter.
      * @return An event format reading ratings without a header.
      */
-    public static EntityFormat delimitedRatings(String delim) {
+    public static DelimitedColumnEntityFormat delimitedRatings(String delim) {
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
         format.setEntityType(CommonTypes.RATING);
         format.setEntityBuilder(RatingBuilder.class);

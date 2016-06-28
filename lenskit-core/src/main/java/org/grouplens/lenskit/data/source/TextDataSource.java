@@ -21,9 +21,20 @@
 package org.grouplens.lenskit.data.source;
 
 import org.grouplens.grapht.util.Providers;
-import org.grouplens.lenskit.data.text.*;
+import org.grouplens.lenskit.data.text.CSVFileItemNameDAOProvider;
+import org.grouplens.lenskit.data.text.EventFormat;
+import org.grouplens.lenskit.data.text.SimpleFileItemDAOProvider;
+import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.*;
+import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
+import org.lenskit.data.dao.file.EntityFormat;
+import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.dao.file.TextEntitySource;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.lenskit.specs.data.TextDataSourceSpec;
@@ -43,26 +54,40 @@ import java.util.List;
  */
 public class TextDataSource extends AbstractDataSource {
     private final String name;
-    private final EventDAO dao;
+    private final StaticFileDAOProvider daoProvider;
+    private final EventDAO legacyDAO;
     private final File sourceFile;
     private final PreferenceDomain domain;
-    private final EventFormat format;
+    private final EntityFormat format;
 
     private final Provider<ItemListItemDAO> items;
     private final Provider<MapItemNameDAO> itemNames;
     private final Path itemFile;
     private final Path itemNameFile;
 
-    TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom,
+    TextDataSource(String name, File file, EntityFormat fmt, EventFormat efmt, PreferenceDomain pdom,
                    Path itemFile, Path itemNameFile) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
         format = fmt;
+        daoProvider = new StaticFileDAOProvider();
 
-        dao = TextEventDAO.create(file, format, CompressionMode.AUTO);
+        TextEntitySource source = new TextEntitySource(name);
+        source.setFile(file.toPath());
+        source.setFormat(format);
+        daoProvider.addSource(source);
+
+        legacyDAO = TextEventDAO.create(file, efmt, CompressionMode.AUTO);
 
         if (itemFile != null) {
+            TextEntitySource itemSource = new TextEntitySource();
+            DelimitedColumnEntityFormat itemFmt = new DelimitedColumnEntityFormat();
+            itemFmt.setEntityType(CommonTypes.ITEM);
+            itemFmt.addColumn(CommonAttributes.ENTITY_ID);
+            itemSource.setFormat(itemFmt);
+            daoProvider.addSource(itemSource);
+
             items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile.toFile()));
             this.itemFile = itemFile;
         } else {
@@ -70,6 +95,13 @@ public class TextDataSource extends AbstractDataSource {
             this.itemFile = null;
         }
         if (itemNameFile != null) {
+            TextEntitySource itemSource = new TextEntitySource();
+            DelimitedColumnEntityFormat itemFmt = new DelimitedColumnEntityFormat();
+            itemFmt.setEntityType(CommonTypes.ITEM);
+            itemFmt.addColumns(CommonAttributes.ENTITY_ID, CommonAttributes.NAME);
+            itemSource.setFormat(itemFmt);
+            daoProvider.addSource(itemSource);
+
             itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile.toFile()));
             this.itemNameFile = itemNameFile;
         } else {
@@ -91,7 +123,7 @@ public class TextDataSource extends AbstractDataSource {
         return sourceFile;
     }
 
-    public EventFormat getFormat() {
+    public EntityFormat getFormat() {
         return format;
     }
 
@@ -107,7 +139,7 @@ public class TextDataSource extends AbstractDataSource {
 
     @Override
     public EventDAO getEventDAO() {
-        return dao;
+        return new BridgeEventDAO(daoProvider.get());
     }
 
     @Override
@@ -117,7 +149,7 @@ public class TextDataSource extends AbstractDataSource {
         } else if (itemNames != null) {
             return itemNames.get();
         } else {
-            return super.getItemDAO();
+            return new BridgeItemDAO(daoProvider.get());
         }
     }
 
@@ -126,8 +158,29 @@ public class TextDataSource extends AbstractDataSource {
         if (itemNames != null) {
             return itemNames.get();
         } else {
-            return super.getItemNameDAO();
+            return new BridgeItemNameDAO(daoProvider.get());
         }
+    }
+
+    @Override
+    public UserEventDAO getUserEventDAO() {
+        return new BridgeUserEventDAO(daoProvider.get());
+    }
+
+    @Override
+    public ItemEventDAO getItemEventDAO() {
+        return new BridgeItemEventDAO(daoProvider.get());
+    }
+
+    @Override
+    public UserDAO getUserDAO() {
+        return new BridgeUserDAO(daoProvider.get());
+    }
+
+    @Override
+    public void configure(LenskitConfiguration config) {
+        // we just use our static file DAO
+        config.bind(DataAccessObject.class).toProvider(daoProvider);
     }
 
     @Override
@@ -144,15 +197,15 @@ public class TextDataSource extends AbstractDataSource {
         TextDataSourceSpec spec = new TextDataSourceSpec();
         spec.setName(getName());
         spec.setFile(getFile().toPath());
-        if (format instanceof DelimitedColumnEventFormat) {
-            DelimitedColumnEventFormat cf = (DelimitedColumnEventFormat) format;
+        if (format instanceof DelimitedColumnEntityFormat) {
+            DelimitedColumnEntityFormat cf = (DelimitedColumnEntityFormat) format;
             spec.setDelimiter(cf.getDelimiter());
             List<String> fieldNames = new ArrayList<>();
-            for (Field f: cf.getFields()) {
-                fieldNames.add(f.getName());
+            for (TypedName<?> name: cf.getColumnList()) {
+                fieldNames.add(name.getName());
             }
             spec.setFields(fieldNames);
-            spec.setBuilderType(cf.getBuilderType().getName());
+            spec.setBuilderType(cf.getEntityBuilder().getName());
             spec.setItemFile(itemFile);
             spec.setItemNameFile(itemNameFile);
             spec.setHeaderLines(cf.getHeaderLines());
@@ -173,14 +226,9 @@ public class TextDataSource extends AbstractDataSource {
         bld.setName(spec.getName())
            .setFile(spec.getFile().toFile())
            .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
-        DelimitedColumnEventFormat fmt = DelimitedColumnEventFormat.create(spec.getBuilderType());
-        fmt.setDelimiter(spec.getDelimiter());
-        List<String> fields = spec.getFields();
-        if (fields != null) {
-            fmt.setFieldsByName(fields);
-        }
-        fmt.setHeaderLines(spec.getHeaderLines());
-        bld.setFormat(fmt);
+        bld.setDelimiter(spec.getDelimiter());
+        // FIXME Support fields
+        bld.setHeaderLines(spec.getHeaderLines());
         bld.setItemFile(spec.getItemFile());
         bld.setItemNameFile(spec.getItemNameFile());
         return bld.build();

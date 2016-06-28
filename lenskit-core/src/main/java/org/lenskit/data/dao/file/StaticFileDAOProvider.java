@@ -67,7 +67,11 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
         sources.add(new CollectionEntitySource(data));
     }
 
-    private void addSource(EntitySource source) {
+    /**
+     * Add an entity source.
+     * @param source The entity source to add.
+     */
+    public void addSource(EntitySource source) {
         sources.add(source);
     }
 

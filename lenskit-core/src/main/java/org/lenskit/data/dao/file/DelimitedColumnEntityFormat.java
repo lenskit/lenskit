@@ -21,6 +21,7 @@
 package org.lenskit.data.dao.file;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.entities.*;
 
@@ -174,6 +175,17 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         for (TypedName<?> col: columns) {
             addColumn(col);
         }
+    }
+
+    /**
+     * Get the list of columns, if {@link #addColumn(TypedName)} has been used.
+     * @return The list of columns.
+     * @throws IllegalStateException if {@link #addColumn(TypedName)} or {@link #addColumns(TypedName[])} have not been
+     * called.
+     */
+    public List<TypedName<?>> getColumnList() {
+        Preconditions.checkState(columns != null);
+        return ImmutableList.copyOf(columns);
     }
 
     /**

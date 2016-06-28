@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
+import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
+import org.lenskit.data.dao.file.Formats;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingBuilder;
 
@@ -40,6 +42,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
     private String name;
     File inputFile;
     PreferenceDomain domain;
+    DelimitedColumnEntityFormat entityFormat = Formats.csvRatings();
     DelimitedColumnEventFormat dceFormat =
             DelimitedColumnEventFormat.create(RatingBuilder.class)
                                       .setDelimiter(",");
@@ -109,6 +112,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * Get the currently-configured event format.
      * @return The configured event format.
      */
+    @Deprecated
     public EventFormat getFormat() {
         return format;
     }
@@ -120,9 +124,11 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * @param fmt The format.
      * @return The builder (for chaining).
      */
+    @Deprecated
     public TextDataSourceBuilder setFormat(EventFormat fmt) {
         format = fmt;
         dceFormat = null;
+        entityFormat = null;
         return this;
     }
 
@@ -130,7 +136,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * Get the input delimiter.
      */
     public String getDelimiter() {
-        return dceFormat != null ? dceFormat.getDelimiter() : null;
+        return entityFormat != null ? entityFormat.getDelimiter() : null;
     }
 
     /**
@@ -142,6 +148,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
     public TextDataSourceBuilder setDelimiter(String delim) {
         if (dceFormat != null) {
             dceFormat.setDelimiter(delim);
+            entityFormat.setDelimiter(delim);
         } else {
             throw new IllegalStateException("event format already specified");
         }
@@ -153,7 +160,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * @return The number of header lines that will be skipped.
      */
     public int getHeaderLines() {
-        return format.getHeaderLines();
+        return entityFormat.getHeaderLines();
     }
 
     /**
@@ -164,6 +171,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
     public TextDataSourceBuilder setHeaderLines(int lines) {
         if (dceFormat != null) {
             dceFormat.setHeaderLines(lines);
+            entityFormat.setHeaderLines(lines);
         } else {
             throw new IllegalStateException("event format already specified");
         }
@@ -259,6 +267,9 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new TextDataSource(getName(), inputFile, format, domain, itemFile, itemNameFile);
+        if (entityFormat == null) {
+            throw new IllegalStateException("other entity formats not supported");
+        }
+        return new TextDataSource(getName(), inputFile, entityFormat, format, domain, itemFile, itemNameFile);
     }
 }
