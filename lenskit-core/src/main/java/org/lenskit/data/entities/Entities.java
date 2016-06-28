@@ -20,10 +20,7 @@
  */
 package org.lenskit.data.entities;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
+import com.google.common.base.*;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
@@ -31,9 +28,14 @@ import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class Entities {
+    private static ConcurrentHashMap<Class<?>, Optional<Constructor<? extends EntityBuilder>>> BUILDER_CTOR_CACHE
+            = new ConcurrentHashMap<>();
+
     private Entities() {}
 
     /**
@@ -150,22 +152,34 @@ public final class Entities {
         if (viewClass.isInstance(e)) {
             return viewClass.cast(e);
         } else {
-            BuiltBy bb = viewClass.getAnnotation(BuiltBy.class);
-            if (bb != null) {
-                // FIXME Cache constructors
-                Class<? extends EntityBuilder> ebClass = bb.value();
-                EntityBuilder builder;
+            Optional<Constructor<? extends EntityBuilder>> ctor = BUILDER_CTOR_CACHE.get(viewClass);
+            if (ctor == null) {
+                BuiltBy bb = viewClass.getAnnotation(BuiltBy.class);
+                if (bb != null) {
+                    Class<? extends EntityBuilder> ebClass = bb.value();
+                    Constructor<? extends EntityBuilder> found =
+                            ConstructorUtils.getAccessibleConstructor(ebClass, EntityType.class);
+                    ctor = Optional.<Constructor<? extends EntityBuilder>>fromNullable(found);
+                } else {
+                    ctor = Optional.absent();
+                }
+                BUILDER_CTOR_CACHE.put(viewClass, ctor);
+            }
+
+            if (ctor.isPresent()) {
+                EntityBuilder builder = null;
                 try {
-                    builder = ConstructorUtils.invokeConstructor(ebClass, e.getType());
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException ex) {
-                    throw new RuntimeException("Cannot instantiate builder", ex);
+                    builder = ctor.get().newInstance(e.getType());
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
+                    throw new RuntimeException("cannot invoke " + ctor.get(), ex);
                 }
                 for (Attribute<?> attr: e.getAttributes()) {
                     builder.setAttribute(attr);
                 }
                 return viewClass.cast(builder.build());
+            } else {
+                throw new IllegalArgumentException("entity type " + e.getClass() + " cannot be projected to " + viewClass);
             }
-            throw new IllegalArgumentException("entity type " + e.getClass() + " cannot be projected to " + viewClass);
         }
     }
 
