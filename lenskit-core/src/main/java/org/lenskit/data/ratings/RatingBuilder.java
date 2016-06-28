@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
     private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
     private static final AtomicLong idGenerator = new AtomicLong();
+    private static volatile boolean hasWarned;
 
     private boolean hasId;
     private long id;
@@ -258,7 +259,10 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
         Preconditions.checkState(hasItemId, "no item ID set");
         Preconditions.checkState(hasRating, "no rating set");
         if (!hasId) {
-            logger.warn("creating rating without ID");
+            if (!hasWarned) {
+                logger.warn("creating rating without ID");
+                hasWarned = true;
+            }
             id = idGenerator.incrementAndGet();
         }
         return new Rating(id, userId, itemId, rating, timestamp);
