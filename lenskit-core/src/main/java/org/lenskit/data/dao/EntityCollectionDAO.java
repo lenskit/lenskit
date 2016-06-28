@@ -121,20 +121,21 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
             return ObjectStreams.empty();
         }
 
-        Collection<Entity> candidates;
+        ObjectStream<Entity> baseStream;
         List<Attribute<?>> filters = query.getFilterFields();
         if (filters.isEmpty()) {
-            candidates = data;
+            baseStream = ObjectStreams.wrap(data);
         } else {
             // optimize by trying to look up the first condition
             Attribute<?> f1 = filters.get(0);
-            candidates = data.find(f1);
+            baseStream = ObjectStreams.wrap(data.find(f1));
+            if (filters.size() > 1) {
+                baseStream = ObjectStreams.filter(baseStream, query);
+            }
         }
 
-        // FIXME don't filter if we don't need to
         ObjectStream<E> stream =
-                ObjectStreams.transform(ObjectStreams.filter(ObjectStreams.wrap(candidates), query),
-                                        Entities.projection(query.getViewType()));
+                ObjectStreams.transform(baseStream, Entities.projection(query.getViewType()));
         List<SortKey> sort = query.getSortKeys();
         if (sort.isEmpty()) {
             return stream;
