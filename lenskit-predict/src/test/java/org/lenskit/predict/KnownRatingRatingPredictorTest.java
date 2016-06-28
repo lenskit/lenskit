@@ -20,6 +20,7 @@
  */
 package org.lenskit.predict;
 
+import org.junit.Ignore;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.data.dao.EventCollectionDAO;
 import org.lenskit.data.dao.EventDAO;
@@ -109,6 +110,7 @@ public class KnownRatingRatingPredictorTest {
     * Test method that tests unrated items for a user in the data set,
     * it shouldn't return any value.
     * */
+    @Ignore("unrates are going away")
     public void  testPredictForUnratedItems() {
         RatingBuilder rb = new RatingBuilder().setUserId(420);
         rs.add(rb.setItemId(840).setRating(3.5).setTimestamp(10).build());
