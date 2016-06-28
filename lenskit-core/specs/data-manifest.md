@@ -2,7 +2,8 @@
 
 This document describes the format of data manifests.
 
-Data manifests are JSON-style data.  Currently they are generally described in YAML files, but they may be described in other formats such as JSON.
+Data manifests are written as YAML files.  Only the JSON-compatible semantics of YAML are used, so in the future they
+may be representable in formats such as JSON or TOML.
 
 ## Overall Layout
 
@@ -51,11 +52,13 @@ Individual data sources are described with the following schema.
 `type`
 :   The data source type.  Currently only `textfile` is supported.
 
+    The default source type is `textfile`.
+
 The remainder of the keys are defined by the particular data source.
 
 ### `textfile` data sources
 
-`textfile` sources read data from text files, usually line-delimited.
+`textfile` sources read data from text files, with one entity per line.  A text file may have one or more lines of header data.
 
 `file`
 :   the file to read.
@@ -66,30 +69,43 @@ The remainder of the keys are defined by the particular data source.
 	 - `csv` — `delimited` with a delimiter of `,`
 	 - `tsv` — tab-separated (`delimited` with delimiter of `\t`)
 
+`delimiter`
+:   The delimiter string for files with the `delimited` format.
+
 `entity_type`
 :   The name of the entity type contained in this file.  The entity type is also used to provide defaults for the columns.  The default is `rating`.
 
 `builder`
 :   The entity builder to be used for these entities.  The entity type may provide a default; otherwise, `org.lenskit.data.entities.BasicEntityBuilder` is used.  The keyword `basic` can be used to refer to the basic entity builder, to override a default entity builder if desired.
 
-`delimiter`
-:   The delimiter string for `delimited` files.
-
 `header`
-:   Whether the file has a header.  If `true`, the file has a single-line header; if `false`, no header is assumed.  If an integer, it is the number of lines to skip (the lines are *not* interpreted as containing field names).  The default is `false`.
+:   Whether the file has a header.  If `true`, the file has a single-line header; if `false`, no header is assumed.  If an integer, it is the number of header lines.  The default is `false`.
 
 `columns`
-:   A map or list describing the columns in the file (for columnar formats).  If `header` is `true`, then this can be a map whose keys are column header labels and whose values are column descriptors; otherwise, it is a list of column descriptors.  If any column is missing or has a `null` descriptor, then that column is ignored.
-
-	A column descriptor can be either a string, giving a column name, or a map with keys `name` (the column name) and `type` (the column type).
+:   A list describing the columns in the file (for columnar formats). A column descriptor can be either a string, giving a column name, or a map with keys `name` (the column name) and `type` (the column type, see [attribute data types](#data-types)).
+ 
+    If `header` is `true`, then this can be a map whose keys are column header labels and whose values are column descriptors.
+    
+    If the `id` column is *not* specified, then entity IDs are synthesized from the line numbers in the file.
 	
 `indexes`
-:   A list of attribute names to be indexed for fast lookup.  If no indexes are specified, item and user IDs are indexed by default if present.
+:   A list of attribute names to be indexed for fast lookup.  If no indexes are specified, `item` and `user` if they are present on the entities.
 	
 `meta`
-:   Metadata about the data, such as the `domain` for rating values.`
+:   Metadata about the data, such as the `domain` for rating values.`  Some of the common metadata:
+
+    `domain`
+    :   The valid range of rating values.  A map with the keys `minimum`, `maximum`, and `precision`; for example, 0.5-5 star data with 1/2 star precision would be described as follows:
+    
+        ```yaml
+        meta:
+          domain:
+            minimum: 0.5
+            maximum: 5
+            precision: 0.5
+        ```
 	
-## Attribute Data Types
+## Attribute Data Types {#data-types}
 
 The following types are supported for attributes:
 
@@ -106,6 +122,8 @@ The following types are supported for attributes:
 :   Java `String`.
 
 Java class name
-:   The corresponding class.  Must be convertible with Joda-Convert.
+:   The corresponding class.  Must be convertible with [Joda-Convert][].
+
+[Joda-Convert]: http://www.joda.org/joda-convert/
 
 The entity type may provide default types for various attribute names, in addition to providing a default set of columns if `columns` is missing entirely.  If no default is available and the type is not specified, attributes are assumed to be strings.
