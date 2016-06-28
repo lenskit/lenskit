@@ -191,8 +191,7 @@ public class StaticFileDAOProviderTest {
                    contains(Entities.create(CommonTypes.ITEM, 20)));
 
         // check a view query
-        List<Rating> rlist = dao.query(CommonTypes.RATING)
-                                .asType(Rating.class)
+        List<Rating> rlist = dao.query(Rating.class)
                                 .get();
         assertThat(rlist, hasSize(2));
         assertThat(rlist, (Matcher) equalTo(ratings));

@@ -42,6 +42,7 @@ import java.util.Set;
  */
 @org.lenskit.data.events.BuiltBy(RatingBuilder.class)
 @BuiltBy(RatingBuilder.class)
+@DefaultEntityType("rating")
 public final class Rating extends AbstractEntity implements Event, Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();

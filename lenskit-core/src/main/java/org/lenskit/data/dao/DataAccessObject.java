@@ -105,4 +105,15 @@ public interface DataAccessObject {
      * @return The query.
      */
     Query<Entity> query(EntityType type);
+
+    /**
+     * Start a query for a particular type using the fluent query interface.  This method looks up the entity type
+     * using the {@link org.lenskit.data.entities.DefaultEntityType} annotation on the view class.
+     *
+     * @param type The view class type.
+     * @return The query.
+     * @throws IllegalArgumentException if the type has no {@link org.lenskit.data.entities.DefaultEntityType}
+     * annotation.
+     */
+    <V extends Entity> Query<V> query(Class<V> type);
 }

@@ -21,6 +21,7 @@
 package org.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableList;
+import org.lenskit.data.entities.DefaultEntityType;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
@@ -42,6 +43,15 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
     @Override
     public Query<Entity> query(EntityType type) {
         return new Query<>(this, type, Entity.class);
+    }
+
+    @Override
+    public <V extends Entity> Query<V> query(Class<V> type) {
+        DefaultEntityType det = type.getAnnotation(DefaultEntityType.class);
+        if (det == null) {
+            throw new IllegalArgumentException(type + " has no default entity type annotation");
+        }
+        return new Query<>(this, EntityType.forName(det.value()), type);
     }
 
     /**
