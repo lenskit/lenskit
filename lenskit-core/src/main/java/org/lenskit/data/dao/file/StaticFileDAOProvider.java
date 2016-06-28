@@ -178,13 +178,15 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
             name = object.path("name").asText("<unnamed>");
         }
 
+        EntitySource source;
         String type = object.path("type").asText("textfile").toLowerCase();
-        if (!type.equals("textfile")) {
-            // FIXME Delegate file formats
-            throw new IllegalArgumentException("unsupported data type " + type);
+        switch (type) {
+        case "textfile":
+            source = TextEntitySource.fromJSON(name, object, base);
+            break;
+        default:
+            throw new IllegalArgumentException("invalid data source type: " + type);
         }
-
-        TextEntitySource source = TextEntitySource.fromJSON(name, object, base);
 
         layout.addSource(source);
     }
