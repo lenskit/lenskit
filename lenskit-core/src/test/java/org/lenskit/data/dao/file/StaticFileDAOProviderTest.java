@@ -25,9 +25,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.JsonNodeCreator;
 import com.google.common.collect.Lists;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.ratings.Rating;
 
 import java.io.IOException;
 import java.net.URI;
@@ -157,6 +159,7 @@ public class StaticFileDAOProviderTest {
 
         List<Entity> ratings = dao.query(CommonTypes.RATING).get();
         assertThat(ratings, hasSize(2));
+        assertThat(ratings, (Matcher) everyItem(instanceOf(Rating.class)));
 
         Entity first = ratings.get(0);
         assertThat(first.getType(), equalTo(EntityType.forName("rating")));
@@ -186,5 +189,12 @@ public class StaticFileDAOProviderTest {
         // and one item
         assertThat(dao.query(CommonTypes.ITEM).get(),
                    contains(Entities.create(CommonTypes.ITEM, 20)));
+
+        // check a view query
+        List<Rating> rlist = dao.query(CommonTypes.RATING)
+                                .asType(Rating.class)
+                                .get();
+        assertThat(rlist, hasSize(2));
+        assertThat(rlist, (Matcher) equalTo(ratings));
     }
 }
