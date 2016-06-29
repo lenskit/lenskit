@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
 import java.nio.charset.Charset;
@@ -227,5 +228,19 @@ public final class LKFileUtils {
             }
         }
         return items;
+    }
+
+    /**
+     * Convert a URL to a file, if possible.
+     * @param url The URL.
+     * @return The file, or `null` if `url` is not a file URL.
+     */
+    @Nullable
+    public static File fileFromURL(URL url) {
+        if (url == null || !url.getProtocol().equals("file")) {
+            return null;
+        } else {
+            return new File(url.getPath());
+        }
     }
 }
