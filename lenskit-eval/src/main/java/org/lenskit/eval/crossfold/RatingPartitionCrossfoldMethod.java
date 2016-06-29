@@ -20,17 +20,18 @@
  */
 package org.lenskit.eval.crossfold;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.lenskit.util.io.ObjectStreams;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Partition ratings into outputs.
@@ -43,7 +44,10 @@ class RatingPartitionCrossfoldMethod implements CrossfoldMethod {
         final int count = output.getCount();
         logger.info("splitting data source {} to {} partitions by ratings",
                     input.getName(), count);
-        ArrayList<Rating> ratings = ObjectStreams.makeList(input.getEventDAO().streamEvents(Rating.class));
+        List<Rating> ratings;
+        try (ObjectStream<Rating> stream = input.getEventDAO().streamEvents(Rating.class)) {
+            ratings = Lists.newArrayList(stream);
+        }
         Collections.shuffle(ratings);
 
         final int n = ratings.size();

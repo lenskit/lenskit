@@ -21,10 +21,13 @@
 package org.lenskit.util.io;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Implementation of {@link ObjectStream} that simply wraps an iterator.
@@ -32,21 +35,39 @@ import java.util.Iterator;
  * @param <T> The stream's element type.
  */
 class IteratorObjectStream<T> extends AbstractObjectStream<T> {
+    private final Collection<? extends T> collection;
     private Iterator<? extends T> iterator;
+    private int ndone = 0;
+
+    IteratorObjectStream(@Nonnull Collection<? extends T> col) {
+        collection = col;
+        iterator = col.iterator();
+    }
 
     /**
      * Construct a new iterator stream.
      * @param iter The iterator.
      */
-    public IteratorObjectStream(@Nonnull Iterator<? extends T> iter) {
+    IteratorObjectStream(@Nonnull Iterator<? extends T> iter) {
         Preconditions.checkNotNull(iter, "stream iterator");
         iterator = iter;
+        collection = null;
+    }
+
+    List<T> getList() {
+        if (collection != null && ndone == 0) {
+            return ImmutableList.copyOf(collection);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public T readObject() {
+        Preconditions.checkState(iterator != null, "stream has been closed");
         if (iterator.hasNext()) {
             T obj = iterator.next();
+            ndone += 1;
             if (obj == null) {
                 throw new NullPointerException("object stream iterator cannot contain null");
             }

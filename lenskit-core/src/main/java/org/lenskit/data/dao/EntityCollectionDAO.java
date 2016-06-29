@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.dao;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -142,7 +143,12 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
         }
 
         // we must sort
-        List<E> list = ObjectStreams.makeList(stream);
+        ArrayList<E> list;
+        try {
+            list = Lists.newArrayList(stream);
+        } finally {
+            stream.close();
+        }
         Ordering<Entity> ord = null;
         for (SortKey k: sort) {
             if (ord == null) {

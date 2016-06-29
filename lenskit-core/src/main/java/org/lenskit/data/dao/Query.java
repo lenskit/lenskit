@@ -26,6 +26,7 @@ import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 
 import java.util.List;
 
@@ -126,10 +127,6 @@ public class Query<E extends Entity> {
      * @return A list of the results of this query.
      */
     public List<E> get() {
-        ImmutableList.Builder<E> builder = ImmutableList.builder();
-        try (ObjectStream<E> stream = stream()) {
-            builder.addAll(stream);
-        }
-        return builder.build();
+        return ObjectStreams.makeList(stream());
     }
 }

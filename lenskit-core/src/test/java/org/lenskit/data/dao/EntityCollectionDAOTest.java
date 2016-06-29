@@ -108,7 +108,7 @@ public class EntityCollectionDAOTest {
         EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .addFilterField(CommonAttributes.USER_ID, 39L)
                                                .build();
-        ArrayList<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
+        List<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
 
 
         assertThat(results, hasSize(0));
@@ -184,7 +184,7 @@ public class EntityCollectionDAOTest {
 
         EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .build();
-        ArrayList<IdBox<List<Entity>>> results =
+        List<IdBox<List<Entity>>> results =
                 ObjectStreams.makeList(dao.streamEntityGroups(query, CommonAttributes.USER_ID));
         assertThat(results, hasSize(1));
         IdBox<List<Entity>> box = results.get(0);
@@ -212,7 +212,7 @@ public class EntityCollectionDAOTest {
         EntityQuery<Entity> query = EntityQuery.newBuilder(LIKE)
                                                .addSortKey(CommonAttributes.ITEM_ID)
                                                .build();
-        ArrayList<IdBox<List<Entity>>> results =
+        List<IdBox<List<Entity>>> results =
                 ObjectStreams.makeList(dao.streamEntityGroups(query, CommonAttributes.USER_ID));
         assertThat(results, hasSize(2));
         assertThat(results,
