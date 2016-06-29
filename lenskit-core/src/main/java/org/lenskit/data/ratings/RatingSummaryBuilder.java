@@ -27,6 +27,8 @@ import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.math.Vectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -45,6 +47,7 @@ import java.util.List;
  * @since 3.0
  */
 public class RatingSummaryBuilder implements Provider<RatingSummary> {
+    private static final Logger logger = LoggerFactory.getLogger(RatingSummaryBuilder.class);
     private final ItemEventDAO itemEventDAO;
 
     @Inject
@@ -58,7 +61,9 @@ public class RatingSummaryBuilder implements Provider<RatingSummary> {
         int totalCount = 0;
         List<RatingSummary.ItemSummary> summaries = new ArrayList<>();
 
+        int nitems = 0;
         try (ObjectStream<ItemEventCollection<Rating>> ratings = itemEventDAO.streamEventsByItem(Rating.class)) {
+            nitems += 1;
             for (ItemEventCollection<Rating> item: ratings) {
                 Long2DoubleMap vec = Ratings.itemRatingVector(item);
                 int n = vec.size();
@@ -69,6 +74,8 @@ public class RatingSummaryBuilder implements Provider<RatingSummary> {
                 summaries.add(new RatingSummary.ItemSummary(item.getItemId(), mean, n));
             }
         }
+
+        logger.info("summarized {} items with {} total ratings", nitems, totalCount);
 
         return new RatingSummary(totalSum / totalCount, KeyedObjectMap.create(summaries));
     }
