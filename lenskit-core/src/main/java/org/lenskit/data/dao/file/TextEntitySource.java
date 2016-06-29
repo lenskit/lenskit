@@ -22,6 +22,7 @@ package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -180,7 +181,9 @@ public class TextEntitySource implements EntitySource {
      */
     static TextEntitySource fromJSON(String name, JsonNode object, URI base, ClassLoader loader) {
         TextEntitySource source = new TextEntitySource(name);
-        URI uri = base.resolve(object.get("file").asText());
+        String filePath = object.path("file").asText(null);
+        Preconditions.checkArgument(filePath != null, "no file path specified");
+        URI uri = base.resolve(filePath);
         try {
             source.setURI(uri.toURL());
         } catch (MalformedURLException e) {
@@ -279,8 +282,10 @@ public class TextEntitySource implements EntitySource {
         if (col.isNull() || col.isMissingNode()) {
             return null;
         } else if (col.isObject()) {
-            String name = col.get("name").asText();
-            String type = col.get("type").asText();
+            String name = col.path("name").asText(null);
+            String type = col.path("type").asText(null);
+            Preconditions.checkArgument(name != null, "no attribute name specified");
+            Preconditions.checkArgument(type != null, "no attribute type specified");
             return TypedName.create(name, type);
         } else if (col.isTextual()) {
             TypedName<?> attr = entityDefaults.getAttributeDefaults(col.asText());
