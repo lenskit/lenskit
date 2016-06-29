@@ -26,12 +26,14 @@ import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
  * Entity source backed by a collection.
  */
-class CollectionEntitySource implements EntitySource {
+class CollectionEntitySource implements EntitySource, Serializable {
+    private static final long serialVersionUID = 1L;
     private final ImmutableList<Entity> entities;
 
     public CollectionEntitySource(Collection<? extends Entity> es) {

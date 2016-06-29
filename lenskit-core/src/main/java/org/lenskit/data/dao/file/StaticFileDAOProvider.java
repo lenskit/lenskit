@@ -23,6 +23,8 @@ package org.lenskit.data.dao.file;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
@@ -43,7 +45,7 @@ import java.util.*;
  * memory, and can compute some derived entities from others (e.g. extracting items
  * from the item IDs in a rating data set).
  */
-public class StaticFileDAOProvider implements Provider<DataAccessObject> {
+public class StaticFileDAOProvider implements Provider<DataAccessObject>, Describable {
     private static final Logger logger = LoggerFactory.getLogger(StaticFileDAOProvider.class);
     private List<EntitySource> sources;
     private ListMultimap<EntityType, TypedName<?>> indexedAttributes;
@@ -139,6 +141,11 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject> {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putList("sources", sources);
     }
 
     /**

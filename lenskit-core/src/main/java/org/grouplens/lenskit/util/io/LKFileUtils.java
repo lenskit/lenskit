@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 

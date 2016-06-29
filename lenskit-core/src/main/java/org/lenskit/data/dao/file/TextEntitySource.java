@@ -28,6 +28,9 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import org.apache.commons.lang3.ClassUtils;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.LineStream;
 import org.lenskit.util.io.ObjectStream;
@@ -36,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -50,7 +54,7 @@ import java.util.Map;
 /**
  * Entity reader that loads entities from text data, often stored in a file.
  */
-public class TextEntitySource implements EntitySource {
+public class TextEntitySource implements EntitySource, Describable {
     private static final Logger logger = LoggerFactory.getLogger(TextEntitySource.class);
     private final String name;
     private CharSource source;
@@ -159,6 +163,16 @@ public class TextEntitySource implements EntitySource {
         }
         LineEntityParser parser = format.makeParser(header);
         return ObjectStreams.transform(lines, parser);
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("url", sourceURL);
+        File file = LKFileUtils.fileFromURL(sourceURL);
+        if (file != null) {
+            writer.putField("size", file.length())
+                  .putField("mtime", file.lastModified());
+        }
     }
 
     /**
