@@ -24,6 +24,9 @@ import org.lenskit.LenskitConfiguration
 import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 
+/**
+ * Test for item-item accuracy with a subset of the items.
+ */
 class ItemItemSubsetAccuracyTest extends ItemItemAccuracyTest {
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
