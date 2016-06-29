@@ -20,36 +20,39 @@
  */
 package org.lenskit.data.dao.file;
 
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.util.io.ObjectStream;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.util.Set;
+import java.net.URI;
 
 /**
- * Interface for entity providers.
+ * Utility classes for loading and working with entity sources.
  */
-public interface EntitySource {
+public class EntitySources {
     /**
-     * Get the name of this entity source.
-     * @return The entity source name.
+     * Configure an entity source from JSON data.
+     * @param object The JSON data.
+     * @param base The base URI.
+     * @return The newly-configured entity source.
      */
-    @Nonnull
-    String getName();
+    public static EntitySource fromJSON(JsonNode object, URI base) {
+        return fromJSON(null, object, base);
+    }
 
-    /**
-     * Get the entity types produced by this source.
-     * @return The set of entity types produced by this source.
-     */
-    @Nonnull
-    Set<EntityType> getTypes();
+    static EntitySource fromJSON(String name, JsonNode object, URI base) {
+        if (name == null) {
+            name = object.path("name").asText("<unnamed>");
+        }
 
-    /**
-     * Get the data from this entity source.
-     * @return The data from the entity source.
-     */
-    @Nonnull
-    ObjectStream<Entity> openStream() throws IOException;
+        EntitySource source;
+        String type = object.path("type").asText("textfile").toLowerCase();
+        switch (type) {
+        case "textfile":
+            source = TextEntitySource.fromJSON(name, object, base);
+            break;
+        default:
+            throw new IllegalArgumentException("invalid data source type: " + type);
+        }
+
+        return source;
+    }
 }

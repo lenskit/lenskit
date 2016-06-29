@@ -33,6 +33,7 @@ import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -64,7 +65,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @param data The entities to add.
      */
     public void addSource(Collection<? extends Entity> data) {
-        sources.add(new CollectionEntitySource(data));
+        sources.add(new CollectionEntitySource("<unnamed " + data.size() + ">", data));
     }
 
     /**
@@ -82,6 +83,22 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      */
     public void addIndex(EntityType type, TypedName<?> attr) {
         indexedAttributes.put(type, attr);
+    }
+
+    /**
+     * Get the entity sources producing a particular type.
+     * @param type The entity type to look for.
+     * @return A list of sources producing entities of type {@code type}.
+     */
+    @Nonnull
+    public List<EntitySource> getSourcesForType(EntityType type) {
+        List<EntitySource> result = new ArrayList<>();
+        for (EntitySource source: sources) {
+            if (source.getTypes().contains(type)) {
+                result.add(source);
+            }
+        }
+        return result;
     }
 
     /**
@@ -150,6 +167,11 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
     }
 
     @Override
+    public String toString() {
+        return String.format("static file DAO with " + sources.size() + " sources");
+    }
+
+    @Override
     public void describeTo(DescriptionWriter writer) {
         writer.putList("sources", sources);
     }
@@ -165,18 +187,18 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
 
         if (object.isArray()) {
             for (JsonNode source: object) {
-                configureDataSource(layout, null, source, base);
+                layout.addSource(EntitySources.fromJSON(null, source, base));
             }
         } else if (object.isObject()) {
             if (object.has("file") || object.has("type")) {
                 // the whole object describes one data source
-                configureDataSource(layout, null, object, base);
+                layout.addSource(EntitySources.fromJSON(null, object, base));
             } else {
                 // the object describes multiple data sources
                 Iterator<Map.Entry<String, JsonNode>> iter = object.fields();
                 while (iter.hasNext()) {
                     Map.Entry<String, JsonNode> entry = iter.next();
-                    configureDataSource(layout, entry.getKey(), entry.getValue(), base);
+                    layout.addSource(EntitySources.fromJSON(entry.getKey(), entry.getValue(), base));
                 }
             }
         } else {
@@ -186,21 +208,4 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
         return layout;
     }
 
-    private static void configureDataSource(StaticFileDAOProvider layout, String name, JsonNode object, URI base) {
-        if (name == null) {
-            name = object.path("name").asText("<unnamed>");
-        }
-
-        EntitySource source;
-        String type = object.path("type").asText("textfile").toLowerCase();
-        switch (type) {
-        case "textfile":
-            source = TextEntitySource.fromJSON(name, object, base);
-            break;
-        default:
-            throw new IllegalArgumentException("invalid data source type: " + type);
-        }
-
-        layout.addSource(source);
-    }
 }

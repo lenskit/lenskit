@@ -21,23 +21,52 @@
 package org.lenskit.data.dao.file;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Entity source backed by a collection.
  */
 class CollectionEntitySource implements EntitySource, Serializable {
     private static final long serialVersionUID = 1L;
+    private final String name;
     private final ImmutableList<Entity> entities;
+    private final ImmutableSet<EntityType> types;
 
-    public CollectionEntitySource(Collection<? extends Entity> es) {
+    /**
+     * Construct a new collection entity source.
+     * @param n The source name.
+     * @param es The entities.
+     */
+    public CollectionEntitySource(String n, Collection<? extends Entity> es) {
+        name = n;
         entities = ImmutableList.copyOf(es);
+        ImmutableSet.Builder<EntityType> tb = ImmutableSet.builder();
+        for (Entity e: entities) {
+            tb.add(e.getType());
+        }
+        types = tb.build();
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Nonnull
+    @Override
+    public Set<EntityType> getTypes() {
+        return types;
     }
 
     @Override

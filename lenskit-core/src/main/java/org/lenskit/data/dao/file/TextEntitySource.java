@@ -23,6 +23,7 @@ package org.lenskit.data.dao.file;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharSource;
 import org.apache.commons.lang3.ClassUtils;
 import org.grouplens.grapht.util.ClassLoaders;
@@ -37,6 +38,7 @@ import org.lenskit.util.io.ObjectStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -45,10 +47,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Entity reader that loads entities from text data, often stored in a file.
@@ -79,8 +78,15 @@ public class TextEntitySource implements EntitySource, Describable {
      * Get the name of this data source.
      * @return The data source name.
      */
+    @Override
     public String getName() {
         return name;
+    }
+
+    @Nonnull
+    @Override
+    public Set<EntityType> getTypes() {
+        return ImmutableSet.of(format.getEntityType());
     }
 
     /**

@@ -23,7 +23,6 @@ package org.lenskit.data.dao.file;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.node.JsonNodeCreator;
 import com.google.common.collect.Lists;
 import org.hamcrest.Matcher;
 import org.junit.Test;
@@ -49,6 +48,11 @@ public class StaticFileDAOProviderTest {
         List<Entity> ratings = Lists.<Entity>newArrayList(factory.rating(1L, 20L, 3.5),
                                                           factory.rating(1L, 21L, 4.5));
         layout.addSource(ratings);
+
+        // we should have one collection source for entities
+        assertThat(layout.getSourcesForType(CommonTypes.RATING),
+                   contains(instanceOf(CollectionEntitySource.class)));
+
         DataAccessObject dao = layout.get();
         assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,
                                                             CommonTypes.USER,
@@ -115,6 +119,10 @@ public class StaticFileDAOProviderTest {
         URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
         JsonNode node = reader.readTree("{\"file\": \"ratings.csv\", \"format\": \"csv\"}");
         StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+
+        // we should have one text source for ratings
+        assertThat(daoProvider.getSourcesForType(CommonTypes.RATING),
+                   contains(instanceOf(TextEntitySource.class)));
 
         DataAccessObject dao = daoProvider.get();
         verifyRatingsCsvData(dao);
