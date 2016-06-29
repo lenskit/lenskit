@@ -20,19 +20,18 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.PrefetchingItemDAO;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
-import org.lenskit.LenskitRecommenderEngineBuilder;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.PrefetchingItemDAO;
 
 import javax.inject.Inject;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Test the ML-100K test suite setup.
@@ -42,34 +41,36 @@ public class ML100KTestSuiteTest extends ML100KTestSuite {
     public void testFullItemDAO() throws RecommenderBuildException {
         LenskitConfiguration cfg = new LenskitConfiguration();
         cfg.addRoot(DAOFetcher.class);
-        LenskitRecommenderEngineBuilder bld = LenskitRecommenderEngine.newBuilder();
-        LenskitRecommender rec = bld.addConfiguration(getDaoConfig())
-                                    .addConfiguration(cfg)
-                                    .build()
-                                    .createRecommender();
-        DAOFetcher df = rec.get(DAOFetcher.class);
-        assertThat(df.activeItemDAO, notNullValue());
-        assertThat(df.fullItemDAO, notNullValue());
-        assertThat(df.activeItemDAO, sameInstance(df.fullItemDAO));
-        assertThat(df.activeItemDAO.getItemIds(),
-                   hasSize(df.fullItemDAO.getItemIds().size()));
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.newBuilder()
+                                                                  .addConfiguration(getDaoConfig())
+                                                                  .addConfiguration(cfg)
+                                                                  .build();
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            DAOFetcher df = rec.get(DAOFetcher.class);
+            assertThat(df.activeItemDAO, notNullValue());
+            assertThat(df.fullItemDAO, notNullValue());
+            assertThat(df.activeItemDAO, sameInstance(df.fullItemDAO));
+            assertThat(df.activeItemDAO.getItemIds(),
+                       hasSize(df.fullItemDAO.getItemIds().size()));
+        }
     }
 
     @Test
     public void testSubsetItemDAO() throws RecommenderBuildException {
         LenskitConfiguration cfg = new LenskitConfiguration();
         cfg.addRoot(DAOFetcher.class);
-        LenskitRecommenderEngineBuilder bld = LenskitRecommenderEngine.newBuilder();
-        LenskitRecommender rec = bld.addConfiguration(getItemSubsetConfig())
-                                    .addConfiguration(cfg)
-                                    .build()
-                                    .createRecommender();
-        DAOFetcher df = rec.get(DAOFetcher.class);
-        assertThat(df.activeItemDAO, notNullValue());
-        assertThat(df.fullItemDAO, notNullValue());
-        assertThat(df.activeItemDAO, not(sameInstance(df.fullItemDAO)));
-        assertThat(df.activeItemDAO.getItemIds(),
-                   hasSize(df.fullItemDAO.getItemIds().size() - SUBSET_DROP_SIZE));
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.newBuilder()
+                                                                  .addConfiguration(getItemSubsetConfig())
+                                                                  .addConfiguration(cfg)
+                                                                  .build();
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            DAOFetcher df = rec.get(DAOFetcher.class);
+            assertThat(df.activeItemDAO, notNullValue());
+            assertThat(df.fullItemDAO, notNullValue());
+            assertThat(df.activeItemDAO, not(sameInstance(df.fullItemDAO)));
+            assertThat(df.activeItemDAO.getItemIds(),
+                       hasSize(df.fullItemDAO.getItemIds().size() - SUBSET_DROP_SIZE));
+        }
     }
 
     private static class DAOFetcher {
