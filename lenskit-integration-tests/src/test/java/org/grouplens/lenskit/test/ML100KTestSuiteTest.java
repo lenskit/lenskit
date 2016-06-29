@@ -49,7 +49,9 @@ public class ML100KTestSuiteTest extends ML100KTestSuite {
             DAOFetcher df = rec.get(DAOFetcher.class);
             assertThat(df.activeItemDAO, notNullValue());
             assertThat(df.fullItemDAO, notNullValue());
-            assertThat(df.activeItemDAO, sameInstance(df.fullItemDAO));
+            // assertThat(df.activeItemDAO, sameInstance(df.fullItemDAO));
+            assertThat(df.activeItemDAO.getItemIds(),
+                       equalTo(df.fullItemDAO.getItemIds()));
             assertThat(df.activeItemDAO.getItemIds(),
                        hasSize(df.fullItemDAO.getItemIds().size()));
         }
