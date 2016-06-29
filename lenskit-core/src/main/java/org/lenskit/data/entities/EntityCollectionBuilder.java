@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import java.util.Map;
  * internal storage, so the builder is single-use.
  */
 public class EntityCollectionBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(EntityCollectionBuilder.class);
     private final EntityType type;
     private KeyedObjectMapBuilder<Entity> store;
     private Map<String,EntityIndexBuilder> indexBuilders;
@@ -146,6 +149,8 @@ public class EntityCollectionBuilder {
         }
         KeyedObjectMap<Entity> map = store.build();
         ImmutableMap<String, EntityIndex> idxMap = indexes.build();
+        logger.debug("built collection of {} entities with type {} and {} indexes",
+                     map.size(), type, idxMap.size());
         store = null;
         indexBuilders = null;
         return new EntityCollection(type, map, idxMap);

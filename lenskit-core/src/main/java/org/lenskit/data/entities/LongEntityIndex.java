@@ -23,7 +23,6 @@ package org.lenskit.data.entities;
 import com.google.common.collect.ImmutableList;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.keys.KeyedObjectMap;
-import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
