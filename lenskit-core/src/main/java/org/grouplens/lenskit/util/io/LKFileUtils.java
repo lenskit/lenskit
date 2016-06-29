@@ -21,9 +21,13 @@
 package org.grouplens.lenskit.util.io;
 
 import com.google.common.base.Throwables;
+import com.google.common.io.ByteSource;
 import com.google.common.io.Closeables;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.lenskit.util.io.CompressedByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,6 +160,45 @@ public final class LKFileUtils {
     @SuppressWarnings("unused")
     public static Writer openOutput(File file) throws IOException {
         return openOutput(file, Charset.defaultCharset(), CompressionMode.AUTO);
+    }
+
+    /**
+     * Create a file byte source, automatically decompressing based on file name.
+     * @param file The file byte source.
+     * @return The byte source, possibly decompressing.
+     */
+    public static ByteSource byteSource(File file) {
+        return byteSource(file, CompressionMode.AUTO);
+    }
+
+    /**
+     * Create a file byte source.
+     * @param file The file containing data.
+     * @param compression The compression mode.
+     * @return The byte source, possibly decompressing.
+     */
+    public static ByteSource byteSource(File file, CompressionMode compression) {
+        CompressionMode effectiveMode = compression.getEffectiveCompressionMode(file.getName());
+        ByteSource source = Files.asByteSource(file);
+        if (!effectiveMode.equals(CompressionMode.NONE)) {
+            source = new CompressedByteSource(source, effectiveMode.getCompressorName());
+        }
+        return source;
+    }
+
+    /**
+     * Create a URL-backed byte source.
+     * @param url The URL of the byte source.
+     * @param compression The compression mode.
+     * @return The byte source, possibly decompressing.
+     */
+    public static ByteSource byteSource(URL url, CompressionMode compression) {
+        CompressionMode effectiveMode = compression.getEffectiveCompressionMode(url.getPath());
+        ByteSource source = Resources.asByteSource(url);
+        if (!effectiveMode.equals(CompressionMode.NONE)) {
+            source = new CompressedByteSource(source, effectiveMode.getCompressorName());
+        }
+        return source;
     }
 
     /**
