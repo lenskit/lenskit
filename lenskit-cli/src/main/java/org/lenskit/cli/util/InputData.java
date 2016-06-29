@@ -24,15 +24,12 @@ import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.DataAccessException;
-import org.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
-import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
-import org.grouplens.lenskit.data.text.EventFormat;
-import org.grouplens.lenskit.data.text.Formats;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.ItemNameDAO;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.data.DataSourceSpec;
@@ -89,14 +86,16 @@ public class InputData {
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
             return dsb.setFile(ratingFile)
-                      .setFormat(Formats.csvRatings().setHeaderLines(header))
+                      .setDelimiter(",")
+                      .setHeaderLines(header)
                       .build();
         }
 
         ratingFile = options.get("tsv_file");
         if (ratingFile != null) {
             return dsb.setFile(ratingFile)
-                      .setFormat(Formats.delimitedRatings("\t").setHeaderLines(header))
+                      .setDelimiter("\t")
+                      .setHeaderLines(header)
                       .build();
         }
 
@@ -106,10 +105,8 @@ public class InputData {
         }
         if (ratingFile != null) {
             String delim = options.getString("delimiter");
-            EventFormat fmt = DelimitedColumnEventFormat.create(type)
-                                                        .setDelimiter(delim)
-                                                        .setHeaderLines(header);
-            return dsb.setFormat(fmt)
+            return dsb.setDelimiter(delim)
+                      .setHeaderLines(header)
                       .setFile(ratingFile)
                       .build();
         }
