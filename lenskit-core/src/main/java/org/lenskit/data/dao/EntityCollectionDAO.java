@@ -142,7 +142,7 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
             return stream;
         }
 
-        // we must sort
+        // we must sort; need to make list ourselves since makeList lists are immutable
         ArrayList<E> list;
         try {
             list = Lists.newArrayList(stream);

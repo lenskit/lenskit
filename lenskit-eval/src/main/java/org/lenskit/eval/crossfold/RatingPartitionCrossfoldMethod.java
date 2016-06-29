@@ -46,6 +46,7 @@ class RatingPartitionCrossfoldMethod implements CrossfoldMethod {
                     input.getName(), count);
         List<Rating> ratings;
         try (ObjectStream<Rating> stream = input.getEventDAO().streamEvents(Rating.class)) {
+            // make a list ourselves so we can shuffle it, makeList lists are immutable
             ratings = Lists.newArrayList(stream);
         }
         Collections.shuffle(ratings);
