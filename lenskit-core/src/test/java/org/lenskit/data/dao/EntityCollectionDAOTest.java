@@ -46,6 +46,13 @@ public class EntityCollectionDAOTest {
     }
 
     @Test
+    public void testEmptyDAOHasEmptyGroupedResults() {
+        EntityCollectionDAO dao = EntityCollectionDAO.create();
+        assertThat(dao.query(RATING).groupBy(CommonAttributes.ITEM_ID).get(),
+                   hasSize(0));
+    }
+
+    @Test
     public void testOneEntity() {
         EntityCollectionDAO dao = EntityCollectionDAO.create(Entities.create(CommonTypes.USER, 42));
 
