@@ -60,7 +60,7 @@ class CrossfolderTest {
     public void createEvents() {
         ratings = []
         Generator<Integer> sizes = integers(20, 50);
-        for (user in toIterable(longs(), 100)) {
+        for (user in toIterable(longs(1, 1000000000), 100)) {
             for (item in toIterable(longs(), sizes.next())) {
                 double rating = doubles().next()
                 ratings << Rating.create(user, item, rating)
@@ -74,7 +74,7 @@ class CrossfolderTest {
     }
 
     @Test
-    public void testFreshCFState() {
+    public void testFreshCFStateDoesNotHaveFiles() {
         assertThat(cf.name, equalTo("test"))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
@@ -84,7 +84,7 @@ class CrossfolderTest {
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
         for (ds in dss) {
-            def dao = ds.trainingData.eventDAO as TextEventDAO
+            def dao = ds.trainingData.legacyDAO as TextEventDAO
             assertThat(dao.inputFile.exists(), equalTo(false))
             assertThat(dao.inputFile.name, endsWith(".csv"))
         }
@@ -97,8 +97,8 @@ class CrossfolderTest {
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
-            def train = ds.trainingData.eventDAO as TextEventDAO
-            def test = ds.testData.eventDAO as TextEventDAO
+            def train = ds.trainingData.legacyDAO as TextEventDAO
+            def test = ds.testData.legacyDAO as TextEventDAO
             assertThat(train.inputFile.exists(), equalTo(true))
             assertThat(test.inputFile.exists(), equalTo(true))
 
@@ -129,8 +129,8 @@ class CrossfolderTest {
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.eventDAO.inputFile, equalTo(dss[i-1].trainingData.eventDAO.inputFile))
-            assertThat(obj.testData.eventDAO.inputFile, equalTo(dss[i-1].testData.eventDAO.inputFile))
+            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
+            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
         }
     }
 
@@ -142,8 +142,8 @@ class CrossfolderTest {
         assertThat(dss, hasSize(10))
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
-            def train = ds.trainingData.eventDAO as TextEventDAO
-            def test = ds.testData.eventDAO as TextEventDAO
+            def train = ds.trainingData.legacyDAO as TextEventDAO
+            def test = ds.testData.legacyDAO as TextEventDAO
             assertThat(train.inputFile.exists(), equalTo(true))
             assertThat(test.inputFile.exists(), equalTo(true))
 
@@ -173,8 +173,8 @@ class CrossfolderTest {
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.eventDAO.inputFile, equalTo(dss[i-1].trainingData.eventDAO.inputFile))
-            assertThat(obj.testData.eventDAO.inputFile, equalTo(dss[i-1].testData.eventDAO.inputFile))
+            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
+            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
         }
     }
 
@@ -186,8 +186,8 @@ class CrossfolderTest {
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
-            def train = ds.trainingData.eventDAO as TextEventDAO
-            def test = ds.testData.eventDAO as TextEventDAO
+            def train = ds.trainingData.legacyDAO as TextEventDAO
+            def test = ds.testData.legacyDAO as TextEventDAO
             assertThat(train.inputFile.exists(), equalTo(true))
             assertThat(test.inputFile.exists(), equalTo(true))
 
@@ -217,8 +217,8 @@ class CrossfolderTest {
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.eventDAO.inputFile, equalTo(dss[i-1].trainingData.eventDAO.inputFile))
-            assertThat(obj.testData.eventDAO.inputFile, equalTo(dss[i-1].testData.eventDAO.inputFile))
+            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
+            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
         }
     }
 
@@ -232,13 +232,13 @@ class CrossfolderTest {
 
         double perPart = ratings.size() / 5.0
         for (ds in dss) {
-            def train = ds.trainingData.eventDAO as TextEventDAO
-            def test = ds.testData.eventDAO as TextEventDAO
+            def train = ds.trainingData.legacyDAO as TextEventDAO
+            def test = ds.testData.legacyDAO as TextEventDAO
             assertThat(train.inputFile.exists(), equalTo(true))
             assertThat(test.inputFile.exists(), equalTo(true))
 
             // test the users
-            def events = ObjectStreams.makeList ds.testData.eventDAO.streamEvents()
+            def events = ObjectStreams.makeList ds.testData.legacyDAO.streamEvents()
             allEvents += events;
 
 
@@ -247,7 +247,7 @@ class CrossfolderTest {
                                              lessThanOrEqualTo((Integer) Math.ceil(perPart)))));
 
             // train data should have all the other ratings
-            def tes = ObjectStreams.makeList ds.trainingData.eventDAO.streamEvents()
+            def tes = ObjectStreams.makeList ds.trainingData.legacyDAO.streamEvents()
             assertThat(tes.size() + events.size(), equalTo(ratings.size()))
         }
         assertThat(allEvents, hasSize(ratings.size()))
@@ -263,8 +263,8 @@ class CrossfolderTest {
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.eventDAO.inputFile, equalTo(dss[i - 1].trainingData.eventDAO.inputFile))
-            assertThat(obj.testData.eventDAO.inputFile, equalTo(dss[i - 1].testData.eventDAO.inputFile))
+            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i - 1].trainingData.legacyDAO.inputFile))
+            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i - 1].testData.legacyDAO.inputFile))
         }
     }
 
@@ -276,8 +276,8 @@ class CrossfolderTest {
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
-            def train = ds.trainingData.eventDAO as TextEventDAO
-            def test = ds.testData.eventDAO as TextEventDAO
+            def train = ds.trainingData.legacyDAO as TextEventDAO
+            def test = ds.testData.legacyDAO as TextEventDAO
             assertThat(train.inputFile.exists(), equalTo(true))
             assertThat(test.inputFile.exists(), equalTo(true))
 
@@ -309,8 +309,8 @@ class CrossfolderTest {
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
-            def train = ds.trainingData.eventDAO as TextEventDAO
-            def test = ds.testData.eventDAO as TextEventDAO
+            def train = ds.trainingData.legacyDAO as TextEventDAO
+            def test = ds.testData.legacyDAO as TextEventDAO
             assertThat(train.inputFile.exists(), equalTo(true))
             assertThat(test.inputFile.exists(), equalTo(true))
 
