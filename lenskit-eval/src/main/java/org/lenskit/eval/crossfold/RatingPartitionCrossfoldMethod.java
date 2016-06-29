@@ -69,4 +69,20 @@ class RatingPartitionCrossfoldMethod implements CrossfoldMethod {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof RatingPartitionCrossfoldMethod) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }

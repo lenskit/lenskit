@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.Random;
@@ -57,5 +59,29 @@ class UserSampleCrossfoldMethod extends UserBasedCrossfoldMethod {
             }
             return userMap;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof UserSampleCrossfoldMethod) {
+            UserSampleCrossfoldMethod om = (UserSampleCrossfoldMethod) obj;
+            EqualsBuilder eqb = new EqualsBuilder();
+            return eqb.append(order, om.order)
+                      .append(partition, om.partition)
+                      .append(sampleSize, om.sampleSize)
+                      .isEquals();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(order)
+                                    .append(partition)
+                                    .append(sampleSize)
+                                    .toHashCode();
     }
 }

@@ -47,7 +47,7 @@ import java.io.IOException;
  */
 @AutoService(Command.class)
 public class Crossfold implements Command {
-    private final Logger logger = LoggerFactory.getLogger(Crossfold.class);
+    private static final Logger logger = LoggerFactory.getLogger(Crossfold.class);
 
     @Override
     public String getName() {
@@ -59,16 +59,25 @@ public class Crossfold implements Command {
         return "crossfold a data set";
     }
 
-    public String getDelimiter(Namespace opts) {
+    public static String getDelimiter(Namespace opts) {
         return opts.get("delimiter");
     }
 
     @Override
     public void execute(Namespace options) throws IOException {
+        Crossfolder cf;
+        cf = configureCrossfolder(options);
+
+        cf.execute();
+    }
+
+    Crossfolder configureCrossfolder(Namespace options) throws IOException {
         InputData input = new InputData(null, options);
         logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter(options));
+
         Crossfolder cf;
+
         File specFile = options.get("spec");
         if (specFile != null) {
             if (!specFile.exists()) {
@@ -105,7 +114,7 @@ public class Crossfold implements Command {
                 cf.setMethod(CrossfoldMethods.partitionRatings());
             } else {
                 String order = options.get("order");
-                SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.TIMESTAMP;
+                SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.RANDOM;
 
                 HistoryPartitionMethod part = HistoryPartitions.holdout(10);
                 Integer n;
@@ -127,17 +136,17 @@ public class Crossfold implements Command {
                 } else if (method.equals("sample-users")) {
                     cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
                 }
+            }
 
-                String dir = options.get("output_dir");
-                if (dir != null) {
-                    cf.setOutputDir(dir);
-                }
+            String dir = options.get("output_dir");
+            if (dir != null) {
+                cf.setOutputDir(dir);
             }
         }
-
-        cf.execute();
+        return cf;
     }
 
+    @Override
     public void configureArguments(ArgumentParser parser) {
         parser.addArgument("-o", "--output-dir")
               .dest("output_dir")
@@ -206,10 +215,11 @@ public class Crossfold implements Command {
                 .help("Retain N training ratings per user.");
 
         parser.addArgument("--timestamp-order")
-                .dest("order")
-                .setConst("timestamp")
-                .action(Arguments.storeConst())
-                .help("Test on latest ratings from each user, not random.");
+              .dest("order")
+              .setConst("timestamp")
+              .setDefault("random")
+              .action(Arguments.storeConst())
+              .help("Test on latest ratings from each user, not random.");
 
         parser.addArgument("spec")
               .type(File.class)
