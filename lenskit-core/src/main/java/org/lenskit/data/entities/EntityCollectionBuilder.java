@@ -57,7 +57,8 @@ public class EntityCollectionBuilder {
     public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
         Preconditions.checkState(indexBuilders != null, "build() already called");
         if (indexBuilders.containsKey(attribute.getName())) {
-            throw new IllegalStateException("attribute " + attribute.getName() + " already indexed");
+            // already have that index
+            return this;
         }
         EntityIndexBuilder ib = EntityIndexBuilder.create(attribute);
         indexBuilders.put(attribute.getName(), ib);

@@ -44,7 +44,13 @@ class LongEntityIndex implements EntityIndex {
         if (!(value instanceof Long)) {
             return Collections.emptyList();
         }
-        IdBox<ImmutableList<Entity>> box = entityLists.get(value);
+        long key = (Long) value;
+        return getEntities(key);
+    }
+
+    @Nonnull
+    public List<Entity> getEntities(long key) {
+        IdBox<ImmutableList<Entity>> box = entityLists.get(key);
         if (box == null) {
             return Collections.emptyList();
         } else {

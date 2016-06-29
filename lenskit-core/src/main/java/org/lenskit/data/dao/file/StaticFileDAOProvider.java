@@ -111,6 +111,8 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
         Set<EntityType> types = new HashSet<>();
 
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
+        builder.addDefaultIndex(CommonAttributes.USER_ID);
+        builder.addDefaultIndex(CommonAttributes.ITEM_ID);
         for (Map.Entry<EntityType,TypedName<?>> iae: indexedAttributes.entries()) {
             builder.addIndex(iae.getKey(), iae.getValue());
         }
