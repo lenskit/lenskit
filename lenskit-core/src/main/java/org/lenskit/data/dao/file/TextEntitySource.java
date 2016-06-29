@@ -24,10 +24,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.CharSource;
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
 import org.apache.commons.lang3.ClassUtils;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.grouplens.lenskit.util.io.LKFileUtils;
@@ -89,7 +88,8 @@ public class TextEntitySource implements EntitySource, Describable {
      * @param file The source file.
      */
     public void setFile(Path file) {
-        source = Files.asCharSource(file.toFile(), Charset.defaultCharset());
+        source = LKFileUtils.byteSource(file.toFile(), CompressionMode.AUTO)
+                            .asCharSource(Charset.defaultCharset());
         try {
             sourceURL = file.toUri().toURL();
         } catch (MalformedURLException e) {
@@ -101,9 +101,9 @@ public class TextEntitySource implements EntitySource, Describable {
      * Set the URL of the input data.
      * @param url The URL of the input data.
      */
-    public void setURI(URL url) {
+    public void setURL(URL url) {
         sourceURL = url;
-        source = Resources.asCharSource(url, Charsets.UTF_8);
+        source = LKFileUtils.byteSource(url, CompressionMode.AUTO).asCharSource(Charsets.UTF_8);
     }
 
     /**
@@ -199,7 +199,7 @@ public class TextEntitySource implements EntitySource, Describable {
         Preconditions.checkArgument(filePath != null, "no file path specified");
         URI uri = base.resolve(filePath);
         try {
-            source.setURI(uri.toURL());
+            source.setURL(uri.toURL());
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Cannot resolve URI " + uri, e);
         }
