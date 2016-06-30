@@ -157,7 +157,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
             try {
                 file = File.createTempFile("ratings", ".pack");
             } catch (IOException e) {
-                throw new RuntimeException("cannot create temporary file");
+                throw new DataAccessException("cannot create temporary file");
             }
             file.deleteOnExit();
             logger.debug("packing ratings to {}", file);
@@ -181,7 +181,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
                 }
                 return new RatingSnapshotDAO(result);
             } catch (IOException ex) {
-                throw new RuntimeException("error packing ratings", ex);
+                throw new DataAccessException("error packing ratings", ex);
             }
         }
     }

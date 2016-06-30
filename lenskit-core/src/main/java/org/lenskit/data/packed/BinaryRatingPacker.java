@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.events.Events;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.collections.LongUtils;
@@ -328,7 +329,7 @@ public class BinaryRatingPacker implements Closeable {
 
                 return Events.TIMESTAMP_COMPARATOR.compare(r1, r2);
             } catch (IOException ex) {
-                throw new RuntimeException("I/O error while sorting", ex);
+                throw new DataAccessException("I/O error while sorting", ex);
             }
         }
     }
@@ -362,7 +363,7 @@ public class BinaryRatingPacker implements Closeable {
                 inverseTranslationMap[i1] = inverseTranslationMap[i2];
                 inverseTranslationMap[i2] = j;
             } catch (IOException ex) {
-                throw new RuntimeException("I/O error while sorting", ex);
+                throw new DataAccessException("I/O error while sorting", ex);
             }
         }
     }
