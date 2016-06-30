@@ -134,7 +134,7 @@ class ExperimentJob extends RecursiveAction {
                                                     .start();
             for (LongIterator iter = testUsers.iterator(); iter.hasNext(); ) {
                 if (Thread.interrupted()) {
-                    throw new RuntimeException("eval job interrupted");
+                    throw new EvaluationException("eval job interrupted");
                 }
                 long uid = iter.nextLong();
                 if (userRow != null) {
