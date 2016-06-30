@@ -24,6 +24,8 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -37,6 +39,8 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ClassDirectory {
+    private static final Logger logger = LoggerFactory.getLogger(ClassDirectory.class);
+
     /**
      * Get a class directory for the current thread's class loader.
      * @return A class directory.
@@ -73,7 +77,7 @@ public class ClassDirectory {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error loading class lists", e);
+            logger.warn("Could not load class lists", e);
         }
 
         return new ClassDirectory(mapping.build());

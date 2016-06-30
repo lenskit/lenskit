@@ -25,6 +25,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
@@ -74,7 +75,7 @@ public class InputData {
                 spec = SpecUtils.load(DataSourceSpec.class, sourceFile.toPath());
             } catch (IOException e) {
                 logger.error("error loading " + sourceFile, e);
-                throw new RuntimeException("error loading " + sourceFile, e);
+                throw new DataAccessException("error loading " + sourceFile, e);
             }
             return SpecUtils.buildObject(DataSource.class, spec, cl);
         }

@@ -25,6 +25,7 @@ import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.data.dao.DataAccessException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -88,7 +89,7 @@ public class LineStream extends AbstractObjectStream<String> {
             lineNumber++;
             return line;
         } catch (IOException e) {
-            throw new RuntimeException("error reading line", e);
+            throw new DataAccessException("error reading line", e);
         }
     }
 

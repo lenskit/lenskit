@@ -51,7 +51,7 @@ task checkPythonInstall {
         }
         if (System.getenv("CI") == "true" && !isValid) {
             logger.error "Python is not present, but required for CI builds"
-            throw new RuntimeException("cannot find Python")
+            throw new IOException("cannot find Python")
         }
     }
 }
