@@ -55,7 +55,7 @@ task check(overwrite: true) {
 
     doLast {
         if (!file('results.csv').exists()) {
-            throw new RuntimeException("results file does not exist")
+            throw new FileNotFoundException(file('results.csv').toString())
         }
     }
 }
