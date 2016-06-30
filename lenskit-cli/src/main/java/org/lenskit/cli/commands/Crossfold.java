@@ -98,8 +98,9 @@ public class Crossfold implements Command {
                 cf.setPartitionCount(k);
             }
 
-            if (options.getBoolean("pack_output")) {
-                cf.setOutputFormat(OutputFormat.PACK);
+            OutputFormat outFmt = options.get("output_format");
+            if (outFmt != null) {
+                cf.setOutputFormat(outFmt);
             }
             if (!options.getBoolean("use_timestamps")) {
                 cf.setWriteTimestamps(false);
@@ -153,9 +154,17 @@ public class Crossfold implements Command {
               .type(String.class)
               .metavar("DIR")
               .help("write splits to DIR");
+        parser.addArgument("--gzip-output")
+              .type(OutputFormat.class)
+              .action(Arguments.storeConst())
+              .setConst(OutputFormat.CSV_GZIP)
+              .dest("output_format")
+              .help("specify output file type");
         parser.addArgument("--pack-output")
-              .action(Arguments.storeTrue())
-              .dest("pack_output")
+              .type(OutputFormat.class)
+              .action(Arguments.storeConst())
+              .setConst(OutputFormat.PACK)
+              .dest("output_format")
               .help("store output in binary-packed files");
         parser.addArgument("--no-timestamps")
               .action(Arguments.storeFalse())

@@ -171,4 +171,18 @@ public class CrossfoldTest {
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
     }
+
+    @Test
+    public void testCompressOutput() throws ArgumentParserException, IOException {
+        String[] args = ["--output-dir", "crossfold", "--gzip-output"]
+        Namespace options = parser.parseArgs(args)
+        Crossfolder cf = command.configureCrossfolder(options)
+
+        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
+        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
+        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
+        assertThat(cf.partitionCount, equalTo(5))
+        assertThat(cf.outputFormat, equalTo(OutputFormat.CSV_GZIP))
+        assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
+    }
 }

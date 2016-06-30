@@ -20,11 +20,9 @@
  */
 package org.lenskit.gradle
 
-import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFiles
-import org.lenskit.gradle.delegates.SpecDelegate
+import org.gradle.api.tasks.OutputDirectory
 import org.lenskit.gradle.traits.DataBuilder
 import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils
@@ -32,9 +30,8 @@ import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 import org.lenskit.specs.eval.CrossfoldSpec
 import org.lenskit.specs.eval.DataSetSpec
-import org.lenskit.specs.eval.PartitionMethodSpec
 
-import java.nio.file.Path
+import java.util.concurrent.Callable
 
 /**
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
@@ -51,22 +48,26 @@ import java.nio.file.Path
  *
  * @see CrossfoldSpec
  * @see DataSources
- * @see http://mooc.lenskit.org/documentation/evaluator/data/
+ * @see <http://mooc.lenskit.org/documentation/evaluator/data/>
  */
 class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
-    private def spec = new CrossfoldSpec();
-    private def specDelegate = new SpecDelegate(project, spec)
-
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
     def outputDir
+    private Callable<DataSourceSpec> source
+    private List<String> userPartitionArgs = []
+    def String method = 'sample-users'
+    def Integer sampleSize
+    def Integer partitionCount
+    def String outputFormat
+    @Deprecated
+    def boolean useTimestamps = true
 
     public Crossfold() {
         conventionMapping.outputDir = {
             "$project.buildDir/${name}.out"
         }
-        spec.name = name
     }
 
     /**
@@ -98,7 +99,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * @param src
      */
     void input(DataSourceSpec src) {
-        spec.source = src
+        source = {src}
     }
 
     /**
@@ -107,7 +108,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      */
     void input(DataBuilder bld) {
         dependsOn bld
-        spec.deferredSource = bld.deferredDataSourceSpec
+        source = {bld.deferredDataSourceSpec.get()}
     }
 
     /**
@@ -115,27 +116,16 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * @param csv A CSV file containing ratings.
      */
     void inputFile(File csv) {
-        def src = new TextDataSourceSpec()
+        source = new TextDataSourceSpec()
         src.delimiter = ","
         src.file = csv.toPath()
-        input src
-    }
-
-    def methodMissing(String name, def args) {
-        specDelegate.invokeMethod(name, args)
     }
 
     @InputFiles
     Set<File> getInputFiles() {
-        return spec.source?.inputFiles?.collect {
+        return source?.inputFiles?.collect {
             it.toFile()
         } ?: []
-    }
-
-    CrossfoldSpec getFinalSpec() {
-        def copy = SpecUtils.copySpec(spec)
-        copy.outputDir = project.file(getOutputDir()).toPath()
-        copy
     }
 
     @Input
@@ -143,15 +133,9 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         SpecUtils.stringify(finalSpec)
     }
 
-    @OutputFiles
-    Collection<File> getOutputFiles() {
-        def files = []
-        for (ds in finalSpec.dataSets) {
-            files.addAll ds.trainSource.inputFiles*.toFile()
-            files.addAll ds.testSource.inputFiles*.toFile()
-        }
-        files << getSpecFile().toFile()
-        return files
+    @OutputDirectory
+    File getOutputDirectory() {
+        return project.file(outputDir)
     }
 
     @Override
@@ -162,18 +146,30 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Override
     void doPrepare() {
         project.mkdir getOutputDir()
-        logger.info 'preparing spec file {}', specFile
-        SpecUtils.write(finalSpec, specFile)
     }
 
     @Override
     List getCommandArgs() {
-        def args = []
-        args << specFile
-    }
-
-    Path getSpecFile() {
-        return project.file(getOutputDir()).toPath().resolve("crossfold.json")
+        def args = ["--output-directory", outputDirectory]
+        // FIXME Don't use JSON spec
+        args << "--input-data-spec" << SpecUtils.stringify(source)
+        args << "--$method"
+        args.addAll userPartitionArgs
+        if (partitionCount) {
+            args << '--partition-count' <<partitionCount
+        }
+        if (!useTimestamps) {
+            args << '--no-timestamps'
+        }
+        if (sampleSize != null) {
+            args << '--sample-size' << sampleSize
+        }
+        if (outputFormat == 'gz') {
+            args << '--gzip-output'
+        } else if (outputformat == 'pack') {
+            args << '--pack-output'
+        }
+        args
     }
 
     List<DataSetSpec> getDataSets() {
@@ -181,53 +177,90 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     /**
-     * Utility method to create a holdout-N user partition method.
-     * @param n The number of ratings to hold out for each user.
-     * @param order The sort order. Defaults to `random`.
-     * @return The partition method.
+     * Deprecated method for user partitioning.
+     * @param nop
+     * @deprecated Use {@link #holdout} and friends directly.
      */
-    public static PartitionMethodSpec holdout(int n, String order = 'random') {
-        def spec = new PartitionMethodSpec.Holdout()
-        spec.count = n
-        spec.order = order
-        spec
+    @Deprecated
+    public void userPartitionMethod(nop) {
+        logger.warn('userPartitionMethod is deprecated, call holdout and friends directly')
     }
 
-    public PartitionMethodSpec holdout(Closure block) {
-        SpecDelegate.configureSpec(project, PartitionMethodSpec.Holdout, block)
+    /**
+     * Specify an output format. Can be one of:
+     *
+     * - csv
+     * - gz
+     *
+     * @param fmt
+     */
+    public void outputFormat(String fmt) {
+        switch(fmt.toLowerCase()) {
+        case 'csv':
+            outputFormat = 'csv'
+            break
+        case 'csv_gz':
+        case 'gz':
+            outputFormat = 'gz'
+            break
+        case 'pack':
+            logger.warn('pack output is deprecated')
+            outputFormat = 'pack'
+            break
+        default:
+            throw new IllegalArgumentException("invalid format $fmt")
+        }
+    }
+
+    /**
+     * Set the method to use. Can be one of:
+     * <ul>
+     *     <li>partition-users</li>
+     *     <li>partition-ratings</li>
+     *     <li>sample-users</li>
+     * </ul>
+     * @param m The method
+     */
+    public void method(String m) {
+        if (!(m =~ /^(?i:partition[_-](users|ratings)|sample[_-]users)$/)) {
+            throw new IllegalArgumentException("invalid partition method " + m)
+        }
+        method = m.replaceAll('_', '-').toLowerCase()
+    }
+
+    /**
+     * Hold out a fixed number of ratings per user
+     * @param n The number of ratings to hold out for each user.
+     * @param order The sort order. Defaults to `random`.
+     */
+    public Object holdout(int n, String order = 'random') {
+        userPartitionArgs = ['--holdout-count', "$n"]
+        if (order == 'timestamp') {
+            userPartitionArgs << '--timestamp-order'
+        }
     }
 
     /**
      * Utility method to create a retain-N user partition method.
      * @param n The number of ratings to hold out for each user.
      * @param order The sort order. Defaults to `random`.
-     * @return The partition method.
      */
-    public PartitionMethodSpec retain(int n, String order = 'random') {
-        def spec = new PartitionMethodSpec.Retain()
-        spec.count = n
-        spec.order = order
-        spec
-    }
-
-    public PartitionMethodSpec retain(Closure block) {
-        SpecDelegate.configureSpec(project, PartitionMethodSpec.Retain, block)
+    public Object retain(int n, String order = 'random') {
+        userPartitionArgs = ['--retain', "$n"]
+        if (order == 'timestamp') {
+            userPartitionArgs << '--timestamp-order'
+        }
     }
 
     /**
      * Utility method to create a holdout-fraction user partition method.
      * @param f The fraction of ratings to hold out per user.
      * @param order The sort order. Defaults to `random`.
-     * @return The partition method.
      */
-    public PartitionMethodSpec holdoutFraction(double f, String order = 'random') {
-        def spec = new PartitionMethodSpec.HoldoutFraction()
-        spec.fraction = f
-        spec.order = order
-        spec
-    }
-
-    public PartitionMethodSpec holdoutFraction(Closure block) {
-        SpecDelegate.configureSpec(project, PartitionMethodSpec.HoldoutFraction, block)
+    public Object holdoutFraction(double f, String order = 'random') {
+        userPartitionArgs = ['--holdout-fraction', "$f"]
+        if (order == 'timestamp') {
+            userPartitionArgs << '--timestamp-order'
+        }
     }
 }
