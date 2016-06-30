@@ -20,6 +20,7 @@
  */
 package org.lenskit.gradle
 
+import org.gradle.api.internal.project.taskfactory.InputPropertyAnnotationHandler
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -57,7 +58,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     def outputDir
     private Callable<DataSourceSpec> source
     private List<String> userPartitionArgs = []
-    def String method = 'sample-users'
+    def String method = 'partition-users'
     def Integer sampleSize
     def Integer partitionCount
     def String outputFormat
@@ -115,27 +116,25 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * Configure an input CSV file of ratings.  Convenience method; {@link #input(DataSourceSpec)} is more general.
      * @param csv A CSV file containing ratings.
      */
-    void inputFile(File csv) {
-        source = new TextDataSourceSpec()
-        src.delimiter = ","
-        src.file = csv.toPath()
+    void inputFile(Object csv) {
+        source = {
+            def src = new TextDataSourceSpec()
+            src.delimiter = ","
+            src.file = project.file(csv).toPath()
+            src
+        }
     }
 
     @InputFiles
     Set<File> getInputFiles() {
-        return source?.inputFiles?.collect {
+        return source?.call()?.inputFiles?.collect {
             it.toFile()
         } ?: []
     }
 
-    @Input
-    String getFinalSpecJSON() {
-        SpecUtils.stringify(finalSpec)
-    }
-
     @OutputDirectory
     File getOutputDirectory() {
-        return project.file(outputDir)
+        return project.file(getOutputDir())
     }
 
     @Override
@@ -145,14 +144,15 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     @Override
     void doPrepare() {
-        project.mkdir getOutputDir()
+        project.mkdir outputDirectory
     }
 
     @Override
+    @Input
     List getCommandArgs() {
-        def args = ["--output-directory", outputDirectory]
+        def args = ["--output-dir", outputDirectory]
         // FIXME Don't use JSON spec
-        args << "--input-data-spec" << SpecUtils.stringify(source)
+        args << "--input-data-spec" << SpecUtils.stringify(source.call())
         args << "--$method"
         args.addAll userPartitionArgs
         if (partitionCount) {
@@ -166,7 +166,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         }
         if (outputFormat == 'gz') {
             args << '--gzip-output'
-        } else if (outputformat == 'pack') {
+        } else if (outputFormat == 'pack') {
             args << '--pack-output'
         }
         args

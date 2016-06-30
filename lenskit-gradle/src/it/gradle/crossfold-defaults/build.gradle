@@ -15,14 +15,34 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.*
 import org.lenskit.gradle.*
 
+apply from: 'common.gradle'
 apply plugin: 'lenskit'
+apply from: 'generate-ratings.gradle'
+apply from: 'renjin.gradle'
 
-task crossfold(type: Crossfold)
+task crossfold(type: Crossfold) {
+    dependsOn generateRatings
+    inputFile "$buildDir/ratings.csv"
+}
 
-task check {
+task checkXF {
+    dependsOn crossfold
     doLast {
         assertThat(crossfold.maxMemory, nullValue())
-        assertThat(crossfold.specFile.toFile(),
-                   equalTo(file("$buildDir/crossfold.out/crossfold.json")))
+        assertThat("output directory exists",
+                   file("$buildDir/crossfold.out").isDirectory())
+        for (int i in 1..5) {
+            assertThat("training file $i",
+                       file(String.format('%s/crossfold.out/part%02d.train.csv', buildDir, i)).exists())
+            assertThat("testing file $i",
+                       file(String.format('%s/crossfold.out/part%02d.test.csv', buildDir, i)).exists())
+        }
     }
 }
+
+runVerifyScript {
+    dependsOn crossfold
+    mustRunAfter checkXF
+}
+
+check.dependsOn checkXF
