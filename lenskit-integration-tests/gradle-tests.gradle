@@ -59,6 +59,7 @@ file('src/it/gradle').eachDir { testDir ->
     task("test$tname", type: GradleBuild, group: 'test') {
         description "Run the ${testDir.name} test."
         dependsOn makeTestRepo, fetchData
+        inputs.dir rootProject.file('build/test-repo')
         inputs.dir testDir
         inputs.files fileTree('src/it/gradle') {
             include '*.gradle'
