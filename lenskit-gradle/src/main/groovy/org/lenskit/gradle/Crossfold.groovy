@@ -63,7 +63,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     def Integer partitionCount
     def String outputFormat
     @Deprecated
-    def boolean useTimestamps = true
+    def boolean includeTimestamps = true
 
     public Crossfold() {
         conventionMapping.outputDir = {
@@ -171,7 +171,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         if (partitionCount) {
             args << '--partition-count' <<partitionCount
         }
-        if (!useTimestamps) {
+        if (!includeTimestamps) {
             args << '--no-timestamps'
         }
         if (sampleSize != null) {
@@ -186,7 +186,13 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     List<DataSetSpec> getDataSets() {
-        return finalSpec.dataSets
+        def file = new File(outputDirectory, 'all-partitions.json')
+        if (file.exists()) {
+            def reader = SpecUtils.createMapper().reader(DataSetSpec)
+            reader.readValues(file).toList()
+        } else {
+            return []
+        }
     }
 
     /**
@@ -213,6 +219,8 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
             outputFormat = 'csv'
             break
         case 'csv_gz':
+        case 'csv_gzip':
+            logger.warn('format specification {} is deprecated', fmt)
         case 'gz':
             outputFormat = 'gz'
             break

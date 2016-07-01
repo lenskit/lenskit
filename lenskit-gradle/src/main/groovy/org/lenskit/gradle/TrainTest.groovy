@@ -150,9 +150,9 @@ class TrainTest extends LenskitTask {
 
     @InputFiles
     public Set<File> getDataInputs() {
-        runDeferredTasks()
+        def fspec = getFinalSpec()
         Set<File> files = new HashSet<>()
-        for (ds in spec.dataSets) {
+        for (ds in fspec.dataSets) {
             files.addAll(ds.testSource.inputFiles*.toFile())
             files.addAll(ds.trainSource.inputFiles*.toFile())
         }
@@ -169,20 +169,21 @@ class TrainTest extends LenskitTask {
         spec.outputFiles*.toFile()
     }
 
-    private void runDeferredTasks() {
-        while (!deferredInput.isEmpty()) {
-            def di = deferredInput.removeFirst()
-            di.call(spec)
+    private TrainTestExperimentSpec getFinalSpec() {
+        def copy = SpecUtils.copySpec(spec)
+        for (func in deferredInput) {
+            func.call(copy)
         }
+        return copy
     }
 
     @Override
     void doPrepare() {
-        runDeferredTasks()
+        def fspec = getFinalSpec()
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info 'preparing spec file {}', file
-        SpecUtils.write(spec, file.toPath())
+        SpecUtils.write(fspec, file.toPath())
     }
 
     @Override
