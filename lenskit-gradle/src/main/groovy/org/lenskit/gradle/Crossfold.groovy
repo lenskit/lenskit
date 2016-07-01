@@ -20,7 +20,6 @@
  */
 package org.lenskit.gradle
 
-import org.gradle.api.internal.project.taskfactory.InputPropertyAnnotationHandler
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -151,8 +150,9 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Input
     List getCommandArgs() {
         def args = ["--output-dir", outputDirectory]
+        project.file("$project.buildDir/$name-input.json").text = SpecUtils.stringify(source.call())
         // FIXME Don't use JSON spec
-        args << "--input-data-spec" << SpecUtils.stringify(source.call())
+        args << "--data-source" << project.file("$project.buildDir/$name-input.json")
         args << "--$method"
         args.addAll userPartitionArgs
         if (partitionCount) {

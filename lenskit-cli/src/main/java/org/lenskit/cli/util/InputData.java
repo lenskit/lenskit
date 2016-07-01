@@ -62,7 +62,6 @@ public class InputData {
         TextDataSourceBuilder dsb = new TextDataSourceBuilder();
 
         File sourceFile = options.get("data_source");
-        String jsonText = options.get("input_data_spec");
         ClassLoader cl = null;
         if (environment != null) {
             cl = environment.getClassLoader();
@@ -75,10 +74,6 @@ public class InputData {
                 logger.error("error loading " + sourceFile, e);
                 throw new DataAccessException("error loading " + sourceFile, e);
             }
-            return SpecUtils.buildObject(DataSource.class, spec, cl);
-        } else if (jsonText != null) {
-
-            DataSourceSpec spec = SpecUtils.parse(DataSourceSpec.class, jsonText);
             return SpecUtils.buildObject(DataSource.class, spec, cl);
         }
 
@@ -177,9 +172,6 @@ public class InputData {
              .type(File.class)
              .metavar("FILE")
              .help("read from delimited text FILE");
-        group.addArgument("--input-data-spec")
-             .metavar("JSON")
-             .help("configure a spec from raw JSON");
         options.addArgument("-d", "--delimiter")
                .setDefault(",")
                .metavar("DELIM")
