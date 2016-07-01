@@ -22,7 +22,7 @@ apply from: 'renjin.gradle'
 
 task crossfold(type: Crossfold) {
     dependsOn generateRatings
-    inputFile "$buildDir/ratings.csv"
+    input 'data.yaml'
 }
 
 task checkXF {

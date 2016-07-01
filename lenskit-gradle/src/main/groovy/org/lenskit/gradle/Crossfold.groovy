@@ -56,6 +56,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      */
     def outputDir
     private Callable<DataSourceSpec> source
+    private Object srcFile
     private List<String> userPartitionArgs = []
     def String method = 'partition-users'
     def Integer sampleSize
@@ -112,6 +113,14 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     /**
+     * Set the input source manifest.
+     * @param file The path to an input source manifest file (in YAML format).
+     */
+    void input(Object file) {
+        srcFile = file
+    }
+
+    /**
      * Configure an input CSV file of ratings.  Convenience method; {@link #input(DataSourceSpec)} is more general.
      * @param csv A CSV file containing ratings.
      */
@@ -150,9 +159,13 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Input
     List getCommandArgs() {
         def args = ["--output-dir", outputDirectory]
-        project.file("$project.buildDir/$name-input.json").text = SpecUtils.stringify(source.call())
-        // FIXME Don't use JSON spec
-        args << "--data-source" << project.file("$project.buildDir/$name-input.json")
+        if (srcFile != null) {
+            args << "--data-source" << project.file(srcFile)
+        } else {
+            project.file("$project.buildDir/$name-input.json").text = SpecUtils.stringify(source.call())
+            // FIXME Don't use JSON spec
+            args << "--data-source" << project.file("$project.buildDir/$name-input.json")
+        }
         args << "--$method"
         args.addAll userPartitionArgs
         if (partitionCount) {

@@ -20,17 +20,23 @@
  */
 package org.lenskit.cli.util;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
+import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.ItemNameDAO;
+import org.lenskit.data.dao.file.StaticFileDAOProvider;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.slf4j.Logger;
@@ -62,19 +68,12 @@ public class InputData {
         TextDataSourceBuilder dsb = new TextDataSourceBuilder();
 
         File sourceFile = options.get("data_source");
-        ClassLoader cl = null;
-        if (environment != null) {
-            cl = environment.getClassLoader();
-        }
         if (sourceFile != null) {
-            DataSourceSpec spec;
-            try {
-                spec = SpecUtils.load(DataSourceSpec.class, sourceFile.toPath());
-            } catch (IOException e) {
-                logger.error("error loading " + sourceFile, e);
-                throw new DataAccessException("error loading " + sourceFile, e);
+            ClassLoader cl = null;
+            if (environment != null) {
+                cl = environment.getClassLoader();
             }
-            return SpecUtils.buildObject(DataSource.class, spec, cl);
+            return loadDataSource(sourceFile, cl);
         }
 
         String type = options.get("event_type");
@@ -120,6 +119,30 @@ public class InputData {
         }
 
         return null;
+    }
+
+    private DataSource loadDataSource(File sourceFile, ClassLoader loader) {
+        JsonNode node;
+        JsonFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        try {
+            node = mapper.readTree(sourceFile);
+
+            if (node.has("@class")) {
+                DataSourceSpec spec;
+                spec = SpecUtils.createMapper()
+                                .readerFor(DataSourceSpec.class)
+                                .readValue(node);
+
+                return SpecUtils.buildObject(DataSource.class, spec, loader);
+            } else {
+                StaticFileDAOProvider provider = StaticFileDAOProvider.fromJSON(node, sourceFile.toURI());
+                return new TextDataSource(sourceFile.getName(), provider);
+            }
+        } catch (IOException e) {
+            logger.error("error loading " + sourceFile, e);
+            throw new DataAccessException("error loading " + sourceFile, e);
+        }
     }
 
     @Nullable

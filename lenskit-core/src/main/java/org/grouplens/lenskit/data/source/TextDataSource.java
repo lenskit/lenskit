@@ -65,6 +65,22 @@ public class TextDataSource extends AbstractDataSource {
     private final Path itemFile;
     private final Path itemNameFile;
 
+    public TextDataSource(String name, StaticFileDAOProvider provider) {
+        this.name = name;
+        daoProvider = provider;
+        legacyDAO = null;
+
+        sourceFile = null;
+        // FIXME Support preference domains
+        domain = null;
+
+        format = null;
+        items = null;
+        itemNames= null;
+        itemFile = null;
+        itemNameFile = null;
+    }
+
     TextDataSource(String name, File file, EntityFormat fmt, EventFormat efmt, PreferenceDomain pdom,
                    Path itemFile, Path itemNameFile) {
         this.name = name;
