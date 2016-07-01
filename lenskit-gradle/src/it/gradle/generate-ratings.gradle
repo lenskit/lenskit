@@ -20,7 +20,7 @@ generateRatings << {
     file("$buildDir/ratings.csv").withPrintWriter { pw ->
         for (user in toIterable(longs(1, 1000000000), 100)) {
             for (item in toIterable(longs(1, 1000), sizes.next())) {
-                double rating = doubles().next()
+                double rating = doubles(1,5).next()
                 pw.format('%d,%d,%.2f\n', user, item, rating);
             }
         }
