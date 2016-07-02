@@ -116,6 +116,10 @@ install {
 }
 
 task installForTesting(type: Upload) {
+    onlyIf {
+        // only upload if the jar changed
+        tasks.jar.didWork
+    }
     repositories {
         mavenDeployer {
             repository(url: rootProject.uri('build/test-repo'))
