@@ -93,6 +93,7 @@ class InputDataTest {
     public void testDataSource() {
         def file = File.createTempFile("input", ".json")
         file.text = """{
+  "@class": "org.lenskit.specs.data.TextDataSourceSpec",
   "file": "foo.tsv",
   "delimiter": "\\t",
   "domain": {
