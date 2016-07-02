@@ -63,7 +63,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * Construct a new data layout object.
      */
     public StaticFileDAOProvider() {
-        this("<unnamed>");
+        this(null);
     }
 
     /**
@@ -71,7 +71,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @param name The name of the data source.
      */
     public StaticFileDAOProvider(String name) {
-        this.name = name;
+        this.name = name != null ? name : "<unnamed>";
         sources = new ArrayList<>();
         indexedAttributes = ArrayListMultimap.create();
     }
@@ -205,6 +205,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
 
     @Override
     public void describeTo(DescriptionWriter writer) {
+        writer.putField("name", name);
         writer.putList("sources", sources);
     }
 
@@ -215,14 +216,26 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @return A DAO provider configured from the JSON data.
      */
     public static StaticFileDAOProvider fromJSON(JsonNode object, URI base) {
-        StaticFileDAOProvider layout = new StaticFileDAOProvider();
+        return fromJSON(null, object, base);
+    }
+
+    /**
+     * Parse a JSON description of a data set.
+     *
+     * @param object The JSON object.
+     * @return A DAO provider configured from the JSON data.
+     */
+    public static StaticFileDAOProvider fromJSON(String name, JsonNode object, URI base) {
+        if (name == null && object.has("name")) {
+            name = object.get("name").asText();
+        }
+        StaticFileDAOProvider layout = new StaticFileDAOProvider(name);
 
         if (object.isArray()) {
             for (JsonNode source: object) {
                 layout.addSource(EntitySources.fromJSON(null, source, base));
             }
         } else if (object.isObject()) {
-            layout.name = object.path("name").asText("<unnamed>");
             if (object.has("file") || object.has("type")) {
                 // the whole object describes one data source
                 layout.addSource(EntitySources.fromJSON(null, object, base));
@@ -241,11 +254,28 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
         return layout;
     }
 
+    /**
+     * Load a static file data set from a file.
+     * @param path The file to load.
+     * @return The data source.
+     * @throws IOException If there is an error loading the data source.
+     */
     public static StaticFileDAOProvider load(Path path) throws IOException {
+        return load(path, path.getFileName().toString());
+    }
+
+    /**
+     * Load a static file data set from a file.
+     * @param path The file to load.
+     * @param name The source name.
+     * @return The data source.
+     * @throws IOException If there is an error loading the data source.
+     */
+    public static StaticFileDAOProvider load(Path path, String name) throws IOException {
         URI uri = path.toAbsolutePath().toUri();
         JsonFactory factory = new YAMLFactory();
         ObjectMapper mapper = new ObjectMapper(factory);
         JsonNode node = mapper.readTree(path.toFile());
-        return fromJSON(node, uri);
+        return fromJSON(name, node, uri);
     }
 }
