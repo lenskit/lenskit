@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ConstantOneExtractor {
+public class ConstantOneExtractor implements FeatureExtractor {
     private final String indexName;
     private final String attrName;
     private final String feaName;
