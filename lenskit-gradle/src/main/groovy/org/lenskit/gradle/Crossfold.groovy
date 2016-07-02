@@ -162,6 +162,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         if (srcFile != null) {
             args << "--data-source" << project.file(srcFile)
         } else {
+            project.mkdir project.buildDir
             project.file("$project.buildDir/$name-input.json").text = SpecUtils.stringify(source.call())
             // FIXME Don't use JSON spec
             args << "--data-source" << project.file("$project.buildDir/$name-input.json")
