@@ -83,6 +83,10 @@ public class Crossfold implements Command {
         if (k != null) {
             cf.setPartitionCount(k);
         }
+        String name = options.get("name");
+        if (name != null) {
+            cf.setName(name);
+        }
 
         OutputFormat outFmt = options.get("output_format");
         if (outFmt != null) {
@@ -144,6 +148,10 @@ public class Crossfold implements Command {
               .type(String.class)
               .metavar("DIR")
               .help("write splits to DIR");
+        parser.addArgument("-n", "--name")
+              .dest("name")
+              .metavar("NAME")
+              .help("name the data set NAME");
         parser.addArgument("--gzip-output")
               .type(OutputFormat.class)
               .action(Arguments.storeConst())

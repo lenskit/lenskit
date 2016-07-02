@@ -51,37 +51,17 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     def Integer sampleSize
     def Integer partitionCount
     def String outputFormat
+    def String dataSetName
     @Deprecated
     def boolean includeTimestamps = true
 
     public Crossfold() {
         conventionMapping.outputDir = {
-            "$project.buildDir/${name}.out"
+            "$project.buildDir/${getDataSetName()}.out"
         }
-    }
-
-    /**
-     * Set the data set name.
-     * @param name The data set name.
-     */
-    void dataSetName(String name) {
-        spec.name = name;
-    }
-
-    /**
-     * Set the data set name.
-     * @param name The data set name.
-     */
-    void setDataSetName(String name) {
-        spec.name = name
-    }
-
-    /**
-     * Get the data set name.
-     * @return The data set name.
-     */
-    String getDataSetName() {
-        return spec.name
+        conventionMapping.dataSetName = {
+            getName()
+        }
     }
 
     /**
@@ -147,7 +127,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Override
     @Input
     List getCommandArgs() {
-        def args = ["--output-dir", outputDirectory]
+        def args = ["--output-dir", outputDirectory, "--name", getDataSetName()]
         if (srcFile != null) {
             args << "--data-source" << project.file(srcFile)
         } else {
