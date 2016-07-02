@@ -308,7 +308,8 @@ public class TextEntitySource implements EntitySource, Describable {
             Preconditions.checkArgument(type != null, "no attribute type specified");
             return TypedName.create(name, type);
         } else if (col.isTextual()) {
-            TypedName<?> attr = entityDefaults.getAttributeDefaults(col.asText());
+            String name = col.asText();
+            TypedName<?> attr = entityDefaults != null ? entityDefaults.getAttributeDefaults(name) : null;
             if (attr == null) {
                 attr = TypedName.create(col.asText(), col.asText().equals("id") ? Long.class : String.class);
             }

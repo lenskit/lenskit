@@ -20,8 +20,12 @@
  */
 package org.lenskit.data.dao.file;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
@@ -38,6 +42,7 @@ import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -102,6 +107,14 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      */
     public void addIndex(EntityType type, TypedName<?> attr) {
         indexedAttributes.put(type, attr);
+    }
+
+    /**
+     * Get the list of entity sources.
+     * @return The list of entity sources.
+     */
+    public List<EntitySource> getSources() {
+        return ImmutableList.copyOf(sources);
     }
 
     /**
@@ -226,5 +239,13 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
         }
 
         return layout;
+    }
+
+    public static StaticFileDAOProvider load(Path path) throws IOException {
+        URI uri = path.toAbsolutePath().toUri();
+        JsonFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(path.toFile());
+        return fromJSON(node, uri);
     }
 }

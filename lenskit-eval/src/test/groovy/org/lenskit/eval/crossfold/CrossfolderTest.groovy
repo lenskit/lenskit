@@ -32,6 +32,7 @@ import org.junit.rules.TemporaryFolder
 import org.lenskit.data.dao.BridgeEventDAO
 import org.lenskit.data.dao.EventDAO
 import org.lenskit.data.dao.file.StaticFileDAOProvider
+import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
@@ -44,6 +45,7 @@ import java.nio.file.Files
 
 import static net.java.quickcheck.generator.PrimitiveGenerators.*
 import static net.java.quickcheck.generator.iterable.Iterables.toIterable
+import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
@@ -119,6 +121,10 @@ class CrossfolderTest {
         }
         assertThat(allUsers, hasSize(100))
 
+        // Does the item file exist? It should for this kind of data
+        assertThat(Files.exists(tmp.root.toPath().resolve("items.txt")),
+                   equalTo(true));
+
         for (int i = 1; i <= 5; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
@@ -126,6 +132,10 @@ class CrossfolderTest {
             assertThat(Files.exists(test), equalTo(true))
             def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(specFile), equalTo(true))
+            assertThat(tmp.root.toPath().resolve(String.format("part%02d.train.yaml", i)).toFile(),
+                       existingFile())
+            assertThat(tmp.root.toPath().resolve(String.format("part%02d.test.yaml", i)).toFile(),
+                       existingFile())
             def spec = SpecUtils.load(DataSetSpec, specFile)
             def obj = DataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
@@ -133,6 +143,32 @@ class CrossfolderTest {
             assertThat(obj.queryData, nullValue())
             assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
             assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
+
+            // Can we load the train data properly?
+            StaticFileDAOProvider trainP = StaticFileDAOProvider.load(tmp.root
+                                                                        .toPath()
+                                                                        .resolve(String.format("part%02d.train.yaml", i)));
+            assertThat(trainP, notNullValue())
+            def trainDao = trainP.get()
+            // And does it have 100 users?
+            assertThat(trainDao.getEntityIds(CommonTypes.USER),
+                       hasSize(100))
+            // And does it have an item data source?
+            assertThat(trainP.getSourcesForType(CommonTypes.ITEM),
+                       hasSize(1))
+
+            // Can we load the test data properly?
+            StaticFileDAOProvider testP = StaticFileDAOProvider.load(tmp.root
+                                                                        .toPath()
+                                                                        .resolve(String.format("part%02d.test.yaml", i)));
+            assertThat(testP, notNullValue())
+            def testDao = testP.get()
+            // And does it have 20 users?
+            assertThat(testDao.getEntityIds(CommonTypes.USER),
+                       hasSize(20))
+            // and does it just have 1 source?
+            assertThat(testP.getSources(),
+                       hasSize(1))
         }
     }
 

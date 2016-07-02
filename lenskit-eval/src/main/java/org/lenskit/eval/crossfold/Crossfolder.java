@@ -20,9 +20,13 @@
  */
 package org.lenskit.eval.crossfold;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -36,6 +40,7 @@ import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.EntitySource;
 import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.output.RatingWriter;
@@ -55,6 +60,7 @@ import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -356,9 +362,11 @@ public class Crossfolder {
             logger.info("ensuring output directory {} exists", outputDir);
             Files.createDirectories(outputDir);
             logger.info("making sure item list is available");
-            JsonNode itemData = writeItemFile(data);
+            JsonNode itemDataInfo = writeItemFile(data);
             logger.info("writing train-test split files");
             createTTFiles(data);
+            logger.info("writing manifests and specs");
+            writeManifests(data, itemDataInfo);
         } catch (IOException ex) {
             // TODO Use application-specific exception
             throw new RuntimeException("Error writing data sets", ex);
@@ -420,6 +428,10 @@ public class Crossfolder {
             node.set("type", fac.textNode("textfile"));
             node.set("format", fac.textNode("tsv"));
             node.set("file", fac.textNode(ITEM_FILE_NAME));
+            node.set("entity_type", fac.textNode(CommonTypes.ITEM.getName()));
+            ArrayNode cols = fac.arrayNode();
+            cols.add(CommonAttributes.ENTITY_ID.getName());
+            node.set("columns", cols);
             return node;
         } else {
             logger.info("input data specifies an item source, reusing that");
@@ -455,7 +467,61 @@ public class Crossfolder {
             logger.info("running crossfold method {}", method);
             method.crossfold(data.get(), out, entityType);
         }
+    }
 
+    private void writeManifests(StaticFileDAOProvider data, JsonNode itemData) throws IOException {
+        logger.debug("writing manifests");
+        YAMLFactory ioFactory = new YAMLFactory();
+        ioFactory.setCodec(new ObjectMapper());
+        JsonNodeFactory nf = JsonNodeFactory.instance;
+        List<Path> trainFiles = getTrainingFiles();
+        List<Path> trainManifestFiles = getTrainingManifestFiles();
+        List<Path> testFiles = getTestFiles();
+        List<Path> testManifestFiles = getTestManifestFiles();
+        for (int i = 0; i < partitionCount; i++) {
+            // TODO Support various columns in crossfold output
+            logger.debug("writing train manifest {}", i);
+            try (OutputStream ws = Files.newOutputStream(trainManifestFiles.get(i));
+                 JsonGenerator gen = ioFactory.createGenerator(ws)) {
+                gen.writeStartArray();
+                // write the main crossfold output
+                gen.writeStartObject();
+                gen.writeStringField("type", "textfile");
+                gen.writeStringField("file", outputDir.relativize(trainFiles.get(i)).toString());
+                gen.writeStringField("format", "csv");
+                gen.writeStringField("entity_type", entityType.getName());
+                gen.writeEndObject();
+
+                // write the item output
+                if (itemData != null) {
+                    gen.writeTree(itemData);
+                }
+
+                // write the other data files
+                for (EntitySource source: data.getSources()) {
+                    if (source.getTypes().contains(entityType)) {
+                        continue; // this one was crossfolded
+                    }
+                    // TODO Support other sources in the crossfold output
+                    logger.warn("additional data sources not supported, ignoring {}", source);
+                }
+
+                gen.writeEndArray();
+            }
+
+            logger.debug("writing test manifest {}", i);
+            try (OutputStream ws = Files.newOutputStream(testManifestFiles.get(i));
+                 JsonGenerator gen = ioFactory.createGenerator(ws)) {
+                gen.writeStartObject();
+                gen.writeStringField("type", "textfile");
+                gen.writeStringField("file", outputDir.relativize(testFiles.get(i)).toString());
+                gen.writeStringField("format", "csv");
+                gen.writeStringField("entity_type", entityType.getName());
+                gen.writeEndObject();
+            }
+        }
+
+        logger.debug("writing spec files");
         List<Path> specFiles = getSpecFiles();
         List<DataSet> dataSets = getDataSets();
         Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
