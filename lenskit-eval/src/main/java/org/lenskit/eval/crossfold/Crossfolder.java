@@ -34,7 +34,6 @@ import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
 import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessObject;
@@ -45,7 +44,6 @@ import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.output.RatingWriter;
 import org.lenskit.data.output.RatingWriters;
-import org.lenskit.data.packed.BinaryFormatFlag;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.DataSetBuilder;
 import org.lenskit.specs.SpecUtils;
@@ -62,7 +60,10 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
@@ -501,32 +502,15 @@ public class Crossfolder {
     }
 
     RatingWriter openWriter(Path file) throws IOException {
-        if (outputFormat.equals(OutputFormat.PACK)) {
-            EnumSet<BinaryFormatFlag> flags = BinaryFormatFlag.makeSet();
-            if (writeTimestamps) {
-                flags.add(BinaryFormatFlag.TIMESTAMPS);
-            }
-            return RatingWriters.packed(file.toFile(), flags);
-        } else {
-            // it is a CSV file, and the file name already has compression
-            return RatingWriters.csv(file.toFile(), writeTimestamps);
-        }
+        return RatingWriters.csv(file.toFile(), writeTimestamps);
     }
 
     protected DataSource makeDataSource(Path file) {
-        switch (outputFormat) {
-        case PACK:
-            return new PackedDataSourceBuilder()
-                    .setDomain(source.getPreferenceDomain())
-                    .setFile(file.toFile())
-                    .build();
-        default:
-            // TODO Don't just encode compression in file name
-            return new CSVDataSourceBuilder()
-                    .setDomain(source.getPreferenceDomain())
-                    .setFile(file.toFile())
-                    .build();
-        }
+        // TODO Don't just encode compression in file name
+        return new CSVDataSourceBuilder()
+                .setDomain(source.getPreferenceDomain())
+                .setFile(file.toFile())
+                .build();
     }
 
     @Override

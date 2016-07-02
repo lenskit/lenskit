@@ -180,8 +180,6 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         }
         if (outputFormat == 'gz') {
             args << '--gzip-output'
-        } else if (outputFormat == 'pack') {
-            args << '--pack-output'
         }
         args
     }
@@ -221,14 +219,12 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
             break
         case 'csv_gz':
         case 'csv_gzip':
-            logger.warn('format specification {} is deprecated', fmt)
+            logger.warn('format specification {} is deprecated, use "gz"', fmt)
         case 'gz':
             outputFormat = 'gz'
             break
         case 'pack':
-            logger.warn('pack output is deprecated')
-            outputFormat = 'pack'
-            break
+            logger.error('pack output is no longer supported')
         default:
             throw new IllegalArgumentException("invalid format $fmt")
         }

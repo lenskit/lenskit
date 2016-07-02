@@ -91,34 +91,4 @@ public class CrossfoldSpecTest {
             assertThat(tds.getDelimiter(), equalTo(","));
         }
     }
-
-    @Test
-    public void testPackDataSets() {
-        CrossfoldSpec spec = new CrossfoldSpec();
-        spec.setName("TestData");
-        spec.setSource(input);
-        input.setDomain(PrefDomainSpec.fromString("[1,5]/1.0"));
-        spec.setOutputDir(Paths.get("crossfold.out"));
-        spec.setOutputFormat(OutputFormat.PACK);
-        List<DataSetSpec> sets = spec.getDataSets();
-        assertThat(sets, hasSize(5));
-        for (int i = 0; i < 5; i++) {
-            DataSetSpec set = sets.get(i);
-            assertThat(set.getName(), equalTo("TestData." + (i+1)));
-            assertThat(set.getAttributes(), hasEntry("DataSet", (Object) "TestData"));
-            assertThat(set.getAttributes(), hasEntry("Partition", (Object) (i+1)));
-
-            assertThat(set.getTrainSource(), instanceOf(PackedDataSourceSpec.class));
-            PackedDataSourceSpec tds = (PackedDataSourceSpec) set.getTrainSource();
-            assertThat(tds.getFile(), equalTo(spec.getOutputDir().resolve(String.format("part%02d.train.pack", i+1))));
-            assertThat(tds.getDomain(),
-                       equalTo(PrefDomainSpec.fromString("[1,5]/1.0")));
-
-            assertThat(set.getTestSource(), instanceOf(PackedDataSourceSpec.class));
-            tds = (PackedDataSourceSpec) set.getTestSource();
-            assertThat(tds.getFile(), equalTo(spec.getOutputDir().resolve(String.format("part%02d.test.pack", i+1))));
-            assertThat(tds.getDomain(),
-                       equalTo(PrefDomainSpec.fromString("[1,5]/1.0")));
-        }
-    }
 }

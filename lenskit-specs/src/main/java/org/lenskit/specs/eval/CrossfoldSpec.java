@@ -27,7 +27,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.specs.data.DataSourceSpec;
-import org.lenskit.specs.data.PackedDataSourceSpec;
 import org.lenskit.specs.data.TextDataSourceSpec;
 
 import java.nio.file.Path;
@@ -169,22 +168,12 @@ public class CrossfoldSpec extends AbstractSpec {
     }
 
     private DataSourceSpec makeDataSource(String basename) {
-        switch (outputFormat) {
-        case PACK: {
-            PackedDataSourceSpec spec = new PackedDataSourceSpec();
-            spec.setDomain(getSource().getDomain());
-            spec.setFile(getOutputDir().resolve(basename + ".pack"));
-            return spec;
-        }
-        default: {
-            TextDataSourceSpec spec = new TextDataSourceSpec();
-            spec.setDomain(getSource().getDomain());
-            // the compression mode is encoded in the output format extension
-            spec.setFile(getOutputDir().resolve(basename + "." + outputFormat.getExtension()));
-            spec.setDelimiter(",");
-            return spec;
-        }
-        }
+        TextDataSourceSpec spec = new TextDataSourceSpec();
+        spec.setDomain(getSource().getDomain());
+        // the compression mode is encoded in the output format extension
+        spec.setFile(getOutputDir().resolve(basename + "." + outputFormat.getExtension()));
+        spec.setDelimiter(",");
+        return spec;
     }
 
     /**

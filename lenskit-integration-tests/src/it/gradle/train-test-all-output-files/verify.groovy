@@ -60,7 +60,7 @@ resultsFile.withReader { rdr ->
     }
 }
 
-assertThat(new File('build/crossfold.out/part01.train.pack'),
+assertThat(new File('build/crossfold.out/part01.train.csv.gz'),
            existingFile())
 
 // Verify that we have 5 distinct item-item models

@@ -96,7 +96,7 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(RatingPartitionCrossfoldMethod))
+        assertThat(cf.method, instanceOf(EntityPartitionCrossfoldMethod))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))

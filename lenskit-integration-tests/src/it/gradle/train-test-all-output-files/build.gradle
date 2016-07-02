@@ -26,7 +26,7 @@ task crossfold(type: Crossfold) {
         file ratingsFile
         delimiter "\t"
     }
-    outputFormat "PACK"
+    outputFormat "gz"
     partitionCount 5
     userPartitionMethod holdout(5)
     includeTimestamps false

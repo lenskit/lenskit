@@ -150,12 +150,6 @@ public class Crossfold implements Command {
               .setConst(OutputFormat.CSV_GZIP)
               .dest("output_format")
               .help("specify output file type");
-        parser.addArgument("--pack-output")
-              .type(OutputFormat.class)
-              .action(Arguments.storeConst())
-              .setConst(OutputFormat.PACK)
-              .dest("output_format")
-              .help("store output in binary-packed files");
         parser.addArgument("--no-timestamps")
               .action(Arguments.storeFalse())
               .setDefault(true)

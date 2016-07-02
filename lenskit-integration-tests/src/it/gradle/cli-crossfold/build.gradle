@@ -26,7 +26,7 @@ task crossfold(type: JavaExec) {
     args "--tsv-file", ratingsFile
     args '--no-timestamps'
     args '-k', 10
-    args '--pack-output'
+    args '--gzip-output'
     args '-o', file('split')
 }
 
@@ -37,8 +37,8 @@ check {
         assertThat dir.exists(), equalTo(true)
         for (int i = 1; i <= 10; i++) {
             assertThat "spec file $i exists", file(String.format("split/part%02d.json", i)).exists()
-            assertThat "train file $i exists", file(String.format("split/part%02d.train.pack", i)).exists()
-            assertThat "test file $i exists", file(String.format("split/part%02d.test.pack", i)).exists()
+            assertThat "train file $i exists", file(String.format("split/part%02d.train.csv.gz", i)).exists()
+            assertThat "test file $i exists", file(String.format("split/part%02d.test.csv.gz", i)).exists()
         }
     }
 }
