@@ -298,6 +298,9 @@ public class DataSet {
         String nbase = part >= 0 ? String.format("%s[%d]", name, part) : name;
         dsb.setTrain(loadDataSource(json.get("train"), base, nbase + ".train"));
         dsb.setTest(loadDataSource(json.get("test"), base, nbase + ".test"));
+        if (json.has("group")) {
+            dsb.setIsolationGroup(UUID.fromString(json.get("group").asText()));
+        }
         return dsb.build();
     }
 
