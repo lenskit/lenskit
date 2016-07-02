@@ -173,6 +173,16 @@ class CrossfolderTest {
     }
 
     @Test
+    public void testDataSetListOutput() {
+        cf.execute()
+        def specFile = tmp.root.toPath().resolve("datasets.yaml")
+        assertThat(Files.exists(specFile), equalTo(true))
+
+        def datasets = DataSet.load(specFile)
+        assertThat(datasets, hasSize(5))
+    }
+
+    @Test
     public void test10PartCFRun() {
         cf.partitionCount = 10
         cf.execute()

@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.crossfold;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -56,7 +55,6 @@ import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,7 +64,15 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * The command to build and run a crossfold on the data source file and output the partition files
+ * Partitions a data set for cross-validation.
+ *
+ * The resulting data is placed in an output directory with the following files:
+ *
+ * - `datasets.yaml` - a manifest file listing all the data sets
+ * - `partNN.train.csv` - a CSV file containing the train data for part *NN*
+ * - `partNN.train.yaml` - a YAML manifest for the training data for part *NN*
+ * - `partNN.test.csv` - a CSV file containing the test data for part *NN*
+ * - `partNN.test.yaml` - a YAML manifest for the test data for part *NN*
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -414,54 +420,63 @@ public class Crossfolder {
     private void writeManifests(StaticDataSource data, JsonNode itemData) throws IOException {
         logger.debug("writing manifests");
         YAMLFactory ioFactory = new YAMLFactory();
-        ioFactory.setCodec(new ObjectMapper());
+        ObjectMapper mapper = new ObjectMapper(ioFactory);
+
         JsonNodeFactory nf = JsonNodeFactory.instance;
+
         List<Path> trainFiles = getTrainingFiles();
         List<Path> trainManifestFiles = getTrainingManifestFiles();
         List<Path> testFiles = getTestFiles();
         List<Path> testManifestFiles = getTestManifestFiles();
+        Path dataSetFile = outputDir.resolve("datasets.yaml");
+
+        ObjectNode dsNode = nf.objectNode();
+        dsNode.set("name", nf.textNode(name));
+        ArrayNode dsList = nf.arrayNode();
+
         for (int i = 0; i < partitionCount; i++) {
+            ObjectNode dsListEntry = nf.objectNode();
+            dsListEntry.set("train", nf.textNode(outputDir.relativize(trainManifestFiles.get(i)).toString()));
+            dsListEntry.set("test", nf.textNode(outputDir.relativize(testManifestFiles.get(i)).toString()));
+            dsList.add(dsListEntry);
+
             // TODO Support various columns in crossfold output
             logger.debug("writing train manifest {}", i);
-            try (OutputStream ws = Files.newOutputStream(trainManifestFiles.get(i));
-                 JsonGenerator gen = ioFactory.createGenerator(ws)) {
-                gen.writeStartArray();
-                // write the main crossfold output
-                gen.writeStartObject();
-                gen.writeStringField("type", "textfile");
-                gen.writeStringField("file", outputDir.relativize(trainFiles.get(i)).toString());
-                gen.writeStringField("format", "csv");
-                gen.writeStringField("entity_type", entityType.getName());
-                gen.writeEndObject();
+            ArrayNode trainList = nf.arrayNode();
+            ObjectNode train = nf.objectNode();
+            train.set("type", nf.textNode("textfile"));
+            train.set("file", nf.textNode(outputDir.relativize(trainFiles.get(i)).toString()));
+            train.set("format", nf.textNode("csv"));
+            train.set("entity_type", nf.textNode(entityType.getName()));
+            trainList.add(train);
 
-                // write the item output
-                if (itemData != null) {
-                    gen.writeTree(itemData);
-                }
-
-                // write the other data files
-                for (EntitySource source: data.getSources()) {
-                    if (source.getTypes().contains(entityType)) {
-                        continue; // this one was crossfolded
-                    }
-                    // TODO Support other sources in the crossfold output
-                    logger.warn("additional data sources not supported, ignoring {}", source);
-                }
-
-                gen.writeEndArray();
+            // write the item output
+            if (itemData != null) {
+                trainList.add(itemData);
             }
+
+            // write the other data files
+            for (EntitySource source: data.getSources()) {
+                if (source.getTypes().contains(entityType)) {
+                    continue; // this one was crossfolded
+                }
+                // TODO Support other sources in the crossfold output
+                logger.warn("additional data sources not supported, ignoring {}", source);
+            }
+            mapper.writeValue(trainManifestFiles.get(i).toFile(), trainList);
 
             logger.debug("writing test manifest {}", i);
-            try (OutputStream ws = Files.newOutputStream(testManifestFiles.get(i));
-                 JsonGenerator gen = ioFactory.createGenerator(ws)) {
-                gen.writeStartObject();
-                gen.writeStringField("type", "textfile");
-                gen.writeStringField("file", outputDir.relativize(testFiles.get(i)).toString());
-                gen.writeStringField("format", "csv");
-                gen.writeStringField("entity_type", entityType.getName());
-                gen.writeEndObject();
-            }
+            ObjectNode test = nf.objectNode();
+            test.set("type", nf.textNode("textfile"));
+            test.set("file", nf.textNode(outputDir.relativize(testFiles.get(i)).toString()));
+            test.set("format", nf.textNode("csv"));
+            test.set("entity_type", nf.textNode(entityType.getName()));
+            mapper.writeValue(testManifestFiles.get(i).toFile(), test);
         }
+
+        dsNode.set("datasets", dsList);
+
+        mapper.writeValue(dataSetFile.toFile(), dsNode);
 
         logger.debug("writing spec files");
         List<Path> specFiles = getSpecFiles();

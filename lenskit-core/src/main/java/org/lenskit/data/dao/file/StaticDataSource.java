@@ -42,6 +42,7 @@ import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -276,6 +277,21 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         JsonFactory factory = new YAMLFactory();
         ObjectMapper mapper = new ObjectMapper(factory);
         JsonNode node = mapper.readTree(path.toFile());
+        return fromJSON(name, node, uri);
+    }
+
+    /**
+     * Load a static file data set from a URI.
+     * @param uri The URI to load.
+     * @param name The source name.
+     * @return The data source.
+     * @throws IOException If there is an error loading the data source.
+     */
+    public static StaticDataSource load(URI uri, String name) throws IOException {
+        URL url = uri.toURL();
+        JsonFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(url);
         return fromJSON(name, node, uri);
     }
 }

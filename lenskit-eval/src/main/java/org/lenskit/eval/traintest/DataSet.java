@@ -20,21 +20,31 @@
  */
 package org.lenskit.eval.traintest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.source.DataSource;
+import org.grouplens.lenskit.data.source.TextDataSource;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.UserDAO;
 import org.lenskit.data.dao.UserListUserDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.DataSetSpec;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -243,5 +253,82 @@ public class DataSet {
             builder.setAttribute(attr.getKey(), attr.getValue());
         }
         return builder;
+    }
+
+    /**
+     * Load one or more data sets from JSON data.
+     */
+    public static List<DataSet> fromJSON(JsonNode json, URI base) throws IOException {
+        if (!json.has("name")) {
+            throw new IllegalArgumentException("no data set name");
+        }
+        String name = json.get("name").asText();
+        ImmutableList.Builder<DataSet> sets = ImmutableList.builder();
+
+        if (json.has("datasets")) {
+            JsonNode list = json.get("datasets");
+            int n = 0;
+            for (JsonNode node: list) {
+                n++;
+                sets.add(loadDataSet(node, base, name, n));
+            }
+        } else {
+
+            sets.add(loadDataSet(json, base, name, -1));
+        }
+
+        return sets.build();
+    }
+
+    /**
+     * Load a single data set.
+     * @param json The JSON node.
+     * @param base The base URI.
+     * @param name The name
+     * @param part The partition number
+     * @return The data source.
+     */
+    private static DataSet loadDataSet(JsonNode json, URI base, String name, int part) throws IOException {
+        Preconditions.checkArgument(json.has("train"), "%s: no train data specified", name);
+        Preconditions.checkArgument(json.has("test"), "%s: no test data specified", name);
+        DataSetBuilder dsb = newBuilder(name);
+        if (part >= 0) {
+            dsb.setAttribute("Partition", part);
+        }
+        String nbase = part >= 0 ? String.format("%s[%d]", name, part) : name;
+        dsb.setTrain(loadDataSource(json.get("train"), base, nbase + ".train"));
+        dsb.setTest(loadDataSource(json.get("test"), base, nbase + ".test"));
+        return dsb.build();
+    }
+
+    /**
+     * Load a single data source.
+     * @param json The JSON node.
+     * @param base The base URI.
+     * @return The data source.
+     */
+    private static DataSource loadDataSource(JsonNode json, URI base, String name) throws IOException {
+        StaticDataSource source;
+
+        if (json.isTextual()) {
+            URI uri = base.resolve(json.asText());
+            source = StaticDataSource.load(uri, name);
+        } else {
+            source = StaticDataSource.fromJSON(name, json, base);
+        }
+
+        return new TextDataSource(name, source);
+    }
+
+    /**
+     * Load one or more data sets from a YAML manifest file.
+     * @param file The path to the YAML manifest file.
+     * @return The list of data sets.
+     */
+    public static List<DataSet> load(Path file) throws IOException {
+        YAMLFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(file.toFile());
+        return fromJSON(node, file.toAbsolutePath().toUri());
     }
 }
