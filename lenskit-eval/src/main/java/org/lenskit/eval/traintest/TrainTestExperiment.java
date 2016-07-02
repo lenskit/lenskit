@@ -80,7 +80,7 @@ public class TrainTestExperiment {
     private Path userOutputFile;
     private Path cacheDir;
     private boolean shareModelComponents = true;
-    private int threadCount;
+    private int threadCount = 1;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -585,7 +585,7 @@ public class TrainTestExperiment {
             exp.setCacheDirectory(Paths.get(cacheDir));
         }
         if (json.has("thread_count")) {
-            exp.setThreadCount(json.get("thread_count").asInt());
+            exp.setThreadCount(json.get("thread_count").asInt(1));
         }
         if (json.has("share_model_components")) {
             exp.setShareModelComponents(json.get("share_model_components").asBoolean());

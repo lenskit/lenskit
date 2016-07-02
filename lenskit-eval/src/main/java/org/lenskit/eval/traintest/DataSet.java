@@ -43,10 +43,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A train-test data set.
@@ -263,7 +260,12 @@ public class DataSet {
             throw new IllegalArgumentException("no data set name");
         }
         String name = json.get("name").asText();
-        ImmutableList.Builder<DataSet> sets = ImmutableList.builder();
+        List<DataSet> sets = new ArrayList<>();
+
+        // some magic for internal train-test gradle munging
+        if (json.has("base_uri")) {
+            base = base.resolve(json.get("base_uri").asText());
+        }
 
         if (json.has("datasets")) {
             JsonNode list = json.get("datasets");
@@ -273,11 +275,22 @@ public class DataSet {
                 sets.add(loadDataSet(node, base, name, n));
             }
         } else {
-
             sets.add(loadDataSet(json, base, name, -1));
         }
 
-        return sets.build();
+        ImmutableList.Builder<DataSet> finalSets = ImmutableList.builder();
+        boolean isolate = json.has("isolate") && json.get("isolate").asBoolean();
+        if (isolate) {
+            for (DataSet set: sets) {
+                finalSets.add(set.copyBuilder()
+                                 .setIsolationGroup(UUID.randomUUID())
+                                 .build());
+            }
+        } else {
+            finalSets.addAll(sets);
+        }
+
+        return finalSets.build();
     }
 
     /**

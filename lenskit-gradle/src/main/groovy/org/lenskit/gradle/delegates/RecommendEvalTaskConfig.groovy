@@ -20,38 +20,57 @@
  */
 package org.lenskit.gradle.delegates
 
-import com.fasterxml.jackson.databind.JsonNode
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
 import org.gradle.api.Project
-import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.eval.EvalTaskSpec
-import org.lenskit.specs.eval.PredictEvalTaskSpec
 
 /**
- * Delegate for configuring evaluation tasks.
+ * Eval task configuration for recommend tasks.  These have more parameters than predict tasks.
  */
-class EvalTaskDelegate extends SpecDelegate {
-    private final EvalTaskSpec taskSpec;
+class RecommendEvalTaskConfig extends EvalTaskConfig {
+    /**
+     * The list size.
+     */
+    def int listSize = -1
 
-    public EvalTaskDelegate(Project prj, EvalTaskSpec sp) {
-        super(prj, sp)
-        taskSpec = sp
+    /**
+     * The candidate selector.
+     */
+    def String candidates
+
+    /**
+     * The exclude selector.
+     */
+    def String exclude
+
+    /**
+     * The label prefix (for column labels).
+     */
+    def String labelPrefix
+
+    RecommendEvalTaskConfig(Project prj) {
+        super(prj, 'recommend')
     }
 
-    void metric(String name) {
-        taskSpec.addMetric(name);
+    @Override
+    Map getJson() {
+        return super.getJson() + [listSize: listSize,
+                                  candidates: candidates,
+                                  exclude: exclude,
+                                  label_prefix: labelPrefix]
     }
 
-    void metric(String name, Closure block) {
-        def jsb = new JsonBuilder()
-        jsb.call(block)
-        def content = [type: name] + jsb.content
-        def node = SpecUtils.parse(JsonNode, JsonOutput.toJson(content))
-        taskSpec.addMetric(node)
+    void listSize(int sz) {
+        listSize = sz
     }
 
-    Object methodMissing(String name, Object args) {
-        return super.methodMissing(name, args)
+    void candidates(String sel) {
+        candidates = sel
+    }
+
+    void exclude(String sel) {
+        exclude = sel
+    }
+
+    void labelPrefix(String pfx) {
+        labelPrefix = pfx
     }
 }

@@ -163,6 +163,11 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         }
     }
 
+    @Override
+    File getDataSetFile() {
+        return new File(getOutputDirectory(), "datasets.yaml")
+    }
+
     /**
      * Deprecated method for user partitioning.
      * @param nop
