@@ -135,6 +135,10 @@ public class TextDataSource extends AbstractDataSource {
         }
     }
 
+    public StaticFileDAOProvider getDataProvider() {
+        return daoProvider;
+    }
+
     public File getFile() {
         return sourceFile;
     }

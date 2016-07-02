@@ -48,6 +48,8 @@ import java.util.*;
  */
 public class StaticFileDAOProvider implements Provider<DataAccessObject>, Describable {
     private static final Logger logger = LoggerFactory.getLogger(StaticFileDAOProvider.class);
+
+    private String name;
     private List<EntitySource> sources;
     private ListMultimap<EntityType, TypedName<?>> indexedAttributes;
     private transient volatile SoftReference<DataAccessObject> cachedDao;
@@ -56,8 +58,25 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * Construct a new data layout object.
      */
     public StaticFileDAOProvider() {
+        this("<unnamed>");
+    }
+
+    /**
+     * Construct a new data layout object.
+     * @param name The name of the data source.
+     */
+    public StaticFileDAOProvider(String name) {
+        this.name = name;
         sources = new ArrayList<>();
         indexedAttributes = ArrayListMultimap.create();
+    }
+
+    /**
+     * Get the name of this source.
+     * @return The source name.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
@@ -168,7 +187,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
 
     @Override
     public String toString() {
-        return String.format("static file DAO with " + sources.size() + " sources");
+        return String.format("%s: static file DAO with %d sources", name, sources.size());
     }
 
     @Override
@@ -190,6 +209,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
                 layout.addSource(EntitySources.fromJSON(null, source, base));
             }
         } else if (object.isObject()) {
+            layout.name = object.path("name").asText("<unnamed>");
             if (object.has("file") || object.has("type")) {
                 // the whole object describes one data source
                 layout.addSource(EntitySources.fromJSON(null, object, base));
@@ -207,5 +227,4 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
 
         return layout;
     }
-
 }

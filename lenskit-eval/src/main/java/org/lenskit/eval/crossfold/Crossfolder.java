@@ -20,11 +20,24 @@
  */
 package org.lenskit.eval.crossfold;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
+import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.EntitySource;
+import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.output.RatingWriter;
 import org.lenskit.data.output.RatingWriters;
 import org.lenskit.data.packed.BinaryFormatFlag;
@@ -38,15 +51,14 @@ import org.lenskit.specs.eval.PartitionMethodSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
@@ -54,11 +66,14 @@ import java.util.Random;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Crossfolder {
+    public static final String ITEM_FILE_NAME = "items.txt";
+
     private static final Logger logger = LoggerFactory.getLogger(Crossfolder.class);
 
     private Random rng;
     private String name;
     private DataSource source;
+    private EntityType entityType = CommonTypes.RATING;
     private int partitionCount = 5;
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
@@ -114,7 +129,7 @@ public class Crossfolder {
         switch (spec.getMethod()) {
         case PARTITION_RATINGS:
             logger.debug("will partition ratings");
-            cf.setMethod(CrossfoldMethods.partitionRatings());
+            cf.setMethod(CrossfoldMethods.partitionEntities());
             break;
         case PARTITION_USERS:
             logger.debug("will partition users");
@@ -130,6 +145,22 @@ public class Crossfolder {
         cf.setSource(SpecUtils.buildObject(DataSource.class, spec.getSource()));
 
         return cf;
+    }
+
+    /**
+     * Get the entity type that this crossfolder will crossfold.
+     * @return The entity type to crossfold.
+     */
+    public EntityType getEntityType() {
+        return entityType;
+    }
+
+    /**
+     * Set the entity type that this crossfolder will crossfold.
+     * @param entityType The entity type to crossfold.
+     */
+    public void setEntityType(EntityType entityType) {
+        this.entityType = entityType;
     }
 
     /**
@@ -320,7 +351,14 @@ public class Crossfolder {
             }
         }
         try {
-            createTTFiles();
+            StaticFileDAOProvider data = ((TextDataSource) source).getDataProvider();
+
+            logger.info("ensuring output directory {} exists", outputDir);
+            Files.createDirectories(outputDir);
+            logger.info("making sure item list is available");
+            JsonNode itemData = writeItemFile(data);
+            logger.info("writing train-test split files");
+            createTTFiles(data);
         } catch (IOException ex) {
             // TODO Use application-specific exception
             throw new RuntimeException("Error writing data sets", ex);
@@ -331,8 +369,16 @@ public class Crossfolder {
         return getFileList("part%02d.train." + outputFormat.getExtension());
     }
 
+    List<Path> getTrainingManifestFiles() {
+        return getFileList("part%02d.train.yaml");
+    }
+
     List<Path> getTestFiles() {
         return getFileList("part%02d.test." + outputFormat.getExtension());
+    }
+
+    List<Path> getTestManifestFiles() {
+        return getFileList("part%02d.test.yaml");
     }
 
     List<Path> getSpecFiles() {
@@ -348,15 +394,66 @@ public class Crossfolder {
     }
 
     /**
+     * Write the items to a file.
+     * @param data The input data.
+     * @return The JSON data to include in the manifest to describe the item file.
+     * @throws IOException if there's a problem writing the file.
+     */
+    @Nullable
+    private JsonNode writeItemFile(StaticFileDAOProvider data) throws IOException {
+        List<EntitySource> itemSources = data.getSourcesForType(CommonTypes.ITEM);
+        if (itemSources.isEmpty()) {
+            logger.info("writing item IDs to {}", ITEM_FILE_NAME);
+            Path itemFile = outputDir.resolve(ITEM_FILE_NAME);
+            DataAccessObject dao = data.get();
+            LongSet items = dao.getEntityIds(CommonTypes.ITEM);
+            try (BufferedWriter writer = Files.newBufferedWriter(itemFile, Charsets.UTF_8)) {
+                for (Long item: items) { // escape analysis should elide allocations
+                    writer.append(item.toString())
+                          .append(System.lineSeparator());
+                }
+            }
+
+            // make the node describing this
+            JsonNodeFactory fac = JsonNodeFactory.instance;
+            ObjectNode node = fac.objectNode();
+            node.set("type", fac.textNode("textfile"));
+            node.set("format", fac.textNode("tsv"));
+            node.set("file", fac.textNode(ITEM_FILE_NAME));
+            return node;
+        } else {
+            logger.info("input data specifies an item source, reusing that");
+            return null;
+        }
+    }
+
+    /**
      * Write train-test split files.
      *
      * @throws IOException if there is an error writing the files.
+     * @param data The input data.
      */
-    private void createTTFiles() throws IOException {
-        Files.createDirectories(outputDir);
+    private void createTTFiles(StaticFileDAOProvider data) throws IOException {
+        if (entityType != CommonTypes.RATING) {
+            logger.warn("entity type is not 'rating', crossfolding may not work correctly");
+            logger.warn("crossfolding non-rating data is a work in progress");
+        }
+
+        List<EntitySource> sources = data.getSourcesForType(entityType);
+        logger.info("crossfolding {} data from {} sources", entityType, sources);
+
+        for (EntitySource source: sources) {
+            Set<EntityType> types = source.getTypes();
+            if (types.size() > 1) {
+                logger.warn("source {} has multiple entity types", source);
+                logger.warn("the following types will be ignored: {}",
+                            Sets.difference(types, ImmutableSet.of(entityType)));
+            }
+        }
+
         try (CrossfoldOutput out = new CrossfoldOutput(this, rng)) {
             logger.info("running crossfold method {}", method);
-            method.crossfold(source, out);
+            method.crossfold(data.get(), out, entityType);
         }
 
         List<Path> specFiles = getSpecFiles();

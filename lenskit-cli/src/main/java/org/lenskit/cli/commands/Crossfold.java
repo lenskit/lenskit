@@ -28,6 +28,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.eval.crossfold.*;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.CrossfoldSpec;
@@ -105,14 +106,18 @@ public class Crossfold implements Command {
             if (!options.getBoolean("use_timestamps")) {
                 cf.setWriteTimestamps(false);
             }
+            cf.setEntityType(EntityType.forName(options.getString("entity_type")));
 
             String method = options.get("crossfold_mode");
             if (method == null) {
                 method = "partition-users";
             }
 
-            if (method.equals("partition-ratings")) {
-                cf.setMethod(CrossfoldMethods.partitionRatings());
+            if (method.equals("partition-ratings") || method.equals("partition-entities")) {
+                if (method.equals("partition-ratings")) {
+                    logger.warn("--partition-ratings is deprecated, use --partition-entities");
+                }
+                cf.setMethod(CrossfoldMethods.partitionEntities());
             } else {
                 String order = options.get("order");
                 SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.RANDOM;
@@ -171,6 +176,10 @@ public class Crossfold implements Command {
               .setDefault(true)
               .dest("use_timestamps")
               .help("don't include timestamps in output");
+        parser.addArgument("--entity-type")
+              .metavar("TYPE")
+              .setDefault("rating")
+              .help("specify the type of entity to crossfold");
 
         parser.addArgument("-k", "--partition-count")
               .metavar("K")
@@ -186,6 +195,11 @@ public class Crossfold implements Command {
             .action(Arguments.storeConst())
             .setConst("partition-users")
             .help("Partition users into K partitions (the default)");
+        mode.addArgument("--partition-entities")
+            .dest("crossfold_mode")
+            .action(Arguments.storeConst())
+            .setConst("partition-entities")
+            .help("Partition entities into K partitions");
         mode.addArgument("--partition-ratings")
             .dest("crossfold_mode")
             .action(Arguments.storeConst())

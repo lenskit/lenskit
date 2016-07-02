@@ -22,22 +22,22 @@ package org.lenskit.eval.crossfold
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
-import org.lenskit.data.dao.EventCollectionDAO
-import org.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.data.source.DataSource
-import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.data.text.TextEventDAO
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.data.dao.BridgeEventDAO
+import org.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.file.StaticFileDAOProvider
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
 import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.eval.OutputFormat
 import org.lenskit.specs.eval.DataSetSpec
+import org.lenskit.specs.eval.OutputFormat
 import org.lenskit.util.io.ObjectStreams
 
 import java.nio.file.Files
@@ -66,8 +66,10 @@ class CrossfolderTest {
                 ratings << Rating.create(user, item, rating)
             }
         }
-        sourceDAO = EventCollectionDAO.create(ratings)
-        source = new GenericDataSource("test", sourceDAO)
+        def data = new StaticFileDAOProvider("test")
+        data.addSource(ratings)
+        sourceDAO = new BridgeEventDAO(data.get());
+        source = new TextDataSource("test", data)
         cf = new Crossfolder()
         cf.source = source
         cf.setOutputDir(tmp.root)
@@ -224,7 +226,7 @@ class CrossfolderTest {
 
     @Test
     public void testPartitionRatings() {
-        cf.method = CrossfoldMethods.partitionRatings()
+        cf.method = CrossfoldMethods.partitionEntities()
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))

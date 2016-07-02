@@ -87,7 +87,7 @@ class TrainTestDisjointExperimentTest {
     private List<DataSet> crossfoldRatings() {
         def cf = new Crossfolder()
         cf.source = new CSVDataSourceBuilder().setFile(file).build()
-        cf.setMethod(CrossfoldMethods.partitionRatings())
+        cf.setMethod(CrossfoldMethods.partitionEntities())
         cf.outputDir = folder.getRoot().toPath().resolve("splits")
         cf.partitionCount = 10
         cf.execute()

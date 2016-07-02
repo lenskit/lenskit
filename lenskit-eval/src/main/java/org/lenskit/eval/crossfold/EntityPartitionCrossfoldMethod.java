@@ -23,7 +23,9 @@ package org.lenskit.eval.crossfold;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.grouplens.lenskit.data.source.DataSource;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
@@ -36,17 +38,17 @@ import java.util.List;
 /**
  * Partition ratings into outputs.
  */
-class RatingPartitionCrossfoldMethod implements CrossfoldMethod {
-    private static final Logger logger = LoggerFactory.getLogger(RatingPartitionCrossfoldMethod.class);
+class EntityPartitionCrossfoldMethod implements CrossfoldMethod {
+    private static final Logger logger = LoggerFactory.getLogger(EntityPartitionCrossfoldMethod.class);
 
     @Override
-    public void crossfold(DataSource input, CrossfoldOutput output) throws IOException {
+    public void crossfold(DataAccessObject input, CrossfoldOutput output, EntityType type) throws IOException {
         final int count = output.getCount();
-        logger.info("splitting data source {} to {} partitions by ratings",
-                    input.getName(), count);
+        logger.info("splitting {} data from {} to {} partitions by ratings", type, input, count);
+
+        // make a list ourselves so we can shuffle it, makeList lists are immutable
         List<Rating> ratings;
-        try (ObjectStream<Rating> stream = input.getEventDAO().streamEvents(Rating.class)) {
-            // make a list ourselves so we can shuffle it, makeList lists are immutable
+        try (ObjectStream<Rating> stream = input.query(type).asType(Rating.class).stream()) {
             ratings = Lists.newArrayList(stream);
         }
         Collections.shuffle(ratings);
@@ -74,7 +76,7 @@ class RatingPartitionCrossfoldMethod implements CrossfoldMethod {
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        } else if (obj instanceof RatingPartitionCrossfoldMethod) {
+        } else if (obj instanceof EntityPartitionCrossfoldMethod) {
             return true;
         } else {
             return false;
