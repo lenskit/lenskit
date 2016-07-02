@@ -28,7 +28,6 @@ import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
-import org.lenskit.specs.eval.CrossfoldSpec
 import org.lenskit.specs.eval.DataSetSpec
 
 import java.util.concurrent.Callable
@@ -37,16 +36,6 @@ import java.util.concurrent.Callable
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
  * multiple cross-validation splits.
  *
- * In addition to the methods and properties specified in this class, the crossfolder also supports all configuration
- * directives supported by the crossfold operation as defined by {@link CrossfoldSpec}.
- * For example, you can say:
- *
- * <pre><code class="groovy">
- * includeTimestamps false
- * partitionCount 10
- * </code></pre>
- *
- * @see CrossfoldSpec
  * @see DataSources
  * @see <http://mooc.lenskit.org/documentation/evaluator/data/>
  */
