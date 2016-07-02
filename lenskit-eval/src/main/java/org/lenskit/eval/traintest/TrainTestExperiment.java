@@ -568,7 +568,7 @@ public class TrainTestExperiment {
      * @return The train-test experiment.
      * @throws IOException if there is an IO error.
      */
-    private static TrainTestExperiment fromJSON(JsonNode json, Path file) throws IOException {
+    static TrainTestExperiment fromJSON(JsonNode json, Path file) throws IOException {
         TrainTestExperiment exp = new TrainTestExperiment();
 
         // configure basic settings
@@ -607,7 +607,7 @@ public class TrainTestExperiment {
         }
 
         // configure the algorithms
-        JsonNode algo = json.get("algorithms");
+        JsonNode algo = json.path("algorithms");
         if (algo.isTextual()) {
             // name of groovy file
             Path af = file.resolveSibling(algo.asText());
@@ -620,13 +620,15 @@ public class TrainTestExperiment {
                 Map.Entry<String, JsonNode> e = algoIter.next();
                 exp.addAlgorithm(e.getKey(), file.resolveSibling(e.getValue().asText()));
             }
-        } else {
+        } else if (algo.isArray()) {
             // list of groovy file names
             for (JsonNode an: algo) {
                 Path af = file.resolveSibling(an.asText());
                 String aname = Files.getFileExtension(af.getFileName().toString());
                 exp.addAlgorithm(aname, af);
             }
+        } else if (!algo.isMissingNode()) {
+            throw new IllegalArgumentException("unexpected type for algorithms config");
         }
 
         // configure the tasks and their metrics

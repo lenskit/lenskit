@@ -20,43 +20,31 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.junit.Before;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.lenskit.specs.eval.PredictEvalTaskSpec;
-import org.lenskit.specs.eval.TrainTestExperimentSpec;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class TrainTestExperimentSpecTest {
-    TrainTestExperimentSpec spec;
-
-    @Before
-    public void newSpec() {
-        spec = new TrainTestExperimentSpec();
-    }
-
     @Test
-    public void testNonEmpty() {
-        TrainTestExperiment exp = TrainTestExperiment.fromSpec(spec);
-        assertThat(exp, notNullValue());
-        assertThat(exp.getOutputFile(), nullValue());
-    }
+    public void testOutputFiles() throws IOException {
+        String json = "{\"output_file\": \"results.csv\", \"user_output_file\": \"users.csv\",\n" +
+                "  \"datasets\": [],\n" +
+                "  \"tasks\": [{\n" +
+                "    \"type\": \"predict\",\n" +
+                "    \"output_file\": \"predictions.csv\"\n" +
+                "  }]\n" +
+                "}";
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode parsed = mapper.readTree(json);
 
-    @Test
-    public void testOutputFiles() {
-        spec.setOutputFile(Paths.get("results.csv"));
-        spec.setUserOutputFile(Paths.get("users.csv"));
-        PredictEvalTaskSpec ets = new PredictEvalTaskSpec();
-        ets.setOutputFile(Paths.get("predictions.csv"));
-        spec.addTask(ets);
-        assertThat(spec.getOutputFiles(),
-                   containsInAnyOrder(Paths.get("results.csv"),
-                                      Paths.get("users.csv"),
-                                      Paths.get("predictions.csv")));
-        TrainTestExperiment exp = TrainTestExperiment.fromSpec(spec);
+        TrainTestExperiment exp = TrainTestExperiment.fromJSON(parsed, Paths.get("foo.txt"));
+
         assertThat(exp.getOutputFile(),
                    equalTo(Paths.get("results.csv")));
         assertThat(exp.getUserOutputFile(),
