@@ -20,10 +20,14 @@
  */
 package org.lenskit.eval.traintest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
+import com.google.common.io.Files;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
@@ -50,6 +54,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
@@ -541,5 +546,108 @@ public class TrainTestExperiment {
         }
 
         return exp;
+    }
+
+    /**
+     * Load a train-test experiment from a YAML file.
+     * @param file The file to load.
+     * @return The train-test experiment.
+     */
+    public static TrainTestExperiment load(Path file) throws IOException {
+        YAMLFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(file.toFile());
+
+        return fromJSON(node, file);
+    }
+
+    /**
+     * Configure a train-test experiment from JSON.
+     * @param json The JSON node.
+     * @param file The filename for resolving relative paths.
+     * @return The train-test experiment.
+     * @throws IOException if there is an IO error.
+     */
+    private static TrainTestExperiment fromJSON(JsonNode json, Path file) throws IOException {
+        TrainTestExperiment exp = new TrainTestExperiment();
+
+        // configure basic settings
+        String outFile = json.path("output_file").asText(null);
+        if (outFile != null) {
+            exp.setOutputFile(Paths.get(outFile));
+        }
+        outFile = json.path("user_output_file").asText(null);
+        if (outFile != null) {
+            exp.setUserOutputFile(Paths.get(outFile));
+        }
+        String cacheDir = json.path("cache_directory").asText(null);
+        if (cacheDir != null) {
+            exp.setCacheDirectory(Paths.get(cacheDir));
+        }
+        if (json.has("thread_count")) {
+            exp.setThreadCount(json.get("thread_count").asInt());
+        }
+        if (json.has("share_model_components")) {
+            exp.setShareModelComponents(json.get("share_model_components").asBoolean());
+        }
+        if (!json.has("datasets")) {
+            throw new IllegalArgumentException("no data sets specified");
+        }
+
+        // configure data sets
+        for (JsonNode ds: json.get("datasets")) {
+            List<DataSet> dss;
+            if (ds.isTextual()) {
+                Path dsPath = file.resolveSibling(ds.asText());
+                dss = DataSet.load(dsPath);
+            } else {
+                dss = DataSet.fromJSON(ds, file.toUri());
+            }
+            exp.addDataSets(dss);
+        }
+
+        // configure the algorithms
+        JsonNode algo = json.get("algorithms");
+        if (algo.isTextual()) {
+            // name of groovy file
+            Path af = file.resolveSibling(algo.asText());
+            String aname = Files.getFileExtension(af.getFileName().toString());
+            exp.addAlgorithm(aname, af);
+        } else if (algo.isObject()) {
+            // mapping of names to groovy files
+            Iterator<Map.Entry<String,JsonNode>> algoIter = algo.fields();
+            while (algoIter.hasNext()) {
+                Map.Entry<String, JsonNode> e = algoIter.next();
+                exp.addAlgorithm(e.getKey(), file.resolveSibling(e.getValue().asText()));
+            }
+        } else {
+            // list of groovy file names
+            for (JsonNode an: algo) {
+                Path af = file.resolveSibling(an.asText());
+                String aname = Files.getFileExtension(af.getFileName().toString());
+                exp.addAlgorithm(aname, af);
+            }
+        }
+
+        // configure the tasks and their metrics
+        JsonNode tasks = json.get("tasks");
+        for (JsonNode task: tasks) {
+            exp.addTask(configureTask(task, file));
+        }
+
+        return exp;
+    }
+
+    private static EvalTask configureTask(JsonNode task, Path file) throws IOException {
+        String type = task.path("type").asText(null);
+        Preconditions.checkArgument(type != null, "no task type specified");
+        switch (type) {
+        case "predict":
+            return PredictEvalTask.fromJSON(task, file);
+        case "recommend":
+            return RecommendEvalTask.fromJSON(task, file);
+        default:
+            throw new IllegalArgumentException("invalid eval task type " + type);
+        }
     }
 }

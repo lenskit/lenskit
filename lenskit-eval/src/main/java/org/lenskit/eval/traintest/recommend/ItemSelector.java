@@ -100,6 +100,11 @@ public abstract class ItemSelector {
         return compileSelector("user.testItems");
     }
 
+    public static ItemSelector userTrainItems() {
+        // FIXME Cache this selector
+        return compileSelector("user.trainItems");
+    }
+
     /**
      * Base class defining the environment in which item selectors are evaluated.
      */

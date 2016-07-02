@@ -20,6 +20,7 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
@@ -27,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
@@ -36,7 +38,9 @@ import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
+import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.specs.DynamicSpec;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.RecommendEvalTaskSpec;
@@ -64,33 +68,20 @@ public class RecommendEvalTask implements EvalTask {
             new TopNNDCGMetric()
     };
 
-    private final RecommendEvalTaskSpec spec;
+    private Path outputFile;
+    private String labelPrefix;
+    private int listSize = -1;
     private List<TopNMetric<?>> topNMetrics = Lists.newArrayList(DEFAULT_METRICS);
-    private volatile ItemSelector candidateSelector;
-    private volatile ItemSelector excludeSelector;
+    private volatile ItemSelector candidateSelector = ItemSelector.allItems();
+    private volatile ItemSelector excludeSelector = ItemSelector.userTrainItems();
 
     private ExperimentOutputLayout experimentOutputLayout;
     private TableWriter outputTable;
 
-    public RecommendEvalTask() {
-        this(new RecommendEvalTaskSpec());
-    }
-
-    RecommendEvalTask(RecommendEvalTaskSpec ets) {
-        spec = ets;
-        if (!ets.getMetrics().isEmpty()) {
-            // FIXME keep this in sync with the metrics
-            getTopNMetrics().clear();
-            for (DynamicSpec ms: ets.getMetrics()) {
-                TopNMetric<?> metric = SpecUtils.buildObject(TopNMetric.class, ms);
-                if (metric != null) {
-                    addMetric(metric);
-                } else {
-                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
-                }
-            }
-        }
-    }
+    /**
+     * Create a new recommend eval task.
+     */
+    public RecommendEvalTask() {}
 
     /**
      * Create a top-N eval task from a specification.
@@ -98,7 +89,72 @@ public class RecommendEvalTask implements EvalTask {
      * @return The task.
      */
     public static RecommendEvalTask fromSpec(RecommendEvalTaskSpec ets) {
-        return new RecommendEvalTask(ets);
+        RecommendEvalTask task = new RecommendEvalTask();
+
+        task.setOutputFile(ets.getOutputFile());
+        task.setLabelPrefix(ets.getLabelPrefix());
+        task.setListSize(ets.getListSize());
+        task.setCandidateSelector(ItemSelector.compileSelector(ets.getCandidateItems()));
+        task.setExcludeSelector(ItemSelector.compileSelector(ets.getExcludeItems()));
+
+        if (!ets.getMetrics().isEmpty()) {
+            // FIXME keep this in sync with the metrics
+            task.getTopNMetrics().clear();
+            for (DynamicSpec ms: ets.getMetrics()) {
+                TopNMetric<?> metric = SpecUtils.buildObject(TopNMetric.class, ms);
+                if (metric != null) {
+                    task.addMetric(metric);
+                } else {
+                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
+                }
+            }
+        }
+
+        return task;
+    }
+
+    /**
+     * Parse a recommend task from JSON.
+     * @param json The JSON data.
+     * @param file The file (for resolving relative paths).
+     * @return The task.
+     * @throws IOException If there is an I/O error.
+     */
+    public static RecommendEvalTask fromJSON(JsonNode json, Path file) throws IOException {
+        RecommendEvalTask task = new RecommendEvalTask();
+
+        String outFile = json.path("output_file").asText(null);
+        if (outFile != null) {
+            task.setOutputFile(file.resolveSibling(outFile));
+        }
+
+        task.setLabelPrefix(json.path("label_prefix").asText(null));
+        task.setListSize(json.path("list_size").asInt(-1));
+
+        String sel = json.path("candidates").asText(null);
+        if (sel != null) {
+            task.setCandidateSelector(ItemSelector.compileSelector(sel));
+        }
+        sel = json.path("exclude").asText(null);
+        if (sel != null) {
+            task.setExcludeSelector(ItemSelector.compileSelector(sel));
+        }
+
+        if (json.has("metrics")) {
+            task.topNMetrics.clear();
+            MetricLoaderHelper mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(PredictEvalTask.class),
+                                                            "topn-metrics");
+            for (JsonNode mn: json.get("metrics")) {
+                TopNMetric<?> metric = mlh.createMetric(TopNMetric.class, mn);
+                if (metric != null) {
+                    task.addMetric(metric);
+                } else {
+                    throw new RuntimeException("cannot build metric for " + mn.toString());
+                }
+            }
+        }
+
+        return task;
     }
 
     /**
@@ -106,7 +162,7 @@ public class RecommendEvalTask implements EvalTask {
      * @return The output file, or {@code null} if no file is configured.
      */
     public Path getOutputFile() {
-        return spec.getOutputFile();
+        return outputFile;
     }
 
     /**
@@ -114,7 +170,7 @@ public class RecommendEvalTask implements EvalTask {
      * @param file The output file for writing predictions. Will get a CSV file.
      */
     public void setOutputFile(Path file) {
-        spec.setOutputFile(file);
+        outputFile = file;
     }
 
     /**
@@ -122,7 +178,7 @@ public class RecommendEvalTask implements EvalTask {
      * @return The column label prefix.
      */
     public String getLabelPrefix() {
-        return spec.getLabelPrefix();
+        return labelPrefix;
     }
 
     /**
@@ -131,7 +187,7 @@ public class RecommendEvalTask implements EvalTask {
      * @param prefix The label prefix.
      */
     public void setLabelPrefix(String prefix) {
-        spec.setLabelPrefix(prefix);
+        labelPrefix = prefix;
     }
 
     /**
@@ -139,7 +195,7 @@ public class RecommendEvalTask implements EvalTask {
      * @return The number of items to recommend per user.
      */
     public int getListSize() {
-        return spec.getListSize();
+        return listSize;
     }
 
     /**
@@ -147,7 +203,7 @@ public class RecommendEvalTask implements EvalTask {
      * @param n The number of items to recommend per user.
      */
     public void setListSize(int n) {
-        spec.setListSize(n);
+        listSize = n;
     }
 
     /**
@@ -155,10 +211,6 @@ public class RecommendEvalTask implements EvalTask {
      * @return The candidate selector to use.
      */
     public ItemSelector getCandidateSelector() {
-        if (candidateSelector == null) {
-            String sel = spec.getCandidateItems();
-            candidateSelector = ItemSelector.compileSelector(sel);
-        }
         return candidateSelector;
     }
 
@@ -175,10 +227,6 @@ public class RecommendEvalTask implements EvalTask {
      * @return The exclude selector to use.
      */
     public ItemSelector getExcludeSelector() {
-        if (excludeSelector == null) {
-            String sel = spec.getExcludeItems();
-            excludeSelector = ItemSelector.compileSelector(sel);
-        }
         return excludeSelector;
     }
 
