@@ -30,14 +30,10 @@ import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.eval.crossfold.*;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.CrossfoldSpec;
 import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -77,78 +73,67 @@ public class Crossfold implements Command {
         logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter(options));
 
-        Crossfolder cf;
+        Crossfolder cf = new Crossfolder();
 
-        File specFile = options.get("spec");
-        if (specFile != null) {
-            if (!specFile.exists()) {
-                logger.error("Spec file {} does not exist", specFile);
-                throw new FileNotFoundException("specification " + specFile);
+        DataSource src = input.getSource();
+        if (src != null) {
+            cf.setSource(src);
+        }
+        Integer k = options.get("partitions");
+        if (k != null) {
+            cf.setPartitionCount(k);
+        }
+
+        OutputFormat outFmt = options.get("output_format");
+        if (outFmt != null) {
+            cf.setOutputFormat(outFmt);
+        }
+        if (!options.getBoolean("use_timestamps")) {
+            cf.setWriteTimestamps(false);
+        }
+        cf.setEntityType(EntityType.forName(options.getString("entity_type")));
+
+        String method = options.get("crossfold_mode");
+        if (method == null) {
+            method = "partition-users";
+        }
+
+        if (method.equals("partition-ratings") || method.equals("partition-entities")) {
+            if (method.equals("partition-ratings")) {
+                logger.warn("--partition-ratings is deprecated, use --partition-entities");
             }
-            CrossfoldSpec spec = SpecUtils.load(CrossfoldSpec.class, specFile.toPath());
-            cf = Crossfolder.fromSpec(spec);
+            cf.setMethod(CrossfoldMethods.partitionEntities());
         } else {
-            cf = new Crossfolder();
+            String order = options.get("order");
+            SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.RANDOM;
 
-            DataSource src = input.getSource();
-            if (src != null) {
-                cf.setSource(src);
+            HistoryPartitionMethod part = HistoryPartitions.holdout(10);
+            Integer n;
+            Double v;
+            if ((n = options.get("holdout_count")) != null) {
+                part = HistoryPartitions.holdout(n);
             }
-            Integer k = options.get("partitions");
-            if (k != null) {
-                cf.setPartitionCount(k);
+            if ((n = options.get("retain_count")) != null) {
+                part = HistoryPartitions.retain(n);
             }
-
-            OutputFormat outFmt = options.get("output_format");
-            if (outFmt != null) {
-                cf.setOutputFormat(outFmt);
-            }
-            if (!options.getBoolean("use_timestamps")) {
-                cf.setWriteTimestamps(false);
-            }
-            cf.setEntityType(EntityType.forName(options.getString("entity_type")));
-
-            String method = options.get("crossfold_mode");
-            if (method == null) {
-                method = "partition-users";
+            if ((v = options.get("holdout_fraction")) != null) {
+                part = HistoryPartitions.holdoutFraction(v);
             }
 
-            if (method.equals("partition-ratings") || method.equals("partition-entities")) {
-                if (method.equals("partition-ratings")) {
-                    logger.warn("--partition-ratings is deprecated, use --partition-entities");
-                }
-                cf.setMethod(CrossfoldMethods.partitionEntities());
-            } else {
-                String order = options.get("order");
-                SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.RANDOM;
+            n = options.get("sample_size");
 
-                HistoryPartitionMethod part = HistoryPartitions.holdout(10);
-                Integer n;
-                Double v;
-                if ((n = options.get("holdout_count")) != null) {
-                    part = HistoryPartitions.holdout(n);
-                }
-                if ((n = options.get("retain_count")) != null) {
-                    part = HistoryPartitions.retain(n);
-                }
-                if ((v = options.get("holdout_fraction")) != null) {
-                    part = HistoryPartitions.holdoutFraction(v);
-                }
-
-                n = options.get("sample_size");
-
-                if (method.equals("partition-users")) {
-                    cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
-                } else if (method.equals("sample-users")) {
-                    cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
-                }
-            }
-
-            String dir = options.get("output_dir");
-            if (dir != null) {
-                cf.setOutputDir(dir);
+            if (method.equals("partition-users")) {
+                cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
+            } else if (method.equals("sample-users")) {
+                cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
             }
         }
+
+        String dir = options.get("output_dir");
+        if (dir != null) {
+            cf.setOutputDir(dir);
+        }
+
         return cf;
     }
 
@@ -243,12 +228,6 @@ public class Crossfold implements Command {
               .setDefault("random")
               .action(Arguments.storeConst())
               .help("Test on latest ratings from each user, not random.");
-
-        parser.addArgument("spec")
-              .type(File.class)
-              .metavar("SPEC")
-              .nargs("?")
-              .help("Read crossfold configuration from SPEC (command line opts will override)");
 
         InputData.configureArguments(parser);
     }

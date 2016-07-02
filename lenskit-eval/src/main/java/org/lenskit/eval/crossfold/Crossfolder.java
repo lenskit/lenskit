@@ -49,10 +49,8 @@ import org.lenskit.data.packed.BinaryFormatFlag;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.DataSetBuilder;
 import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.CrossfoldSpec;
 import org.lenskit.specs.eval.DataSetSpec;
 import org.lenskit.specs.eval.OutputFormat;
-import org.lenskit.specs.eval.PartitionMethodSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,63 +92,6 @@ public class Crossfolder {
     public Crossfolder(String n) {
         name = n;
         rng = new Random();
-    }
-
-    /**
-     * Instantiate a crossfolder from a spec.
-     * @param spec The crossfold spec.
-     * @return The crossfolder.
-     */
-    public static Crossfolder fromSpec(CrossfoldSpec spec) {
-        Crossfolder cf = new Crossfolder();
-        cf.setName(spec.getName())
-          .setPartitionCount(spec.getPartitionCount())
-          .setWriteTimestamps(spec.getIncludeTimestamps())
-          .setOutputFormat(spec.getOutputFormat())
-          .setOutputDir(spec.getOutputDir());
-
-        SortOrder order = null;
-        HistoryPartitionMethod part = null;
-        PartitionMethodSpec pm = spec.getUserPartitionMethod();
-        if (pm != null) {
-            logger.debug("configuring partition method");
-            order = SortOrder.fromString(pm.getOrder());
-            if (pm instanceof PartitionMethodSpec.Holdout) {
-                int count = ((PartitionMethodSpec.Holdout) pm).getCount();
-                logger.debug("configuring holdout of {}", count);
-                part = HistoryPartitions.holdout(count);
-            } else if (pm instanceof PartitionMethodSpec.HoldoutFraction) {
-                double fraction = ((PartitionMethodSpec.HoldoutFraction) pm).getFraction();
-                logger.debug("configuring fraction of {}", fraction);
-                part = HistoryPartitions.holdoutFraction(fraction);
-            } else if (pm instanceof PartitionMethodSpec.Retain) {
-                int count = ((PartitionMethodSpec.Retain) pm).getCount();
-                logger.debug("configuring retain of {}", count);
-                part = HistoryPartitions.retain(count);
-            } else {
-                throw new IllegalArgumentException("invalid partition method " + pm);
-            }
-        }
-
-        switch (spec.getMethod()) {
-        case PARTITION_RATINGS:
-            logger.debug("will partition ratings");
-            cf.setMethod(CrossfoldMethods.partitionEntities());
-            break;
-        case PARTITION_USERS:
-            logger.debug("will partition users");
-            cf.setMethod(CrossfoldMethods.partitionUsers(order, part));
-            break;
-        case SAMPLE_USERS:
-            logger.debug("will sample users");
-            cf.setMethod(CrossfoldMethods.sampleUsers(order, part, spec.getSampleSize()));
-            break;
-        }
-
-        // TODO Support custom class loader
-        cf.setSource(SpecUtils.buildObject(DataSource.class, spec.getSource()));
-
-        return cf;
     }
 
     /**
