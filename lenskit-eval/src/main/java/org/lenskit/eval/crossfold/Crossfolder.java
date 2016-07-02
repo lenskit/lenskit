@@ -38,7 +38,7 @@ import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.EntitySource;
-import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
@@ -299,7 +299,7 @@ public class Crossfolder {
             }
         }
         try {
-            StaticFileDAOProvider data = ((TextDataSource) source).getDataProvider();
+            StaticDataSource data = ((TextDataSource) source).getDataProvider();
 
             logger.info("ensuring output directory {} exists", outputDir);
             Files.createDirectories(outputDir);
@@ -350,7 +350,7 @@ public class Crossfolder {
      * @throws IOException if there's a problem writing the file.
      */
     @Nullable
-    private JsonNode writeItemFile(StaticFileDAOProvider data) throws IOException {
+    private JsonNode writeItemFile(StaticDataSource data) throws IOException {
         List<EntitySource> itemSources = data.getSourcesForType(CommonTypes.ITEM);
         if (itemSources.isEmpty()) {
             logger.info("writing item IDs to {}", ITEM_FILE_NAME);
@@ -387,7 +387,7 @@ public class Crossfolder {
      * @throws IOException if there is an error writing the files.
      * @param data The input data.
      */
-    private void createTTFiles(StaticFileDAOProvider data) throws IOException {
+    private void createTTFiles(StaticDataSource data) throws IOException {
         if (entityType != CommonTypes.RATING) {
             logger.warn("entity type is not 'rating', crossfolding may not work correctly");
             logger.warn("crossfolding non-rating data is a work in progress");
@@ -411,7 +411,7 @@ public class Crossfolder {
         }
     }
 
-    private void writeManifests(StaticFileDAOProvider data, JsonNode itemData) throws IOException {
+    private void writeManifests(StaticDataSource data, JsonNode itemData) throws IOException {
         logger.debug("writing manifests");
         YAMLFactory ioFactory = new YAMLFactory();
         ioFactory.setCodec(new ObjectMapper());

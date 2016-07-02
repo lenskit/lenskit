@@ -38,13 +38,13 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class StaticFileDAOProviderTest {
+public class StaticDataSourceTest {
     private EntityFactory factory = new EntityFactory();
     private ObjectReader reader = new ObjectMapper().reader();
 
     @Test
     public void testSomeEvents() {
-        StaticFileDAOProvider layout = new StaticFileDAOProvider();
+        StaticDataSource layout = new StaticDataSource();
         List<Entity> ratings = Lists.<Entity>newArrayList(factory.rating(1L, 20L, 3.5),
                                                           factory.rating(1L, 21L, 4.5));
         layout.addSource(ratings);
@@ -82,7 +82,7 @@ public class StaticFileDAOProviderTest {
 
     @Test
     public void testIndexedEvents() {
-        StaticFileDAOProvider layout = new StaticFileDAOProvider();
+        StaticDataSource layout = new StaticDataSource();
         layout.addIndex(CommonTypes.RATING, CommonAttributes.USER_ID);
         List<Entity> ratings = Lists.<Entity>newArrayList(factory.rating(1L, 20L, 3.5),
                                                           factory.rating(1L, 21L, 4.5));
@@ -118,7 +118,7 @@ public class StaticFileDAOProviderTest {
     public void testLoadRatings() throws IOException, URISyntaxException {
         URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
         JsonNode node = reader.readTree("{\"file\": \"ratings.csv\", \"format\": \"csv\"}");
-        StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+        StaticDataSource daoProvider = StaticDataSource.fromJSON(node, baseURI);
 
         // we should have one text source for ratings
         assertThat(daoProvider.getSourcesForType(CommonTypes.RATING),
@@ -132,7 +132,7 @@ public class StaticFileDAOProviderTest {
     public void testLoadRatingsList() throws IOException, URISyntaxException {
         URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
         JsonNode node = reader.readTree("[{\"file\": \"ratings.csv\", \"format\": \"csv\"}]");
-        StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+        StaticDataSource daoProvider = StaticDataSource.fromJSON(node, baseURI);
 
         DataAccessObject dao = daoProvider.get();
         verifyRatingsCsvData(dao);
@@ -142,7 +142,7 @@ public class StaticFileDAOProviderTest {
     public void testLoadRatingsMap() throws IOException, URISyntaxException {
         URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
         JsonNode node = reader.readTree("{\"ratings\":{\"file\": \"ratings.csv\", \"format\": \"csv\"}}");
-        StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+        StaticDataSource daoProvider = StaticDataSource.fromJSON(node, baseURI);
 
         DataAccessObject dao = daoProvider.get();
         verifyRatingsCsvData(dao);
@@ -153,7 +153,7 @@ public class StaticFileDAOProviderTest {
         URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
         JsonNode node = reader.readTree("\"foobar\"");
         try {
-            StaticFileDAOProvider daoProvider = StaticFileDAOProvider.fromJSON(node, baseURI);
+            StaticDataSource daoProvider = StaticDataSource.fromJSON(node, baseURI);
             fail("JSON parsing succeeded, should have failed on string");
         } catch (IllegalArgumentException e) {
             /* expected */

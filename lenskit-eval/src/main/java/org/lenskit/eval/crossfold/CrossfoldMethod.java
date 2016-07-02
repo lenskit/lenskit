@@ -21,7 +21,6 @@
 package org.lenskit.eval.crossfold;
 
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.file.StaticFileDAOProvider;
 import org.lenskit.data.entities.EntityType;
 
 import java.io.IOException;

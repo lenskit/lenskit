@@ -51,8 +51,8 @@ import java.util.*;
  * memory, and can compute some derived entities from others (e.g. extracting items
  * from the item IDs in a rating data set).
  */
-public class StaticFileDAOProvider implements Provider<DataAccessObject>, Describable {
-    private static final Logger logger = LoggerFactory.getLogger(StaticFileDAOProvider.class);
+public class StaticDataSource implements Provider<DataAccessObject>, Describable {
+    private static final Logger logger = LoggerFactory.getLogger(StaticDataSource.class);
 
     private String name;
     private List<EntitySource> sources;
@@ -62,7 +62,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
     /**
      * Construct a new data layout object.
      */
-    public StaticFileDAOProvider() {
+    public StaticDataSource() {
         this(null);
     }
 
@@ -70,7 +70,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * Construct a new data layout object.
      * @param name The name of the data source.
      */
-    public StaticFileDAOProvider(String name) {
+    public StaticDataSource(String name) {
         this.name = name != null ? name : "<unnamed>";
         sources = new ArrayList<>();
         indexedAttributes = ArrayListMultimap.create();
@@ -215,7 +215,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @param object The JSON object.
      * @return A DAO provider configured from the JSON data.
      */
-    public static StaticFileDAOProvider fromJSON(JsonNode object, URI base) {
+    public static StaticDataSource fromJSON(JsonNode object, URI base) {
         return fromJSON(null, object, base);
     }
 
@@ -225,11 +225,11 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @param object The JSON object.
      * @return A DAO provider configured from the JSON data.
      */
-    public static StaticFileDAOProvider fromJSON(String name, JsonNode object, URI base) {
+    public static StaticDataSource fromJSON(String name, JsonNode object, URI base) {
         if (name == null && object.has("name")) {
             name = object.get("name").asText();
         }
-        StaticFileDAOProvider layout = new StaticFileDAOProvider(name);
+        StaticDataSource layout = new StaticDataSource(name);
 
         if (object.isArray()) {
             for (JsonNode source: object) {
@@ -260,7 +260,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @return The data source.
      * @throws IOException If there is an error loading the data source.
      */
-    public static StaticFileDAOProvider load(Path path) throws IOException {
+    public static StaticDataSource load(Path path) throws IOException {
         return load(path, path.getFileName().toString());
     }
 
@@ -271,7 +271,7 @@ public class StaticFileDAOProvider implements Provider<DataAccessObject>, Descri
      * @return The data source.
      * @throws IOException If there is an error loading the data source.
      */
-    public static StaticFileDAOProvider load(Path path, String name) throws IOException {
+    public static StaticDataSource load(Path path, String name) throws IOException {
         URI uri = path.toAbsolutePath().toUri();
         JsonFactory factory = new YAMLFactory();
         ObjectMapper mapper = new ObjectMapper(factory);

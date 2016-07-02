@@ -30,7 +30,7 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.*;
 import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
 import org.lenskit.data.dao.file.EntityFormat;
-import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.dao.file.TextEntitySource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
@@ -54,7 +54,7 @@ import java.util.List;
  */
 public class TextDataSource extends AbstractDataSource {
     private final String name;
-    private final StaticFileDAOProvider daoProvider;
+    private final StaticDataSource daoProvider;
     private final EventDAO legacyDAO;
     private final File sourceFile;
     private final PreferenceDomain domain;
@@ -65,7 +65,7 @@ public class TextDataSource extends AbstractDataSource {
     private final Path itemFile;
     private final Path itemNameFile;
 
-    public TextDataSource(String name, StaticFileDAOProvider provider) {
+    public TextDataSource(String name, StaticDataSource provider) {
         this.name = name;
         daoProvider = provider;
         legacyDAO = null;
@@ -87,7 +87,7 @@ public class TextDataSource extends AbstractDataSource {
         sourceFile = file;
         domain = pdom;
         format = fmt;
-        daoProvider = new StaticFileDAOProvider();
+        daoProvider = new StaticDataSource();
 
         TextEntitySource source = new TextEntitySource(name);
         source.setFile(file.toPath());
@@ -135,7 +135,7 @@ public class TextDataSource extends AbstractDataSource {
         }
     }
 
-    public StaticFileDAOProvider getDataProvider() {
+    public StaticDataSource getDataProvider() {
         return daoProvider;
     }
 

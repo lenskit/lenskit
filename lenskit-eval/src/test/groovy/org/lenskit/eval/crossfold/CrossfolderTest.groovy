@@ -31,7 +31,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.lenskit.data.dao.BridgeEventDAO
 import org.lenskit.data.dao.EventDAO
-import org.lenskit.data.dao.file.StaticFileDAOProvider
+import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.Rating
@@ -68,7 +68,7 @@ class CrossfolderTest {
                 ratings << Rating.create(user, item, rating)
             }
         }
-        def data = new StaticFileDAOProvider("test")
+        def data = new StaticDataSource("test")
         data.addSource(ratings)
         sourceDAO = new BridgeEventDAO(data.get());
         source = new TextDataSource("test", data)
@@ -145,9 +145,9 @@ class CrossfolderTest {
             assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
 
             // Can we load the train data properly?
-            StaticFileDAOProvider trainP = StaticFileDAOProvider.load(tmp.root
-                                                                        .toPath()
-                                                                        .resolve(String.format("part%02d.train.yaml", i)));
+            StaticDataSource trainP = StaticDataSource.load(tmp.root
+                                                               .toPath()
+                                                               .resolve(String.format("part%02d.train.yaml", i)));
             assertThat(trainP, notNullValue())
             def trainDao = trainP.get()
             // And does it have 100 users?
@@ -158,9 +158,9 @@ class CrossfolderTest {
                        hasSize(1))
 
             // Can we load the test data properly?
-            StaticFileDAOProvider testP = StaticFileDAOProvider.load(tmp.root
-                                                                        .toPath()
-                                                                        .resolve(String.format("part%02d.test.yaml", i)));
+            StaticDataSource testP = StaticDataSource.load(tmp.root
+                                                              .toPath()
+                                                              .resolve(String.format("part%02d.test.yaml", i)));
             assertThat(testP, notNullValue())
             def testDao = testP.get()
             // And does it have 20 users?

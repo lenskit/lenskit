@@ -36,7 +36,7 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.ItemNameDAO;
-import org.lenskit.data.dao.file.StaticFileDAOProvider;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.slf4j.Logger;
@@ -136,7 +136,7 @@ public class InputData {
 
                 return SpecUtils.buildObject(DataSource.class, spec, loader);
             } else {
-                StaticFileDAOProvider provider = StaticFileDAOProvider.fromJSON(node, sourceFile.toURI());
+                StaticDataSource provider = StaticDataSource.fromJSON(node, sourceFile.toURI());
                 return new TextDataSource(sourceFile.getName(), provider);
             }
         } catch (IOException e) {

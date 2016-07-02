@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.file.StaticFileDAOProvider;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.io.ObjectStream;
