@@ -22,22 +22,37 @@ package org.lenskit.gradle.delegates
 
 import org.gradle.api.Project
 import org.lenskit.gradle.traits.DataSources
-import org.lenskit.specs.eval.DataSetSpec
 
-class DataSetSpecDelegate extends SpecDelegate implements DataSources {
-    DataSetSpec dss
-
-    public DataSetSpecDelegate(Project prj, DataSetSpec spec) {
-        super(prj, spec);
-        dss = spec;
-    }
+class DataSetConfig implements DataSources {
+    final def Project project
 
     /**
-     * Get the map of attributes in the spec.
-     * @return The spec's attributes
+     * The data set name.
      */
-    public Map<String,Object> getAttributes() {
-        return dss.attributes
+    def String name
+
+    /**
+     * The data set attributes.
+     */
+    def Map<String,Object> attributes = new HashMap<>()
+
+    def trainSource
+    def testSource
+
+    public DataSetConfig(Project prj) {
+        project = prj
+    }
+
+    void name(String n) {
+        name = n
+    }
+
+    void trainSource(src) {
+        trainSource = src
+    }
+
+    void testSource(src) {
+        testSource = src
     }
 
     /**
@@ -46,7 +61,7 @@ class DataSetSpecDelegate extends SpecDelegate implements DataSources {
      * @param val The attribute value.
      */
     public void attribute(String name, Object val) {
-        dss.attributes[name] = val
+        attributes[name] = val
     }
 
     /**
@@ -54,6 +69,6 @@ class DataSetSpecDelegate extends SpecDelegate implements DataSources {
      * @param attrs The attributes to add.
      */
     public void attributes(Map<String,Object> attrs) {
-        dss.attributes.putAll(attrs);
+        attributes.putAll(attrs);
     }
 }

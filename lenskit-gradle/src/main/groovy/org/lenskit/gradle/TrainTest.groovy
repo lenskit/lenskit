@@ -24,10 +24,10 @@ import com.google.common.io.Files
 import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
-import org.lenskit.gradle.delegates.DataSetSpecDelegate
+import org.gradle.util.ConfigureUtil
+import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
 import org.lenskit.gradle.delegates.RecommendEvalTaskConfig
-import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.eval.DataSetSpec
 import org.lenskit.specs.eval.PredictEvalTaskSpec
 
@@ -113,8 +113,10 @@ class TrainTest extends LenskitTask {
      * Configure a train-test data set.
      * @param block A block which will be used to configureSpec a {@link DataSetSpec}.
      */
-    void dataSet(@DelegatesTo(DataSetSpecDelegate) Closure block) {
-        dataSet SpecDelegate.configureSpec(project, DataSetSpec, DataSetSpecDelegate, block)
+    void dataSet(@DelegatesTo(DataSetConfig) Closure block) {
+        def set = new DataSetConfig(project)
+        ConfigureUtil.configure(block, set)
+        dataSets.add({[name: set.name, test: set.testSource, train: set.trainSource]})
     }
 
     /**
@@ -205,8 +207,8 @@ class TrainTest extends LenskitTask {
 
     @OutputFiles
     public Set<File> getOutputFiles() {
-        Set files = [outputFile, userOutputFile].find().collect { project.file(it) }
-        files.addAll(tasks.collect({it.outputFile}).find().collect {
+        Set files = [outputFile, userOutputFile].findAll().collect { project.file(it) }
+        files.addAll(tasks.collect({it.outputFile}).findAll().collect {
             project.file(it)
         })
         return files

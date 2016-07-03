@@ -20,6 +20,7 @@
  */
 package org.lenskit.gradle
 
+import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -44,7 +45,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
     def outputDir
-    private Callable<DataSourceSpec> source
+    private Object source
     private Object srcFile
     private List<String> userPartitionArgs = []
     def String method = 'partition-users'
@@ -66,14 +67,6 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     /**
      * Set the input source.
-     * @param src
-     */
-    void input(DataSourceSpec src) {
-        source = {src}
-    }
-
-    /**
-     * Set the input source.
      * @param bld The input source.
      */
     void input(DataBuilder bld) {
@@ -89,24 +82,28 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         srcFile = file
     }
 
+    void input(Map spec) {
+        source = spec
+    }
+
     /**
      * Configure an input CSV file of ratings.  Convenience method; {@link #input(DataSourceSpec)} is more general.
      * @param csv A CSV file containing ratings.
      */
     void inputFile(Object csv) {
-        source = {
-            def src = new TextDataSourceSpec()
-            src.delimiter = ","
-            src.file = project.file(csv).toPath()
-            src
-        }
+        source = [type: "textfile",
+                  file: project.uri(csv).toString(),
+                  format: "csv"]
     }
 
     @InputFiles
     Set<File> getInputFiles() {
-        return source?.call()?.inputFiles?.collect {
-            it.toFile()
-        } ?: []
+        def files = new HashSet()
+        if (srcFile) {
+            files << srcFile
+        }
+        // TODO Extract source files
+        return files
     }
 
     @OutputDirectory
@@ -132,7 +129,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
             args << "--data-source" << project.file(srcFile)
         } else {
             project.mkdir project.buildDir
-            project.file("$project.buildDir/$name-input.json").text = SpecUtils.stringify(source.call())
+            project.file("$project.buildDir/$name-input.json").text = JsonOutput.toJson(source)
             // FIXME Don't use JSON spec
             args << "--data-source" << project.file("$project.buildDir/$name-input.json")
         }

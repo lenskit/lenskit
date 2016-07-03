@@ -39,8 +39,15 @@ trait DataSources {
      * @see TextDataSourceSpec
      * @see SpecDelegate
      */
-    DataSourceSpec textFile(Closure block) {
-        SpecDelegate.configureSpec(project, TextDataSourceSpec, block)
+    def textFile(Closure block) {
+        project.logger.warn('textFile is deprecated')
+        def spec = SpecDelegate.configureSpec(project, TextDataSourceSpec, block)
+        return [type: 'textfile',
+                file: project.uri(spec.file.toFile()).toString(),
+                format: 'delimited',
+                delimiter: spec.delimiter,
+                header: spec.headerLines,
+                event_type: 'rating']
     }
 
     /**
@@ -50,11 +57,9 @@ trait DataSources {
      * @see TextDataSourceSpec
      * @see SpecDelegate
      */
-    DataSourceSpec textFile(Object fn) {
-        def f = project.file(fn)
-        return textFile {
-            file f.toPath()
-        }
+    def textFile(Object fn) {
+        project.logger.warn('textFile is deprecated')
+        return [type: 'textfile', file: project.uri(fn), format: 'csv', event_type: 'rating']
     }
 
     /**
@@ -63,6 +68,7 @@ trait DataSources {
      * @return The data source spec.
      */
     DataSourceSpec packFile(Object fn) {
+        project.logger.warn('packFile is deprecated')
         def f = project.file(fn)
         def spec = new PackedDataSourceSpec()
         spec.file = f.toPath()
