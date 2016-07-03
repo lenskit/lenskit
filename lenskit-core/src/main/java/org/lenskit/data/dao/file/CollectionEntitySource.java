@@ -31,7 +31,7 @@ import java.util.Collection;
 /**
  * Entity source backed by a collection.
  */
-class CollectionEntitySource implements EntitySource {
+public class CollectionEntitySource implements EntitySource {
     private final ImmutableList<Entity> entities;
 
     public CollectionEntitySource(Collection<? extends Entity> es) {

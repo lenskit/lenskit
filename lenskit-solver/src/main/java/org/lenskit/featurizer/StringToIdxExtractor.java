@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StringToIdxExtractor {
+public class StringToIdxExtractor implements FeatureExtractor {
     private final String indexName;
     private final String attrName;
     private final String feaName;
