@@ -5,7 +5,10 @@ import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.featurizer.Entity;
+import org.lenskit.data.entities.BasicEntityBuilder;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
@@ -33,11 +36,12 @@ public class SVDFeatureModelItemScorer extends AbstractItemScorer {
     public List<SVDFeatureInstance> buildSVDFeatureInstance(long user, Collection<Long> items) {
         List<SVDFeatureInstance> instances = new ArrayList<>(items.size());
         for (Long item : items) {
-            Entity entity = new Entity();
-            //make userId and itemId configurable, currently it's a hard-coded string
-            entity.setCatAttr("userId", Arrays.asList(Long.valueOf(user).toString()));
-            entity.setCatAttr("itemId", Arrays.asList(item.toString()));
-            instances.add((SVDFeatureInstance)(model.featurize(entity, false)));
+            BasicEntityBuilder builder = new BasicEntityBuilder(EntityType.forName("userItemPair"));
+            builder.setAttribute(TypedName.create("userId", String.class),
+                                 Long.valueOf(user).toString());
+            builder.setAttribute(TypedName.create("itemId", String.class),
+                                 item.toString());
+            instances.add((SVDFeatureInstance)(model.featurize(builder.build(), false)));
         }
         return instances;
     }

@@ -1,6 +1,6 @@
-package org.lenskit.featurizer;
+package org.lenskit.solver;
 
-import org.lenskit.solver.LearningInstance;
+import org.lenskit.featurizer.Feature;
 
 import java.util.ArrayList;
 import java.util.List;

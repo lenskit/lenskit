@@ -1,5 +1,6 @@
 package org.lenskit.featurizer;
 
+import org.lenskit.data.entities.Entity;
 import org.lenskit.space.IndexSpace;
 
 import java.io.Serializable;

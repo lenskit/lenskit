@@ -3,7 +3,8 @@ package org.lenskit.mf.svdfeature;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
-import org.lenskit.featurizer.Entity;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.featurizer.Feature;
 import org.lenskit.featurizer.FeatureExtractor;
 import org.lenskit.featurizer.Featurizer;
@@ -105,11 +106,11 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
             ensureVectorVarSpace(ifeas);
         }
         SVDFeatureInstance ins = new SVDFeatureInstance(gfeas, ufeas, ifeas);
-        if (entity.hasNumAttr(labelName)) {
-            ins.label = entity.getNumAttr(labelName);
+        if (entity.hasAttribute(labelName)) {
+            ins.label = entity.getDouble(TypedName.create(labelName, Double.class));
         }
-        if (entity.hasNumAttr(weightName)) {
-            ins.weight = entity.getNumAttr(weightName);
+        if (entity.hasAttribute(weightName)) {
+            ins.weight = entity.getDouble(TypedName.create(weightName, Double.class));
         }
         return ins;
     }

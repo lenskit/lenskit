@@ -1,6 +1,6 @@
 package org.lenskit.mf.svdfeature;
 
-import org.lenskit.featurizer.EntityDAO;
+import org.lenskit.data.dao.file.EntitySource;
 import org.lenskit.featurizer.FeatureExtractor;
 import org.lenskit.solver.LearningData;
 import org.lenskit.solver.ObjectiveFunction;
@@ -31,7 +31,7 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
     //biasFeas, ufactFeas and ifactFeas should be from the configuration
     //especially, label and weight are hard-coded attribute name for now
     @Inject
-    public SVDFeatureModelBuilder(EntityDAO dao,
+    public SVDFeatureModelBuilder(EntitySource entitySource,
                                   List<FeatureExtractor> featureExtractors,
                                   Set<String> biasFeas,
                                   Set<String> ufactFeas,
@@ -45,7 +45,7 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
         this.method = method;
         this.model = new SVDFeatureModel(biasFeas, ufactFeas, ifactFeas, labelName, weightName,
                                          featureExtractors, biasSize, factSize, factDim, loss);
-        this.learningData = new SVDFeatureEntityDAO(dao, model);
+        this.learningData = new SVDFeatureEntityData(entitySource, model);
     }
 
     public SVDFeatureModel get() {

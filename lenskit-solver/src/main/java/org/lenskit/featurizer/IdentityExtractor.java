@@ -1,5 +1,7 @@
 package org.lenskit.featurizer;
 
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.space.IndexSpace;
 
 import java.util.ArrayList;
@@ -21,8 +23,8 @@ public class IdentityExtractor implements FeatureExtractor {
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
                                               IndexSpace indexSpace) {
         List<Feature> feaList = new ArrayList<>();
-        if (entity.hasNumAttr(attrName)) {
-            double val = entity.getNumAttr(attrName);
+        if (entity.hasAttribute(attrName)) {
+            double val = entity.getDouble(TypedName.create(attrName, Double.class));
             if (indexSpace.containsKey(indexName, attrName)) {
                 Feature feature = new Feature(
                         indexSpace.getIndexForKey(indexName, attrName), val);
