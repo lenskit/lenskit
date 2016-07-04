@@ -32,7 +32,6 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
@@ -55,11 +54,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -129,13 +127,7 @@ public class RecommendEvalTask implements EvalTask {
 
         String outFile = json.path("output_file").asText(null);
         if (outFile != null) {
-            URL outUrl = base.resolve(outFile).toURL();
-            File file = LKFileUtils.fileFromURL(outUrl);
-            if (file == null) {
-                logger.error("URI {} cannot resolve to a file", outFile);
-                throw new IllegalArgumentException("invalid file URI: " + outFile);
-            }
-            task.setOutputFile(file.toPath());
+            task.setOutputFile(Paths.get(base.resolve(outFile)));
         }
 
         task.setLabelPrefix(json.path("label_prefix").asText(null));

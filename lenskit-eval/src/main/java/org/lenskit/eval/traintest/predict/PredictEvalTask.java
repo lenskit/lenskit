@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -116,13 +117,7 @@ public class PredictEvalTask implements EvalTask {
         PredictEvalTask task = new PredictEvalTask();
         String outFile = json.path("output_file").asText(null);
         if (outFile != null) {
-            URL outUrl = base.resolve(outFile).toURL();
-            File file = LKFileUtils.fileFromURL(outUrl);
-            if (file == null) {
-                logger.error("URI {} cannot resolve to a file", outFile);
-                throw new IllegalArgumentException("invalid file URI: " + outFile);
-            }
-            task.setOutputFile(file.toPath());
+            task.setOutputFile(Paths.get(base.resolve(outFile)));
         }
 
         MetricLoaderHelper mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(PredictEvalTask.class),

@@ -52,10 +52,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -577,26 +575,15 @@ public class TrainTestExperiment {
         // configure basic settings
         String outFile = json.path("output_file").asText(null);
         if (outFile != null) {
-            URL outUrl = base.resolve(outFile).toURL();
-            File file = LKFileUtils.fileFromURL(outUrl);
-            Preconditions.checkArgument(file != null,
-                                        "invalid output file URI: %s", outFile);
-            exp.setOutputFile(file.toPath());
+            exp.setOutputFile(Paths.get(base.resolve(outFile)));
         }
         outFile = json.path("user_output_file").asText(null);
         if (outFile != null) {
-            URL outUrl = base.resolve(outFile).toURL();
-            File file = LKFileUtils.fileFromURL(outUrl);
-            Preconditions.checkArgument(file != null,
-                                        "invalid user output file URI: %s", outFile);
-            exp.setUserOutputFile(file.toPath());
+            exp.setUserOutputFile(Paths.get(base.resolve(outFile)));
         }
         String cacheDir = json.path("cache_directory").asText(null);
         if (cacheDir != null) {
-            File file = LKFileUtils.fileFromURL(base.resolve(cacheDir).toURL());
-            Preconditions.checkArgument(file != null,
-                                        "invalid cache directory URI: %s", outFile);
-            exp.setCacheDirectory(file.toPath());
+            exp.setCacheDirectory(Paths.get(base.resolve(cacheDir)));
         }
         if (json.has("thread_count")) {
             exp.setThreadCount(json.get("thread_count").asInt(1));
@@ -627,7 +614,7 @@ public class TrainTestExperiment {
             URI af = base.resolve(algo.asText());
             String aname = LKFileUtils.basename(af.getPath(), false);
             // FIXME Support algorithms from URLs
-            exp.addAlgorithm(aname, LKFileUtils.fileFromURL(af.toURL()).toPath());
+            exp.addAlgorithm(aname, Paths.get(af));
         } else if (algo.isObject()) {
             // mapping of names to groovy files
             Iterator<Map.Entry<String,JsonNode>> algoIter = algo.fields();
@@ -635,7 +622,7 @@ public class TrainTestExperiment {
                 Map.Entry<String, JsonNode> e = algoIter.next();
                 URI algoUri = base.resolve(e.getValue().asText());
                 // FIXME Support algorithms from URLs
-                exp.addAlgorithm(e.getKey(), LKFileUtils.fileFromURL(algoUri.toURL()).toPath());
+                exp.addAlgorithm(e.getKey(), Paths.get(algoUri));
             }
         } else if (algo.isArray()) {
             // list of groovy file names
@@ -643,7 +630,7 @@ public class TrainTestExperiment {
                 URI af = base.resolve(an.asText());
                 String aname = LKFileUtils.basename(af.getPath(), false);
                 // FIXME Support algorithms from URLs
-                exp.addAlgorithm(aname, LKFileUtils.fileFromURL(af.toURL()).toPath());
+                exp.addAlgorithm(aname, Paths.get(af));
             }
         } else if (!algo.isMissingNode()) {
             throw new IllegalArgumentException("unexpected type for algorithms config");

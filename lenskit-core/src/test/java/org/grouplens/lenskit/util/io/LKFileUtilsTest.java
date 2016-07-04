@@ -104,38 +104,6 @@ public class LKFileUtilsTest {
     }
 
     @Test
-    public void testHttpURLNoFile() throws MalformedURLException {
-        assertThat(LKFileUtils.fileFromURL(new URL("http://example.com/foo")),
-                   nullValue());
-    }
-
-    @Test
-    public void testNullURLNoFile() {
-        assertThat(LKFileUtils.fileFromURL(null),
-                   nullValue());
-    }
-
-    @Test
-    public void testSimpleFileURL() throws MalformedURLException {
-        assertThat(LKFileUtils.fileFromURL(new URL("file:///etc/passwd")),
-                   equalTo(new File("/etc/passwd")));
-    }
-
-    @Test
-    public void testCurrentFileURL() throws MalformedURLException {
-        File cwd = new File(".").getAbsoluteFile();
-        assertThat(LKFileUtils.fileFromURL(cwd.toURL()),
-                   equalTo(cwd));
-    }
-
-    @Test
-    public void testCurrentCanonicalFileURL() throws IOException {
-        File cwd = new File(".").getCanonicalFile();
-        assertThat(LKFileUtils.fileFromURL(cwd.toURL()),
-                   equalTo(cwd));
-    }
-
-    @Test
     public void testNoopBasename() {
         assertThat(LKFileUtils.basename("foo", true),
                    equalTo("foo"));

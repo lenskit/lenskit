@@ -31,6 +31,7 @@ import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.LineStream;
 import org.lenskit.util.io.ObjectStream;
@@ -40,13 +41,15 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 /**
@@ -174,11 +177,21 @@ public class TextEntitySource implements EntitySource, Describable {
     @Override
     public void describeTo(DescriptionWriter writer) {
         writer.putField("url", sourceURL);
-        File file = LKFileUtils.fileFromURL(sourceURL);
-        if (file != null) {
-            writer.putField("size", file.length())
-                  .putField("mtime", file.lastModified());
+        try {
+            Path path = Paths.get(sourceURL.toURI());
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+            writer.putField("size", attrs.size())
+                  .putField("mtime", attrs.lastModifiedTime());
+        } catch (NoSuchFileException | FileNotFoundException e) {
+            /* ok, file doesn't exist */
+        } catch (FileSystemNotFoundException e) {
+            /* ok, not a valid URL */
+        } catch (IOException e) {
+            throw new DataAccessException(e);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("invalid URI", e);
         }
+
     }
 
     /**
