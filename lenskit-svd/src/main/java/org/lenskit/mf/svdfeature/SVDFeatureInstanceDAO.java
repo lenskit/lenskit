@@ -3,7 +3,6 @@ package org.lenskit.mf.svdfeature;
 import org.lenskit.featurizer.Feature;
 import org.lenskit.solver.LearningData;
 
-import javax.inject.Inject;
 import java.io.*;
 
 /**
@@ -14,9 +13,7 @@ public class SVDFeatureInstanceDAO implements LearningData {
     private BufferedReader reader;
     private final String delimiter;
 
-    //add default setting for file and delim
-    @Inject
-    public SVDFeatureInstanceDAO(File sourceFile, String delimiter) 
+    public SVDFeatureInstanceDAO(File sourceFile, String delimiter)
             throws FileNotFoundException {
         this.sourceFile = sourceFile;
         this.delimiter = delimiter;
