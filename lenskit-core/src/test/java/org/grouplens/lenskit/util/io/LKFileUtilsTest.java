@@ -167,7 +167,7 @@ public class LKFileUtilsTest {
     public void testSlashPathRemoved() {
         assertThat(LKFileUtils.basename("foo/bar.txt", true),
                    equalTo("bar.txt"));
-        assertThat(LKFileUtils.basename("foo/bar.txt", true),
+        assertThat(LKFileUtils.basename("foo/bar.txt", false),
                    equalTo("bar"));
     }
 
