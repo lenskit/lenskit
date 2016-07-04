@@ -34,6 +34,8 @@ import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.ItemDAO;
 import org.lenskit.data.dao.ItemListItemDAO;
 import org.lenskit.data.dao.PrefetchingItemDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.dao.file.TextEntitySource;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -53,6 +55,7 @@ public class ML100KTestSuite {
     protected static final int SUBSET_DROP_SIZE = 20;
 
     protected File inputFile;
+    protected StaticDataSource source;
     protected EventDAO ratingDAO;
     protected EventDAO implicitDAO;
 
@@ -93,6 +96,12 @@ public class ML100KTestSuite {
         format.setDelimiter("\t")
               .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());
         implicitDAO = TextEventDAO.create(inputFile, format);
+
+        source = new StaticDataSource();
+        TextEntitySource tes = new TextEntitySource();
+        tes.setFile(inputFile.toPath());
+        tes.setFormat(org.lenskit.data.dao.file.Formats.tsvRatings());
+        source.addSource(tes);
     }
 
     public static class SubsetProvider implements Provider<ItemDAO> {
