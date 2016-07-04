@@ -181,7 +181,7 @@ public class TextEntitySource implements EntitySource, Describable {
             Path path = Paths.get(sourceURL.toURI());
             BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
             writer.putField("size", attrs.size())
-                  .putField("mtime", attrs.lastModifiedTime());
+                  .putField("mtime", attrs.lastModifiedTime().toMillis());
         } catch (NoSuchFileException | FileNotFoundException e) {
             /* ok, file doesn't exist */
         } catch (FileSystemNotFoundException e) {
