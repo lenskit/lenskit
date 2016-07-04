@@ -43,13 +43,13 @@ public class TrainTestExperimentSpecTest {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode parsed = mapper.readTree(json);
 
-        TrainTestExperiment exp = TrainTestExperiment.fromJSON(parsed, Paths.get("foo.txt"));
+        TrainTestExperiment exp = TrainTestExperiment.fromJSON(parsed, Paths.get("foo.txt").toUri());
 
         assertThat(exp.getOutputFile(),
-                   equalTo(Paths.get("results.csv")));
+                   equalTo(Paths.get("results.csv").toAbsolutePath()));
         assertThat(exp.getUserOutputFile(),
-                   equalTo(Paths.get("users.csv")));
+                   equalTo(Paths.get("users.csv").toAbsolutePath()));
         assertThat(exp.getPredictionTask().getOutputFile(),
-                   equalTo(Paths.get("predictions.csv")));
+                   equalTo(Paths.get("predictions.csv").toAbsolutePath()));
     }
 }
