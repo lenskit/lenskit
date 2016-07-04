@@ -28,8 +28,6 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.lenskit.eval.traintest.TrainTestExperiment;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.TrainTestExperimentSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
