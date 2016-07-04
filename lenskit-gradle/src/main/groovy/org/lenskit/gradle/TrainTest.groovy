@@ -31,7 +31,6 @@ import org.lenskit.gradle.delegates.EvalTaskConfig
 import org.lenskit.gradle.delegates.RecommendEvalTaskConfig
 import org.lenskit.gradle.traits.GradleUtils
 import org.lenskit.specs.eval.DataSetSpec
-import org.lenskit.specs.eval.PredictEvalTaskSpec
 
 import java.util.concurrent.Callable
 
@@ -169,7 +168,6 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * Configure a prediction task.
      * @param block The block.
-     * @see PredictEvalTaskSpec
      */
     void predict(@DelegatesTo(EvalTaskConfig) Closure block) {
         def task = new EvalTaskConfig(project, 'predict')
@@ -180,7 +178,6 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * Configure a prediction task.
      * @param block The block.
-     * @see PredictEvalTaskSpec
      */
     void recommend(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
         def task = new RecommendEvalTaskConfig(project)
