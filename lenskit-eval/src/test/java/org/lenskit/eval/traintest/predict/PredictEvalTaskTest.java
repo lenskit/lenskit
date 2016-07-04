@@ -20,42 +20,44 @@
  */
 package org.lenskit.eval.traintest.predict;
 
-import org.junit.Before;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matcher;
 import org.junit.Test;
-import org.lenskit.specs.eval.PredictEvalTaskSpec;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class PredictEvalTaskTest {
-    PredictEvalTaskSpec spec;
-
-    @Before
-    public void createSpec() {
-        spec = new PredictEvalTaskSpec();
+    static JsonNode parse(String js) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(js);
     }
 
     @Test
-    public void testCreateFromEmptySpec() {
-        PredictEvalTask task = PredictEvalTask.fromSpec(spec);
+    public void testCreateFromEmptySpec() throws IOException {
+        JsonNode json = parse("{\"type\": \"predict\"}");
+        PredictEvalTask task = PredictEvalTask.fromJSON(json, Paths.get(".").toUri());
         assertThat(task.getOutputFile(), nullValue());
+        assertThat(task.getPredictMetrics(),
+                   (Matcher) contains(PredictEvalTask.DEFAULT_METRICS));
     }
 
     @Test
-    public void testConfigureOutputFile() {
-        spec.setOutputFile(Paths.get("foo.csv"));
-        PredictEvalTask task = PredictEvalTask.fromSpec(spec);
+    public void testConfigureOutputFile() throws IOException {
+        JsonNode json = parse("{\"type\": \"predict\", \"output_file\": \"foo.csv\"}");
+        PredictEvalTask task = PredictEvalTask.fromJSON(json, Paths.get(".").toUri());
         assertThat(task.getOutputFile(),
-                   equalTo(Paths.get("foo.csv")));
+                   equalTo(Paths.get("foo.csv").toAbsolutePath()));
     }
 
     @Test
-    public void testConfigureMetrics() {
-        spec.addMetric("rmse");
-        spec.addMetric("coverage");
-        PredictEvalTask task = PredictEvalTask.fromSpec(spec);
+    public void testConfigureMetrics() throws IOException {
+        JsonNode json = parse("{\"type\": \"predict\", \"metrics\": [\"rmse\", \"coverage\"]}");
+        PredictEvalTask task = PredictEvalTask.fromJSON(json, Paths.get(".").toUri());
         assertThat(task.getPredictMetrics(),
                    contains(instanceOf(RMSEPredictMetric.class),
                             instanceOf(CoveragePredictMetric.class)));

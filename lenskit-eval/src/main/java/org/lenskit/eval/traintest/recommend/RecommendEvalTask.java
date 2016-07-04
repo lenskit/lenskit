@@ -41,9 +41,6 @@ import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
-import org.lenskit.specs.DynamicSpec;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.RecommendEvalTaskSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
@@ -84,36 +81,6 @@ public class RecommendEvalTask implements EvalTask {
      * Create a new recommend eval task.
      */
     public RecommendEvalTask() {}
-
-    /**
-     * Create a top-N eval task from a specification.
-     * @param ets The task specification.
-     * @return The task.
-     */
-    public static RecommendEvalTask fromSpec(RecommendEvalTaskSpec ets) {
-        RecommendEvalTask task = new RecommendEvalTask();
-
-        task.setOutputFile(ets.getOutputFile());
-        task.setLabelPrefix(ets.getLabelPrefix());
-        task.setListSize(ets.getListSize());
-        task.setCandidateSelector(ItemSelector.compileSelector(ets.getCandidateItems()));
-        task.setExcludeSelector(ItemSelector.compileSelector(ets.getExcludeItems()));
-
-        if (!ets.getMetrics().isEmpty()) {
-            // FIXME keep this in sync with the metrics
-            task.getTopNMetrics().clear();
-            for (DynamicSpec ms: ets.getMetrics()) {
-                TopNMetric<?> metric = SpecUtils.buildObject(TopNMetric.class, ms);
-                if (metric != null) {
-                    task.addMetric(metric);
-                } else {
-                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
-                }
-            }
-        }
-
-        return task;
-    }
 
     /**
      * Parse a recommend task from JSON.

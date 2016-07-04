@@ -38,7 +38,6 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
-import org.lenskit.specs.eval.*;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
@@ -521,32 +520,6 @@ public class TrainTestExperiment {
         Preconditions.checkState(rootJob != null, "job graph not built");
         ForkJoinPool pool = new ForkJoinPool(nthreads);
         pool.invoke(rootJob);
-    }
-
-    public static TrainTestExperiment fromSpec(TrainTestExperimentSpec spec) {
-        TrainTestExperiment exp = new TrainTestExperiment();
-        exp.setOutputFile(spec.getOutputFile());
-        exp.setUserOutputFile(spec.getUserOutputFile());
-        exp.setCacheDirectory(spec.getCacheDirectory());
-        exp.setShareModelComponents(spec.getShareModelComponents());
-        exp.setThreadCount(spec.getThreadCount());
-        for (DataSetSpec ds: spec.getDataSets()) {
-            exp.addDataSet(DataSet.fromSpec(ds));
-        }
-        for (AlgorithmSpec as: spec.getAlgorithms()) {
-            exp.addAlgorithm(as.getName(), as.getConfigFile());
-        }
-        for (EvalTaskSpec ets: spec.getTasks()) {
-            if (ets instanceof PredictEvalTaskSpec) {
-                exp.addTask(PredictEvalTask.fromSpec((PredictEvalTaskSpec) ets));
-            } else if (ets instanceof RecommendEvalTaskSpec) {
-                exp.addTask(RecommendEvalTask.fromSpec((RecommendEvalTaskSpec) ets));
-            } else {
-                throw new IllegalArgumentException("unusable eval task spec " + ets);
-            }
-        }
-
-        return exp;
     }
 
     /**

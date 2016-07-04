@@ -31,7 +31,6 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
@@ -40,9 +39,6 @@ import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
-import org.lenskit.specs.DynamicSpec;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.PredictEvalTaskSpec;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -52,10 +48,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -66,7 +60,7 @@ import java.util.*;
  */
 public class PredictEvalTask implements EvalTask {
     private static final Logger logger = LoggerFactory.getLogger(PredictEvalTask.class);
-    private static final PredictMetric<?>[] DEFAULT_METRICS = {
+    static final PredictMetric<?>[] DEFAULT_METRICS = {
             new CoveragePredictMetric(),
             new MAEPredictMetric(),
             new RMSEPredictMetric()
@@ -82,29 +76,6 @@ public class PredictEvalTask implements EvalTask {
      * Create a new eval task.
      */
     public PredictEvalTask() {
-    }
-
-    /**
-     * Create a predict eval task from a specification.
-     * @param ets The task specification.
-     * @return The task.
-     */
-    public static PredictEvalTask fromSpec(PredictEvalTaskSpec ets) {
-        // We just use the spec for storing things.
-        PredictEvalTask task = new PredictEvalTask();
-        task.setOutputFile(ets.getOutputFile());
-        if (!ets.getMetrics().isEmpty()) {
-            task.predictMetrics.clear();
-            for (DynamicSpec ms: ets.getMetrics()) {
-                PredictMetric<?> metric = SpecUtils.buildObject(PredictMetric.class, ms);
-                if (metric != null) {
-                    task.addMetric(metric);
-                } else {
-                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
-                }
-            }
-        }
-        return task;
     }
 
     /**
