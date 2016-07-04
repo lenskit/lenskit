@@ -70,6 +70,16 @@ class RecommendEvalTaskConfig extends EvalTaskConfig {
         exclude = sel
     }
 
+    void candidateItems(String sel) {
+        project.logger.warn('candidateItems is deprecated, use candidates')
+        candidates = sel
+    }
+
+    void excludeItems(String sel) {
+        project.logger.warn('excludeItems is deprecated, use exclude')
+        exclude = sel
+    }
+
     void labelPrefix(String pfx) {
         labelPrefix = pfx
     }

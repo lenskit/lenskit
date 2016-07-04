@@ -35,9 +35,9 @@ check {
         assertThat dir.exists(), equalTo(true)
         assertThat "all-partitions exists", file("$dir/all-partitions.json").exists()
         for (int i = 1; i <= 5; i++) {
-            assertThat "spec file $i exists", file(String.format("$dir/part%02d.json", i)).exists()
-            assertThat "train file $i exists", file(String.format("$dir/part%02d.train.pack", i)).exists()
-            assertThat "test file $i exists", file(String.format("$dir/part%02d.test.pack", i)).exists()
+            assertThat "spec file $i should exist", file(String.format("$dir/part%02d.json", i)).exists()
+            assertThat "train file $i should exist", file(String.format("$dir/part%02d.train.csv.gz", i)).exists()
+            assertThat "test file $i should exist", file(String.format("$dir/part%02d.test.csv.gz", i)).exists()
         }
     }
 }
