@@ -54,7 +54,7 @@ import java.util.List;
  */
 public class TextDataSource extends AbstractDataSource {
     private final String name;
-    private final StaticDataSource daoProvider;
+    private final StaticDataSource source;
     private final EventDAO legacyDAO;
     private final File sourceFile;
     private final PreferenceDomain domain;
@@ -67,7 +67,7 @@ public class TextDataSource extends AbstractDataSource {
 
     public TextDataSource(String name, StaticDataSource provider) {
         this.name = name;
-        daoProvider = provider;
+        source = provider;
         legacyDAO = null;
 
         sourceFile = null;
@@ -87,12 +87,12 @@ public class TextDataSource extends AbstractDataSource {
         sourceFile = file;
         domain = pdom;
         format = fmt;
-        daoProvider = new StaticDataSource();
+        source = new StaticDataSource();
 
         TextEntitySource source = new TextEntitySource(name);
         source.setFile(file.toPath());
         source.setFormat(format);
-        daoProvider.addSource(source);
+        this.source.addSource(source);
 
         legacyDAO = TextEventDAO.create(file, efmt, CompressionMode.AUTO);
 
@@ -102,7 +102,7 @@ public class TextDataSource extends AbstractDataSource {
             itemFmt.setEntityType(CommonTypes.ITEM);
             itemFmt.addColumn(CommonAttributes.ENTITY_ID);
             itemSource.setFormat(itemFmt);
-            daoProvider.addSource(itemSource);
+            this.source.addSource(itemSource);
 
             items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile.toFile()));
             this.itemFile = itemFile;
@@ -116,7 +116,7 @@ public class TextDataSource extends AbstractDataSource {
             itemFmt.setEntityType(CommonTypes.ITEM);
             itemFmt.addColumns(CommonAttributes.ENTITY_ID, CommonAttributes.NAME);
             itemSource.setFormat(itemFmt);
-            daoProvider.addSource(itemSource);
+            this.source.addSource(itemSource);
 
             itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile.toFile()));
             this.itemNameFile = itemNameFile;
@@ -135,8 +135,12 @@ public class TextDataSource extends AbstractDataSource {
         }
     }
 
-    public StaticDataSource getDataProvider() {
-        return daoProvider;
+    public StaticDataSource getDataSource() {
+        return source;
+    }
+
+    public DataAccessObject getDataAccessObject() {
+        return source.get();
     }
 
     public File getFile() {
@@ -159,7 +163,7 @@ public class TextDataSource extends AbstractDataSource {
 
     @Override
     public EventDAO getEventDAO() {
-        return new BridgeEventDAO(daoProvider.get());
+        return new BridgeEventDAO(source.get());
     }
 
     @Override
@@ -169,7 +173,7 @@ public class TextDataSource extends AbstractDataSource {
         } else if (itemNames != null) {
             return itemNames.get();
         } else {
-            return new BridgeItemDAO(daoProvider.get());
+            return new BridgeItemDAO(source.get());
         }
     }
 
@@ -178,29 +182,29 @@ public class TextDataSource extends AbstractDataSource {
         if (itemNames != null) {
             return itemNames.get();
         } else {
-            return new BridgeItemNameDAO(daoProvider.get());
+            return new BridgeItemNameDAO(source.get());
         }
     }
 
     @Override
     public UserEventDAO getUserEventDAO() {
-        return new BridgeUserEventDAO(daoProvider.get());
+        return new BridgeUserEventDAO(source.get());
     }
 
     @Override
     public ItemEventDAO getItemEventDAO() {
-        return new BridgeItemEventDAO(daoProvider.get());
+        return new BridgeItemEventDAO(source.get());
     }
 
     @Override
     public UserDAO getUserDAO() {
-        return new BridgeUserDAO(daoProvider.get());
+        return new BridgeUserDAO(source.get());
     }
 
     @Override
     public void configure(LenskitConfiguration config) {
         // we just use our static file DAO
-        config.bind(DataAccessObject.class).toProvider(daoProvider);
+        config.bind(DataAccessObject.class).toProvider(source);
     }
 
     @Override

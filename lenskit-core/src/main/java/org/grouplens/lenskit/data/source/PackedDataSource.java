@@ -67,6 +67,11 @@ public class PackedDataSource implements DataSource {
     }
 
     @Override
+    public DataAccessObject getDataAccessObject() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public PreferenceDomain getPreferenceDomain() {
         return domain;
     }

@@ -50,6 +50,12 @@ public interface DataSource {
     PreferenceDomain getPreferenceDomain();
 
     /**
+     * Get the data access object for this data source.
+     * @return The data access object.
+     */
+    DataAccessObject getDataAccessObject();
+
+    /**
      * Get an event DAO for this data source.
      *
      * @return A DAO factory backed by this data source.

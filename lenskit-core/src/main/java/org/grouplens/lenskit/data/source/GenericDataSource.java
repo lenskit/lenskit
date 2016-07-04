@@ -20,9 +20,14 @@
  */
 package org.grouplens.lenskit.data.source;
 
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.specs.data.DataSourceSpec;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 
 /**
  * Generic data source backed by a single DAO object, implementing at least {@link EventDAO}.  If
@@ -54,6 +59,14 @@ public class GenericDataSource extends AbstractDataSource {
     @Override
     public PreferenceDomain getPreferenceDomain() {
         return domain;
+    }
+
+    @Override
+    public DataAccessObject getDataAccessObject() {
+        // FIXME This is quite slow
+        StaticDataSource source = new StaticDataSource();
+        source.addSource(ObjectStreams.makeList(dao.streamEvents(Rating.class)));
+        return source.get();
     }
 
     @Override

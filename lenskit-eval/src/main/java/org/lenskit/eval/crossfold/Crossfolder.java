@@ -303,7 +303,7 @@ public class Crossfolder {
             }
         }
         try {
-            StaticDataSource data = ((TextDataSource) source).getDataProvider();
+            StaticDataSource data = ((TextDataSource) source).getDataSource();
 
             logger.info("ensuring output directory {} exists", outputDir);
             Files.createDirectories(outputDir);
