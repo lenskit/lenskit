@@ -287,4 +287,26 @@ public final class LKFileUtils {
             return new File(url.getPath());
         }
     }
+
+    /**
+     * Get the basename of a file path, possibly without extension.
+     * @param path The file path.
+     * @param keepExt Whether to keep the extension.
+     * @return The base name.
+     */
+    public static String basename(String path, boolean keepExt) {
+        int idx = path.lastIndexOf(File.separatorChar);
+        int idxUnix = path.lastIndexOf('/');
+        if (idxUnix > idx) {
+            idx = idxUnix;
+        }
+        String name = idx >= 0 ? path.substring(idx + 1) : path;
+        if (!keepExt) {
+            int eidx = name.lastIndexOf('.');
+            if (eidx > 0) {
+                name = name.substring(0, eidx);
+            }
+        }
+        return name;
+    }
 }

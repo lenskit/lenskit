@@ -34,6 +34,7 @@ import java.net.URL;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -132,5 +133,48 @@ public class LKFileUtilsTest {
         File cwd = new File(".").getCanonicalFile();
         assertThat(LKFileUtils.fileFromURL(cwd.toURL()),
                    equalTo(cwd));
+    }
+
+    @Test
+    public void testNoopBasename() {
+        assertThat(LKFileUtils.basename("foo", true),
+                   equalTo("foo"));
+        assertThat(LKFileUtils.basename("foo", false),
+                   equalTo("foo"));
+    }
+
+    @Test
+    public void testNoPathPreservesExtension() {
+        assertThat(LKFileUtils.basename("readme.txt", true),
+                   equalTo("readme.txt"));
+    }
+
+    @Test
+    public void testNoPathDropsExtension() {
+        assertThat(LKFileUtils.basename("readme.txt", false),
+                   equalTo("readme"));
+    }
+
+    @Test
+    public void testPathRemoved() {
+        assertThat(LKFileUtils.basename(String.format("foo%cbar.txt", File.separatorChar), true),
+                   equalTo("bar.txt"));
+        assertThat(LKFileUtils.basename(String.format("foo%cbar.txt", File.separatorChar), false),
+                   equalTo("bar"));
+    }
+
+    @Test
+    public void testSlashPathRemoved() {
+        assertThat(LKFileUtils.basename("foo/bar.txt", true),
+                   equalTo("bar.txt"));
+        assertThat(LKFileUtils.basename("foo/bar.txt", true),
+                   equalTo("bar"));
+    }
+
+    @Test
+    public void testKeepDotfileName() {
+        // dotfiles should not have extensions stripped, because they do have names
+        assertThat(LKFileUtils.basename(".dotfile", false),
+                   equalTo(".dotfile"));
     }
 }

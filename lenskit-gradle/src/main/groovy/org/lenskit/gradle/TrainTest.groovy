@@ -29,6 +29,7 @@ import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
 import org.lenskit.gradle.delegates.RecommendEvalTaskConfig
+import org.lenskit.gradle.traits.GradleUtils
 import org.lenskit.specs.eval.DataSetSpec
 import org.lenskit.specs.eval.PredictEvalTaskSpec
 
@@ -37,7 +38,7 @@ import java.util.concurrent.Callable
 /**
  * Run a train-test evaluation.
  */
-class TrainTest extends LenskitTask {
+class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The output file for recommendation output.
      */
@@ -98,7 +99,7 @@ class TrainTest extends LenskitTask {
      */
     void dataSet(Object ds) {
         inputs.file ds
-        dataSets.add({project.file(ds).toString()})
+        dataSets.add({project.uri(ds).toString()})
     }
 
     /**
@@ -118,8 +119,8 @@ class TrainTest extends LenskitTask {
         def set = new DataSetConfig(project)
         ConfigureUtil.configure(block, set)
         dataSets.add({[name: set.name,
-                       test: project.file(set.testSource).path,
-                       train: project.file(set.trainSource).path]})
+                       test: project.uri(set.testSource).toString(),
+                       train: project.uri(set.trainSource).toString()]})
     }
 
     /**
@@ -142,7 +143,7 @@ class TrainTest extends LenskitTask {
             throw new UnsupportedOperationException("isolation not currently supported")
         } else {
             dataSets.add {
-                cf.dataSetFile.path
+                makeUrl(cf.dataSetFile)
             }
         }
     }
@@ -200,14 +201,14 @@ class TrainTest extends LenskitTask {
 
     @Input
     def getJson() {
-        def json = [output_file: getOutputFile(),
-                    user_output_file: getUserOutputFile(),
-                    cache_directory: getCacheDirectory(),
-                    thread_count: getThreadCount(),
+        def json = [output_file           : makeUrl(getOutputFile()),
+                    user_output_file      : makeUrl(getUserOutputFile()),
+                    cache_directory       : makeUrl(getCacheDirectory()),
+                    thread_count          : getThreadCount(),
                     share_model_components: getShareModelComponents()]
         json.datasets = dataSets.collect {it.call()}
-        json.algorithms = algorithms.collectEntries { k, v ->
-            [k, project.file(v).path]
+        json.algorithms = algorithms.collectEntries {k, v ->
+            [k, project.uri(v).toString()]
         }
         json.tasks = evalTasks.collect({it.json})
 

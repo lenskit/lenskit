@@ -24,11 +24,12 @@ import groovy.json.JsonBuilder
 import org.gradle.api.Project
 import org.gradle.util.Configurable
 import org.gradle.util.ConfigureUtil
+import org.lenskit.gradle.traits.GradleUtils
 
 /**
  * Delegate for configuring evaluation tasks.
  */
-class EvalTaskConfig implements Configurable<EvalTaskConfig> {
+class EvalTaskConfig implements Configurable<EvalTaskConfig>, GradleUtils {
     /**
      * The task type.
      */
@@ -80,7 +81,9 @@ class EvalTaskConfig implements Configurable<EvalTaskConfig> {
     }
 
     Map getJson() {
-        return [type: type, output_file: outputFile, metrics: metrics]
+        return [type: type,
+                output_file: makeUrl(outputFile),
+                metrics: metrics]
     }
 
     @Override

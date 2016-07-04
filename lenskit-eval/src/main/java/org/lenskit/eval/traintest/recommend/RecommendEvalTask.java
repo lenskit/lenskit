@@ -32,6 +32,7 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
@@ -54,7 +55,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -116,16 +120,22 @@ public class RecommendEvalTask implements EvalTask {
     /**
      * Parse a recommend task from JSON.
      * @param json The JSON data.
-     * @param file The file (for resolving relative paths).
+     * @param base The base URI (for resolving relative paths).
      * @return The task.
      * @throws IOException If there is an I/O error.
      */
-    public static RecommendEvalTask fromJSON(JsonNode json, Path file) throws IOException {
+    public static RecommendEvalTask fromJSON(JsonNode json, URI base) throws IOException {
         RecommendEvalTask task = new RecommendEvalTask();
 
         String outFile = json.path("output_file").asText(null);
         if (outFile != null) {
-            task.setOutputFile(file.resolveSibling(outFile));
+            URL outUrl = base.resolve(outFile).toURL();
+            File file = LKFileUtils.fileFromURL(outUrl);
+            if (file == null) {
+                logger.error("URI {} cannot resolve to a file", outFile);
+                throw new IllegalArgumentException("invalid file URI: " + outFile);
+            }
+            task.setOutputFile(file.toPath());
         }
 
         task.setLabelPrefix(json.path("label_prefix").asText(null));

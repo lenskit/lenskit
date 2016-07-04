@@ -42,6 +42,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -346,5 +348,21 @@ public class DataSet {
         ObjectMapper mapper = new ObjectMapper(factory);
         JsonNode node = mapper.readTree(file.toFile());
         return fromJSON(node, file.toAbsolutePath().toUri());
+    }
+
+    /**
+     * Load one or more data sets from a YAML manifest file.
+     * @param url The URL of a the YAML manifest file.
+     * @return The list of data sets.
+     */
+    public static List<DataSet> load(URL url) throws IOException {
+        YAMLFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(url);
+        try {
+            return fromJSON(node, url.toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("URL is not a valid URI", e);
+        }
     }
 }

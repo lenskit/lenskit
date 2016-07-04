@@ -31,6 +31,7 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
@@ -51,7 +52,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -105,14 +109,20 @@ public class PredictEvalTask implements EvalTask {
     /**
      * Create a predict eval task from a JSON/YAML file.
      * @param json The task specification.
-     * @param file The file from which `json` came, used for resolving relative paths.
+     * @param base The base URI from which `json` came, used for resolving relative paths.
      * @return The task.
      */
-    public static PredictEvalTask fromJSON(JsonNode json, Path file) throws IOException {
+    public static PredictEvalTask fromJSON(JsonNode json, URI base) throws IOException {
         PredictEvalTask task = new PredictEvalTask();
         String outFile = json.path("output_file").asText(null);
         if (outFile != null) {
-            task.setOutputFile(file.resolveSibling(outFile));
+            URL outUrl = base.resolve(outFile).toURL();
+            File file = LKFileUtils.fileFromURL(outUrl);
+            if (file == null) {
+                logger.error("URI {} cannot resolve to a file", outFile);
+                throw new IllegalArgumentException("invalid file URI: " + outFile);
+            }
+            task.setOutputFile(file.toPath());
         }
 
         MetricLoaderHelper mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(PredictEvalTask.class),

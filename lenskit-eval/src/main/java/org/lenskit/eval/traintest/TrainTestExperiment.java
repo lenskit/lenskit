@@ -27,13 +27,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
-import com.google.common.io.Files;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
@@ -52,7 +52,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -558,31 +561,42 @@ public class TrainTestExperiment {
         ObjectMapper mapper = new ObjectMapper(factory);
         JsonNode node = mapper.readTree(file.toFile());
 
-        return fromJSON(node, file);
+        return fromJSON(node, file.toUri());
     }
 
     /**
      * Configure a train-test experiment from JSON.
      * @param json The JSON node.
-     * @param file The filename for resolving relative paths.
+     * @param base The base URI for resolving relative paths.
      * @return The train-test experiment.
      * @throws IOException if there is an IO error.
      */
-    static TrainTestExperiment fromJSON(JsonNode json, Path file) throws IOException {
+    static TrainTestExperiment fromJSON(JsonNode json, URI base) throws IOException {
         TrainTestExperiment exp = new TrainTestExperiment();
 
         // configure basic settings
         String outFile = json.path("output_file").asText(null);
         if (outFile != null) {
-            exp.setOutputFile(Paths.get(outFile));
+            URL outUrl = base.resolve(outFile).toURL();
+            File file = LKFileUtils.fileFromURL(outUrl);
+            Preconditions.checkArgument(file != null,
+                                        "invalid output file URI: %s", outFile);
+            exp.setOutputFile(file.toPath());
         }
         outFile = json.path("user_output_file").asText(null);
         if (outFile != null) {
-            exp.setUserOutputFile(Paths.get(outFile));
+            URL outUrl = base.resolve(outFile).toURL();
+            File file = LKFileUtils.fileFromURL(outUrl);
+            Preconditions.checkArgument(file != null,
+                                        "invalid user output file URI: %s", outFile);
+            exp.setUserOutputFile(file.toPath());
         }
         String cacheDir = json.path("cache_directory").asText(null);
         if (cacheDir != null) {
-            exp.setCacheDirectory(Paths.get(cacheDir));
+            File file = LKFileUtils.fileFromURL(base.resolve(cacheDir).toURL());
+            Preconditions.checkArgument(file != null,
+                                        "invalid cache directory URI: %s", outFile);
+            exp.setCacheDirectory(file.toPath());
         }
         if (json.has("thread_count")) {
             exp.setThreadCount(json.get("thread_count").asInt(1));
@@ -598,10 +612,10 @@ public class TrainTestExperiment {
         for (JsonNode ds: json.get("datasets")) {
             List<DataSet> dss;
             if (ds.isTextual()) {
-                Path dsPath = file.resolveSibling(ds.asText());
-                dss = DataSet.load(dsPath);
+                URI dsURI = base.resolve(ds.asText());
+                dss = DataSet.load(dsURI.toURL());
             } else {
-                dss = DataSet.fromJSON(ds, file.toUri());
+                dss = DataSet.fromJSON(ds, base);
             }
             exp.addDataSets(dss);
         }
@@ -610,22 +624,26 @@ public class TrainTestExperiment {
         JsonNode algo = json.path("algorithms");
         if (algo.isTextual()) {
             // name of groovy file
-            Path af = file.resolveSibling(algo.asText());
-            String aname = Files.getFileExtension(af.getFileName().toString());
-            exp.addAlgorithm(aname, af);
+            URI af = base.resolve(algo.asText());
+            String aname = LKFileUtils.basename(af.getPath(), false);
+            // FIXME Support algorithms from URLs
+            exp.addAlgorithm(aname, LKFileUtils.fileFromURL(af.toURL()).toPath());
         } else if (algo.isObject()) {
             // mapping of names to groovy files
             Iterator<Map.Entry<String,JsonNode>> algoIter = algo.fields();
             while (algoIter.hasNext()) {
                 Map.Entry<String, JsonNode> e = algoIter.next();
-                exp.addAlgorithm(e.getKey(), file.resolveSibling(e.getValue().asText()));
+                URI algoUri = base.resolve(e.getValue().asText());
+                // FIXME Support algorithms from URLs
+                exp.addAlgorithm(e.getKey(), LKFileUtils.fileFromURL(algoUri.toURL()).toPath());
             }
         } else if (algo.isArray()) {
             // list of groovy file names
             for (JsonNode an: algo) {
-                Path af = file.resolveSibling(an.asText());
-                String aname = Files.getFileExtension(af.getFileName().toString());
-                exp.addAlgorithm(aname, af);
+                URI af = base.resolve(an.asText());
+                String aname = LKFileUtils.basename(af.getPath(), false);
+                // FIXME Support algorithms from URLs
+                exp.addAlgorithm(aname, LKFileUtils.fileFromURL(af.toURL()).toPath());
             }
         } else if (!algo.isMissingNode()) {
             throw new IllegalArgumentException("unexpected type for algorithms config");
@@ -634,20 +652,20 @@ public class TrainTestExperiment {
         // configure the tasks and their metrics
         JsonNode tasks = json.get("tasks");
         for (JsonNode task: tasks) {
-            exp.addTask(configureTask(task, file));
+            exp.addTask(configureTask(task, base));
         }
 
         return exp;
     }
 
-    private static EvalTask configureTask(JsonNode task, Path file) throws IOException {
+    private static EvalTask configureTask(JsonNode task, URI base) throws IOException {
         String type = task.path("type").asText(null);
         Preconditions.checkArgument(type != null, "no task type specified");
         switch (type) {
         case "predict":
-            return PredictEvalTask.fromJSON(task, file);
+            return PredictEvalTask.fromJSON(task, base);
         case "recommend":
-            return RecommendEvalTask.fromJSON(task, file);
+            return RecommendEvalTask.fromJSON(task, base);
         default:
             throw new IllegalArgumentException("invalid eval task type " + type);
         }
