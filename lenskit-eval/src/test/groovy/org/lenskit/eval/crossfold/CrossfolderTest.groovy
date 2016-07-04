@@ -36,8 +36,6 @@ import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
-import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.eval.DataSetSpec
 import org.lenskit.specs.eval.OutputFormat
 import org.lenskit.util.io.ObjectStreams
 
@@ -125,24 +123,21 @@ class CrossfolderTest {
         assertThat(Files.exists(tmp.root.toPath().resolve("items.txt")),
                    equalTo(true));
 
+        def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+
         for (int i = 1; i <= 5; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(specFile), equalTo(true))
             assertThat(tmp.root.toPath().resolve(String.format("part%02d.train.yaml", i)).toFile(),
                        existingFile())
             assertThat(tmp.root.toPath().resolve(String.format("part%02d.test.yaml", i)).toFile(),
                        existingFile())
-            def spec = SpecUtils.load(DataSetSpec, specFile)
-            def obj = DataSet.fromSpec(spec)
+            def obj = dataSets[i-1]
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
-            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
 
             // Can we load the train data properly?
             StaticDataSource trainP = StaticDataSource.load(tmp.root
@@ -209,20 +204,19 @@ class CrossfolderTest {
             }
         }
         assertThat(allUsers, hasSize(100))
+
+        def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+
         for (int i = 1; i <= 10; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(DataSetSpec, specFile)
-            def obj = DataSet.fromSpec(spec)
+
+            def obj = dataSets[i-1]
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
-            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
         }
     }
 
@@ -253,20 +247,19 @@ class CrossfolderTest {
             }
         }
         assertThat(allUsers, hasSize(25))
+
+        def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+
         for (int i = 1; i <= 5; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(DataSetSpec, specFile)
-            def obj = DataSet.fromSpec(spec)
+
+            def obj = dataSets[i-1]
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i-1].trainingData.legacyDAO.inputFile))
-            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i-1].testData.legacyDAO.inputFile))
         }
     }
 
@@ -299,20 +292,19 @@ class CrossfolderTest {
             assertThat(tes.size() + events.size(), equalTo(ratings.size()))
         }
         assertThat(allEvents, hasSize(ratings.size()))
+
+        def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+
         for (int i = 1; i <= 5; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(DataSetSpec, specFile)
-            def obj = DataSet.fromSpec(spec)
+
+            def obj = dataSets[i-1]
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.legacyDAO.inputFile, equalTo(dss[i - 1].trainingData.legacyDAO.inputFile))
-            assertThat(obj.testData.legacyDAO.inputFile, equalTo(dss[i - 1].testData.legacyDAO.inputFile))
         }
     }
 

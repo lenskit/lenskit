@@ -93,22 +93,6 @@ public class DataSet {
     }
 
     /**
-     * Create a train-test data set from a specification.
-     * @param spec The specification.
-     * @return The train-test data set.
-     */
-    public static DataSet fromSpec(DataSetSpec spec) {
-        DataSetBuilder bld = new DataSetBuilder();
-        // TODO support query sets
-        bld.setName(spec.getName())
-           .setTest(SpecUtils.buildObject(DataSource.class, spec.getTestSource()))
-           .setTrain(SpecUtils.buildObject(DataSource.class, spec.getTrainSource()))
-           .setIsolationGroup(spec.getIsolationGroup());
-        bld.getAttributes().putAll(spec.getAttributes());
-        return bld.build();
-    }
-
-    /**
      * Get the data set name.
      *
      * @return A name for the data set. Used in the output file.
@@ -185,16 +169,6 @@ public class DataSet {
         trainData.configure(config);
         config.bind(QueryData.class, UserDAO.class)
               .to(new UserListUserDAO(getTestData().getUserDAO().getUserIds()));
-    }
-
-    public DataSetSpec toSpec() {
-        DataSetSpec spec = new DataSetSpec();
-        spec.setName(name);
-        spec.setTrainSource(trainData.toSpec());
-        spec.setTestSource(testData.toSpec());
-        spec.setAttributes(attributes);
-        // TODO support query data
-        return spec;
     }
 
     @Override

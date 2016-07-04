@@ -45,8 +45,6 @@ import org.lenskit.data.output.RatingWriter;
 import org.lenskit.data.output.RatingWriters;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.DataSetBuilder;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.DataSetSpec;
 import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -477,22 +475,6 @@ public class Crossfolder {
         dsNode.set("datasets", dsList);
 
         mapper.writeValue(dataSetFile.toFile(), dsNode);
-
-        logger.debug("writing spec files");
-        List<Path> specFiles = getSpecFiles();
-        List<DataSet> dataSets = getDataSets();
-        Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
-        List<Object> specs = new ArrayList<>(partitionCount);
-        assert dataSets.size() == partitionCount;
-        for (int i = 0; i < partitionCount; i++) {
-            Path file = specFiles.get(i);
-            DataSet ds = dataSets.get(i);
-            DataSetSpec spec = ds.toSpec();
-            specs.add(spec);
-            SpecUtils.write(spec, file);
-        }
-
-        SpecUtils.write(specs, fullSpecFile);
     }
 
     /**
