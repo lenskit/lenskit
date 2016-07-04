@@ -26,6 +26,7 @@ import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -52,4 +53,10 @@ public interface EntitySource {
      */
     @Nonnull
     ObjectStream<Entity> openStream() throws IOException;
+
+    /**
+     * Get metadata from this entity source.
+     */
+    @Nonnull
+    Map<String,Object> getMetadata();
 }

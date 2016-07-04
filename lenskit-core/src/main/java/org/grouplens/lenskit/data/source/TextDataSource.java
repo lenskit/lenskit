@@ -71,8 +71,7 @@ public class TextDataSource extends AbstractDataSource {
         legacyDAO = null;
 
         sourceFile = null;
-        // FIXME Support preference domains
-        domain = null;
+        domain = provider.getPreferenceDomain();
 
         format = null;
         items = null;

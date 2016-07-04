@@ -56,10 +56,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Partitions a data set for cross-validation.
@@ -321,7 +318,11 @@ public class Crossfolder {
             logger.info("writing train-test split files");
             createTTFiles(data);
             logger.info("writing manifests and specs");
-            writeManifests(data, itemDataInfo);
+            Map<String,Object> metadata = new HashMap<>();
+            for (EntitySource src: data.getSourcesForType(entityType)) {
+                metadata.putAll(src.getMetadata());
+            }
+            writeManifests(data, metadata, itemDataInfo);
         } catch (IOException ex) {
             // TODO Use application-specific exception
             throw new RuntimeException("Error writing data sets", ex);
@@ -424,7 +425,7 @@ public class Crossfolder {
         }
     }
 
-    private void writeManifests(StaticDataSource data, JsonNode itemData) throws IOException {
+    private void writeManifests(StaticDataSource data, Map<String,Object> meta, JsonNode itemData) throws IOException {
         logger.debug("writing manifests");
         YAMLFactory ioFactory = new YAMLFactory();
         ObjectMapper mapper = new ObjectMapper(ioFactory);
@@ -455,6 +456,7 @@ public class Crossfolder {
             train.set("file", nf.textNode(outputDir.relativize(trainFiles.get(i)).toString()));
             train.set("format", nf.textNode("csv"));
             train.set("entity_type", nf.textNode(entityType.getName()));
+            train.set("metadata", mapper.valueToTree(meta));
             trainList.add(train);
 
             // write the item output
@@ -478,6 +480,7 @@ public class Crossfolder {
             test.set("file", nf.textNode(outputDir.relativize(testFiles.get(i)).toString()));
             test.set("format", nf.textNode("csv"));
             test.set("entity_type", nf.textNode(entityType.getName()));
+            test.set("metadata", mapper.valueToTree(meta));
             mapper.writeValue(testManifestFiles.get(i).toFile(), test);
         }
 

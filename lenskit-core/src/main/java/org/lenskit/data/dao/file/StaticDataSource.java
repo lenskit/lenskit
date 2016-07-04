@@ -33,11 +33,14 @@ import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -90,7 +93,16 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
      * @param data The entities to add.
      */
     public void addSource(Collection<? extends Entity> data) {
-        sources.add(new CollectionEntitySource("<unnamed " + data.size() + ">", data));
+        addSource(data, Collections.<String, Object>emptyMap());
+    }
+
+    /**
+     * Add a collection data source.
+     * @param data The entities to add.
+     * @param metadata The entity source metadata.
+     */
+    public void addSource(Collection<? extends Entity> data, Map<String,Object> metadata) {
+        sources.add(new CollectionEntitySource("<unnamed " + data.size() + ">", data, metadata));
     }
 
     /**
@@ -159,6 +171,29 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         }
 
         return dao;
+    }
+
+    @Nullable
+    public PreferenceDomain getPreferenceDomain() {
+        PreferenceDomain domain = null;
+        for (EntitySource src: getSourcesForType(CommonTypes.RATING)) {
+            Map<String,Object> meta = src.getMetadata();
+            if (meta.containsKey("domain")) {
+                if (domain != null) {
+                    logger.warn("multiple rating sources have domains");
+                }
+                Map<String,Object> dom = (Map<String, Object>) meta.get("domain");
+                PreferenceDomainBuilder pdb = new PreferenceDomainBuilder();
+                pdb.setMinimum(((Number) dom.get("minimum")).doubleValue())
+                   .setMaximum(((Number) dom.get("maximum")).doubleValue());
+                Number prec = (Number) dom.get("precision");
+                if (prec != null) {
+                    pdb.setPrecision(prec.doubleValue());
+                }
+                domain = pdb.build();
+            }
+        }
+        return domain;
     }
 
     private DataAccessObject makeDAO() throws IOException {

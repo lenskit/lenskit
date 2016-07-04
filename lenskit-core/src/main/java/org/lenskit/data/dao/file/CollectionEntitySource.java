@@ -21,6 +21,7 @@
 package org.lenskit.data.dao.file;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
@@ -31,6 +32,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -41,13 +43,14 @@ class CollectionEntitySource implements EntitySource, Serializable {
     private final String name;
     private final ImmutableList<Entity> entities;
     private final ImmutableSet<EntityType> types;
+    private final ImmutableMap<String, Object> metadata;
 
     /**
      * Construct a new collection entity source.
      * @param n The source name.
      * @param es The entities.
      */
-    public CollectionEntitySource(String n, Collection<? extends Entity> es) {
+    public CollectionEntitySource(String n, Collection<? extends Entity> es, Map<String,Object> meta) {
         name = n;
         entities = ImmutableList.copyOf(es);
         ImmutableSet.Builder<EntityType> tb = ImmutableSet.builder();
@@ -55,6 +58,7 @@ class CollectionEntitySource implements EntitySource, Serializable {
             tb.add(e.getType());
         }
         types = tb.build();
+        metadata = ImmutableMap.copyOf(meta);
     }
 
     @Nonnull
@@ -72,5 +76,10 @@ class CollectionEntitySource implements EntitySource, Serializable {
     @Override
     public ObjectStream<Entity> openStream() throws IOException {
         return ObjectStreams.wrap(entities);
+    }
+
+    @Override
+    public Map<String, Object> getMetadata() {
+        return metadata;
     }
 }

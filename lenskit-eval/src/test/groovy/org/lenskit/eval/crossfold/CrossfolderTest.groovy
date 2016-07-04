@@ -33,10 +33,10 @@ import org.lenskit.data.dao.EventDAO
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.PreferenceDomain
 import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
 import org.lenskit.specs.eval.OutputFormat
-import org.lenskit.util.io.ObjectStreams
 
 import java.nio.file.Files
 
@@ -61,12 +61,12 @@ class CrossfolderTest {
         Generator<Integer> sizes = integers(20, 50);
         for (user in toIterable(longs(1, 1000000000), 100)) {
             for (item in toIterable(longs(), sizes.next())) {
-                double rating = doubles().next()
+                double rating = doubles(1,5).next()
                 ratings << Rating.create(user, item, rating)
             }
         }
         def data = new StaticDataSource("test")
-        data.addSource(ratings)
+        data.addSource(ratings, [domain: [minimum: 1, maximum: 5]])
         sourceDAO = new BridgeEventDAO(data.get());
         source = new TextDataSource("test", data)
         cf = new Crossfolder()
@@ -134,6 +134,10 @@ class CrossfolderTest {
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
+            assertThat(obj.trainingData.source.preferenceDomain,
+                       equalTo(PreferenceDomain.fromString("[1,5]")))
+            assertThat(obj.testData.source.preferenceDomain,
+                       equalTo(PreferenceDomain.fromString("[1,5]")))
 
             // Can we load the train data properly?
             StaticDataSource trainP = StaticDataSource.load(tmp.root

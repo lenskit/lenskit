@@ -87,10 +87,12 @@ class InputDataTest {
         file.text = """{
   "file": "foo.tsv",
   "delimiter": "\\t",
+  "metadata": {
   "domain": {
     "minimum": 0.5,
     "maximum": 5.0,
     "precision": 0.5
+  }
   }
 }"""
         def data = parse('--data-source', file.absolutePath)
@@ -98,7 +100,6 @@ class InputDataTest {
         def input = data.source as StaticDataSource
         assertThat(input.sources[0].file.fileName.toString(), equalTo('foo.tsv'))
         assertThat(input.sources[0].format.delimiter, equalTo('\t'))
-        // FIXME Re-enable preference domains
-        // assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
+        assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
     }
 }

@@ -21,6 +21,7 @@
 package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -61,6 +62,7 @@ public class TextEntitySource implements EntitySource, Describable {
     private CharSource source;
     private URL sourceURL;
     private EntityFormat format;
+    private Map<String,Object> metadata = new HashMap<>();
 
     /**
      * Construct a new text entity source.
@@ -157,6 +159,11 @@ public class TextEntitySource implements EntitySource, Describable {
      */
     public EntityFormat getFormat() {
         return format;
+    }
+
+    @Override
+    public Map<String, Object> getMetadata() {
+        return metadata;
     }
 
     /**
@@ -318,6 +325,16 @@ public class TextEntitySource implements EntitySource, Describable {
             }
         }
         logger.debug("{}: using entity builder {}", format.getEntityBuilder());
+
+        JsonNode metaNode = object.get("metadata");
+        if (metaNode != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                source.metadata = mapper.readerFor(Map.class).readValue(metaNode);
+            } catch (IOException e) {
+                throw new IllegalArgumentException("cannnot process metadata", e);
+            }
+        }
 
         source.setFormat(format);
         return source;
