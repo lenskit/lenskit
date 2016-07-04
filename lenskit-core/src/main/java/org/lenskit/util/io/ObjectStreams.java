@@ -180,6 +180,34 @@ public final class ObjectStreams {
     }
 
     /**
+     * Count the items in a stream.
+     *
+     * @param objectStream The object stream.
+     * @return The number of items in the stream.
+     */
+    @SuppressWarnings("PMD.LooseCoupling")
+    public static int count(@WillClose ObjectStream<?> objectStream) {
+        try {
+            if (objectStream instanceof IteratorObjectStream) {
+                List<?> list  = ((IteratorObjectStream) objectStream).getList();
+                if (list != null) {
+                    return list.size();
+                }
+            }
+
+            int n = 0;
+            Object obj = objectStream.readObject();
+            while (obj != null) {
+                n++;
+                obj = objectStream.readObject();
+            }
+            return n;
+        } finally {
+            objectStream.close();
+        }
+    }
+
+    /**
      * Sort an object stream.  This reads the original object stream into a list, sorts it, and
      * returns a new object stream backed by the list (after closing the original object stream).
      *

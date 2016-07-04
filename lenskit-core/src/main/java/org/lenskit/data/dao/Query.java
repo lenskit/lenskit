@@ -129,4 +129,12 @@ public class Query<E extends Entity> {
     public List<E> get() {
         return ObjectStreams.makeList(stream());
     }
+
+    /**
+     * Get the number of results the query would return.
+     * @return The number of entities returned by the query.
+     */
+    public int count() {
+        return ObjectStreams.count(stream());
+    }
 }
