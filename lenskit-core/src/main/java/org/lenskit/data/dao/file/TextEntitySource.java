@@ -116,6 +116,18 @@ public class TextEntitySource implements EntitySource, Describable {
     }
 
     /**
+     * Get the input file path.
+     * @return The input file path.
+     */
+    public Path getFile() {
+        try {
+            return Paths.get(sourceURL.toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("invalid path URI " + sourceURL, e);
+        }
+    }
+
+    /**
      * Get the source file for this data source.
      * @return The source file.
      */

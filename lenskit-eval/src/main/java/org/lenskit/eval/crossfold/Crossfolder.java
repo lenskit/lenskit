@@ -193,13 +193,22 @@ public class Crossfolder {
     }
 
     /**
+     * Set the data source.
+     * @param src
+     * @return The crossfolder (for chaining)
+     */
+    public Crossfolder setSource(StaticDataSource src) {
+        return setSource(new TextDataSource(src.getName(), src));
+    }
+
+    /**
      * Set the input data source.
      *
-     * @param source The data source to use.
-     * @return The CrossfoldCommand object  (for chaining)
+     * @param src The data source to use.
+     * @return The crossfolder (for chaining).
      */
-    public Crossfolder setSource(DataSource source) {
-        this.source = source;
+    public Crossfolder setSource(DataSource src) {
+        source = src;
         return this;
     }
 

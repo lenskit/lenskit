@@ -22,8 +22,8 @@ package org.lenskit.cli
 
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
+import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.PreferenceDomain
-import org.grouplens.lenskit.data.source.PackedDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.junit.Test
 import org.lenskit.cli.util.InputData
@@ -51,49 +51,40 @@ class InputDataTest {
     @Test
     public void testCSVFile() {
         def data = parse('--csv-file', 'foo.csv')
-        def input = data.source as TextDataSource
-        assertThat(input.file.name, equalTo('foo.csv'))
-        assertThat(input.format.delimiter, equalTo(','))
+        def input = data.source as StaticDataSource
+        assertThat(input.sources[0].file.fileName.toString(),
+                   equalTo('foo.csv'))
+        assertThat(input.sources[0].format.delimiter, equalTo(','))
     }
 
     @Test
     public void testTSVFile() {
         def data = parse('--tsv-file', 'foo.tsv')
-        def input = data.source as TextDataSource
-        assertThat(input.file.name, equalTo('foo.tsv'))
-        assertThat(input.format.delimiter, equalTo('\t'))
+        def input = data.source as StaticDataSource
+        assertThat(input.sources[0].file.fileName.toString(), equalTo('foo.tsv'))
+        assertThat(input.sources[0].format.delimiter, equalTo('\t'))
     }
 
     @Test
     public void testRatingFile() {
         def data = parse('--ratings-file', 'foo.tsv', '-d', '\t')
-        def input = data.source as TextDataSource
-        assertThat(input.file.name, equalTo('foo.tsv'))
-        assertThat(input.format.delimiter, equalTo('\t'))
+        def input = data.source as StaticDataSource
+        assertThat(input.sources[0].file.fileName.toString(), equalTo('foo.tsv'))
+        assertThat(input.sources[0].format.delimiter, equalTo('\t'))
     }
 
     @Test
     public void testRatingFileOddDelim() {
         def data = parse('--ratings-file', 'ratings.dat', '-d', '::')
-        def input = data.source as TextDataSource
-        assertThat(input.file.name, equalTo('ratings.dat'))
-        assertThat(input.format.delimiter, equalTo('::'))
-    }
-
-    @Test
-    public void testPackFile() {
-        def data = parse('--pack-file', 'ratings.pack')
-        def input = data.source
-        assertThat(input, instanceOf(PackedDataSource))
-        def pack = input as PackedDataSource
-        assertThat(pack.packedFile.name, equalTo('ratings.pack'))
+        def input = data.source as StaticDataSource
+        assertThat(input.sources[0].file.fileName.toString(), equalTo('ratings.dat'))
+        assertThat(input.sources[0].format.delimiter, equalTo('::'))
     }
 
     @Test
     public void testDataSource() {
         def file = File.createTempFile("input", ".json")
         file.text = """{
-  "@class": "org.lenskit.specs.data.TextDataSourceSpec",
   "file": "foo.tsv",
   "delimiter": "\\t",
   "domain": {
@@ -103,29 +94,11 @@ class InputDataTest {
   }
 }"""
         def data = parse('--data-source', file.absolutePath)
-        assertThat(data.source, instanceOf(TextDataSource))
-        def input = data.source as TextDataSource
-        assertThat(input.file.name, equalTo('foo.tsv'))
-        assertThat(input.format.delimiter, equalTo('\t'))
-        assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
-    }
-
-    @Test
-    public void testPackDataSource() {
-        def file = File.createTempFile("input", ".json")
-        file.text = """{
-  "@class": "org.lenskit.specs.data.PackedDataSourceSpec",
-  "file": "foo.pack",
-  "domain": {
-    "minimum": 0.5,
-    "maximum": 5.0,
-    "precision": 0.5
-  }
-}"""
-        def data = parse('--data-source', file.absolutePath)
-        assertThat(data.source, instanceOf(PackedDataSource))
-        def input = data.source as PackedDataSource
-        assertThat(input.file.name, equalTo('foo.pack'))
-        assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
+        assertThat(data.source, instanceOf(StaticDataSource))
+        def input = data.source as StaticDataSource
+        assertThat(input.sources[0].file.fileName.toString(), equalTo('foo.tsv'))
+        assertThat(input.sources[0].format.delimiter, equalTo('\t'))
+        // FIXME Re-enable preference domains
+        // assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
     }
 }

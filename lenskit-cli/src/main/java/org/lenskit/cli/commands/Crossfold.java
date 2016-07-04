@@ -25,9 +25,9 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.data.source.DataSource;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.eval.crossfold.*;
 import org.lenskit.specs.eval.OutputFormat;
@@ -75,7 +75,7 @@ public class Crossfold implements Command {
 
         Crossfolder cf = new Crossfolder();
 
-        DataSource src = input.getSource();
+        StaticDataSource src = input.getSource();
         if (src != null) {
             cf.setSource(src);
         }
