@@ -24,6 +24,7 @@ import com.google.common.io.Files
 import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
+import org.gradle.api.tasks.TaskAction
 import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
@@ -64,7 +65,7 @@ class TrainTest extends LenskitTask {
 
     private Map<String,Object> algorithms = new HashMap<>()
     private List<Callable> dataSets = []
-    private List<EvalTaskConfig> tasks = []
+    private List<EvalTaskConfig> evalTasks = []
 
     /**
      * The file name for writing out the experiment description. Do not change unless absolutely necessary.
@@ -97,7 +98,7 @@ class TrainTest extends LenskitTask {
      */
     void dataSet(Object ds) {
         inputs.file ds
-        dataSets.add({project.file(ds)})
+        dataSets.add({project.file(ds).toString()})
     }
 
     /**
@@ -116,7 +117,9 @@ class TrainTest extends LenskitTask {
     void dataSet(@DelegatesTo(DataSetConfig) Closure block) {
         def set = new DataSetConfig(project)
         ConfigureUtil.configure(block, set)
-        dataSets.add({[name: set.name, test: set.testSource, train: set.trainSource]})
+        dataSets.add({[name: set.name,
+                       test: project.file(set.testSource).path,
+                       train: project.file(set.trainSource).path]})
     }
 
     /**
@@ -139,7 +142,7 @@ class TrainTest extends LenskitTask {
             throw new UnsupportedOperationException("isolation not currently supported")
         } else {
             dataSets.add {
-                cf.dataSetFile
+                cf.dataSetFile.path
             }
         }
     }
@@ -170,7 +173,7 @@ class TrainTest extends LenskitTask {
     void predict(@DelegatesTo(EvalTaskConfig) Closure block) {
         def task = new EvalTaskConfig(project, 'predict')
         task.configure block
-        tasks.add(task)
+        evalTasks.add(task)
     }
 
     /**
@@ -181,7 +184,18 @@ class TrainTest extends LenskitTask {
     void recommend(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
         def task = new RecommendEvalTaskConfig(project)
         task.configure block
-        tasks.add(task)
+        evalTasks.add(task)
+    }
+
+    @Override
+    @TaskAction
+    void perform() {
+        try {
+            super.perform()
+        } catch (Throwable th) {
+            logger.error('error running train-test task', th)
+            throw new RuntimeException('train-test failed', th)
+        }
     }
 
     @Input
@@ -193,9 +207,9 @@ class TrainTest extends LenskitTask {
                     share_model_components: getShareModelComponents()]
         json.datasets = dataSets.collect {it.call()}
         json.algorithms = algorithms.collectEntries { k, v ->
-            [k, project.file(v)]
+            [k, project.file(v).path]
         }
-        json.tasks = tasks.collect({it.json})
+        json.tasks = evalTasks.collect({it.json})
 
         return json
     }
@@ -208,7 +222,7 @@ class TrainTest extends LenskitTask {
     @OutputFiles
     public Set<File> getOutputFiles() {
         Set files = [outputFile, userOutputFile].findAll().collect { project.file(it) }
-        files.addAll(tasks.collect({it.outputFile}).findAll().collect {
+        files.addAll(evalTasks.collect({it.outputFile}).findAll().collect {
             project.file(it)
         })
         return files
@@ -219,7 +233,7 @@ class TrainTest extends LenskitTask {
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info 'preparing spec file {}', file
-        file.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))
+        file.text = JsonOutput.toJson(json)
     }
 
     @Override

@@ -52,15 +52,15 @@ public class TrainTest implements Command {
     @Override
     public void configureArguments(ArgumentParser parser) {
         ScriptEnvironment.configureArguments(parser);
-        parser.addArgument("specFile")
-              .metavar("SPEC")
-              .help("Load train-test configuration from SPEC")
+        parser.addArgument("config_file")
+              .metavar("CONFIG")
+              .help("Load train-test configuration from CONFIG")
               .type(File.class)
               .required(true);
     }
 
     private File getSpecFile(Namespace options) {
-        return options.get("specFile");
+        return options.get("config_file");
     }
 
     @Override

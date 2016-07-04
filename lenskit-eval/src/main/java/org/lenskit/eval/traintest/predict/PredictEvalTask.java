@@ -117,10 +117,13 @@ public class PredictEvalTask implements EvalTask {
 
         MetricLoaderHelper mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(PredictEvalTask.class),
                                                         "predict-metrics");
-        JsonNode metricNode = json.path("metrics");
-        for (JsonNode mn: metricNode) {
-            PredictMetric metric = mlh.createMetric(PredictMetric.class, mn);
-            task.addMetric(metric);
+        JsonNode metricNode = json.get("metrics");
+        if (metricNode != null && !metricNode.isNull()) {
+            task.predictMetrics.clear();
+            for (JsonNode mn : metricNode) {
+                PredictMetric metric = mlh.createMetric(PredictMetric.class, mn);
+                task.addMetric(metric);
+            }
         }
 
         return task;

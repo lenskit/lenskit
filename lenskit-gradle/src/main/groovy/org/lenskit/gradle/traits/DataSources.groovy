@@ -59,7 +59,8 @@ trait DataSources {
      */
     def textFile(Object fn) {
         project.logger.warn('textFile is deprecated')
-        return [type: 'textfile', file: project.uri(fn), format: 'csv', event_type: 'rating']
+        return [type: 'textfile', file: project.uri(fn).toString(),
+                format: 'csv', event_type: 'rating']
     }
 
     /**

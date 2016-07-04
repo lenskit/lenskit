@@ -140,11 +140,12 @@ public class RecommendEvalTask implements EvalTask {
             task.setExcludeSelector(ItemSelector.compileSelector(sel));
         }
 
-        if (json.has("metrics")) {
+        JsonNode metrics = json.get("metrics");
+        if (metrics != null && !metrics.isNull()) {
             task.topNMetrics.clear();
             MetricLoaderHelper mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(PredictEvalTask.class),
                                                             "topn-metrics");
-            for (JsonNode mn: json.get("metrics")) {
+            for (JsonNode mn: metrics) {
                 TopNMetric<?> metric = mlh.createMetric(TopNMetric.class, mn);
                 if (metric != null) {
                     task.addMetric(metric);
