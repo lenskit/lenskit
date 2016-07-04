@@ -29,6 +29,7 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.RecommenderGraphBuilder;
 import org.lenskit.inject.RecommenderInstantiator;
@@ -104,14 +105,35 @@ public class LenskitRecommenderEngineBuilder {
      * @return The built recommender engine, with {@linkplain ModelDisposition#EXCLUDED excluded}
      *         components removed.
      * @throws RecommenderBuildException
+     * @deprecated Use {@link #build(DataAccessObject)}
      */
+    @Deprecated
     public LenskitRecommenderEngine build() throws RecommenderBuildException {
+        return build(null);
+    }
+
+    /**
+     * Build the recommender engine.
+     *
+     * @param dao The data access object to use.  Can be `null` to build without a DAO, but this is only useful in
+     *            special cases.
+     * @return The built recommender engine, with {@linkplain ModelDisposition#EXCLUDED excluded}
+     *         components removed.
+     * @throws RecommenderBuildException
+     */
+    public LenskitRecommenderEngine build(DataAccessObject dao) throws RecommenderBuildException {
         // Build the initial graph
         logger.debug("building graph from {} configurations", configurations.size());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.setClassLoader(classLoader);
-        for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
+        for (Pair<LenskitConfiguration, ModelDisposition> cfg : configurations) {
             rgb.addConfiguration(cfg.getLeft());
+        }
+        LenskitConfiguration daoConfig = null;
+        if (dao != null) {
+            daoConfig = new LenskitConfiguration();
+            daoConfig.addComponent(dao);
+            rgb.addConfiguration(daoConfig);
         }
         RecommenderInstantiator inst;
         try {
@@ -121,13 +143,15 @@ public class LenskitRecommenderEngineBuilder {
         }
         DAGNode<Component, Dependency> graph = inst.instantiate();
 
-        graph = rewriteGraph(graph);
+        graph = rewriteGraph(graph, daoConfig);
 
         boolean instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
         return new LenskitRecommenderEngine(graph, instantiable);
     }
 
-    private DAGNode<Component, Dependency> rewriteGraph(DAGNode<Component, Dependency> graph) throws RecommenderConfigurationException {
+
+    private DAGNode<Component, Dependency> rewriteGraph(DAGNode<Component, Dependency> graph,
+                                                        LenskitConfiguration daoConfig) throws RecommenderConfigurationException {
         RecommenderGraphBuilder rewriteBuilder = new RecommenderGraphBuilder();
         boolean rewrite = false;
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
@@ -138,6 +162,11 @@ public class LenskitRecommenderEngineBuilder {
                 rewrite = true;
                 break;
             }
+        }
+        if (daoConfig != null) {
+            rewriteBuilder.addBindings(daoConfig.getBindings());
+            rewriteBuilder.addRoots(daoConfig.getRoots());
+            rewrite = true;
         }
 
         if (rewrite) {
