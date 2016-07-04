@@ -24,11 +24,11 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
-import org.lenskit.util.collections.LongUtils;
+
+import java.util.List;
 
 /**
  * A test user's data.
@@ -36,8 +36,11 @@ import org.lenskit.util.collections.LongUtils;
  * @see TestUserBuilder
  */
 public class TestUser {
-    private final UserHistory<Event> trainHistory;
-    private final UserHistory<Event> testHistory;
+    private final Entity user;
+    private final List<Rating> trainHistory;
+    private final List<Rating> testHistory;
+    private transient volatile LongSet trainItems;
+    private transient volatile LongSet testItems;
     private transient volatile Long2DoubleMap testRatings;
     private transient volatile LongSet seenItems;
 
@@ -47,11 +50,10 @@ public class TestUser {
      * @param train The training history.
      * @param test  The test history.
      */
-    public TestUser(UserHistory<Event> train, UserHistory<Event> test) {
+    public TestUser(Entity user, List<Rating> train, List<Rating> test) {
         Preconditions.checkNotNull(train, "training history");
         Preconditions.checkNotNull(test, "test history");
-        Preconditions.checkArgument(train.getUserId() == test.getUserId(),
-                                    "user histories have different user IDs");
+        this.user = user;
         trainHistory = train;
         testHistory = test;
     }
@@ -71,7 +73,7 @@ public class TestUser {
      * @return The user's ID.
      */
     public long getUserId() {
-        return trainHistory.getUserId();
+        return user.getId();
     }
 
     /**
@@ -79,12 +81,20 @@ public class TestUser {
      *
      * @return The history of the user from the training/query set.
      */
-    public UserHistory<Event> getTrainHistory() {
+    public List<Rating> getTrainHistory() {
         return trainHistory;
     }
 
     public LongSet getTrainItems() {
-        return trainHistory.itemSet();
+        LongSet items = trainItems;
+        if (items == null) {
+            items = new LongOpenHashSet();
+            for (Rating r : trainHistory) {
+                items.add(r.getItemId());
+            }
+            trainItems = items;
+        }
+        return items;
     }
 
     /**
@@ -92,12 +102,20 @@ public class TestUser {
      *
      * @return The history of the user from the test set.
      */
-    public UserHistory<Event> getTestHistory() {
+    public List<Rating> getTestHistory() {
         return testHistory;
     }
 
     public LongSet getTestItems() {
-        return testHistory.itemSet();
+        LongSet items = testItems;
+        if (items == null) {
+            items = new LongOpenHashSet();
+            for (Rating r : testHistory) {
+                items.add(r.getItemId());
+            }
+            testItems = items;
+        }
+        return items;
     }
 
     /**
@@ -121,7 +139,7 @@ public class TestUser {
      */
     public Long2DoubleMap getTestRatings() {
         if (testRatings == null) {
-            testRatings = Ratings.userRatingVector(testHistory.filter(Rating.class));
+            testRatings = Ratings.userRatingVector(testHistory);
         }
         return testRatings;
     }

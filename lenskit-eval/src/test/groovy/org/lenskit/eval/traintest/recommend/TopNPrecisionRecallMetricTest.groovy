@@ -46,8 +46,8 @@ class TopNPrecisionRecallMetricTest {
         accum = new TopNPrecisionRecallMetric.Context(universe, null)
         user = TestUser.newBuilder()
                        .setUserId(42)
-                       .addTestEvent(Rating.create(42L, 1L, 3.5),
-                                     Rating.create(42L, 5L, 2.5))
+                       .addTestEntity(Rating.create(42L, 1L, 3.5),
+                                      Rating.create(42L, 5L, 2.5))
                        .build()
     }
 

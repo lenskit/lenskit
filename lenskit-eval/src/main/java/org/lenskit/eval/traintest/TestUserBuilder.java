@@ -20,8 +20,9 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.lenskit.data.history.History;
-import org.lenskit.data.events.Event;
+import com.google.common.collect.ImmutableList;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entities;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -34,8 +35,8 @@ import java.util.List;
  */
 public class TestUserBuilder {
     private long userId;
-    private List<Event> trainEvents = new ArrayList<>();
-    private List<Event> testEvents = new ArrayList<>();
+    private List<Rating> trainEvents = new ArrayList<>();
+    private List<Rating> testEvents = new ArrayList<>();
 
     /**
      * Construct a new test user builder.
@@ -47,8 +48,8 @@ public class TestUserBuilder {
         return this;
     }
 
-    public TestUserBuilder addTestEvent(Event... events) {
-        for (Event e: events) {
+    public TestUserBuilder addTestEntity(Rating... events) {
+        for (Rating e: events) {
             if (e.getUserId() != userId) {
                 throw new IllegalArgumentException("invalid user ID: " + e.getUserId());
             }
@@ -58,29 +59,30 @@ public class TestUserBuilder {
     }
 
     public TestUserBuilder addTestRating(long iid, double score) {
-        addTestEvent(Rating.create(userId, iid, score));
+        addTestEntity(Rating.create(userId, iid, score));
         return this;
     }
 
-    public TestUserBuilder addTrainEvent(Event... events) {
-        for (Event e: events) {
+    public TestUserBuilder addTrainEntity(Rating... events) {
+        for (Rating e: events) {
             trainEvents.add(e);
         }
         return this;
     }
 
-    public TestUserBuilder setTrainHistory(List<Event> train) {
+    public TestUserBuilder setTrainHistory(List<Rating> train) {
         trainEvents = new ArrayList<>(train);
         return this;
     }
 
-    public TestUserBuilder setTestHistory(List<Event> test) {
+    public TestUserBuilder setTestHistory(List<Rating> test) {
         testEvents = new ArrayList<>(test);
         return this;
     }
 
     public TestUser build() {
-        return new TestUser(History.forUser(userId, trainEvents),
-                            History.forUser(userId, testEvents));
+        return new TestUser(Entities.create(CommonTypes.USER, userId),
+                            ImmutableList.copyOf(trainEvents),
+                            ImmutableList.copyOf(testEvents));
     }
 }
