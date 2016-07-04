@@ -99,7 +99,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
      */
     void dataSet(Object ds) {
         inputs.file ds
-        dataSets.add({project.uri(ds).toString()})
+        dataSets.add({makeUrl(ds, getSpecFile())})
     }
 
     /**
@@ -119,8 +119,8 @@ class TrainTest extends LenskitTask implements GradleUtils {
         def set = new DataSetConfig(project)
         ConfigureUtil.configure(block, set)
         dataSets.add({[name: set.name,
-                       test: project.uri(set.testSource).toString(),
-                       train: project.uri(set.trainSource).toString()]})
+                       test: makeUrl(set.testSource, getSpecFile()),
+                       train: makeUrl(set.trainSource, getSpecFile())]})
     }
 
     /**
@@ -143,7 +143,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
             throw new UnsupportedOperationException("isolation not currently supported")
         } else {
             dataSets.add {
-                makeUrl(cf.dataSetFile)
+                makeUrl(cf.dataSetFile, getSpecFile())
             }
         }
     }
@@ -201,14 +201,14 @@ class TrainTest extends LenskitTask implements GradleUtils {
 
     @Input
     def getJson() {
-        def json = [output_file           : makeUrl(getOutputFile()),
-                    user_output_file      : makeUrl(getUserOutputFile()),
-                    cache_directory       : makeUrl(getCacheDirectory()),
+        def json = [output_file           : makeUrl(getOutputFile(), getSpecFile()),
+                    user_output_file      : makeUrl(getUserOutputFile(), getSpecFile()),
+                    cache_directory       : makeUrl(getCacheDirectory(), getSpecFile()),
                     thread_count          : getThreadCount(),
                     share_model_components: getShareModelComponents()]
         json.datasets = dataSets.collect {it.call()}
         json.algorithms = algorithms.collectEntries {k, v ->
-            [k, project.uri(v).toString()]
+            [k, makeUrl(v, getSpecFile())]
         }
         json.tasks = evalTasks.collect({it.json})
 
@@ -234,7 +234,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info 'preparing spec file {}', file
-        file.text = JsonOutput.toJson(json)
+        file.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))
     }
 
     @Override

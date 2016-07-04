@@ -20,10 +20,7 @@
  */
 package org.lenskit.gradle.traits
 
-import com.google.common.base.Supplier
 import org.gradle.api.Project
-import org.gradle.api.Task
-import org.lenskit.specs.data.DataSourceSpec
 
 /**
  * A trait that provides some little Gradle utilities.
@@ -32,10 +29,23 @@ trait GradleUtils {
     abstract Project getProject();
 
     String makeUrl(arg) {
+        return makeUrl(arg, null)
+    }
+
+    String makeUrl(arg, base) {
         if (arg == null) {
             return null
         } else {
-            return project.uri(arg).toString()
+            def uri = project.uri(arg)
+            if (base instanceof File) {
+                def bp = base.toPath()
+                def path = project.file(arg).toPath()
+                return bp.parent.relativize(path).toString().replace(File.separatorChar, (char) '/')
+            } else if (base != null) {
+                return project.uri(base).relativize(uri).toString()
+            } else {
+                uri.toString()
+            }
         }
     }
 }
