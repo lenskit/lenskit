@@ -7,7 +7,7 @@ task packWithHeader(type: JavaExec) {
     inputs.file 'header.csv'
     outputs.file "$buildDir/header.pack"
 
-    main 'org.grouplens.lenskit.cli.Main'
+    main 'org.lenskit.cli.Main'
     args 'pack-ratings'
     args '-o', "$buildDir/header.pack"
     args '--csv-file', file('header.csv')

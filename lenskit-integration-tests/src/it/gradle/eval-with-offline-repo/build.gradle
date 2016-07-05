@@ -5,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+        classpath "org.lenskit:lenskit-gradle:$project.lenskitVersion"
     }
 }
 
@@ -20,7 +20,7 @@ repositories {
     }
 }
 dependencies {
-    runtime "org.grouplens.lenskit:lenskit-cli:$project.lenskitVersion"
+    runtime "org.lenskit:lenskit-cli:$project.lenskitVersion"
 }
 
 task crossfold(type: Crossfold) {
