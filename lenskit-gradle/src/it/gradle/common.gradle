@@ -13,5 +13,5 @@ repositories {
 }
 
 dependencies {
-    runtime "org.grouplens.lenskit:lenskit-cli:$project.lenskitVersion"
+    runtime "org.lenskit:lenskit-cli:$project.lenskitVersion"
 }
