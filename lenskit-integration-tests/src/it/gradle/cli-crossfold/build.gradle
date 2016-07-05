@@ -35,10 +35,11 @@ check {
     doLast {
         def dir = file('split')
         assertThat dir.exists(), equalTo(true)
-        for (int i = 1; i <= 10; i++) {
-            assertThat "spec file $i exists", file(String.format("split/part%02d.json", i)).exists()
-            assertThat "train file $i exists", file(String.format("split/part%02d.train.csv.gz", i)).exists()
-            assertThat "test file $i exists", file(String.format("split/part%02d.test.csv.gz", i)).exists()
+        for (i in 1..10) {
+            assertThat "train file $i should exist", file(String.format("split/part%02d.train.csv.gz", i)).exists()
+            assertThat "train yaml file $i should exist", file(String.format("split/part%02d.train.yaml", i)).exists()
+            assertThat "test file $i should exist", file(String.format("split/part%02d.test.csv.gz", i)).exists()
+            assertThat "test yaml file $i should exist", file(String.format("split/part%02d.test.yaml", i)).exists()
         }
     }
 }
