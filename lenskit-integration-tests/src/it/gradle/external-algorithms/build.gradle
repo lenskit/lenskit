@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+        classpath "org.lenskit:lenskit-gradle:$project.lenskitVersion"
         classpath 'org.hamcrest:hamcrest-library:1.3'
     }
 }

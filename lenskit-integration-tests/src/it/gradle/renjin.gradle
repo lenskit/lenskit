@@ -8,7 +8,7 @@ repositories {
 }
 dependencies {
     analyze localGroovy()
-    analyze group: 'org.grouplens.lenskit', name: 'lenskit-test', version: project.lenskitVersion
+    analyze group: 'org.lenskit', name: 'lenskit-test', version: project.lenskitVersion
     analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2124'
 }
 

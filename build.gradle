@@ -54,7 +54,7 @@ task ciPublish {
 }
 
 allprojects { project ->
-    group 'org.grouplens.lenskit'
+    group 'org.lenskit'
     version '3.0-SNAPSHOT'
 
     ext.getConfigProperty = { name, dft ->
