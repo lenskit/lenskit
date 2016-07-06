@@ -202,6 +202,14 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         labeledColumns.put(label, attr);
     }
 
+    /**
+     * Clear the columns configured for this format.
+     */
+    public void clearColumns() {
+        columns = null;
+        labeledColumns = null;
+    }
+
     @Override
     public LineEntityParser makeParser(List<String> header) {
         assert header.size() == getHeaderLines();
@@ -216,6 +224,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             }
             return new OrderedParser(cols, tok);
         } else {
+            Preconditions.checkState(columns != null, "no columns specified");
             return new OrderedParser(columns, new StrTokenizer("", delimiter));
         }
     }

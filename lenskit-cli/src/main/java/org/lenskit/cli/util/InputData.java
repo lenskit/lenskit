@@ -36,9 +36,7 @@ import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.dao.file.TextEntitySource;
-import org.lenskit.data.entities.CommonAttributes;
-import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,10 +76,22 @@ public class InputData {
         TextEntitySource entities = new TextEntitySource();
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
         format.setEntityType(CommonTypes.RATING);
+        format.addColumns(CommonAttributes.USER_ID, CommonAttributes.ITEM_ID,
+                          CommonAttributes.RATING, CommonAttributes.TIMESTAMP);
 
         String type = options.get("event_type");
         if (type != null) {
-            format.setEntityType(EntityType.forName(type));
+            EntityType etype = EntityType.forName(type);
+            format.setEntityType(etype);
+            EntityDefaults defaults = EntityDefaults.lookup(etype);
+            if (defaults == null) {
+                logger.warn("no defaults found for entity type {}", type);
+            } else {
+                format.clearColumns();
+                for (TypedName<?> col: defaults.getDefaultColumns()) {
+                    format.addColumn(col);
+                }
+            }
         }
         Integer header = options.get("header_lines");
         if (header != null) {
