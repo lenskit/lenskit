@@ -97,7 +97,7 @@ public class ML100KTestSuite {
               .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());
         implicitDAO = TextEventDAO.create(inputFile, format);
 
-        source = new StaticDataSource();
+        source = new StaticDataSource("ml-100k");
         TextEntitySource tes = new TextEntitySource();
         tes.setFile(inputFile.toPath());
         tes.setFormat(org.lenskit.data.dao.file.Formats.tsvRatings());

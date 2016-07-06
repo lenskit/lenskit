@@ -102,7 +102,6 @@ public class SimpleEvaluator {
      */
     public SimpleEvaluator addDataSet(Crossfolder cross){
         crossfolders.add(cross);
-        experiment.addDataSets(cross.getDataSets());
         return this;
     }
 
@@ -256,6 +255,7 @@ public class SimpleEvaluator {
     public Table execute() {
         for (Crossfolder cf: crossfolders) {
             cf.execute();
+            experiment.addDataSets(cf.getDataSets());
         }
         return experiment.execute();
     }
