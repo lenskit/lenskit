@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.data.source.TextDataSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,8 +52,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo.build());
 
-        evalCommand.addDataSet(new TextDataSource("ml-100k", source),
-                               5, 0.2);
+        evalCommand.addDataSet(source, 5, 0.2);
         addExtraConfig(evalCommand);
 
         Table result = evalCommand.execute();
