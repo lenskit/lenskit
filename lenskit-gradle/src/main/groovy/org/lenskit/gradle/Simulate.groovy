@@ -25,10 +25,8 @@ import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.AlgorithmSpec
-import org.lenskit.specs.eval.SimulateSpec
 
 class Simulate extends LenskitTask {
-    private SimulateSpec spec = new SimulateSpec()
     private SpecDelegate delegate = new SpecDelegate(project, spec)
     def File specFile
 
@@ -37,6 +35,8 @@ class Simulate extends LenskitTask {
             project.file("$project.buildDir/${name}.json")
         }
         spec.outputFile = project.file("$project.buildDir/${name}-output.csv").toPath()
+        // FIXME re-enable simulate task
+        throw new UnsupportedOperationException("simulate task does not work")
     }
 
     /**
