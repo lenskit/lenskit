@@ -26,12 +26,8 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.lenskit.gradle.traits.DataBuilder
 import org.lenskit.gradle.traits.DataSources
-import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.data.DataSourceSpec
-import org.lenskit.specs.data.TextDataSourceSpec
-import org.lenskit.specs.eval.DataSetSpec
 
-import java.util.concurrent.Callable
+import org.lenskit.specs.data.DataSourceSpec
 
 /**
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
