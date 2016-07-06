@@ -22,11 +22,15 @@ package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharSource;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;
@@ -41,7 +45,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -194,6 +200,15 @@ public class TextEntitySource implements EntitySource, Describable {
     }
 
     @Override
+    public String toString() {
+        ToStringBuilder tsb = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        tsb.append("name", getName());
+        tsb.append("url", getURL());
+        tsb.append("format", getFormat());
+        return tsb.build();
+    }
+
+    @Override
     public void describeTo(DescriptionWriter writer) {
         writer.putField("url", sourceURL);
         try {
@@ -211,6 +226,38 @@ public class TextEntitySource implements EntitySource, Describable {
             throw new IllegalStateException("invalid URI", e);
         }
 
+    }
+
+    /**
+     * Construct a JSON representation of this entity source, suitable for serialization to e.g. YAML.
+     *
+     * @param base The URI of the YAML file that will be generated, to generate relative URLs.
+     * @return The JSON node.
+     */
+    public JsonNode toJSON(@Nullable URI base) {
+        Path basePath = null;
+        if (base != null) {
+            try {
+                basePath = Paths.get(base).getParent();
+            } catch (FileSystemNotFoundException ex) {
+                /* this is ok, just means we can't resolve the base URI */
+            }
+        }
+
+        JsonNodeFactory nf = JsonNodeFactory.instance;
+
+        ObjectNode object = nf.objectNode();
+        object.put("type", "textfile");
+
+        Path path = getFile();
+        if (basePath != null) {
+            path = basePath.relativize(path);
+        }
+        object.put("file", path.toString().replace(File.separatorChar, '/'));
+
+        object.setAll(format.toJSON());
+
+        return object;
     }
 
     /**
