@@ -39,6 +39,7 @@ import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.*
 import org.lenskit.basic.*
 import org.lenskit.data.dao.DataAccessObject
+import org.lenskit.data.dao.EntityCollectionDAO
 import org.lenskit.data.dao.EventCollectionDAO
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.RatingMatrix
@@ -240,6 +241,7 @@ public class LenskitRecommenderEngineTest {
      * Test that we can configure data separately.
      */
     @Test
+    @SuppressWarnings(["deprecation", "GrDeprecatedAPIUsage"])
     public void testSeparateBuild() throws RecommenderBuildException {
         LenskitRecommenderEngineBuilder reb = LenskitRecommenderEngine.newBuilder()
         reb.addConfiguration(configureBasicRecommender())
@@ -294,23 +296,20 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
-        LenskitConfiguration daoConfig = makeDAOConfig(null)
+        LenskitConfiguration config = configureBasicRecommender()
 
         def engine = LenskitRecommenderEngine.newBuilder()
                                              .addConfiguration(config)
-                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                             .build()
+                                             .build(dao)
 
         // engine.setSymbolMapping(null)
         File tfile = File.createTempFile("lenskit", "engine")
         try {
             engine.write(tfile)
             def e2 = LenskitRecommenderEngine.newLoader()
-                                             .addConfiguration(daoConfig)
                                              .load(tfile)
             // e2.setSymbolMapping(mapping)
-            def rec = e2.createRecommender()
+            def rec = e2.createRecommender(dao)
             try {
                 verifyBasicRecommender(rec)
             } finally {
@@ -323,7 +322,7 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testSerializeAddConfig() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
+        LenskitConfiguration config = configureBasicRecommender()
 
         def engine = LenskitRecommenderEngine.newBuilder()
                                              .addConfiguration(config)
@@ -380,10 +379,13 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testDeserializeValidate() throws RecommenderBuildException, IOException, ClassNotFoundException {
         LenskitConfiguration config = configureBasicRecommender()
+        LenskitConfiguration other = new LenskitConfiguration()
+        other.bind(ItemRecommender).to(TopNItemRecommender)
 
         LenskitRecommenderEngine engine =
                 LenskitRecommenderEngine.newBuilder()
                                         .addConfiguration(config)
+                                        .addConfiguration(config, ModelDisposition.EXCLUDED)
                                         .build(dao)
 
         // engine.setSymbolMapping(null)
@@ -481,10 +483,10 @@ public class LenskitRecommenderEngineTest {
     }
 
     public static class SubclassedDAODepComponent {
-        private final EventCollectionDAO dao
+        private final EntityCollectionDAO dao
 
         @Inject
-        public SubclassedDAODepComponent(EventCollectionDAO dao) {
+        public SubclassedDAODepComponent(EntityCollectionDAO dao) {
             this.dao = dao
         }
     }
@@ -605,7 +607,7 @@ public class LenskitRecommenderEngineTest {
         def config = new LenskitConfiguration();
         config.bind(ItemScorer).to(LeastSquaresItemScorer)
         LenskitRecommender rec = LenskitRecommender.build(config, dao)
-        try {F
+        try {
             assertThat rec.getItemScorer(), instanceOf(LeastSquaresItemScorer)
             assertThat rec.get(RatingMatrix), nullValue()
         } finally {
