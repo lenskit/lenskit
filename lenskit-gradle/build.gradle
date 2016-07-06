@@ -6,6 +6,7 @@ dependencies {
     compile localGroovy()
 
     compile 'org.joda:joda-convert:1.8.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
 }
 
 apply from: 'integration-tests.gradle'

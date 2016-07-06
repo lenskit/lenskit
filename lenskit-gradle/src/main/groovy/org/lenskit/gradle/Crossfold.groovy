@@ -24,10 +24,8 @@ import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
-import org.lenskit.gradle.traits.DataBuilder
-import org.lenskit.gradle.traits.DataSources
 
-import org.lenskit.specs.data.DataSourceSpec
+import org.lenskit.gradle.traits.DataSources
 
 /**
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
@@ -62,15 +60,6 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     /**
-     * Set the input source.
-     * @param bld The input source.
-     */
-    void input(DataBuilder bld) {
-        dependsOn bld
-        source = {bld.deferredDataSourceSpec.get()}
-    }
-
-    /**
      * Set the input source manifest.
      * @param file The path to an input source manifest file (in YAML format).
      */
@@ -83,7 +72,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     }
 
     /**
-     * Configure an input CSV file of ratings.  Convenience method; {@link #input(DataSourceSpec)} is more general.
+     * Configure an input CSV file of ratings.  Convenience method; {@link #input(Object)} is more general.
      * @param csv A CSV file containing ratings.
      */
     void inputFile(Object csv) {

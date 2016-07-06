@@ -21,7 +21,6 @@
 package org.lenskit.gradle
 
 import org.gradle.api.Task
-import org.lenskit.specs.eval.DataSetSpec
 
 /**
  * Interface implemented by tasks that provide data sets for the train-test evaluator.

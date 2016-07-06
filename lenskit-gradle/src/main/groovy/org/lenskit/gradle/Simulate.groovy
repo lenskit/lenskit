@@ -22,8 +22,6 @@ package org.lenskit.gradle
 
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFiles
-import org.lenskit.gradle.delegates.SpecDelegate
-import org.lenskit.specs.eval.AlgorithmSpec
 
 class Simulate extends LenskitTask {
     def File specFile
@@ -86,12 +84,6 @@ class Simulate extends LenskitTask {
         return spec.extendedOutputFile?.toFile()
     }
 
-    public void algorithm(@DelegatesTo(SpecDelegate) Closure block) {
-        def aspec = new AlgorithmSpec()
-        SpecDelegate.configureSpec(project, aspec, block)
-        spec.algorithm = aspec
-    }
-
     public void algorithm(fn) {
          algorithm(null, fn)
     }
@@ -101,10 +93,7 @@ class Simulate extends LenskitTask {
         if (name == null) {
             name = file.name
         }
-        def aspec = new AlgorithmSpec()
-        aspec.name = name
-        aspec.configFile = file.toPath()
-        spec.algorithm = aspec
+        // FIXME fix this
     }
 
     @OutputFiles

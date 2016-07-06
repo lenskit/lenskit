@@ -30,7 +30,6 @@ import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
 import org.lenskit.gradle.delegates.RecommendEvalTaskConfig
 import org.lenskit.gradle.traits.GradleUtils
-import org.lenskit.specs.eval.DataSetSpec
 
 import java.util.concurrent.Callable
 
@@ -112,7 +111,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
 
     /**
      * Configure a train-test data set.
-     * @param block A block which will be used to configureSpec a {@link DataSetSpec}.
+     * @param block A block which will be used to configure a data set.
      */
     void dataSet(@DelegatesTo(DataSetConfig) Closure block) {
         def set = new DataSetConfig(project)
