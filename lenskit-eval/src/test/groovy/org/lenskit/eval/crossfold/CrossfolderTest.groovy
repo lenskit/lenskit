@@ -22,7 +22,6 @@ package org.lenskit.eval.crossfold
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
-import org.grouplens.lenskit.data.source.DataSource
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -52,7 +51,6 @@ class CrossfolderTest {
 
     private List<Rating> ratings
     private EventDAO sourceDAO
-    private DataSource source
     private Crossfolder cf
 
     @Before
