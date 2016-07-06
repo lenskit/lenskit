@@ -23,19 +23,18 @@ package org.grouplens.lenskit.test;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongLists;
-import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
-import org.grouplens.lenskit.data.text.Fields;
-import org.grouplens.lenskit.data.text.Formats;
-import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
 import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.ItemDAO;
 import org.lenskit.data.dao.ItemListItemDAO;
 import org.lenskit.data.dao.PrefetchingItemDAO;
+import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.dao.file.TextEntitySource;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.EntityType;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -56,12 +55,12 @@ public class ML100KTestSuite {
 
     protected File inputFile;
     protected StaticDataSource source;
-    protected EventDAO ratingDAO;
-    protected EventDAO implicitDAO;
+    protected StaticDataSource implicitSource;
 
     protected LenskitConfiguration getDaoConfig() {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(ratingDAO);
+        config.bind(DataAccessObject.class)
+              .toProvider(source);
         return config;
     }
 
@@ -91,11 +90,16 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <http://lenskit.org/ML100K>.");
         }
-        ratingDAO = TextEventDAO.create(inputFile, Formats.ml100kFormat());
-        DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("like");
-        format.setDelimiter("\t")
-              .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());
-        implicitDAO = TextEventDAO.create(inputFile, format);
+
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setEntityType(EntityType.forName("like"));
+        format.addColumns(CommonAttributes.USER_ID,
+                          CommonAttributes.ITEM_ID);
+        TextEntitySource implicit = new TextEntitySource("likes");
+        implicit.setFile(inputFile.toPath());
+        implicit.setFormat(format);
+        implicitSource = new StaticDataSource("implicit");
+        implicitSource.addSource(implicit);
 
         source = new StaticDataSource("ml-100k");
         TextEntitySource tes = new TextEntitySource();
