@@ -24,7 +24,7 @@ import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.PreferenceDomain
-import org.grouplens.lenskit.data.source.TextDataSource
+
 import org.junit.Test
 import org.lenskit.cli.util.InputData
 

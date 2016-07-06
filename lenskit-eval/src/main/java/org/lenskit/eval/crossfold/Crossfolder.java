@@ -32,8 +32,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
-import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
@@ -509,14 +507,6 @@ public class Crossfolder {
 
     RatingWriter openWriter(Path file) throws IOException {
         return RatingWriters.csv(file.toFile(), writeTimestamps);
-    }
-
-    protected DataSource makeDataSource(Path file) {
-        // TODO Don't just encode compression in file name
-        return new CSVDataSourceBuilder()
-                .setDomain(source.getPreferenceDomain())
-                .setFile(file.toFile())
-                .build();
     }
 
     @Override
