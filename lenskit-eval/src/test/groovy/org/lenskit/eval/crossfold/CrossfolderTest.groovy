@@ -32,10 +32,10 @@ import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.entities.CommonAttributes
 import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.events.Event
+import org.lenskit.data.output.OutputFormat
 import org.lenskit.data.ratings.PreferenceDomain
 import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
-import org.lenskit.specs.eval.OutputFormat
 
 import java.nio.file.Files
 

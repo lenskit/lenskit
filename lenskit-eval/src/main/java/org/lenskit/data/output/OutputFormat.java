@@ -18,31 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.traintest.recommend;
+package org.lenskit.data.output;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+public enum OutputFormat {
+    CSV("csv"), CSV_GZIP("csv.gz"), CSV_XZ("csv.xz");
 
-/**
- * Specification class for configuring precision/recall metrics.
- */
-@JsonIgnoreProperties({"type"})
-public class PRMetricSpec {
-    private String goodItems;
-    private String suffix;
+    private String extension;
 
-    public String getGoodItems() {
-        return goodItems;
+    OutputFormat(String ext) {
+        extension = ext;
     }
 
-    public void setGoodItems(String goodItems) {
-        this.goodItems = goodItems;
-    }
-
-    public String getSuffix() {
-        return suffix;
-    }
-
-    public void setSuffix(String suffix) {
-        this.suffix = suffix;
+    /**
+     * Get the file extension for the output format.
+     * @return The extension.
+     */
+    public String getExtension() {
+        return extension;
     }
 }

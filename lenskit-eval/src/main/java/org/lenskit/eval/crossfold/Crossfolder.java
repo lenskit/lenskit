@@ -41,10 +41,10 @@ import org.lenskit.data.dao.file.TextEntitySource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.output.OutputFormat;
 import org.lenskit.data.output.RatingWriter;
 import org.lenskit.data.output.RatingWriters;
 import org.lenskit.eval.traintest.DataSet;
-import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
