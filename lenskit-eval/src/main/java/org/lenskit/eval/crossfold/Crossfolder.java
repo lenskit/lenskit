@@ -33,7 +33,6 @@ import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.EntitySource;
@@ -79,7 +78,7 @@ public class Crossfolder {
 
     private Random rng;
     private String name;
-    private DataSource source;
+    private StaticDataSource source;
     private EntityType entityType = CommonTypes.RATING;
     private int partitionCount = 5;
     private Path outputDir;
@@ -196,16 +195,6 @@ public class Crossfolder {
      * @return The crossfolder (for chaining)
      */
     public Crossfolder setSource(StaticDataSource src) {
-        return setSource(new TextDataSource(src.getName(), src));
-    }
-
-    /**
-     * Set the input data source.
-     *
-     * @param src The data source to use.
-     * @return The crossfolder (for chaining).
-     */
-    public Crossfolder setSource(DataSource src) {
         source = src;
         return this;
     }
@@ -274,7 +263,7 @@ public class Crossfolder {
      *
      * @return The underlying data source.
      */
-    public DataSource getSource() {
+    public StaticDataSource getSource() {
         return source;
     }
 
@@ -298,32 +287,36 @@ public class Crossfolder {
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      */
     public void execute() {
-        if (skipIfUpToDate) {
-            UpToDateChecker check = new UpToDateChecker();
-            check.addInput(source.lastModified());
-            for (Path p: Iterables.concat(getTrainingFiles(), getTestFiles(), getSpecFiles())) {
-                check.addOutput(p.toFile());
-            }
-            if (check.isUpToDate()) {
-                logger.info("crossfold {} up to date", getName());
-                return;
-            }
-        }
         try {
-            StaticDataSource data = ((TextDataSource) source).getDataSource();
+            if (skipIfUpToDate) {
+                UpToDateChecker check = new UpToDateChecker();
+                for (EntitySource src: source.getSources()) {
+                    if (src instanceof TextEntitySource) {
+                        Path path = ((TextEntitySource) src).getFile();
+                        check.addInput(Files.getLastModifiedTime(path).toMillis());
+                    }
+                }
+                for (Path p: Iterables.concat(getTrainingFiles(), getTestFiles(), getSpecFiles())) {
+                    check.addOutput(p.toFile());
+                }
+                if (check.isUpToDate()) {
+                    logger.info("crossfold {} up to date", getName());
+                    return;
+                }
+            }
 
             logger.info("ensuring output directory {} exists", outputDir);
             Files.createDirectories(outputDir);
             logger.info("making sure item list is available");
-            JsonNode itemDataInfo = writeItemFile(data);
+            JsonNode itemDataInfo = writeItemFile(source);
             logger.info("writing train-test split files");
-            createTTFiles(data);
+            createTTFiles(source);
             logger.info("writing manifests and specs");
             Map<String,Object> metadata = new HashMap<>();
-            for (EntitySource src: data.getSourcesForType(entityType)) {
+            for (EntitySource src: source.getSourcesForType(entityType)) {
                 metadata.putAll(src.getMetadata());
             }
-            writeManifests(data, metadata, itemDataInfo);
+            writeManifests(source, metadata, itemDataInfo);
         } catch (IOException ex) {
             // TODO Use application-specific exception
             throw new RuntimeException("Error writing data sets", ex);

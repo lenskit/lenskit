@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.traintest
 
-import org.grouplens.lenskit.data.source.TextDataSourceBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,6 +28,7 @@ import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.eval.crossfold.Crossfolder
 import org.lenskit.util.table.TableImpl
 
@@ -67,9 +67,7 @@ class TrainTestResultTest {
         def cf = new Crossfolder("tempRatings")
         cf.outputDir = workDir.newFolder().toPath()
         cf.partitionCount = 5
-        cf.source = new TextDataSourceBuilder().setFile(sourceFile)
-                                               .setDelimiter(",")
-                                               .build()
+        cf.source = StaticDataSource.csvRatingFile(sourceFile.toPath())
         cf.execute()
         def exp = new TrainTestExperiment()
         exp.addDataSets(cf.dataSets)

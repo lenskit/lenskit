@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
@@ -328,5 +329,19 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         ObjectMapper mapper = new ObjectMapper(factory);
         JsonNode node = mapper.readTree(url);
         return fromJSON(name, node, uri);
+    }
+
+    /**
+     * Create a static data source from a CSV rating file.
+     * @param file The CSV rating file.
+     * @return The data source.
+     */
+    public static StaticDataSource csvRatingFile(Path file) {
+        StaticDataSource src = new StaticDataSource();
+        TextEntitySource text = new TextEntitySource(LKFileUtils.basename(file.toString(), false));
+        text.setFormat(Formats.csvRatings());
+        text.setFile(file);
+        src.addSource(text);
+        return src;
     }
 }

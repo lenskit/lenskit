@@ -68,9 +68,8 @@ class CrossfolderTest {
         def data = new StaticDataSource("test")
         data.addSource(ratings, [domain: [minimum: 1, maximum: 5]])
         sourceDAO = new BridgeEventDAO(data.get());
-        source = new TextDataSource("test", data)
         cf = new Crossfolder()
-        cf.source = source
+        cf.source = data
         cf.setOutputDir(tmp.root)
     }
 

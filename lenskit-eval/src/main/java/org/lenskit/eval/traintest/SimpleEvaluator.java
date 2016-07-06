@@ -24,6 +24,7 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.eval.traintest.predict.PredictMetric;
 import org.lenskit.util.table.Table;
 import org.lenskit.data.ratings.PreferenceDomain;
@@ -120,7 +121,7 @@ public class SimpleEvaluator {
      * @param holdout The holdout fraction
      * @return Itself for chaining.
      */
-    public SimpleEvaluator addDataSet(String name, DataSource source, int partitions, double holdout){
+    public SimpleEvaluator addDataSet(String name, StaticDataSource source, int partitions, double holdout){
         Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
                 .setPartitionCount(partitions)
@@ -141,7 +142,7 @@ public class SimpleEvaluator {
      * @param holdout The holdout fraction
      * @return Itself for chaining.
      */
-    public SimpleEvaluator addDataSet(DataSource source, int partitions, double holdout){
+    public SimpleEvaluator addDataSet(StaticDataSource source, int partitions, double holdout){
         return addDataSet(source.getName(), source, partitions, holdout);
     }
 
@@ -159,7 +160,7 @@ public class SimpleEvaluator {
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
-    public SimpleEvaluator addDataSet(String name, DataSource source, int partitions){
+    public SimpleEvaluator addDataSet(String name, StaticDataSource source, int partitions){
         return addDataSet(new Crossfolder(name).setSource(source)
                                                .setPartitionCount(partitions)
                                                .setOutputDir(workDir.resolve(name + ".split")));
@@ -178,7 +179,7 @@ public class SimpleEvaluator {
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
-    public SimpleEvaluator addDataSet(DataSource source, int partitions){
+    public SimpleEvaluator addDataSet(StaticDataSource source, int partitions){
         return addDataSet(source.getName(), source, partitions);
     }
 
