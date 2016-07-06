@@ -110,7 +110,7 @@ public class TemporalEvaluatorTest {
         tempEval.setRebuildPeriod(1L);
         tempEval.setDataSource(file);
         tempEval.setAlgorithm("UserMeanBaseline", config);
-        tempEval.setPredictOutputFile(predictOutputFile);
+        tempEval.setOutputFile(predictOutputFile);
     }
 
     @Test
