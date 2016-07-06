@@ -20,35 +20,51 @@
  */
 package org.lenskit.data.ratings;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.inject.Parameter;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.keys.HashKeyIndex;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Rating vector source that extracts user ratings from the database.
+ * Rating vector DAO that counts entities appearing for a user.
  */
 @ThreadSafe
-public class StandardRatingVectorDAO implements RatingVectorDAO {
+public class EntityCountRatingVectorDAO implements RatingVectorDAO {
     private final DataAccessObject dao;
+    private final EntityType type;
     private volatile IdBox<Long2DoubleMap> cachedValue;
+
+    /**
+     * Qualifier for the type of entities that are counted to compute user preferences.
+     */
+    @Qualifier
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.PARAMETER, ElementType.FIELD})
+    @Parameter(ElementType.class)
+    @Documented
+    public static @interface CountedType {}
 
     /**
      * Construct a rating vector source.
      * @param dao The data access object.
+     * @param type
      */
     @Inject
-    public StandardRatingVectorDAO(DataAccessObject dao) {
+    public EntityCountRatingVectorDAO(DataAccessObject dao, @CountedType EntityType type) {
         this.dao = dao;
+        this.type = type;
     }
 
     @Nonnull
@@ -59,24 +75,19 @@ public class StandardRatingVectorDAO implements RatingVectorDAO {
             return cached.getValue();
         }
 
-        HashKeyIndex items = new HashKeyIndex();
-        DoubleList ratings = new DoubleArrayList();
+        Long2DoubleMap counts = new Long2DoubleOpenHashMap();
+        counts.defaultReturnValue(0);
 
-        try (ObjectStream<Rating> stream = dao.query(Rating.class)
+        try (ObjectStream<Entity> stream = dao.query(type)
                                               .withAttribute(CommonAttributes.USER_ID, user)
                                               .stream()) {
-            for (Rating r: stream) {
-                int idx = items.internId(r.getItemId());
-                if (idx >= ratings.size()) {
-                    assert idx == ratings.size();
-                    ratings.add(r.getValue());
-                } else {
-                    ratings.set(idx, r.getValue());
-                }
+            for (Entity e: stream) {
+                long item = e.getLong(CommonAttributes.ITEM_ID);
+                counts.put(item, counts.get(item) + 1);
             }
         }
 
-        Long2DoubleMap map = Long2DoubleSortedArrayMap.fromArray(items, ratings);
+        Long2DoubleMap map = new Long2DoubleSortedArrayMap(counts);
         cachedValue = IdBox.create(user, map);
         return map;
     }
