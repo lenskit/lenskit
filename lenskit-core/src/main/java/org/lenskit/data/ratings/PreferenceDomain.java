@@ -29,7 +29,6 @@ import org.grouplens.grapht.annotation.DefaultNull;
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
-import org.lenskit.specs.data.PrefDomainSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
