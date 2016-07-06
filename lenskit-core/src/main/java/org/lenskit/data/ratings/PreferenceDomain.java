@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
 @DefaultNull
 public final class PreferenceDomain implements Serializable {
     public static final long serialVersionUID = 1L;
+    private static Pattern specRE =
+            Pattern.compile("\\s*\\[\\s*((?:\\d*\\.)?\\d+)\\s*,\\s*((?:\\d*\\.)?\\d+)\\s*\\]\\s*(?:/\\s*((?:\\d*\\.)?\\d+))?\\s*");
 
     private final double minimum;
     private final double maximum;
@@ -212,19 +214,20 @@ public final class PreferenceDomain implements Serializable {
     @Nonnull
     public static
     PreferenceDomain fromString(@Nonnull String spec) {
-        return fromSpec(PrefDomainSpec.fromString(spec));
-    }
-
-    /**
-     * Build a preference domain from a specification.
-     * @param spec The preference domain spec.
-     * @return The preference domain.
-     */
-    public static PreferenceDomain fromSpec(PrefDomainSpec spec) {
-        if (spec == null) {
-            return null;
+        Matcher m = specRE.matcher(spec);
+        if (!m.matches()) {
+            throw new IllegalArgumentException("invalid domain specification");
         }
-        return new PreferenceDomain(spec.getMinimum(), spec.getMaximum(), spec.getPrecision());
+        double min = Double.parseDouble(m.group(1));
+        double max = Double.parseDouble(m.group(2));
+        String precs = m.group(3);
+
+        if (precs != null) {
+            double prec = Double.parseDouble(precs);
+            return new PreferenceDomain(min, max, prec);
+        } else {
+            return new PreferenceDomain(min, max);
+        }
     }
 
     /**
@@ -235,11 +238,4 @@ public final class PreferenceDomain implements Serializable {
         return new PreferenceDomainBuilder();
     }
 
-    public PrefDomainSpec toSpec() {
-        PrefDomainSpec spec = new PrefDomainSpec();
-        spec.setMinimum(minimum);
-        spec.setMaximum(maximum);
-        spec.setPrecision(precision);
-        return spec;
-    }
 }
