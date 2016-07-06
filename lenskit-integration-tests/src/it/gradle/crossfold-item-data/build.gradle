@@ -19,6 +19,10 @@ apply plugin: 'java'
 apply from: 'common.gradle'
 apply plugin: 'lenskit'
 
+dependencies {
+    testCompile "org.lenskit:lenskit-all:$project.lenskitVersion"
+}
+
 task copyData(type: Copy) {
     from mlDataDir
     into 'ml100k'
@@ -35,7 +39,7 @@ task crossfold(type: Crossfold) {
     includeTimestamps false
 }
 
-check {
+task checkOutputFiles {
     dependsOn crossfold
     doLast {
         def dir = file("$buildDir/crossfold.out")
@@ -46,4 +50,20 @@ check {
             assertThat "test file $i should exist", file(String.format("$dir/part%02d.test.csv.gz", i)).exists()
         }
     }
+}
+
+// make sure that an evaluation runs with this new crossfolded data
+// if it runs successfully, that's what we want
+task evaluate(type: TrainTest) {
+    dependsOn checkOutputFiles
+
+    dataSet crossfold
+    algorithm 'algorithms.groovy'
+    predict {
+        metric 'rmse'
+    }
+}
+
+check {
+    dependsOn evaluate
 }

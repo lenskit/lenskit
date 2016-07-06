@@ -38,6 +38,7 @@ import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.EntitySource;
 import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.dao.file.TextEntitySource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
@@ -450,6 +451,7 @@ public class Crossfolder {
 
             // TODO Support various columns in crossfold output
             logger.debug("writing train manifest {}", i);
+            Path trainFile = trainManifestFiles.get(i);
             ArrayNode trainList = nf.arrayNode();
             ObjectNode train = nf.objectNode();
             train.set("type", nf.textNode("textfile"));
@@ -469,10 +471,13 @@ public class Crossfolder {
                 if (source.getTypes().contains(entityType)) {
                     continue; // this one was crossfolded
                 }
-                // TODO Support other sources in the crossfold output
-                logger.warn("additional data sources not supported, ignoring {}", source);
+                if (source instanceof TextEntitySource) {
+                    trainList.add(((TextEntitySource) source).toJSON(trainFile.toUri()));
+                } else {
+                    logger.warn("ignoring non-file data source {}", source);
+                }
             }
-            mapper.writeValue(trainManifestFiles.get(i).toFile(), trainList);
+            mapper.writeValue(trainFile.toFile(), trainList);
 
             logger.debug("writing test manifest {}", i);
             ObjectNode test = nf.objectNode();
