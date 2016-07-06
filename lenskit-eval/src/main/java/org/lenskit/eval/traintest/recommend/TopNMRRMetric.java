@@ -88,7 +88,7 @@ public class TopNMRRMetric extends ListOnlyTopNMetric<TopNMRRMetric.Context> {
     @Nullable
     @Override
     public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
-        return new Context(dataSet.getTestData().getItemDAO().getItemIds(), recommender);
+        return new Context(dataSet.getAllItems(), recommender);
     }
 
     @Nonnull

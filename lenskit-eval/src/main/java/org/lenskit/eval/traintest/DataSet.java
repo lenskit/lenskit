@@ -27,16 +27,12 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.data.source.TextDataSource;
 import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.UserDAO;
-import org.lenskit.data.dao.UserListUserDAO;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.DataSetSpec;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,11 +50,11 @@ public class DataSet {
     @Nonnull
     private final String name;
     @Nonnull
-    private final DataSource trainData;
+    private final StaticDataSource trainData;
     @Nullable
-    private final DataSource queryData;
+    private final StaticDataSource queryData;
     @Nonnull
-    private final DataSource testData;
+    private final StaticDataSource testData;
     @Nonnull
     private final UUID group;
     private final Map<String, Object> attributes;
@@ -73,9 +69,9 @@ public class DataSet {
      * @param attrs The data set attributes.
      */
     public DataSet(@Nonnull String name,
-                   @Nonnull DataSource train,
-                   @Nullable DataSource query,
-                   @Nonnull DataSource test,
+                   @Nonnull StaticDataSource train,
+                   @Nullable StaticDataSource query,
+                   @Nonnull StaticDataSource test,
                    @Nonnull UUID grp,
                    Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
@@ -129,7 +125,7 @@ public class DataSet {
      * @return A data source containing the test data.
      */
     @Nonnull
-    public DataSource getTestData() {
+    public StaticDataSource getTestData() {
         return testData;
     }
 
@@ -139,7 +135,7 @@ public class DataSet {
      * @return A data source containing the training data.
      */
     @Nonnull
-    public DataSource getTrainingData() {
+    public StaticDataSource getTrainingData() {
         return trainData;
     }
 
@@ -149,14 +145,12 @@ public class DataSet {
      * @return A data source containing the query data.
      */
     @Nullable
-    public DataSource getQueryData() {
+    public StaticDataSource getQueryData() {
         return queryData;
     }
 
     public LongSet getAllItems() {
-        LongSet items = new LongOpenHashSet(trainData.getItemDAO().getItemIds());
-        items.addAll(testData.getItemDAO().getItemIds());
-        return items;
+        return trainData.get().getEntityIds(CommonTypes.ITEM);
     }
 
     /**
@@ -166,9 +160,12 @@ public class DataSet {
      *               configured.
      */
     public void configure(LenskitConfiguration config) {
-        trainData.configure(config);
-        config.bind(QueryData.class, UserDAO.class)
-              .to(new UserListUserDAO(getTestData().getUserDAO().getUserIds()));
+        config.bind(DataAccessObject.class)
+              .toProvider(trainData);
+        config.bind(PreferenceDomain.class)
+              .to(trainData.getPreferenceDomain());
+        config.bind(QueryData.class, DataAccessObject.class)
+              .toProvider(StaticDataSource.class);
     }
 
     @Override
@@ -299,7 +296,7 @@ public class DataSet {
      * @param base The base URI.
      * @return The data source.
      */
-    private static DataSource loadDataSource(JsonNode json, URI base, String name) throws IOException {
+    private static StaticDataSource loadDataSource(JsonNode json, URI base, String name) throws IOException {
         StaticDataSource source;
 
         if (json.isTextual()) {
@@ -309,7 +306,7 @@ public class DataSet {
             source = StaticDataSource.fromJSON(name, json, base);
         }
 
-        return new TextDataSource(name, source);
+        return source;
     }
 
     /**

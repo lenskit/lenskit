@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -34,6 +35,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
+import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.EntitySource;
 import org.lenskit.data.dao.file.StaticDataSource;
@@ -44,7 +46,6 @@ import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.output.RatingWriter;
 import org.lenskit.data.output.RatingWriters;
 import org.lenskit.eval.traintest.DataSet;
-import org.lenskit.eval.traintest.DataSetBuilder;
 import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +87,7 @@ public class Crossfolder {
     private boolean skipIfUpToDate = false;
     private CrossfoldMethod method = CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10));
     private boolean writeTimestamps = true;
+    private boolean executed = false;
 
     public Crossfolder() {
         this(null);
@@ -301,6 +303,7 @@ public class Crossfolder {
                 }
                 if (check.isUpToDate()) {
                     logger.info("crossfold {} up to date", getName());
+                    executed = true;
                     return;
                 }
             }
@@ -317,6 +320,7 @@ public class Crossfolder {
                 metadata.putAll(src.getMetadata());
             }
             writeManifests(source, metadata, itemDataInfo);
+            executed = true;
         } catch (IOException ex) {
             // TODO Use application-specific exception
             throw new RuntimeException("Error writing data sets", ex);
@@ -493,19 +497,14 @@ public class Crossfolder {
      * @return The data sets produced by this crossfolder.
      */
     public List<DataSet> getDataSets() {
-        List<DataSet> dataSets = new ArrayList<>(partitionCount);
-        List<Path> trainFiles = getTrainingFiles();
-        List<Path> testFiles = getTestFiles();
-        for (int i = 0; i < partitionCount; i++) {
-            DataSetBuilder dsb = new DataSetBuilder(getName() + "." + i);
+        Preconditions.checkState(executed, "crossfolder has not been executed");
 
-            dataSets.add(dsb.setTest(makeDataSource(testFiles.get(i)))
-                            .setTrain(makeDataSource(trainFiles.get(i)))
-                            .setAttribute("DataSet", getName())
-                            .setAttribute("Partition", i)
-                            .build());
+        Path dataSetFile = outputDir.resolve("datasets.yaml");
+        try {
+            return DataSet.load(dataSetFile);
+        } catch (IOException e) {
+            throw new DataAccessException("cannot load data sets", e);
         }
-        return dataSets;
     }
 
     RatingWriter openWriter(Path file) throws IOException {

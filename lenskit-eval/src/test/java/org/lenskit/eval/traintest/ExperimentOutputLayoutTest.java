@@ -21,11 +21,10 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.collect.ImmutableSet;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.source.GenericDataSource;
+import org.junit.Test;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.util.table.*;
 import org.lenskit.util.table.writer.TableWriter;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -64,8 +63,8 @@ public class ExperimentOutputLayoutTest {
         ExperimentOutputLayout layout = new ExperimentOutputLayout(dcols, acols);
         AlgorithmInstance ai = new AlgorithmInstanceBuilder("Wombat").build();
         DataSet ds = new DataSetBuilder("Wumpus")
-                .setTrain(new GenericDataSource("train", EventCollectionDAO.empty()))
-                .setTest(new GenericDataSource("test", EventCollectionDAO.empty()))
+                .setTrain(new StaticDataSource("train"))
+                .setTest(new StaticDataSource("test"))
                 .build();
         TableWriter tw = layout.prefixTable(null, ds, ai);
         assertThat(tw, nullValue());
@@ -78,8 +77,8 @@ public class ExperimentOutputLayoutTest {
         ExperimentOutputLayout layout = new ExperimentOutputLayout(dcols, acols);
         AlgorithmInstance ai = new AlgorithmInstanceBuilder("Wombat").build();
         DataSet ds = new DataSetBuilder("Wumpus")
-                .setTrain(new GenericDataSource("train", EventCollectionDAO.empty()))
-                .setTest(new GenericDataSource("test", EventCollectionDAO.empty()))
+                .setTrain(new StaticDataSource("train"))
+                .setTest(new StaticDataSource("test"))
                 .build();
 
         TableLayoutBuilder tlb = TableLayoutBuilder.copy(layout.getConditionLayout());

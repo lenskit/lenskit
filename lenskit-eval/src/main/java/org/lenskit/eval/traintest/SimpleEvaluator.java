@@ -21,18 +21,14 @@
 package org.lenskit.eval.traintest;
 
 import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.lenskit.data.dao.file.StaticDataSource;
-import org.lenskit.eval.traintest.predict.PredictMetric;
-import org.lenskit.util.table.Table;
-import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.eval.crossfold.CrossfoldMethods;
 import org.lenskit.eval.crossfold.Crossfolder;
 import org.lenskit.eval.crossfold.HistoryPartitions;
 import org.lenskit.eval.crossfold.SortOrder;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
+import org.lenskit.eval.traintest.predict.PredictMetric;
+import org.lenskit.util.table.Table;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -195,22 +191,6 @@ public class SimpleEvaluator {
     }
 
     /**
-     * Add a data set to the experiment by DAO.
-     * @param name The name of the new dataset.
-     * @param train The DAO containing training data.
-     * @param test The DAO containing test data.
-     * @param dom The {@link PreferenceDomain} for the ratings.
-     * @return The evaluator (for chaining).
-     */
-    public SimpleEvaluator addDataSet(String name, EventDAO train, EventDAO test, PreferenceDomain dom){
-        experiment.addDataSet(DataSet.newBuilder(name)
-                                     .setTrain(new GenericDataSource(name + ".train", train, dom))
-                                     .setTest(new GenericDataSource(name + ".test", test, dom))
-                                     .build());
-        return this;
-    }
-
-    /**
      * Add a data set to the experiment.
      *
      * The name for the data source will default to 'generic-data-source'. Because of this,
@@ -220,7 +200,7 @@ public class SimpleEvaluator {
      * @param test The source of test data.
      * @return The evaluator (for chaining).
      */
-    public SimpleEvaluator addDataSet(DataSource train, DataSource test){
+    public SimpleEvaluator addDataSet(StaticDataSource train, StaticDataSource test){
         experiment.addDataSet(DataSet.newBuilder("generic-data-source")
                                      .setTrain(train)
                                      .setTest(test)

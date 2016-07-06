@@ -118,8 +118,8 @@ class ExperimentJob extends RecursiveAction {
                 }
             }
 
-            DataAccessObject trainData = dataSet.getTrainingData().getDataAccessObject();
-            DataAccessObject testData = dataSet.getTestData().getDataAccessObject();
+            DataAccessObject trainData = dataSet.getTrainingData().get();
+            DataAccessObject testData = dataSet.getTestData().get();
 
             final NumberFormat pctFormat = NumberFormat.getPercentInstance();
             pctFormat.setMaximumFractionDigits(2);
@@ -198,7 +198,7 @@ class ExperimentJob extends RecursiveAction {
     private LenskitRecommender buildRecommender() throws RecommenderBuildException {
         logger.debug("Starting recommender build");
         LenskitConfiguration extraConfig = new LenskitConfiguration();
-        extraConfig.addComponent(dataSet.getTrainingData().getDataAccessObject());
+        extraConfig.addComponent(dataSet.getTrainingData().get());
         PreferenceDomain dom = dataSet.getTrainingData().getPreferenceDomain();
         if (dom != null) {
             extraConfig.addComponent(dom);

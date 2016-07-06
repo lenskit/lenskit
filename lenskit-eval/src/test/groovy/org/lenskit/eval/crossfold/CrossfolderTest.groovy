@@ -23,7 +23,6 @@ package org.lenskit.eval.crossfold
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
 import org.grouplens.lenskit.data.source.DataSource
-import org.grouplens.lenskit.data.source.TextDataSource
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -31,6 +30,7 @@ import org.junit.rules.TemporaryFolder
 import org.lenskit.data.dao.BridgeEventDAO
 import org.lenskit.data.dao.EventDAO
 import org.lenskit.data.dao.file.StaticDataSource
+import org.lenskit.data.entities.CommonAttributes
 import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.PreferenceDomain
@@ -81,8 +81,6 @@ class CrossfolderTest {
         assertThat(cf.skipIfUpToDate, equalTo(false))
         assertThat(cf.writeTimestamps, equalTo(true))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
-        def dss = cf.dataSets
-        assertThat(dss, hasSize(5))
         assertThat(Files.exists(tmp.root.toPath().resolve("datasets.yaml")),
                    equalTo(false))
         for (i in 1..5) {
@@ -100,16 +98,19 @@ class CrossfolderTest {
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
             // test the users
-            def users = ds.testData.userDAO.userIds
+            def users = ds.testData.get().getEntityIds(CommonTypes.USER)
             allUsers += users
             // each test set should have 20 users
             assertThat(users, hasSize(20))
             // train data should have all users
-            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            assertThat(ds.trainingData.get().getEntityIds(CommonTypes.USER), hasSize(100))
             // each test user should have 10 ratings
-            def ued = ds.testData.userEventDAO
+            def dao = ds.testData.get()
             for (user in users) {
-                assertThat(ued.getEventsForUser(user), hasSize(10))
+                assertThat(dao.query(CommonTypes.RATING)
+                              .withAttribute(CommonAttributes.USER_ID, user)
+                              .get(),
+                           hasSize(10))
             }
         }
         assertThat(allUsers, hasSize(100))
@@ -130,12 +131,9 @@ class CrossfolderTest {
             assertThat(tmp.root.toPath().resolve(String.format("part%02d.test.yaml", i)).toFile(),
                        existingFile())
             def obj = dataSets[i-1]
-            assertThat(obj.trainingData, instanceOf(TextDataSource))
-            assertThat(obj.testData, instanceOf(TextDataSource))
-            assertThat(obj.queryData, nullValue())
-            assertThat(obj.trainingData.source.preferenceDomain,
+            assertThat(obj.trainingData.preferenceDomain,
                        equalTo(PreferenceDomain.fromString("[1,5]")))
-            assertThat(obj.testData.source.preferenceDomain,
+            assertThat(obj.testData.preferenceDomain,
                        equalTo(PreferenceDomain.fromString("[1,5]")))
 
             // Can we load the train data properly?
@@ -185,32 +183,31 @@ class CrossfolderTest {
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
             // test the users
-            def users = ds.testData.userDAO.userIds
+            def users = ds.testData.get().getEntityIds(CommonTypes.USER)
             allUsers += users
             // each test set should have 100/10 users
             assertThat(users, hasSize(10))
             // train data should have all users
-            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            assertThat(ds.trainingData.get().getEntityIds(CommonTypes.USER), hasSize(100))
             // each test user should have 10 ratings
-            def ued = ds.testData.userEventDAO
+            def dao = ds.testData.get()
             for (user in users) {
-                assertThat(ued.getEventsForUser(user), hasSize(10))
+                assertThat(dao.query(CommonTypes.RATING)
+                              .withAttribute(CommonAttributes.USER_ID, user)
+                              .get(),
+                           hasSize(10))
             }
         }
         assertThat(allUsers, hasSize(100))
 
         def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+        assertThat(dataSets, hasSize(10))
 
         for (int i = 1; i <= 10; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-
-            def obj = dataSets[i-1]
-            assertThat(obj.trainingData, instanceOf(TextDataSource))
-            assertThat(obj.testData, instanceOf(TextDataSource))
-            assertThat(obj.queryData, nullValue())
         }
     }
 
@@ -223,32 +220,31 @@ class CrossfolderTest {
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
             // test the users
-            def users = ds.testData.userDAO.userIds
+            def users = ds.testData.get().getEntityIds(CommonTypes.USER)
             allUsers += users
             // each test set should have 5 users
             assertThat(users, hasSize(5))
             // train data should have all users
-            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
-            // each test user should have 10 ratings
-            def ued = ds.testData.userEventDAO
+            assertThat(ds.trainingData.get().getEntityIds(CommonTypes.USER), hasSize(100))
+            // each test user should have 5 ratings
+            def dao = ds.testData.get()
             for (user in users) {
-                assertThat(ued.getEventsForUser(user), hasSize(5))
+                assertThat(dao.query(CommonTypes.RATING)
+                              .withAttribute(CommonAttributes.USER_ID, user)
+                              .get(),
+                           hasSize(5))
             }
         }
         assertThat(allUsers, hasSize(25))
 
         def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+        assertThat(dataSets, hasSize(5))
 
         for (int i = 1; i <= 5; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-
-            def obj = dataSets[i-1]
-            assertThat(obj.trainingData, instanceOf(TextDataSource))
-            assertThat(obj.testData, instanceOf(TextDataSource))
-            assertThat(obj.queryData, nullValue())
         }
     }
 
@@ -263,30 +259,26 @@ class CrossfolderTest {
         double perPart = ratings.size() / 5.0
         for (ds in dss) {
             // test the users
-            def events = ds.testData.dataAccessObject.query(Rating.class).get()
+            def events = ds.testData.get().query(Rating.class).get()
             allEvents += events;
 
             assertThat(events, hasSize(allOf(greaterThanOrEqualTo((Integer) Math.floor(perPart)),
                                              lessThanOrEqualTo((Integer) Math.ceil(perPart)))));
 
             // train data should have all the other events
-            def tes = ds.trainingData.dataAccessObject.query(Rating.class).get()
+            def tes = ds.trainingData.get().query(Rating.class).get()
             assertThat(tes.size() + events.size(), equalTo(ratings.size()))
         }
         assertThat(allEvents, hasSize(ratings.size()))
 
         def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+        assertThat(dataSets, hasSize(5))
 
         for (int i = 1; i <= 5; i++) {
             def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-
-            def obj = dataSets[i-1]
-            assertThat(obj.trainingData, instanceOf(TextDataSource))
-            assertThat(obj.testData, instanceOf(TextDataSource))
-            assertThat(obj.queryData, nullValue())
         }
     }
 
@@ -299,17 +291,22 @@ class CrossfolderTest {
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
             // test the users
-            def users = ds.testData.userDAO.userIds
+            def users = ds.testData.get().getEntityIds(CommonTypes.USER)
             allUsers += users
             // each test set should have 20 users
             assertThat(users, hasSize(20))
             // train data should have all users
-            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            assertThat(ds.trainingData.get().getEntityIds(CommonTypes.USER), hasSize(100))
             // each test user should have 10 ratings
-            def ued = ds.testData.userEventDAO
+            def dao = ds.testData.get()
+            def trainDao = ds.trainingData.get()
             for (user in users) {
-                def uevts = ued.getEventsForUser(user)
-                def trainEvts = ds.trainingData.userEventDAO.getEventsForUser(user)
+                def uevts = dao.query(Rating)
+                               .withAttribute(CommonAttributes.USER_ID, user)
+                               .get()
+                def trainEvts = trainDao.query(Rating)
+                                        .withAttribute(CommonAttributes.USER_ID, user)
+                                        .get()
                 def minTest = uevts*.timestamp.min()
                 def maxTrain = trainEvts*.timestamp.max()
                 assertThat(minTest, greaterThanOrEqualTo(maxTrain))
@@ -327,17 +324,22 @@ class CrossfolderTest {
         def allUsers = new LongOpenHashSet()
         for (ds in dss) {
             // test the users
-            def users = ds.testData.userDAO.userIds
+            def users = ds.testData.get().getEntityIds(CommonTypes.USER)
             allUsers += users
             // each test set should have 20 users
             assertThat(users, hasSize(20))
             // train data should have all users
-            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            assertThat(ds.trainingData.get().getEntityIds(CommonTypes.USER), hasSize(100))
             // each test user should have 10 ratings
-            def ued = ds.testData.userEventDAO
+            def dao = ds.trainingData.get()
             for (user in users) {
-                def uevts = ued.getEventsForUser(user)
-                def trainEvts = ds.trainingData.userEventDAO.getEventsForUser(user)
+                def uevts = dao.query(Rating)
+                               .withAttribute(CommonAttributes.USER_ID, user)
+                               .get()
+                def trainEvts = ds.trainingData.get()
+                                  .query(Rating.class)
+                                  .withAttribute(CommonAttributes.USER_ID, user)
+                                  .get()
                 assertThat(trainEvts, hasSize(5));
                 def minTest = uevts*.timestamp.min()
                 def maxTrain = trainEvts*.timestamp.max()
