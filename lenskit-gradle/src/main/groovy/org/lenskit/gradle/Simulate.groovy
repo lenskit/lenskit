@@ -23,11 +23,9 @@ package org.lenskit.gradle
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.delegates.SpecDelegate
-import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.AlgorithmSpec
 
 class Simulate extends LenskitTask {
-    private SpecDelegate delegate = new SpecDelegate(project, spec)
     def File specFile
 
     Simulate() {
@@ -37,15 +35,6 @@ class Simulate extends LenskitTask {
         spec.outputFile = project.file("$project.buildDir/${name}-output.csv").toPath()
         // FIXME re-enable simulate task
         throw new UnsupportedOperationException("simulate task does not work")
-    }
-
-    /**
-     * Set the input to come from a pack-ratings task.
-     * @param packer The pack-ratings task.
-     */
-    public void input(PackRatings packer) {
-        spec.inputFile = packer.outputFile.toPath()
-        dependsOn packer
     }
 
     /**
@@ -152,7 +141,6 @@ class Simulate extends LenskitTask {
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info('preparing spec file {}', file)
-        SpecUtils.write(spec, file.toPath())
     }
 
     @Override

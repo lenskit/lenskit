@@ -31,7 +31,6 @@ interface DataSetProvider extends Task {
      * Get the data sets built by this task.
      * @return The data sets built by this task.
      */
-    List<DataSetSpec> getDataSets();
 
     /**
      * Get the data set manifest file.

@@ -150,16 +150,6 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
         args
     }
 
-    List<DataSetSpec> getDataSets() {
-        def file = new File(outputDirectory, 'all-partitions.json')
-        if (file.exists()) {
-            def reader = SpecUtils.createMapper().reader(DataSetSpec)
-            reader.readValues(file).toList()
-        } else {
-            return []
-        }
-    }
-
     @Override
     File getDataSetFile() {
         return new File(getOutputDirectory(), "datasets.yaml")
