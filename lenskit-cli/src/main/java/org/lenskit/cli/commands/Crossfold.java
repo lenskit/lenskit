@@ -29,8 +29,8 @@ import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.output.OutputFormat;
 import org.lenskit.eval.crossfold.*;
-import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

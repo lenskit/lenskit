@@ -24,17 +24,19 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.eval.temporal.TemporalEvaluator;
-import org.lenskit.specs.eval.AlgorithmSpec;
+import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -113,10 +115,15 @@ public class Simulate implements Command {
             eval.setExtendedOutputFile(out.toPath());
         }
 
-        AlgorithmSpec algo = new AlgorithmSpec();
-        File cfg = ctx.getConfigFile();
-        algo.setName(cfg.getName());
-        algo.setConfigFile(cfg.toPath());
+        // FIXME Use a proper class loader
+        List<AlgorithmInstance> algos = AlgorithmInstance.load(ctx.getConfigFile().toPath(), "algorithm",
+                                                               ClassLoaders.inferDefault());
+        if (algos.size() != 1) {
+            logger.error("expected 1 algorithm, found {}", algos.size());
+            System.exit(2);
+        } else {
+            eval.setAlgorithm(algos.get(0));
+        }
 
         Stopwatch timer = Stopwatch.createStarted();
         logger.info("beginning temporal evaluator");

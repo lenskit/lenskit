@@ -21,7 +21,6 @@
 package org.lenskit.data.ratings;
 
 import org.junit.Test;
-import org.lenskit.specs.data.PrefDomainSpec;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;

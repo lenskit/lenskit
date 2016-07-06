@@ -26,8 +26,8 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 import org.junit.Before
 import org.junit.Test
+import org.lenskit.data.output.OutputFormat
 import org.lenskit.eval.crossfold.*
-import org.lenskit.specs.eval.OutputFormat
 
 import java.nio.file.Paths
 
