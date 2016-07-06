@@ -20,10 +20,6 @@
  */
 package org.lenskit.knn.item
 
-import org.lenskit.api.RecommenderBuildException
-import org.lenskit.config.ConfigHelpers
-import org.lenskit.data.events.EventType
-import org.lenskit.data.events.Like
 import org.grouplens.lenskit.data.history.EventCountUserHistorySummarizer
 import org.grouplens.lenskit.data.history.UserHistorySummarizer
 import org.grouplens.lenskit.test.ML100KTestSuite
@@ -34,10 +30,14 @@ import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine
 import org.lenskit.api.ItemScorer
+import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.config.ConfigHelpers
+import org.lenskit.data.events.EventType
+import org.lenskit.data.events.Like
 import org.lenskit.knn.item.model.ItemItemModel
 
 import static org.hamcrest.Matchers.*
@@ -50,7 +50,6 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
     @Test
     public void testBuildImplicitModelModel() throws RecommenderBuildException, IOException {
         def config = ConfigHelpers.load {
-            addComponent implicitDAO
             bind ItemScorer to ItemItemScorer
             within (UserVectorNormalizer) {
                 bind VectorNormalizer to UnitVectorNormalizer
@@ -61,13 +60,15 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
             bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         }
 
+        def dao = implicitSource.get()
+
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()
                                     .addConfiguration(config)
-                                    .build()
+                                    .build(dao)
         assertThat(engine, notNullValue())
 
-        LenskitRecommender rec = engine.createRecommender()
+        LenskitRecommender rec = engine.createRecommender(dao)
         assertThat(rec.itemScorer,
                    instanceOf(ItemItemScorer.class))
         assertThat(rec.get(ItemItemModel.class),
