@@ -55,7 +55,7 @@ public class EntityCountRatingVectorDAO implements RatingVectorDAO {
     @Qualifier
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.PARAMETER, ElementType.FIELD})
-    @Parameter(ElementType.class)
+    @Parameter(EntityType.class)
     @Documented
     public static @interface CountedType {}
 
