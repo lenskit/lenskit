@@ -20,27 +20,18 @@
  */
 package org.grouplens.lenskit.test;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongLists;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.ItemListItemDAO;
-import org.lenskit.data.dao.PrefetchingItemDAO;
 import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.dao.file.TextEntitySource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.EntityType;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Random;
 
 import static org.junit.Assume.assumeTrue;
 
