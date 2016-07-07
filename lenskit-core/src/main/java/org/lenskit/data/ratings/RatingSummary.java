@@ -22,6 +22,8 @@ package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.lenskit.data.dao.BridgeEventDAO;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.Shareable;
 import org.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyedObject;
@@ -60,6 +62,15 @@ public class RatingSummary implements Serializable {
      */
     public static RatingSummary create(EventDAO dao) {
         return new FastRatingSummaryBuilder(dao).get();
+    }
+
+    /**
+     * Create a rating summary from a DAO.
+     * @param dao The events.
+     * @return The rating summary.
+     */
+    public static RatingSummary create(DataAccessObject dao) {
+        return create(new BridgeEventDAO(dao));
     }
 
     public double getGlobalMean() {

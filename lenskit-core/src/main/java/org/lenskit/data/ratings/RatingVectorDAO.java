@@ -21,6 +21,7 @@
 package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
 import javax.annotation.Nonnull;
 
@@ -28,6 +29,7 @@ import javax.annotation.Nonnull;
  * Interface for user 'rating vectors', which are mappings of items to user preference.  This is used
  * to access use ratings, or to transform other types of data into something that looks like a rating vector.
  */
+@DefaultImplementation(StandardRatingVectorDAO.class)
 public interface RatingVectorDAO {
     /**
      * Get a user's rating vector.
