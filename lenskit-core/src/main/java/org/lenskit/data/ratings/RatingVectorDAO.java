@@ -22,6 +22,8 @@ package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.lenskit.util.IdBox;
+import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nonnull;
 
@@ -42,4 +44,10 @@ public interface RatingVectorDAO {
      */
     @Nonnull
     Long2DoubleMap userRatingVector(long user);
+
+    /**
+     * Stream all users in the data set.
+     * @return A stream over the users in the data set.
+     */
+    ObjectStream<IdBox<Long2DoubleMap>> streamUsers();
 }

@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.ratings;
 
+import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.lenskit.data.dao.DataAccessObject;
@@ -29,13 +30,15 @@ import org.lenskit.data.entities.EntityType;
 import org.lenskit.inject.Parameter;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
+import java.util.List;
 
 /**
  * Rating vector DAO that counts entities appearing for a user.
@@ -75,20 +78,44 @@ public class EntityCountRatingVectorDAO implements RatingVectorDAO {
             return cached.getValue();
         }
 
-        Long2DoubleMap counts = new Long2DoubleOpenHashMap();
-        counts.defaultReturnValue(0);
-
+        Long2DoubleMap map;
         try (ObjectStream<Entity> stream = dao.query(type)
                                               .withAttribute(CommonAttributes.USER_ID, user)
                                               .stream()) {
-            for (Entity e: stream) {
-                long item = e.getLong(CommonAttributes.ITEM_ID);
-                counts.put(item, counts.get(item) + 1);
-            }
+            map = count(stream);
         }
 
-        Long2DoubleMap map = new Long2DoubleSortedArrayMap(counts);
-        cachedValue = IdBox.create(user, map);
         return map;
+    }
+
+    private Long2DoubleMap count(Iterable<Entity> entities) {
+        Long2DoubleMap counts = new Long2DoubleOpenHashMap();
+        counts.defaultReturnValue(0);
+
+        for (Entity e: entities) {
+            long item = e.getLong(CommonAttributes.ITEM_ID);
+            counts.put(item, counts.get(item) + 1);
+        }
+
+        return counts;
+    }
+
+    @Override
+    public ObjectStream<IdBox<Long2DoubleMap>> streamUsers() {
+        ObjectStream<IdBox<List<Entity>>> stream = dao.query(type)
+                                                      .groupBy(CommonAttributes.USER_ID)
+                                                      .stream();
+        return ObjectStreams.transform(stream, new Function<IdBox<List<Entity>>, IdBox<Long2DoubleMap>>() {
+            @Nullable
+            @Override
+            public IdBox<Long2DoubleMap> apply(@Nullable IdBox<List<Entity>> input) {
+                if (input == null) {
+                    return null;
+                }
+
+                return IdBox.create(input.getId(),
+                                    count(input.getValue()));
+            }
+        });
     }
 }

@@ -20,19 +20,19 @@
  */
 package org.lenskit.data.ratings;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
+import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.keys.HashKeyIndex;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
+import java.util.List;
 
 /**
  * Rating vector source that extracts user ratings from the database.
@@ -59,25 +59,33 @@ public class StandardRatingVectorDAO implements RatingVectorDAO {
             return cached.getValue();
         }
 
-        HashKeyIndex items = new HashKeyIndex();
-        DoubleList ratings = new DoubleArrayList();
+        Long2DoubleMap map;
 
         try (ObjectStream<Rating> stream = dao.query(Rating.class)
                                               .withAttribute(CommonAttributes.USER_ID, user)
                                               .stream()) {
-            for (Rating r: stream) {
-                int idx = items.internId(r.getItemId());
-                if (idx >= ratings.size()) {
-                    assert idx == ratings.size();
-                    ratings.add(r.getValue());
-                } else {
-                    ratings.set(idx, r.getValue());
-                }
-            }
+            map = Ratings.userRatingVector(stream);
         }
 
-        Long2DoubleMap map = Long2DoubleSortedArrayMap.fromArray(items, ratings);
-        cachedValue = IdBox.create(user, map);
         return map;
+    }
+
+    @Override
+    public ObjectStream<IdBox<Long2DoubleMap>> streamUsers() {
+        ObjectStream<IdBox<List<Rating>>> stream = dao.query(Rating.class)
+                                                      .groupBy(CommonAttributes.USER_ID)
+                                                      .stream();
+        return ObjectStreams.transform(stream, new Function<IdBox<List<Rating>>, IdBox<Long2DoubleMap>>() {
+            @Nullable
+            @Override
+            public IdBox<Long2DoubleMap> apply(@Nullable IdBox<List<Rating>> input) {
+                if (input == null) {
+                    return null;
+                }
+
+                return IdBox.create(input.getId(),
+                                    Ratings.userRatingVector(input.getValue()));
+            }
+        });
     }
 }
