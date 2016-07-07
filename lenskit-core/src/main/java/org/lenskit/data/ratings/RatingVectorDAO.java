@@ -28,13 +28,17 @@ import javax.annotation.Nonnull;
 /**
  * Interface for user 'rating vectors', which are mappings of items to user preference.  This is used
  * to access use ratings, or to transform other types of data into something that looks like a rating vector.
+ *
+ * This DAO interface is generally a *proxy DAO*: that is, it is implemented on top of the base
+ * {@link org.lenskit.data.dao.DataAccessObject} interface.  However, an application can specialize it with
+ * some other kind of optimized implementation.
  */
 @DefaultImplementation(StandardRatingVectorDAO.class)
 public interface RatingVectorDAO {
     /**
      * Get a user's rating vector.
      * @param user The rating vector summarizing a user's historical preferences.
-     * @return The rating vector.  Will return an empty vector for nonexistent users.
+     * @return The unnormmalized user rating vector.  Will return an empty vector for nonexistent users.
      */
     @Nonnull
     Long2DoubleMap userRatingVector(long user);
