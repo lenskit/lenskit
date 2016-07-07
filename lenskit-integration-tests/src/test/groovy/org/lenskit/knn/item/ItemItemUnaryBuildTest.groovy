@@ -20,8 +20,6 @@
  */
 package org.lenskit.knn.item
 
-import org.grouplens.lenskit.data.history.EventCountUserHistorySummarizer
-import org.grouplens.lenskit.data.history.UserHistorySummarizer
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.UnitVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
@@ -36,8 +34,9 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.config.ConfigHelpers
-import org.lenskit.data.events.EventType
-import org.lenskit.data.events.Like
+import org.lenskit.data.entities.EntityType
+import org.lenskit.data.ratings.EntityCountRatingVectorDAO
+import org.lenskit.data.ratings.RatingVectorDAO
 import org.lenskit.knn.item.model.ItemItemModel
 
 import static org.hamcrest.Matchers.*
@@ -54,8 +53,8 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
             within (UserVectorNormalizer) {
                 bind VectorNormalizer to UnitVectorNormalizer
             }
-            bind UserHistorySummarizer to EventCountUserHistorySummarizer
-            set EventType toInstance Like
+            bind RatingVectorDAO to EntityCountRatingVectorDAO
+            set EntityCountRatingVectorDAO.CountedType to EntityType.forName("like")
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         }
