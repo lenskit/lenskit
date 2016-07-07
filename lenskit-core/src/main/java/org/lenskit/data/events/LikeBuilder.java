@@ -21,7 +21,6 @@
 package org.lenskit.data.events;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.data.text.DefaultFields;
 
 /**
  * Builder for {@link Like} events.
@@ -30,7 +29,6 @@ import org.grouplens.lenskit.data.text.DefaultFields;
  * @see Like
  * @see Like#newBuilder()
  */
-@DefaultFields({"userId", "itemId", "timestamp?"})
 public class LikeBuilder implements EventBuilder<Like>, Cloneable {
     private long userId;
     private long itemId;

@@ -21,7 +21,6 @@
 package org.lenskit.data.events;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.data.text.DefaultFields;
 
 /**
  * Builder for {@link LikeBatch} events.
@@ -30,7 +29,6 @@ import org.grouplens.lenskit.data.text.DefaultFields;
  * @see LikeBatch
  * @see LikeBatch#newBuilder()
  */
-@DefaultFields({"userId", "itemId", "count", "timestamp?"})
 public class LikeBatchBuilder implements EventBuilder<LikeBatch>, Cloneable {
     private long userId;
     private long itemId;
