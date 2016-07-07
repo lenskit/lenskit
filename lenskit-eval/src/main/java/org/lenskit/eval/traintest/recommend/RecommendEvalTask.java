@@ -29,8 +29,6 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Recommender;
@@ -378,7 +376,6 @@ public class RecommendEvalTask implements EvalTask {
         private final TableWriter writer;
         private final Recommender recommender;
         private final ItemRecommender itemRecommender;
-        private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         private final List<MetricContext<?>> predictMetricContexts;
         private final LongSet allItems;
         private final boolean useDetails;

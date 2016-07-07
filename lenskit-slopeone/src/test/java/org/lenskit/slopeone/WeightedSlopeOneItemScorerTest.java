@@ -20,20 +20,17 @@
  */
 package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.*;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,16 +41,6 @@ import static org.junit.Assert.*;
 public class WeightedSlopeOneItemScorerTest {
 
     private static final double EPSILON = 1.0e-6;
-
-    private SlopeOneModel getModel(EventDAO dao) {
-        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
-        ItemDAO idao = new PrefetchingItemDAO(dao);
-        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
-        ItemItemBuildContextProvider contextFactory = new ItemItemBuildContextProvider(
-                uedao, new DefaultUserVectorNormalizer(), summarizer);
-        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory.get(), 0);
-        return provider.get();
-    }
 
     @Test
     public void testPredict1() throws RecommenderBuildException {

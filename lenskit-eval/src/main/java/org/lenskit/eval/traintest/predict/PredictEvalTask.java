@@ -28,8 +28,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
@@ -261,7 +259,6 @@ public class PredictEvalTask implements EvalTask {
     class PredictConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
         private final RatingPredictor predictor;
-        private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         private final List<MetricContext<?>> predictMetricContexts;
 
         public PredictConditionEvaluator(TableWriter tw, RatingPredictor pred, List<MetricContext<?>> mcs) {
