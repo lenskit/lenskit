@@ -23,7 +23,6 @@ package org.lenskit.knn.user;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -32,13 +31,12 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.ratings.RatingVectorDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -79,17 +77,21 @@ public class LiveNeighborFinder implements NeighborFinder {
     }
 
     @Override
-    public Iterable<Neighbor> getCandidateNeighbors(UserHistory<? extends Event> user, LongSet items) {
-        final long uid = user.getUserId();
-        SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
-        final ImmutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null)
+    public Iterable<Neighbor> getCandidateNeighbors(final long user, LongSet items) {
+        Long2DoubleMap ratings = rvDAO.userRatingVector(user);
+        if (ratings.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        SparseVector urs = ImmutableSparseVector.create(ratings);
+        final ImmutableSparseVector nratings = normalizer.normalize(user, urs, null)
                                                    .freeze();
-        final LongSet candidates = findCandidateNeighbors(uid, nratings, items);
-        logger.debug("found {} candidate neighbors for {}", candidates.size(), uid);
+        final LongSet candidates = findCandidateNeighbors(user, nratings, items);
+        logger.debug("found {} candidate neighbors for {}", candidates.size(), user);
         return new Iterable<Neighbor>() {
             @Override
             public Iterator<Neighbor> iterator() {
-                return new NeighborIterator(uid, nratings, candidates);
+                return new NeighborIterator(user, nratings, candidates);
             }
         };
     }
@@ -113,8 +115,8 @@ public class LiveNeighborFinder implements NeighborFinder {
         }
         while (items.hasNext()) {
             LongSet iusers = dao.query(CommonTypes.RATING)
-                                .withAttribute(CommonAttributes.ITEM_ID, items.nextLong())
-                                .valueSet(CommonAttributes.USER_ID);
+                    .withAttribute(CommonAttributes.ITEM_ID, items.nextLong())
+                    .valueSet(CommonAttributes.USER_ID);
             if (iusers != null) {
                 users.addAll(iusers);
             }
