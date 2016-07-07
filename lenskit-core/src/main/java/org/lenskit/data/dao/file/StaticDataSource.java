@@ -27,6 +27,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Sets;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.grouplens.lenskit.util.io.LKFileUtils;
@@ -62,6 +63,7 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
     private String name;
     private List<EntitySource> sources;
     private ListMultimap<EntityType, TypedName<?>> indexedAttributes;
+    private Set<EntityDerivation> derivations = Sets.newLinkedHashSet();
     private transient volatile SoftReference<DataAccessObject> cachedDao;
 
     /**
@@ -121,6 +123,22 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
      */
     public void addIndex(EntityType type, TypedName<?> attr) {
         indexedAttributes.put(type, attr);
+    }
+
+    /**
+     * Add a derived entity to the data source.  Derived entities are synthesized from IDs found in attributes
+     * of other entities (effectively *foreign keys*).  This allows for things such as extracting the set of
+     * users or items from a file of ratings.
+     *
+     * The derived entities will not overwrite entities from other
+     * sources with the same ID.
+     *
+     * @param derived The derived entity type.
+     * @param source The type from which to derive it.
+     * @param attr The attribute to derive the entity type from.
+     */
+    public void addDerivedEntity(EntityType derived, EntityType source, TypedName<Long> attr) {
+        derivations.add(EntityDerivation.create(derived, source, attr));
     }
 
     /**
@@ -220,16 +238,14 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
             if (defaults == null) {
                 continue;
             }
-            for (EntityDerivation deriv: defaults.getDefaultDerivations()) {
-                EntityType derived = deriv.getType();
-                if (types.contains(derived)) {
-                    continue;
-                }
-                TypedName<Long> column = deriv.getAttribute();
-                logger.info("deriving entity type {} from {} (column {})",
-                            derived, deriv.getSourceTypes(), column);
-                builder.deriveEntities(derived, type, column);
-            }
+            derivations.addAll(defaults.getDefaultDerivations());
+        }
+
+        for (EntityDerivation deriv: derivations) {
+            TypedName<Long> column = deriv.getAttribute();
+            logger.info("deriving entity type {} from {} (column {})",
+                        deriv.getType(), deriv.getSourceType(), column);
+            builder.deriveEntities(deriv.getType(), deriv.getSourceType(), column);
         }
 
         return builder.build();

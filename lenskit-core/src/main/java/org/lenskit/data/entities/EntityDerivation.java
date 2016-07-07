@@ -31,26 +31,14 @@ import java.util.Set;
  * type of entity in the system.
  */
 public class EntityDerivation {
-    private EntityType type;
-    private Set<EntityType> sourceTypes;
-    private TypedName<Long> attribute;
+    private final EntityType type;
+    private final EntityType sourceType;
+    private final TypedName<Long> attribute;
 
-    private EntityDerivation(EntityType t, Set<EntityType> src, TypedName<Long> attr) {
+    private EntityDerivation(EntityType t, EntityType src, TypedName<Long> attr) {
         type = t;
-        sourceTypes = src;
+        sourceType = src;
         attribute = attr;
-    }
-
-    /**
-     * Create a new entity derivation.
-     * @param t The derived entity type.
-     * @param src The source types.
-     * @param attr The attribute to derive from.
-     * @return An entity derivation.
-     */
-    public static EntityDerivation create(EntityType t, Collection<EntityType> src, TypedName<Long> attr) {
-        ImmutableSet<EntityType> sts = ImmutableSet.copyOf(src);
-        return new EntityDerivation(t, sts, attr);
     }
 
     /**
@@ -61,8 +49,7 @@ public class EntityDerivation {
      * @return An entity derivation.
      */
     public static EntityDerivation create(EntityType t, EntityType src, TypedName<Long> attr) {
-        ImmutableSet<EntityType> sts = ImmutableSet.of(src);
-        return new EntityDerivation(t, sts, attr);
+        return new EntityDerivation(t, src, attr);
     }
 
     /**
@@ -77,8 +64,8 @@ public class EntityDerivation {
      * Get the source types for the derivation.
      * @return The source types for the derivation.
      */
-    public Set<EntityType> getSourceTypes() {
-        return sourceTypes;
+    public EntityType getSourceType() {
+        return sourceType;
     }
 
     /**
