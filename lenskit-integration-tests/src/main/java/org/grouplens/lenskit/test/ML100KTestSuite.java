@@ -28,6 +28,7 @@ import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.dao.file.TextEntitySource;
 import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
 
 import java.io.File;
@@ -42,6 +43,7 @@ import static org.junit.Assume.assumeTrue;
 public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
     protected final String INPUT_FILE_NAME = "u.data";
+    protected final EntityType LIKE = EntityType.forName("like");
     protected static final int SUBSET_DROP_SIZE = 20;
 
     protected File inputFile;
@@ -77,7 +79,8 @@ public class ML100KTestSuite {
         }
 
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
-        format.setEntityType(EntityType.forName("like"));
+        format.setDelimiter("\t");
+        format.setEntityType(LIKE);
         format.addColumns(CommonAttributes.USER_ID,
                           CommonAttributes.ITEM_ID);
         TextEntitySource implicit = new TextEntitySource("likes");
@@ -85,6 +88,8 @@ public class ML100KTestSuite {
         implicit.setFormat(format);
         implicitSource = new StaticDataSource("implicit");
         implicitSource.addSource(implicit);
+        implicitSource.addDerivedEntity(CommonTypes.USER, LIKE, CommonAttributes.USER_ID);
+        implicitSource.addDerivedEntity(CommonTypes.ITEM, LIKE, CommonAttributes.ITEM_ID);
 
         source = new StaticDataSource("ml-100k");
         TextEntitySource tes = new TextEntitySource();

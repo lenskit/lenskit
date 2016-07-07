@@ -54,7 +54,7 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
                 bind VectorNormalizer to UnitVectorNormalizer
             }
             bind RatingVectorDAO to EntityCountRatingVectorDAO
-            set EntityCountRatingVectorDAO.CountedType to EntityType.forName("like")
+            set EntityCountRatingVectorDAO.CountedType to LIKE
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         }
