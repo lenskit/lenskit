@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
@@ -32,11 +33,14 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.data.ratings.RatingVectorDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -52,19 +56,19 @@ public class SnapshotNeighborFinder implements NeighborFinder {
 
     private final UserSnapshot snapshot;
     private final UserSimilarity similarity;
-    private final UserHistorySummarizer summarizer;
+    private final RatingVectorDAO rvDAO;
     private final UserVectorNormalizer normalizer;
     private final Threshold threshold;
 
     @Inject
     public SnapshotNeighborFinder(UserSnapshot snap,
                                   UserSimilarity sim,
-                                  UserHistorySummarizer sum,
+                                  RatingVectorDAO rvd,
                                   UserVectorNormalizer norm,
                                   @UserSimilarityThreshold Threshold thresh) {
         snapshot = snap;
         similarity = sim;
-        summarizer = sum;
+        rvDAO = rvd;
         normalizer = norm;
         threshold = thresh;
     }
@@ -72,7 +76,11 @@ public class SnapshotNeighborFinder implements NeighborFinder {
     @Override
     public Iterable<Neighbor> getCandidateNeighbors(UserHistory<? extends Event> user, LongSet items) {
         final long uid = user.getUserId();
-        SparseVector urs = summarizer.summarize(user);
+        SparseVector urs = MutableSparseVector.create(rvDAO.userRatingVector(uid));
+        if (urs.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         final ImmutableSparseVector vector = normalizer.normalize(user.getUserId(), urs, null)
                                                  .freeze();
 
