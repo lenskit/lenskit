@@ -42,16 +42,22 @@ import java.util.List;
 public abstract class AbstractDataAccessObject implements DataAccessObject {
     @Override
     public Query<Entity> query(EntityType type) {
-        return new Query<>(this, type, Entity.class);
+        return new JavaQuery<>(this, type, Entity.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation uses an internal {@link Query} implementation to prepare queries for
+     * {@link #streamEntities(EntityQuery)} and {@link #streamEntityGroups(EntityQuery, TypedName)}.
+     */
     @Override
     public <V extends Entity> Query<V> query(Class<V> type) {
         DefaultEntityType det = type.getAnnotation(DefaultEntityType.class);
         if (det == null) {
             throw new IllegalArgumentException(type + " has no default entity type annotation");
         }
-        return new Query<>(this, EntityType.forName(det.value()), type);
+        return new JavaQuery<>(this, EntityType.forName(det.value()), type);
     }
 
     /**
