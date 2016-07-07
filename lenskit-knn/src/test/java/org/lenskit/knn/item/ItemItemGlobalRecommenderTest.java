@@ -51,8 +51,8 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.*;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -82,17 +82,18 @@ public class ItemItemGlobalRecommenderTest {
         rs.add(Rating.create(4, 5, 1));
         rs.add(Rating.create(4, 7, 1));
         rs.add(Rating.create(4, 10, 1));
-        EventCollectionDAO dao = new EventCollectionDAO(rs);
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
+
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
         config.bind(ItemBasedItemScorer.class).to(ItemItemItemBasedItemScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        session = engine.createRecommender();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao);
+        session = engine.createRecommender(dao);
         gRecommender = session.getItemBasedItemRecommender();
     }
 

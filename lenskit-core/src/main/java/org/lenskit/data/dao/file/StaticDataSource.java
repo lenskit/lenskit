@@ -344,4 +344,15 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         src.addSource(text);
         return src;
     }
+
+    /**
+     * Create a static data source from a list/collection.
+     * @param entities The collection of entities.
+     * @return The static data source.
+     */
+    public static StaticDataSource fromList(Collection<? extends Entity> entities) {
+        StaticDataSource source = new StaticDataSource("memory");
+        source.addSource(entities);
+        return source;
+    }
 }

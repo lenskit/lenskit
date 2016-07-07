@@ -31,8 +31,8 @@ import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemBasedItemRecommender;
 import org.lenskit.basic.TopNItemRecommender;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.knn.item.model.ItemItemBuildContext;
 import org.lenskit.knn.item.model.ItemItemModel;
@@ -56,10 +56,11 @@ public class ItemwiseRecommenderBuildTest {
         rs.add(Rating.create(1, 7, 4));
         rs.add(Rating.create(8, 4, 5));
         rs.add(Rating.create(8, 5, 4));
-        EventDAO dao = new EventCollectionDAO(rs);
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
 
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
+        config.addComponent(dao);
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         config.bind(ItemBasedItemScorer.class).to(ItemItemItemBasedItemScorer.class);
         config.bind(ItemItemBuildContext.class)
