@@ -127,7 +127,9 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
             }
         }
 
-        UserResult result = new UserResult(sum / ngood, ngood > 0);
+        double aveP = ngood > 0 ? sum / ngood : 0;
+
+        UserResult result = new UserResult(aveP, ngood > 0);
         context.addUser(result);
         return result.withSuffix(suffix);
     }
