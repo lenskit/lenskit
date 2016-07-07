@@ -57,48 +57,6 @@ public class ItemItemBuildSerializeTest extends ML100KTestSuite {
         root ItemDAO
     }
 
-    @Test
-    public void testBuildWithItemSubset() throws RecommenderBuildException, IOException {
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(itemSubsetConfig)
-                                        .build()
-        assertThat(engine, notNullValue())
-        def rec = engine.createRecommender();
-        try {
-            def dao = rec.get(ItemDAO)
-            def model = rec.get(ItemItemModel)
-            assertThat(model.itemUniverse,
-                       anyOf(hasSize(dao.itemIds.size()),
-                             hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)))
-        } finally {
-            rec.close()
-        }
-    }
-
-    @Test
-    public void testNormalizingBuildWithItemSubset() throws RecommenderBuildException, IOException {
-        def cfg = config.copy()
-        cfg.bind(ItemItemModel).toProvider(NormalizingItemItemModelBuilder)
-        cfg.at(ItemItemModel).bind(VectorTruncator).toProvider(StandardVectorTruncatorProvider)
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(cfg)
-                                        .addConfiguration(itemSubsetConfig)
-                                        .build()
-        assertThat(engine, notNullValue())
-        def rec = engine.createRecommender();
-        try {
-            def dao = rec.get(ItemDAO)
-            def model = rec.get(ItemItemModel)
-            assertThat(model.itemUniverse,
-                       anyOf(hasSize(dao.itemIds.size()),
-                             hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)))
-        } finally {
-            rec.close()
-        }
-    }
 
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {

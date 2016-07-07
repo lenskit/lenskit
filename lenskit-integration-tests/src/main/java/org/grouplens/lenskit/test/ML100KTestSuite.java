@@ -64,12 +64,6 @@ public class ML100KTestSuite {
         return config;
     }
 
-    protected LenskitConfiguration getItemSubsetConfig() {
-        LenskitConfiguration config = getDaoConfig();
-        config.bind(ItemDAO.class).toProvider(SubsetProvider.class);
-        return config;
-    }
-
     @Before
     public void createDAO() throws FileNotFoundException {
         String skip = System.getProperty("lenskit.integration.skip");
@@ -106,25 +100,5 @@ public class ML100KTestSuite {
         tes.setFile(inputFile.toPath());
         tes.setFormat(org.lenskit.data.dao.file.Formats.tsvRatings());
         source.addSource(tes);
-    }
-
-    public static class SubsetProvider implements Provider<ItemDAO> {
-        private final Random rng;
-        private final ItemDAO baseDAO;
-
-        @Inject
-        public SubsetProvider(Random rng, PrefetchingItemDAO dao) {
-            this.rng = rng;
-            baseDAO = dao;
-        }
-
-        @Override
-        public ItemDAO get() {
-            LongList items = new LongArrayList(baseDAO.getItemIds());
-            assert items.size() > SUBSET_DROP_SIZE;
-            LongLists.shuffle(items, rng);
-            items = items.subList(0, items.size() - SUBSET_DROP_SIZE);
-            return new ItemListItemDAO(items);
-        }
     }
 }

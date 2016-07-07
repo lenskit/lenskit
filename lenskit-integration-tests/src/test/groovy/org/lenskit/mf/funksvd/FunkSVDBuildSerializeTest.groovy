@@ -51,25 +51,6 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         root ItemDAO
     }
 
-    @Test
-    void testBuildWithMissingItems() {
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(itemSubsetConfig)
-                                        .build()
-        assertThat(engine, notNullValue())
-        def rec = engine.createRecommender();
-        try {
-            def dao = rec.get(ItemDAO)
-            def model = rec.get(FunkSVDModel)
-            assertThat(model.itemIndex.keyList,
-                       anyOf(hasSize(dao.itemIds.size()),
-                             hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)));
-        } finally {
-            rec.close()
-        }
-    }
 
     @Test
     void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {

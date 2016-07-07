@@ -57,24 +57,6 @@ public class ML100KTestSuiteTest extends ML100KTestSuite {
         }
     }
 
-    @Test
-    public void testSubsetItemDAO() throws RecommenderBuildException {
-        LenskitConfiguration cfg = new LenskitConfiguration();
-        cfg.addRoot(DAOFetcher.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.newBuilder()
-                                                                  .addConfiguration(getItemSubsetConfig())
-                                                                  .addConfiguration(cfg)
-                                                                  .build();
-        try (LenskitRecommender rec = engine.createRecommender()) {
-            DAOFetcher df = rec.get(DAOFetcher.class);
-            assertThat(df.activeItemDAO, notNullValue());
-            assertThat(df.fullItemDAO, notNullValue());
-            assertThat(df.activeItemDAO, not(sameInstance(df.fullItemDAO)));
-            assertThat(df.activeItemDAO.getItemIds(),
-                       hasSize(df.fullItemDAO.getItemIds().size() - SUBSET_DROP_SIZE));
-        }
-    }
-
     private static class DAOFetcher {
         private final ItemDAO activeItemDAO;
         private final ItemDAO fullItemDAO;
