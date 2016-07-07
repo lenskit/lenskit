@@ -93,17 +93,4 @@ public final class Events {
     public static Like like(long user, long item, long ts) {
         return Like.create(user, item, ts);
     }
-
-    /**
-     * Create a {@link LikeBatch} event with a nonzero count.
-     * @param user The user ID.
-     * @param item The item ID.
-     * @param count The count.
-     * @return The new event.
-     * @deprecated Use {@link LikeBatch#create(long, long, int)}.
-     */
-    @Deprecated
-    public static LikeBatch likeBatch(long user, long item, int count) {
-        return LikeBatch.create(user, item, count);
-    }
 }
