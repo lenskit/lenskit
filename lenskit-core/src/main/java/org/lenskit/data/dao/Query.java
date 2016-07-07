@@ -21,6 +21,10 @@
 package org.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
@@ -136,5 +140,30 @@ public class Query<E extends Entity> {
      */
     public int count() {
         return ObjectStreams.count(stream());
+    }
+
+    /**
+     * Get the set of values from an attribute in the entities in this query.  Use this to do
+     * things like get the set of items referenced in a user's ratings:
+     *
+     * ```
+     * dao.query(Rating.class)
+     *    .withAttribute(CommonAttributes.USER_ID, user)
+     *    .valueSet(CommonAttributes.ITEM_ID);
+     * ```
+     *
+     * @param attr The attribute name to select.
+     * @return The set of values `attribute` takes on in the query.
+     */
+    public LongSet valueSet(TypedName<Long> attr) {
+        LongSet values = new LongOpenHashSet();
+        try (ObjectStream<E> stream = stream()) {
+            for (E entity: stream) {
+                if (entity.hasAttribute(attr)) {
+                    values.add(entity.getLong(attr));
+                }
+            }
+        }
+        return values;
     }
 }
