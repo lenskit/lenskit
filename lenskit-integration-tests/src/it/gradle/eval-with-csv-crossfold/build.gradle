@@ -37,7 +37,7 @@ task trainTest(type: TrainTest) {
     maxMemory '256m'
     logFile "train-test.log"
     logFileLevel 'DEBUG'
-    dataSet crossfold, isolate: true
+    dataSet crossfold //, isolate: true
     cacheDirectory 'cache'
     outputFile 'results.csv'
     userOutputFile 'users.csv'

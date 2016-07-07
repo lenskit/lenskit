@@ -20,13 +20,16 @@
  */
 package org.lenskit.slopeone;
 
-import org.lenskit.data.dao.*;
-import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
-import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
+import org.lenskit.data.dao.BridgeItemDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.StandardRatingVectorDAO;
+import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +41,12 @@ public class SlopeOneModelBuilderTest {
     public static final double EPSILON = 1.0e-6;
 
     private SlopeOneModel getModel(List<Rating> ratings) {
-        EventDAO dao = EventCollectionDAO.create(ratings);
-        UserEventDAO udao = new PrefetchingUserEventDAO(dao);
-        ItemDAO idao = new PrefetchingItemDAO(dao);
-        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
+        StaticDataSource source = StaticDataSource.fromList(ratings);
+        DataAccessObject dao = source.get();
+        ItemDAO idao = new BridgeItemDAO(dao);
+        RatingVectorDAO rvDAO = new StandardRatingVectorDAO(dao);
         ItemItemBuildContextProvider contextFactory = new ItemItemBuildContextProvider(
-                udao, new DefaultUserVectorNormalizer(), summarizer);
+                rvDAO, new DefaultUserVectorNormalizer());
         SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory.get(), 0);
         return provider.get();
     }

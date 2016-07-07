@@ -22,28 +22,22 @@ package org.lenskit.knn.user;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.dao.ItemEventDAO;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.Ratings;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.lenskit.data.history.UserHistory;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.ratings.RatingVectorDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -54,46 +48,50 @@ public class LiveNeighborFinder implements NeighborFinder {
     private static final Logger logger = LoggerFactory.getLogger(LiveNeighborFinder.class);
 
     private final UserSimilarity similarity;
-    private final UserEventDAO userDAO;
-    private final ItemEventDAO itemDAO;
+    private final RatingVectorDAO rvDAO;
+    private final DataAccessObject dao;
     private final UserVectorNormalizer normalizer;
     private final Threshold threshold;
 
     /**
      * Construct a new user neighborhood finder.
      *
-     * @param udao   The user-event DAO.
-     * @param idao   The item-event DAO.
+     * @param rvd    The user rating vector dAO.
+     * @param dao    The data access object.
      * @param sim    The similarity function to use.
      * @param norm   The normalizer for user rating/preference vectors.
      * @param thresh The threshold for user similarities.
      */
     @Inject
-    public LiveNeighborFinder(UserEventDAO udao, ItemEventDAO idao,
+    public LiveNeighborFinder(RatingVectorDAO rvd, DataAccessObject dao,
                               UserSimilarity sim,
                               UserVectorNormalizer norm,
                               @UserSimilarityThreshold Threshold thresh) {
         similarity = sim;
         normalizer = norm;
-        userDAO = udao;
-        itemDAO = idao;
+        rvDAO = rvd;
+        this.dao = dao;
         threshold = thresh;
 
         Preconditions.checkArgument(sim.isSparse(), "user similarity function is not sparse");
     }
 
     @Override
-    public Iterable<Neighbor> getCandidateNeighbors(UserHistory<? extends Event> user, LongSet items) {
-        final long uid = user.getUserId();
-        SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
-        final ImmutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null)
+    public Iterable<Neighbor> getCandidateNeighbors(final long user, LongSet items) {
+        Long2DoubleMap ratings = rvDAO.userRatingVector(user);
+        if (ratings.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        SparseVector urs = ImmutableSparseVector.create(ratings);
+        final ImmutableSparseVector nratings = normalizer.normalize(user, urs, null)
                                                    .freeze();
-        final LongSet candidates = findCandidateNeighbors(uid, nratings, items);
-        logger.debug("found {} candidate neighbors for {}", candidates.size(), uid);
+        final LongSet candidates = findCandidateNeighbors(user, nratings, items);
+        logger.debug("found {} candidate neighbors for {}", candidates.size(), user);
         return new Iterable<Neighbor>() {
             @Override
             public Iterator<Neighbor> iterator() {
-                return new NeighborIterator(uid, nratings, candidates);
+                return new NeighborIterator(user, nratings, candidates);
             }
         };
     }
@@ -116,7 +114,9 @@ public class LiveNeighborFinder implements NeighborFinder {
             items = itemSet.iterator();
         }
         while (items.hasNext()) {
-            LongSet iusers = itemDAO.getUsersForItem(items.nextLong());
+            LongSet iusers = dao.query(CommonTypes.RATING)
+                    .withAttribute(CommonAttributes.ITEM_ID, items.nextLong())
+                    .valueSet(CommonAttributes.USER_ID);
             if (iusers != null) {
                 users.addAll(iusers);
             }
@@ -138,11 +138,12 @@ public class LiveNeighborFinder implements NeighborFinder {
     }
 
     private MutableSparseVector getUserRatingVector(long user) {
-        List<Rating> ratings = userDAO.getEventsForUser(user, Rating.class);
-        if (ratings == null){
+        Long2DoubleMap ratings = rvDAO.userRatingVector(user);
+        if (ratings.isEmpty()) {
             return null;
+        } else {
+            return MutableSparseVector.create(ratings);
         }
-        return MutableSparseVector.create(Ratings.userRatingVector(ratings));
     }
 
     private class NeighborIterator extends AbstractIterator<Neighbor> {

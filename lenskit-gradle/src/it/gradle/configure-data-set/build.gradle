@@ -33,7 +33,7 @@ task evaluate(type: TrainTest) {
 }
 
 task check(overwrite: true, dependsOn: evaluate) << {
-    def specFile = file("$buildDir/evaluate.json")
+    def specFile = file("$buildDir/evaluate-spec.json")
     assertThat("spec file exists", specFile.exists())
     def exp = SpecUtils.load(TrainTestExperimentSpec, specFile.toPath())
     assertThat(exp.dataSets, hasSize(1))

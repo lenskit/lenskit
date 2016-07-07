@@ -23,12 +23,11 @@ package org.lenskit.util.test;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
 
 /**
  * Run a script using the script engine.
@@ -39,6 +38,7 @@ public class RunScript {
         ScriptEngineManager sem = new ScriptEngineManager();
         String ext = Files.getFileExtension(scriptFile.getName());
         ScriptEngine engine = sem.getEngineByExtension(ext);
+        engine.put("cmdArgs", Arrays.asList(args).subList(1, args.length));
         try (Reader reader = Files.newReader(scriptFile, Charsets.UTF_8)) {
             engine.eval(reader);
         }

@@ -20,19 +20,22 @@
  */
 package org.lenskit.slopeone;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.history.History;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.lenskit.data.history.UserHistory;
-import org.lenskit.data.ratings.PreferenceDomain;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
+import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.history.History;
+import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.Ratings;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
@@ -47,7 +50,7 @@ import java.util.List;
  */
 public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Inject
-    public WeightedSlopeOneItemScorer(UserEventDAO dao, SlopeOneModel model,
+    public WeightedSlopeOneItemScorer(RatingVectorDAO dao, SlopeOneModel model,
                                       @Nullable PreferenceDomain dom) {
         super(dao, model, dom);
     }
@@ -55,11 +58,8 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
-        if (history == null) {
-            history = History.forUser(user);
-        }
-        SparseVector userVector = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+        Long2DoubleMap ratings = dao.userRatingVector(user);
+        SparseVector userVector = ImmutableSparseVector.create(ratings);
 
         List<Result> results = new ArrayList<>();
         LongIterator iter = LongIterators.asLongIterator(items.iterator());

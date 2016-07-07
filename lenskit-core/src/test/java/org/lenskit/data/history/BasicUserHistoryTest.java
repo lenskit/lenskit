@@ -22,13 +22,9 @@ package org.lenskit.data.history;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.History;
-import org.lenskit.data.history.UserHistory;
-import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.List;
 
@@ -52,21 +48,6 @@ public class BasicUserHistoryTest {
         assertThat(history.isEmpty(), equalTo(false));
         assertThat(history.getUserId(), equalTo(42L));
         assertThat(history, contains(r));
-    }
-
-    @Test
-    public void testMemoize() {
-        List<Event> events = ImmutableList.of(
-                (Event) Rating.create(42, 39, 2.5),
-                Rating.create(42, 62, 3.5),
-                Rating.create(42, 22, 3));
-        UserHistory<Event> history = History.forUser(42, events);
-        assertThat(history, hasSize(3));
-        SparseVector v = history.memoize(RatingVectorUserHistorySummarizer.SummaryFunction.INSTANCE);
-        assertThat(v.size(), equalTo(3));
-        assertThat(v.mean(), equalTo(3.0));
-        assertThat(history.memoize(RatingVectorUserHistorySummarizer.SummaryFunction.INSTANCE),
-                   sameInstance(v));
     }
 
     @Test

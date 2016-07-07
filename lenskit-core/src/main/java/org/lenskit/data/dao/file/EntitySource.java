@@ -21,17 +21,42 @@
 package org.lenskit.data.dao.file;
 
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.util.io.ObjectStream;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface for entity providers.
  */
 public interface EntitySource {
     /**
+     * Get the name of this entity source.
+     * @return The entity source name.
+     */
+    @Nonnull
+    String getName();
+
+    /**
+     * Get the entity types produced by this source.
+     * @return The set of entity types produced by this source.
+     */
+    @Nonnull
+    Set<EntityType> getTypes();
+
+    /**
      * Get the data from this entity source.
      * @return The data from the entity source.
      */
+    @Nonnull
     ObjectStream<Entity> openStream() throws IOException;
+
+    /**
+     * Get metadata from this entity source.
+     */
+    @Nonnull
+    Map<String,Object> getMetadata();
 }

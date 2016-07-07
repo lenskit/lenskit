@@ -32,7 +32,6 @@ import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.config.ConfigurationLoader;
 import org.lenskit.config.LenskitConfigScript;
 import org.lenskit.inject.RecommenderGraphBuilder;
-import org.lenskit.specs.eval.AlgorithmSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,16 +181,6 @@ public class AlgorithmInstance {
         }
         logger.info("loaded {} algorithms from {}", multi.size(), file);
         return multi;
-    }
-
-    /**
-     * Load one or more algorithm instances from an algorithm spec.
-     * @param spec The spec.
-     * @param classLoader The class loader.
-     * @return The algorithm instance(s).
-     */
-    public static List<AlgorithmInstance> fromSpec(AlgorithmSpec spec, ClassLoader classLoader) {
-        return load(spec.getConfigFile(), spec.getName(), classLoader);
     }
 
     @Override

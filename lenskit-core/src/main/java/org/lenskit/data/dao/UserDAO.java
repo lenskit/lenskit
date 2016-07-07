@@ -21,15 +21,17 @@
 package org.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.DefaultProvider;
 
 /**
  * DAO for users. The base interface only exposes the set of user IDs.
  *
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use the new {@link DataAccessObject}.
  */
-@DefaultImplementation(PrefetchingUserDAO.class)
+@DefaultProvider(BridgeUserDAO.DynamicProvider.class)
+@Deprecated
 public interface UserDAO {
     /**
      * Get all known user IDs.

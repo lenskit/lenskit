@@ -21,12 +21,22 @@
 package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.CharSource;
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.LineStream;
 import org.lenskit.util.io.ObjectStream;
@@ -34,27 +44,31 @@ import org.lenskit.util.io.ObjectStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 
 /**
  * Entity reader that loads entities from text data, often stored in a file.
  */
-public class TextEntitySource implements EntitySource {
+public class TextEntitySource implements EntitySource, Describable {
     private static final Logger logger = LoggerFactory.getLogger(TextEntitySource.class);
     private final String name;
     private CharSource source;
     private URL sourceURL;
     private EntityFormat format;
+    private Map<String,Object> metadata = new HashMap<>();
 
     /**
      * Construct a new text entity source.
@@ -75,8 +89,15 @@ public class TextEntitySource implements EntitySource {
      * Get the name of this data source.
      * @return The data source name.
      */
+    @Override
     public String getName() {
         return name;
+    }
+
+    @Nonnull
+    @Override
+    public Set<EntityType> getTypes() {
+        return ImmutableSet.of(format.getEntityType());
     }
 
     /**
@@ -84,7 +105,8 @@ public class TextEntitySource implements EntitySource {
      * @param file The source file.
      */
     public void setFile(Path file) {
-        source = Files.asCharSource(file.toFile(), Charset.defaultCharset());
+        source = LKFileUtils.byteSource(file.toFile(), CompressionMode.AUTO)
+                            .asCharSource(Charset.defaultCharset());
         try {
             sourceURL = file.toUri().toURL();
         } catch (MalformedURLException e) {
@@ -96,9 +118,21 @@ public class TextEntitySource implements EntitySource {
      * Set the URL of the input data.
      * @param url The URL of the input data.
      */
-    public void setURI(URL url) {
+    public void setURL(URL url) {
         sourceURL = url;
-        source = Resources.asCharSource(url, Charsets.UTF_8);
+        source = LKFileUtils.byteSource(url, CompressionMode.AUTO).asCharSource(Charsets.UTF_8);
+    }
+
+    /**
+     * Get the input file path.
+     * @return The input file path.
+     */
+    public Path getFile() {
+        try {
+            return Paths.get(sourceURL.toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("invalid path URI " + sourceURL, e);
+        }
     }
 
     /**
@@ -133,6 +167,11 @@ public class TextEntitySource implements EntitySource {
         return format;
     }
 
+    @Override
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
     /**
      * Open a stream to read entities from this source.
      * @return A stream of entities.
@@ -160,6 +199,67 @@ public class TextEntitySource implements EntitySource {
         return ObjectStreams.transform(lines, parser);
     }
 
+    @Override
+    public String toString() {
+        ToStringBuilder tsb = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        tsb.append("name", getName());
+        tsb.append("url", getURL());
+        tsb.append("format", getFormat());
+        return tsb.build();
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("url", sourceURL);
+        try {
+            Path path = Paths.get(sourceURL.toURI());
+            BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+            writer.putField("size", attrs.size())
+                  .putField("mtime", attrs.lastModifiedTime().toMillis());
+        } catch (NoSuchFileException | FileNotFoundException e) {
+            /* ok, file doesn't exist */
+        } catch (FileSystemNotFoundException e) {
+            /* ok, not a valid URL */
+        } catch (IOException e) {
+            throw new DataAccessException(e);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("invalid URI", e);
+        }
+
+    }
+
+    /**
+     * Construct a JSON representation of this entity source, suitable for serialization to e.g. YAML.
+     *
+     * @param base The URI of the YAML file that will be generated, to generate relative URLs.
+     * @return The JSON node.
+     */
+    public JsonNode toJSON(@Nullable URI base) {
+        Path basePath = null;
+        if (base != null) {
+            try {
+                basePath = Paths.get(base).getParent();
+            } catch (FileSystemNotFoundException ex) {
+                /* this is ok, just means we can't resolve the base URI */
+            }
+        }
+
+        JsonNodeFactory nf = JsonNodeFactory.instance;
+
+        ObjectNode object = nf.objectNode();
+        object.put("type", "textfile");
+
+        Path path = getFile();
+        if (basePath != null) {
+            path = basePath.relativize(path);
+        }
+        object.put("file", path.toString().replace(File.separatorChar, '/'));
+
+        object.setAll(format.toJSON());
+
+        return object;
+    }
+
     /**
      * Create a file reader.
      * @param name The reader name.
@@ -180,9 +280,11 @@ public class TextEntitySource implements EntitySource {
      */
     static TextEntitySource fromJSON(String name, JsonNode object, URI base, ClassLoader loader) {
         TextEntitySource source = new TextEntitySource(name);
-        URI uri = base.resolve(object.get("file").asText());
+        String filePath = object.path("file").asText(null);
+        Preconditions.checkArgument(filePath != null, "no file path specified");
+        URI uri = base.resolve(filePath);
         try {
-            source.setURI(uri.toURL());
+            source.setURL(uri.toURL());
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Cannot resolve URI " + uri, e);
         }
@@ -271,6 +373,16 @@ public class TextEntitySource implements EntitySource {
         }
         logger.debug("{}: using entity builder {}", format.getEntityBuilder());
 
+        JsonNode metaNode = object.get("metadata");
+        if (metaNode != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                source.metadata = mapper.readerFor(Map.class).readValue(metaNode);
+            } catch (IOException e) {
+                throw new IllegalArgumentException("cannnot process metadata", e);
+            }
+        }
+
         source.setFormat(format);
         return source;
     }
@@ -279,11 +391,14 @@ public class TextEntitySource implements EntitySource {
         if (col.isNull() || col.isMissingNode()) {
             return null;
         } else if (col.isObject()) {
-            String name = col.get("name").asText();
-            String type = col.get("type").asText();
+            String name = col.path("name").asText(null);
+            String type = col.path("type").asText(null);
+            Preconditions.checkArgument(name != null, "no attribute name specified");
+            Preconditions.checkArgument(type != null, "no attribute type specified");
             return TypedName.create(name, type);
         } else if (col.isTextual()) {
-            TypedName<?> attr = entityDefaults.getAttributeDefaults(col.asText());
+            String name = col.asText();
+            TypedName<?> attr = entityDefaults != null ? entityDefaults.getAttributeDefaults(name) : null;
             if (attr == null) {
                 attr = TypedName.create(col.asText(), col.asText().equals("id") ? Long.class : String.class);
             }

@@ -22,14 +22,8 @@ package org.lenskit.gradle
 
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFiles
-import org.lenskit.gradle.delegates.SpecDelegate
-import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.eval.AlgorithmSpec
-import org.lenskit.specs.eval.SimulateSpec
 
 class Simulate extends LenskitTask {
-    private SimulateSpec spec = new SimulateSpec()
-    private SpecDelegate delegate = new SpecDelegate(project, spec)
     def File specFile
 
     Simulate() {
@@ -37,15 +31,8 @@ class Simulate extends LenskitTask {
             project.file("$project.buildDir/${name}.json")
         }
         spec.outputFile = project.file("$project.buildDir/${name}-output.csv").toPath()
-    }
-
-    /**
-     * Set the input to come from a pack-ratings task.
-     * @param packer The pack-ratings task.
-     */
-    public void input(PackRatings packer) {
-        spec.inputFile = packer.outputFile.toPath()
-        dependsOn packer
+        // FIXME re-enable simulate task
+        throw new UnsupportedOperationException("simulate task does not work")
     }
 
     /**
@@ -97,12 +84,6 @@ class Simulate extends LenskitTask {
         return spec.extendedOutputFile?.toFile()
     }
 
-    public void algorithm(@DelegatesTo(SpecDelegate) Closure block) {
-        def aspec = new AlgorithmSpec()
-        SpecDelegate.configureSpec(project, aspec, block)
-        spec.algorithm = aspec
-    }
-
     public void algorithm(fn) {
          algorithm(null, fn)
     }
@@ -112,10 +93,7 @@ class Simulate extends LenskitTask {
         if (name == null) {
             name = file.name
         }
-        def aspec = new AlgorithmSpec()
-        aspec.name = name
-        aspec.configFile = file.toPath()
-        spec.algorithm = aspec
+        // FIXME fix this
     }
 
     @OutputFiles
@@ -152,7 +130,6 @@ class Simulate extends LenskitTask {
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info('preparing spec file {}', file)
-        SpecUtils.write(spec, file.toPath())
     }
 
     @Override

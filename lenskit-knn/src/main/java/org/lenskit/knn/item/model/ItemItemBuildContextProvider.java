@@ -20,22 +20,22 @@
  */
 package org.lenskit.knn.item.model;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.inject.Transient;
-import org.lenskit.util.io.ObjectStream;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.inject.Transient;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,17 +52,20 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
     private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextProvider.class);
 
-    private final UserEventDAO userEventDAO;
+    private final RatingVectorDAO rvDAO;
     private final UserVectorNormalizer normalizer;
-    private final UserHistorySummarizer userSummarizer;
 
+    /**
+     * Construct an item-item build context provider.
+     *
+     * @param rvd The rating vector DAO.
+     * @param normalizer The user vector normalizer.
+     */
     @Inject
-    public ItemItemBuildContextProvider(@Transient UserEventDAO edao, 
-                                        @Transient UserVectorNormalizer normalizer,
-                                        @Transient UserHistorySummarizer userSummarizer) {
-        userEventDAO = edao;
+    public ItemItemBuildContextProvider(@Transient RatingVectorDAO rvd,
+                                        @Transient UserVectorNormalizer normalizer) {
+        rvDAO = rvd;
         this.normalizer = normalizer;
-        this.userSummarizer = userSummarizer;
     }
 
     /**
@@ -74,7 +77,6 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
     public ItemItemBuildContext get() {
         logger.info("constructing build context");
         logger.debug("using normalizer {}", normalizer);
-        logger.debug("using summarizer {}", userSummarizer);
 
         logger.debug("Building item data");
         Long2ObjectMap<ScoredIdListBuilder> itemRatingData = new Long2ObjectOpenHashMap<>(1000);
@@ -111,11 +113,11 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
     private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> itemRatings,
                                   Long2ObjectMap<LongSortedSet> userItems) {
         // initialize the transposed array to collect item vector data
-        ObjectStream<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
-        try {
-            for (UserHistory<Event> user : users) {
-                long uid = user.getUserId();
-                SparseVector summary = userSummarizer.summarize(user);
+        try (ObjectStream<IdBox<Long2DoubleMap>> stream = rvDAO.streamUsers()) {
+            for (IdBox<Long2DoubleMap> user : stream) {
+                long uid = user.getId();
+                Long2DoubleMap ratings = user.getValue();
+                SparseVector summary = ImmutableSparseVector.create(ratings);
                 MutableSparseVector normed = summary.mutableCopy();
                 normalizer.normalize(uid, summary, normed);
 
@@ -133,8 +135,6 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
                 // get the item's candidate set
                 userItems.put(uid, LongUtils.packedSet(summary.keySet()));
             }
-        } finally {
-            users.close();
         }
     }
 }

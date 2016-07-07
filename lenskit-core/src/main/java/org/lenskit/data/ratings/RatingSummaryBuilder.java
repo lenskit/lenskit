@@ -21,12 +21,15 @@
 package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.data.dao.ItemEventDAO;
-import org.lenskit.data.history.ItemEventCollection;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.KeyedObjectMap;
-import org.lenskit.util.math.Vectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -34,41 +37,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Default builder for rating summaries.  This builder is correct, but may be inefficient.  If your data set does not
- * have any unrate events, consider using {@link FastRatingSummaryBuilder}:
- *
- * ```java
- * config.bind(RatingSummary.class)
- *       .toProvider(FastRatingSummaryBuilder.class);
- * ```
+ * Default builder for rating summaries.
  *
  * @since 3.0
  */
 public class RatingSummaryBuilder implements Provider<RatingSummary> {
-    private final ItemEventDAO itemEventDAO;
+    private static final Logger logger = LoggerFactory.getLogger(RatingSummaryBuilder.class);
+    private final DataAccessObject dao;
 
     @Inject
-    public RatingSummaryBuilder(@Transient ItemEventDAO dao) {
-        itemEventDAO = dao;
+    public RatingSummaryBuilder(@Transient DataAccessObject dao) {
+        this.dao = dao;
     }
 
     @Override
     public RatingSummary get() {
+        Long2DoubleMap sums = new Long2DoubleOpenHashMap();
+        Long2IntMap counts = new Long2IntOpenHashMap();
         double totalSum = 0;
         int totalCount = 0;
-        List<RatingSummary.ItemSummary> summaries = new ArrayList<>();
 
-        try (ObjectStream<ItemEventCollection<Rating>> ratings = itemEventDAO.streamEventsByItem(Rating.class)) {
-            for (ItemEventCollection<Rating> item: ratings) {
-                Long2DoubleMap vec = Ratings.itemRatingVector(item);
-                int n = vec.size();
-                double sum = Vectors.sum(vec);
-                double mean = Vectors.mean(vec);
-                totalSum += sum;
-                totalCount += n;
-                summaries.add(new RatingSummary.ItemSummary(item.getItemId(), mean, n));
+        try (ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
+            for (Rating r: ratings) {
+                long item = r.getItemId();
+                counts.put(item, counts.get(item) + 1);
+                sums.put(item, sums.get(item) + r.getValue());
+                totalSum += r.getValue();
+                totalCount += 1;
             }
         }
+
+        List<RatingSummary.ItemSummary> summaries = new ArrayList<>(sums.size());
+
+        for (Long2DoubleMap.Entry e: sums.long2DoubleEntrySet()) {
+            long item = e.getLongKey();
+            double sum = e.getDoubleValue();
+            int count = counts.get(item);
+            summaries.add(new RatingSummary.ItemSummary(item, sum / count, count));
+        }
+
+        logger.info("summarized {} items with {} ratings", sums.size(), totalCount);
 
         return new RatingSummary(totalSum / totalCount, KeyedObjectMap.create(summaries));
     }

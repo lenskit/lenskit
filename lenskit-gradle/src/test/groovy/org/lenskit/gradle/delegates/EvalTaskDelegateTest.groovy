@@ -20,59 +20,47 @@
  */
 package org.lenskit.gradle.delegates
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import org.gradle.util.ConfigureUtil
 import org.junit.Before
 import org.junit.Test
-import org.lenskit.specs.eval.PredictEvalTaskSpec
-
-import java.nio.file.Paths
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 class EvalTaskDelegateTest {
-    PredictEvalTaskSpec spec
-    EvalTaskDelegate delegate
+    EvalTaskConfig cfg
 
     @Before
     void setupSpec() {
-        spec = new PredictEvalTaskSpec()
-        delegate = new EvalTaskDelegate(null, spec)
+        cfg = new EvalTaskConfig(null, 'predict')
     }
 
     @Test
     void testBasicProp() {
-        def block = {
+        cfg.configure {
             outputFile 'predictions.csv'
         }
-        ConfigureUtil.configure(block, delegate)
-        assertThat spec.outputFile, equalTo(Paths.get('predictions.csv'))
-        assertThat spec.outputFiles, contains(Paths.get('predictions.csv'))
+        assertThat cfg.outputFile, equalTo('predictions.csv')
     }
 
     @Test
     void testAddMetric() {
-        def block = {
+        cfg.configure {
             metric 'rmse'
         }
-        ConfigureUtil.configure(block, delegate)
-        assertThat spec.metrics, hasSize(1)
-        assertThat spec.metrics*.getJSON()*.asText(), contains("rmse")
+        assertThat cfg.metrics, hasSize(1)
+        assertThat cfg.metrics, contains('rmse')
     }
 
     @Test
     void testAddMetricBlock() {
-        def block = {
+        cfg.configure {
             metric('ndcg') {
                 columnName 'foobar'
             }
         }
-        ConfigureUtil.configure(block, delegate)
-        assertThat spec.metrics, hasSize(1)
-        assertThat spec.metrics*.getJSON()*.isObject(), contains(true)
-        def obj = spec.metrics[0].getJSON() as ObjectNode
-        assertThat obj.get('type').asText(), equalTo('ndcg')
-        assertThat obj.get('columnName').asText(), equalTo('foobar')
+        assertThat cfg.metrics, hasSize(1)
+        def obj = cfg.metrics[0]
+        assertThat obj.type, equalTo('ndcg')
+        assertThat obj.columnName, equalTo('foobar')
     }
 }

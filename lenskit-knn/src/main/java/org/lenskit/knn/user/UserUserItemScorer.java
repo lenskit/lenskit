@@ -23,20 +23,17 @@ package org.lenskit.knn.user;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.History;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.transform.threshold.Threshold;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.data.ratings.RatingVectorDAO;
 import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.results.Results;
@@ -61,7 +58,7 @@ import static java.lang.Math.abs;
 public class UserUserItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
 
-    private final UserEventDAO dao;
+    private final RatingVectorDAO dao;
     protected final NeighborFinder neighborFinder;
     protected final UserVectorNormalizer normalizer;
     private final int neighborhoodSize;
@@ -69,12 +66,12 @@ public class UserUserItemScorer extends AbstractItemScorer {
     private final Threshold userThreshold;
 
     @Inject
-    public UserUserItemScorer(UserEventDAO dao, NeighborFinder nf,
+    public UserUserItemScorer(RatingVectorDAO rvd, NeighborFinder nf,
                               UserVectorNormalizer norm,
                               @NeighborhoodSize int nnbrs,
                               @MinNeighbors int minNbrs,
                               @UserSimilarityThreshold Threshold thresh) {
-        this.dao = dao;
+        this.dao = rvd;
         neighborFinder = nf;
         normalizer = norm;
         neighborhoodSize = nnbrs;
@@ -104,22 +101,20 @@ public class UserUserItemScorer extends AbstractItemScorer {
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        UserHistory<Event> history = dao.getEventsForUser(user);
-        if (history == null) {
-            history = History.forUser(user);
-        }
+        Long2DoubleMap history = dao.userRatingVector(user);
+
         logger.debug("Predicting for {} items for user {} with {} events",
                      items.size(), user, history.size());
 
         LongSortedSet itemSet = LongUtils.frozenSet(items);
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-                findNeighbors(history, itemSet);
+                findNeighbors(user, itemSet);
         Long2ObjectMap<SparseVector> normedUsers =
                 normalizeNeighborRatings(neighborhoods.values());
 
         // Make the normalizing transform to reverse
-        SparseVector urv = RatingVectorUserHistorySummarizer.makeRatingVector(history);
-        VectorTransformation vo = normalizer.makeTransformation(history.getUserId(), urv);
+        SparseVector urv = ImmutableSparseVector.create(history);
+        VectorTransformation vo = normalizer.makeTransformation(user, urv);
 
         // And prepare results
         List<ResultBuilder> resultBuilders = new ArrayList<>();
@@ -177,7 +172,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
      * @return A mapping of item IDs to neighborhoods.
      */
     protected Long2ObjectMap<? extends Collection<Neighbor>>
-    findNeighbors(@Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items) {
+    findNeighbors(long user, @Nonnull LongSet items) {
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
 

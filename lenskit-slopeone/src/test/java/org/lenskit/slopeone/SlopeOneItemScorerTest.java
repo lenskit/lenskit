@@ -22,12 +22,12 @@ package org.lenskit.slopeone;
 
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
-import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.LenskitRecommender;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.lenskit.data.ratings.Rating;
@@ -61,14 +61,15 @@ public class SlopeOneItemScorerTest {
         rs.add(Rating.create(1, 9, 3));
         rs.add(Rating.create(3, 9, 4));
 
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
+
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
         config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
                                                        .build());
-        try (Recommender rec = LenskitRecommenderEngine.build(config)
-                                                       .createRecommender()) {
+        try (Recommender rec = LenskitRecommender.build(config, dao)) {
             ItemScorer predictor = rec.getItemScorer();
 
             assertThat(predictor, notNullValue());
@@ -96,14 +97,15 @@ public class SlopeOneItemScorerTest {
         rs.add(Rating.create(2, 7, 4));
         rs.add(Rating.create(3, 7, 1.5));
 
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
+
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
         config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
                                                        .build());
-        try (Recommender rec = LenskitRecommenderEngine.build(config)
-                                                       .createRecommender()) {
+        try (Recommender rec = LenskitRecommender.build(config, dao)) {
             ItemScorer predictor = rec.getItemScorer();
 
             assertThat(predictor, notNullValue());

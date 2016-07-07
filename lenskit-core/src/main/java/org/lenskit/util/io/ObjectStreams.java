@@ -24,6 +24,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import javax.annotation.WillClose;
 import javax.annotation.WillCloseWhenClosed;
@@ -63,7 +65,7 @@ public final class ObjectStreams {
      * @return An object stream returning the elements of the collection.
      */
     public static <T> ObjectStream<T> wrap(Collection<? extends T> collection) {
-        return new IteratorObjectStream<>(collection.iterator());
+        return new IteratorObjectStream<>(collection);
     }
 
     /**
@@ -159,18 +161,50 @@ public final class ObjectStreams {
      * @return A new list containing the elements of the object stream.
      */
     @SuppressWarnings("PMD.LooseCoupling")
-    public static <T> ArrayList<T> makeList(@WillClose ObjectStream<? extends T> objectStream) {
-        ArrayList<T> list;
+    public static <T> List<T> makeList(@WillClose ObjectStream<? extends T> objectStream) {
+        List<T> result = null;
         try {
-            list = new ArrayList<>();
-            for (T item : objectStream) {
-                list.add(item);
+            if (objectStream instanceof IteratorObjectStream) {
+                result = ((IteratorObjectStream) objectStream).getList();
+            }
+            if (result == null) {
+                ImmutableList.Builder<T> builder = ImmutableList.builder();
+                builder.addAll(objectStream);
+                result = builder.build();
             }
         } finally {
             objectStream.close();
         }
 
-        return list;
+        return result;
+    }
+
+    /**
+     * Count the items in a stream.
+     *
+     * @param objectStream The object stream.
+     * @return The number of items in the stream.
+     */
+    @SuppressWarnings("PMD.LooseCoupling")
+    public static int count(@WillClose ObjectStream<?> objectStream) {
+        try {
+            if (objectStream instanceof IteratorObjectStream) {
+                List<?> list  = ((IteratorObjectStream) objectStream).getList();
+                if (list != null) {
+                    return list.size();
+                }
+            }
+
+            int n = 0;
+            Object obj = objectStream.readObject();
+            while (obj != null) {
+                n++;
+                obj = objectStream.readObject();
+            }
+            return n;
+        } finally {
+            objectStream.close();
+        }
     }
 
     /**
@@ -184,7 +218,12 @@ public final class ObjectStreams {
      */
     public static <T> ObjectStream<T> sort(@WillClose ObjectStream<T> objectStream,
                                      Comparator<? super T> comp) {
-        final ArrayList<T> list = makeList(objectStream);
+        ArrayList<T> list;
+        try {
+            list = Lists.newArrayList(objectStream);
+        } finally {
+            objectStream.close();
+        }
         Collections.sort(list, comp);
         return wrap(list);
     }

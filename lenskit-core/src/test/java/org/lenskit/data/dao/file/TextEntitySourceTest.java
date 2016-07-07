@@ -42,12 +42,15 @@ public class TextEntitySourceTest {
 
     @Test
     public void testMinimalJSONConfig() throws IOException {
-        JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\"}");
-        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
-        assertThat(fr, notNullValue());
-        assertThat(fr.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
-        assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
-        DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
+        JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"name\": \"woozle\"}");
+        EntitySource raw = EntitySources.fromJSON(node, Paths.get("").toUri());
+        assertThat(raw, notNullValue());
+        assertThat(raw, instanceOf(TextEntitySource.class));
+        TextEntitySource src = (TextEntitySource) raw;
+        assertThat(src.getName(), equalTo("woozle"));
+        assertThat(src.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
+        assertThat(src.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
+        DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) src.getFormat();
         assertThat(format.getDelimiter(), equalTo("\t"));
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(0));

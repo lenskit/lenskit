@@ -22,16 +22,16 @@ package org.lenskit.baseline;
 
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.PrefetchingUserEventDAO;
-import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
+import org.lenskit.data.dao.BridgeEventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingSummary;
+import org.lenskit.data.ratings.StandardRatingVectorDAO;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.ArrayList;
@@ -45,7 +45,8 @@ import static org.junit.Assert.*;
  */
 public class MeanScorersTest {
     private static final double RATINGS_DAT_MEAN = 3.75;
-    private EventDAO dao;
+    private StaticDataSource source;
+    private DataAccessObject dao;
 
     @Before
     public void createRatingSource() {
@@ -55,7 +56,9 @@ public class MeanScorersTest {
         rs.add(Rating.create(8, 4, 5));
         rs.add(Rating.create(8, 5, 4));
 
-        dao = EventCollectionDAO.create(rs);
+        source = new StaticDataSource();
+        source.addSource(rs);
+        dao = source.get();
     }
 
     LongSortedSet itemSet(long item) {
@@ -76,8 +79,8 @@ public class MeanScorersTest {
     @Test
     public void testUserMeanBaseline() {
         ItemScorer mean = makeGlobalMean();
-        ItemScorer pred = new UserMeanItemScorer(new PrefetchingUserEventDAO(dao),
-                                                 mean, new RatingVectorUserHistorySummarizer(),
+        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorDAO(dao),
+                                                 mean,
                                                  0);
         // unseen item
         assertThat(pred.score(8, 4).getScore(), closeTo(4.5, 0.001));
@@ -93,8 +96,8 @@ public class MeanScorersTest {
     @Test
     public void testUserMeanBaselineFallback() {
         ItemScorer mean = makeGlobalMean();
-        ItemScorer pred = new UserMeanItemScorer(new PrefetchingUserEventDAO(dao),
-                                                 mean, new RatingVectorUserHistorySummarizer(),
+        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorDAO(dao),
+                                                 mean,
                                                  0);
         // unseen user - should be global mean
         assertThat(pred.score(10, 10).getScore(), closeTo(RATINGS_DAT_MEAN, 0.001));
@@ -114,8 +117,8 @@ public class MeanScorersTest {
     @Test
     public void testUserItemMeanBaseline() {
         ItemScorer base = new ItemMeanRatingItemScorer(RatingSummary.create(dao), 0.0);
-        ItemScorer pred = new UserMeanItemScorer(new PrefetchingUserEventDAO(dao),
-                                                 base, new RatingVectorUserHistorySummarizer(),
+        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorDAO(dao),
+                                                 base,
                                                  0);
         // we use user 8 - their average offset is 0.5
         // unseen item, should be global mean + user offset

@@ -24,11 +24,11 @@ import com.google.common.base.Equivalence;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.util.Functional;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.util.keys.KeyIndex;
 
 import java.util.ArrayList;
@@ -58,29 +58,28 @@ public class PackedRatingMatrixTest {
         List<Rating> rs = new ArrayList<>();
         rs.add(rating(1, 7, 4, 1));
         rs.add(rating(3, 7, 3, 1));
-        rs.add(rating(4, 7, 5, 1));
         rs.add(rating(4, 7, 4, 2));
         rs.add(rating(5, 7, 3, 1));
         rs.add(rating(6, 7, 5, 1));
-        rs.add(rating(1, 8, 4, 1));
         rs.add(rating(1, 8, 5, 2));
         rs.add(rating(3, 8, 3, 1));
         rs.add(rating(4, 8, 2, 1));
-        rs.add(rating(5, 8, 3, 1));
         rs.add(rating(5, 8, 5, 2));
         rs.add(rating(6, 8, 5, 1));
         rs.add(rating(7, 8, 2, 1));
         rs.add(rating(1, 9, 3, 1));
         rs.add(rating(3, 9, 4, 1));
         rs.add(rating(4, 9, 5, 1));
-        rs.add(rating(7, 9, 2, 1));
         rs.add(rating(7, 9, 3, 2));
         rs.add(rating(4, 10, 4, 1));
         rs.add(rating(7, 10, 4, 1));
         rs.add(rating(1, 11, 5, 1));
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
-        EventDAO dao = EventCollectionDAO.create(rs);
+
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
+
         snap = new PackedRatingMatrixBuilder(dao, new Random()).get();
         ratingList = rs;
     }

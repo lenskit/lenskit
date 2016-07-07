@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.traintest
 
-import org.grouplens.lenskit.data.source.CSVDataSourceBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,6 +28,7 @@ import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.eval.crossfold.CrossfoldMethods
 import org.lenskit.eval.crossfold.Crossfolder
 import org.lenskit.eval.crossfold.HistoryPartitions
@@ -87,7 +87,7 @@ class TrainTestExperimentTest {
 
     private List<DataSet> crossfoldRatings() {
         def cf = new Crossfolder()
-        cf.source = new CSVDataSourceBuilder().setFile(file).build()
+        cf.source = StaticDataSource.csvRatingFile(file.toPath())
         cf.partitionCount = 2
         cf.method = CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(1))
         cf.outputDir = folder.getRoot().toPath().resolve("splits")

@@ -20,12 +20,9 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.junit.Test;
-import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.dao.file.StaticDataSource;
 
-import java.util.Collections;
 import java.util.List;
 
 import static net.java.quickcheck.generator.CombinedGenerators.uniqueValues;
@@ -39,8 +36,10 @@ public class DataSetBuilderTest {
     public void testAttributeOrder() {
         for (List<String> strings: someNonEmptyLists(uniqueValues(nonEmptyStrings(), 10))) {
             DataSetBuilder bld = new DataSetBuilder(nonEmptyStrings().next());
-            bld.setTrain(new GenericDataSource("train", EventCollectionDAO.create(Collections.<Rating>emptyList())));
-            bld.setTest(new GenericDataSource("test", EventCollectionDAO.create(Collections.<Rating>emptyList())));
+            StaticDataSource train = new StaticDataSource("train");
+            bld.setTrain(train);
+            StaticDataSource test = new StaticDataSource("test");
+            bld.setTest(test);
             for (String str: strings) {
                 bld.setAttribute(str, nonEmptyStrings().next());
             }

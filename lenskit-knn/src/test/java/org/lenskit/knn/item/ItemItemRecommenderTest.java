@@ -25,8 +25,11 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.junit.After;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EventCollectionDAO;
 import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
@@ -73,9 +76,9 @@ public class ItemItemRecommenderTest {
         rs.add(Rating.create(6, 8, 2));
         rs.add(Rating.create(1, 9, 3));
         rs.add(Rating.create(3, 9, 4));
-        EventCollectionDAO dao = new EventCollectionDAO(rs);
+        StaticDataSource source = StaticDataSource.fromList(rs);
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
+        config.bind(DataAccessObject.class).toProvider(source);
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)

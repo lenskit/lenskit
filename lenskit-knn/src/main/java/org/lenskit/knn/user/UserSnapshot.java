@@ -24,17 +24,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.lenskit.inject.Shareable;
-import org.lenskit.inject.Transient;
-import org.lenskit.util.io.ObjectStream;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.inject.Shareable;
+import org.lenskit.inject.Transient;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -93,30 +91,25 @@ public class UserSnapshot implements Serializable {
     }
 
     public static class Builder implements Provider<UserSnapshot> {
-        private final UserEventDAO userEventDAO;
+        private final RatingVectorDAO rvDAO;
         private final UserVectorNormalizer normalizer;
-        private final UserHistorySummarizer summarizer;
+
 
         @Inject
-        public Builder(@Transient UserEventDAO dao,
-                       @Transient UserVectorNormalizer norm,
-                       @Transient UserHistorySummarizer sum) {
-            userEventDAO = dao;
+        public Builder(@Transient RatingVectorDAO rvd,
+                       @Transient UserVectorNormalizer norm) {
+            rvDAO = rvd;
             normalizer = norm;
-            summarizer = sum;
         }
 
         @Override
         public UserSnapshot get() {
             Long2ObjectMap<MutableSparseVector> vectors = new Long2ObjectOpenHashMap<>();
-            ObjectStream<? extends UserHistory<? extends Event>> users = userEventDAO.streamEventsByUser(summarizer.eventTypeWanted());
-            try {
-                for (UserHistory<? extends Event> user: users) {
-                    MutableSparseVector uvec = summarizer.summarize(user).mutableCopy();
-                    vectors.put(user.getUserId(), uvec);
+            try (ObjectStream<IdBox<Long2DoubleMap>> users = rvDAO.streamUsers()) {
+                for (IdBox<Long2DoubleMap> user : users) {
+                    MutableSparseVector uvec = MutableSparseVector.create(user.getValue());
+                    vectors.put(user.getId(), uvec);
                 }
-            } finally {
-                users.close();
             }
 
             Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<>();

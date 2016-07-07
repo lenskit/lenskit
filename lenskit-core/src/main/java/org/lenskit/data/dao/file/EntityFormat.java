@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.dao.file;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.lenskit.data.entities.EntityType;
 
 import java.util.List;
@@ -46,4 +47,10 @@ public interface EntityFormat {
      * @return A parser that will make entity lines from entities.
      */
     LineEntityParser makeParser(List<String> header);
+
+    /**
+     * Create a JSON description of this entity format.
+     * @return The JSON description.
+     */
+    ObjectNode toJSON();
 }

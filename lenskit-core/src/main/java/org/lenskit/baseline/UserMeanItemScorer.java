@@ -23,15 +23,13 @@ package org.lenskit.baseline;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.data.ratings.RatingVectorDAO;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
@@ -59,40 +57,36 @@ import java.util.Map;
 public class UserMeanItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanItemScorer.class);
 
-    private final UserEventDAO userEventDAO;
     private final ItemScorer baseline;
-    private final UserHistorySummarizer summarizer;
+    private final RatingVectorDAO rvDAO;
     private final double damping;
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
      *
-     * @param dao  The DAO to get user ratings.
+     * @param rv   The DAO to get user rating vectors.
      * @param base An item scorer that provides the baseline scores.
-     * @param sum  The summarizer for getting user histories.
      * @param damp A damping term for the calculations.
      */
     @Inject
-    public UserMeanItemScorer(UserEventDAO dao,
+    public UserMeanItemScorer(RatingVectorDAO rv,
                               @UserMeanBaseline ItemScorer base,
-                              UserHistorySummarizer sum,
                               @MeanDamping double damp) {
         Preconditions.checkArgument(damp >= 0, "Negative damping not allowed");
-        userEventDAO = dao;
+        rvDAO = rv;
         baseline = base;
-        summarizer = sum;
         damping = damp;
     }
 
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        UserHistory<?> history = userEventDAO.getEventsForUser(user, summarizer.eventTypeWanted());
-        if (history == null) {
+        Long2DoubleMap userRatings = rvDAO.userRatingVector(user);
+        if (userRatings.isEmpty()) {
             Map<Long, Double> scores = baseline.score(user, items);
             return Results.newResultMap(Iterables.transform(scores.entrySet(), Results.fromEntryFunction()));
         } else {
-            MutableSparseVector vec = summarizer.summarize(history).mutableCopy();
+            MutableSparseVector vec = MutableSparseVector.create(userRatings);
             // score everything, both rated and not, for offsets
             LongSet allItems = new LongOpenHashSet(vec.keySet());
             allItems.addAll(items);

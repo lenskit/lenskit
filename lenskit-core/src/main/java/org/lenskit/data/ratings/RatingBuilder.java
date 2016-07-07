@@ -22,7 +22,6 @@ package org.lenskit.data.ratings;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.text.DefaultFields;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityBuilder;
 import org.lenskit.data.entities.EntityType;
@@ -39,7 +38,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultFields({"userId", "itemId", "rating", "timestamp?"})
 public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
     private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
     private static final AtomicLong idGenerator = new AtomicLong();

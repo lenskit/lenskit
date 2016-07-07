@@ -20,10 +20,10 @@
  */
 package org.lenskit.data.dao;
 
-import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.lenskit.util.io.ObjectStream;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.UserHistory;
+import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nullable;
 
@@ -32,8 +32,10 @@ import javax.annotation.Nullable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.3
+ * @deprecated Use {@link DataAccessObject}.
  */
-@DefaultImplementation(PrefetchingUserEventDAO.class)
+@DefaultProvider(BridgeUserEventDAO.DynamicProvider.class)
+@Deprecated
 public interface UserEventDAO {
     /**
      * Stream events grouped by user.

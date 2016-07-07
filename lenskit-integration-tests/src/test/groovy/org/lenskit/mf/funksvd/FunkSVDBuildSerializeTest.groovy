@@ -20,8 +20,6 @@
  */
 package org.lenskit.mf.funksvd
 
-import org.lenskit.api.RecommenderBuildException
-import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
@@ -29,8 +27,10 @@ import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine
 import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
+import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.*
 import org.lenskit.config.ConfigHelpers
+import org.lenskit.data.dao.ItemDAO
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -51,21 +51,6 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         root ItemDAO
     }
 
-    @Test
-    void testBuildWithMissingItems() {
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(itemSubsetConfig)
-                                        .build()
-        assertThat(engine, notNullValue())
-        def rec = engine.createRecommender();
-        def dao = rec.get(ItemDAO)
-        def model = rec.get(FunkSVDModel)
-        assertThat(model.itemIndex.keyList,
-                   anyOf(hasSize(dao.itemIds.size()),
-                         hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)));
-    }
 
     @Test
     void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
@@ -89,9 +74,13 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         assertThat(loaded, notNullValue())
 
         LenskitRecommender rec = loaded.createRecommender()
-        assertThat(rec.getItemScorer(),
-                   instanceOf(FunkSVDItemScorer))
-        assertThat(rec.get(FunkSVDModel),
-                   notNullValue())
+        try {
+            assertThat(rec.getItemScorer(),
+                       instanceOf(FunkSVDItemScorer))
+            assertThat(rec.get(FunkSVDModel),
+                       notNullValue())
+        } finally {
+            rec.close()
+        }
     }
 }
