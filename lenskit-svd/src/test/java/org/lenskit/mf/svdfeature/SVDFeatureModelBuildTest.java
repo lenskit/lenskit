@@ -17,6 +17,23 @@ import static org.junit.Assert.assertThat;
 public class SVDFeatureModelBuildTest {
 
     @Test
+    public void testModelBuildFromInstanceDAO() throws IOException {
+        String insFile = "/Users/qian/Downloads/validIns.txt";
+        String modelFile = "./svdModel.txt";
+
+        int biasSize = 10000;
+        int factSize = 10000;
+        int factDim = 20;
+
+        ObjectiveFunction loss = new LogisticLoss();
+        OptimizationMethod method = new StochasticGradientDescent();
+        SVDFeatureInstanceDAO insDao = new SVDFeatureInstanceDAO(new File(insFile), " ");
+
+        SVDFeatureModel model = new SVDFeatureModel(biasSize, factSize, factDim, loss);
+        method.minimize(model, insDao);
+        model.dump(new File(modelFile));
+    }
+
     public void testModelBuildFromEntityDAO() throws IOException {
 
         int biasSize = 1;
