@@ -24,10 +24,9 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +40,11 @@ import java.util.Random;
 public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
     private static final Logger logger = LoggerFactory.getLogger(PackedRatingMatrixBuilder.class);
 
-    private final EventDAO dao;
+    private final DataAccessObject dao;
     private Random random;
 
     @Inject
-    public PackedRatingMatrixBuilder(@Transient EventDAO dao, Random random) {
+    public PackedRatingMatrixBuilder(@Transient DataAccessObject dao, Random random) {
         this.dao = dao;
         this.random = random;
     }
@@ -63,8 +62,7 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
 
         // Since we iterate in timestamp order, we can just overwrite
         // old data for a user-item pair with new data.
-        ObjectStream<Rating> ratings = dao.streamEvents(Rating.class, SortOrder.TIMESTAMP);
-        try {
+        try (ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
             for (Rating r : ratings) {
                 final long user = r.getUserId();
                 final long item = r.getItemId();
@@ -77,29 +75,15 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
                     uiIndexes.put(user, imap);
                 }
 
-                // have we seen the item?
-                final int index = imap.get(item);
-                if (index < 0) {    // we've never seen (user,item) before
-                    // if this is not an unrate (a no-op), add the pref
-                    if (r.hasValue()) {
-                        int idx = bld.add(r);
-                        imap.put(item, idx);
-                    }
-                } else {            // we have seen this rating before
-                    if (r.hasValue()) {
-                        // just overwrite the previous value
-                        bld.set(index, Rating.create(user, item, r.getValue()));
-                    } else {
-                        // free the entry, no rating here
-                        bld.release(index);
-                        imap.put(item, -1);
-                    }
-                }
+                // we should never have seen this item before
+                assert imap.get(item) < 0;
+
+                // add the rating
+                int idx = bld.add(r);
+                imap.put(item, idx);
             }
 
             logger.debug("Packed {} ratings", bld.size());
-        } finally {
-            ratings.close();
         }
 
         bld.shuffle(random);
