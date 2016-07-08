@@ -36,7 +36,6 @@
 apply from: "$rootDir/gradle/maven.gradle"
 
 dependencies {
-    compile project(':lenskit-data-structures')
 }
 
 meta {
