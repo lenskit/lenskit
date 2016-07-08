@@ -43,7 +43,7 @@ dependencies {
     if ((findProperty('idea.active') ?: 'false').asBoolean()) {
         compile localGroovy()
     } else {
-         compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.3.10'
+         compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4'
     }
 
     runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.3'
