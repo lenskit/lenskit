@@ -41,7 +41,7 @@ public class RecommendEvalTaskTest {
         assertThat(task.userColumns,
                    containsInAnyOrder("Rank", "RecipRank"))
         assertThat(task.globalColumns,
-                   contains("MRR", "MRR.OfGood"))
+                   contains("MRR"))
     }
 
     @Test
@@ -52,6 +52,6 @@ public class RecommendEvalTaskTest {
         assertThat(task.userColumns,
                    containsInAnyOrder("Foo.Rank", "Foo.RecipRank"))
         assertThat(task.globalColumns,
-                   contains("Foo.MRR", "Foo.MRR.OfGood"))
+                   contains("Foo.MRR"))
     }
 }
