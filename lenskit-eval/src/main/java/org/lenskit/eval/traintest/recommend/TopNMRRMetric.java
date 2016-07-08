@@ -142,22 +142,15 @@ public class TopNMRRMetric extends ListOnlyTopNMetric<TopNMRRMetric.Context> {
          */
         @MetricColumn("MRR")
         public final double mrr;
-        /**
-         * The MRR over those users for whom a good item could be recommended.
-         */
-        @MetricColumn("MRR.OfGood")
-        public final double goodMRR;
 
         public AggregateResult(Context accum) {
             this.mrr = accum.allMean.getMean();
-            this.goodMRR = accum.goodMean.getMean();
         }
     }
 
     public static class Context {
         private final LongSet universe;
         private final MeanAccumulator allMean = new MeanAccumulator();
-        private final MeanAccumulator goodMean = new MeanAccumulator();
         private final Recommender recommender;
 
         Context(LongSet universe, Recommender recommender) {
@@ -167,9 +160,6 @@ public class TopNMRRMetric extends ListOnlyTopNMetric<TopNMRRMetric.Context> {
 
         void addUser(UserResult ur) {
             allMean.add(ur.getRecipRank());
-            if (ur.rank != null) {
-                goodMean.add(ur.getRecipRank());
-            }
         }
     }
 }
