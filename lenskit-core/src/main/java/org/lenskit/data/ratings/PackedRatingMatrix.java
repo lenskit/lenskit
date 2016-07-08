@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
  */
-@DefaultProvider(PackedRatingMatrixBuilder.class)
+@DefaultProvider(PackedRatingMatrixProvider.class)
 @Shareable
 public class PackedRatingMatrix implements RatingMatrix {
     private PackedRatingData data;

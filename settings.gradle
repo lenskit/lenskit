@@ -36,7 +36,6 @@
 rootProject.name = 'lenskit'
 
 include 'lenskit-test'
-include 'lenskit-data-structures'
 include 'lenskit-api'
 include 'lenskit-core', 'lenskit-groovy'
 include 'lenskit-eval'

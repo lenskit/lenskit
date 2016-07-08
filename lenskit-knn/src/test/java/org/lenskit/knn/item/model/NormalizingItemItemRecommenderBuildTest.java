@@ -32,8 +32,6 @@ import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemBasedItemRecommender;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.knn.item.ItemItemItemBasedItemScorer;
@@ -61,7 +59,7 @@ public class NormalizingItemItemRecommenderBuildTest {
         dao = source.get();
 
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelBuilder.class);
+        config.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelProvider.class);
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         config.bind(ItemBasedItemScorer.class).to(ItemItemItemBasedItemScorer.class);
         // this is the default

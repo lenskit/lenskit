@@ -44,7 +44,7 @@ public class FastIntersectTest {
         SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
 
         long i = 1;
-        for (Pair<VectorEntry,VectorEntry> p : Vectors.fastIntersect(v1, v2)) {
+        for (Pair<VectorEntry,VectorEntry> p : SparseVector.fastIntersect(v1, v2)) {
             assertThat(p.getLeft().getKey(), equalTo(i));
             assertThat(p.getLeft().getValue(), closeTo(i, EPSILON));
 
@@ -62,7 +62,7 @@ public class FastIntersectTest {
         SparseVector v1 = new MutableSparseVector();
         SparseVector v2 = MutableSparseVector.wrap(keys, values);
 
-        assertThat(Vectors.fastIntersect(v1, v2),
+        assertThat(SparseVector.fastIntersect(v1, v2),
                    emptyIterable());
     }
 
@@ -73,7 +73,7 @@ public class FastIntersectTest {
         SparseVector v1 = MutableSparseVector.wrap(keys, values);
         SparseVector v2 = new MutableSparseVector();
 
-        assertThat(Vectors.fastIntersect(v1, v2),
+        assertThat(SparseVector.fastIntersect(v1, v2),
                    emptyIterable());
     }
 
@@ -87,7 +87,7 @@ public class FastIntersectTest {
         double[] values2 = {4.0, 5.0, 6.0};
         SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
 
-        Iterator<Pair<VectorEntry,VectorEntry>> iter = Vectors.fastIntersect(v1, v2).iterator();
+        Iterator<Pair<VectorEntry,VectorEntry>> iter = SparseVector.fastIntersect(v1, v2).iterator();
         Pair<VectorEntry,VectorEntry> p = iter.next();
         assertThat(p.getLeft().getKey(), equalTo(3L));
         assertThat(p.getRight().getKey(), equalTo(3L));
@@ -106,7 +106,7 @@ public class FastIntersectTest {
         double[] values2 = {4.0, 5.0, 6.0};
         SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
 
-        assertThat(Vectors.fastIntersect(v1, v2),
+        assertThat(SparseVector.fastIntersect(v1, v2),
                    emptyIterable());
     }
 
@@ -120,7 +120,7 @@ public class FastIntersectTest {
         double[] values2 = {2.0, 4.0, 6.0};
         SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
 
-        assertThat(Vectors.fastIntersect(v1, v2), emptyIterable());
+        assertThat(SparseVector.fastIntersect(v1, v2), emptyIterable());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class FastIntersectTest {
         double[] values2 = {2.0, 3.2, 4.0};
         SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
 
-        Iterator<Pair<VectorEntry,VectorEntry>> iter = Vectors.fastIntersect(v1, v2).iterator();
+        Iterator<Pair<VectorEntry,VectorEntry>> iter = SparseVector.fastIntersect(v1, v2).iterator();
         Pair<VectorEntry,VectorEntry> p = iter.next();
         assertThat(p.getLeft().getKey(), equalTo(3L));
         assertThat(p.getRight().getKey(), equalTo(3L));
@@ -153,7 +153,7 @@ public class FastIntersectTest {
         SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
 
         long i = 1;
-        for (Pair<VectorEntry,VectorEntry> p : Vectors.fastIntersect(v1, v2)) {
+        for (Pair<VectorEntry,VectorEntry> p : SparseVector.fastIntersect(v1, v2)) {
             if (i < 3) {
                 assertThat(p.getLeft().getKey(), equalTo(i));
                 assertThat(p.getLeft().getValue(), closeTo(i, EPSILON));

@@ -45,7 +45,7 @@ import java.util.Iterator;
  * will not include it, and any dependencies on it should be {@link Transient}.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @see ItemItemModelBuilder
+ * @see ItemItemModelProvider
  */
 @DefaultProvider(ItemItemBuildContextProvider.class)
 @Shareable

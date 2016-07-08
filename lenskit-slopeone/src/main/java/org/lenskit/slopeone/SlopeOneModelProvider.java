@@ -37,15 +37,15 @@ import javax.inject.Provider;
  * {@code CoratingMatrix}. These matrices are later used by a
  * {@code SlopeOneItemScorer}.
  */
-public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
+public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
 
     private final ItemItemBuildContext buildContext;
 
     @Inject
-    public SlopeOneModelBuilder(@Transient @Nonnull ItemDAO dao,
-                                @Transient ItemItemBuildContext context,
-                                @DeviationDamping double damping) {
+    public SlopeOneModelProvider(@Transient @Nonnull ItemDAO dao,
+                                 @Transient ItemItemBuildContext context,
+                                 @DeviationDamping double damping) {
 
         buildContext = context;
         accumulator = new SlopeOneModelDataAccumulator(damping, dao);

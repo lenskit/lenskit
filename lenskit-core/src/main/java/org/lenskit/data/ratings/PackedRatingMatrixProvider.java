@@ -37,14 +37,14 @@ import java.util.Random;
 /**
  * Build a packed rating matrix from the available rating events.
  */
-public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
-    private static final Logger logger = LoggerFactory.getLogger(PackedRatingMatrixBuilder.class);
+public class PackedRatingMatrixProvider implements Provider<PackedRatingMatrix> {
+    private static final Logger logger = LoggerFactory.getLogger(PackedRatingMatrixProvider.class);
 
     private final DataAccessObject dao;
     private Random random;
 
     @Inject
-    public PackedRatingMatrixBuilder(@Transient DataAccessObject dao, Random random) {
+    public PackedRatingMatrixProvider(@Transient DataAccessObject dao, Random random) {
         this.dao = dao;
         this.random = random;
     }
