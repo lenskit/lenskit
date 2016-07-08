@@ -37,7 +37,7 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(FunkSVDModelBuilder.class)
+@DefaultProvider(FunkSVDModelProvider.class)
 @Shareable
 public final class FunkSVDModel extends MFModel {
     private static final long serialVersionUID = 3L;

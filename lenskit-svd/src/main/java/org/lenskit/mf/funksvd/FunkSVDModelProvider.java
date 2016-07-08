@@ -51,8 +51,8 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
-    private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
+public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
+    private static Logger logger = LoggerFactory.getLogger(FunkSVDModelProvider.class);
 
     protected final int featureCount;
     protected final RatingMatrix snapshot;
@@ -61,10 +61,10 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     protected final FunkSVDUpdateRule rule;
 
     @Inject
-    public FunkSVDModelBuilder(@Transient @Nonnull RatingMatrix snapshot,
-                               @Transient @Nonnull FunkSVDUpdateRule rule,
-                               @FeatureCount int featureCount,
-                               @InitialFeatureValue double initVal) {
+    public FunkSVDModelProvider(@Transient @Nonnull RatingMatrix snapshot,
+                                @Transient @Nonnull FunkSVDUpdateRule rule,
+                                @FeatureCount int featureCount,
+                                @InitialFeatureValue double initVal) {
         this.featureCount = featureCount;
         this.initialValue = initVal;
         this.snapshot = snapshot;
