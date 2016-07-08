@@ -49,8 +49,8 @@ import javax.inject.Provider;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @NotThreadSafe
-public class ItemItemModelBuilder implements Provider<ItemItemModel> {
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
+public class ItemItemModelProvider implements Provider<ItemItemModel> {
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemModelProvider.class);
 
     private final ItemSimilarity itemSimilarity;
     private final ItemItemBuildContext buildContext;
@@ -60,12 +60,12 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     private final int modelSize;
 
     @Inject
-    public ItemItemModelBuilder(@Transient ItemSimilarity similarity,
-                                @Transient ItemItemBuildContext context,
-                                @Transient @ItemSimilarityThreshold Threshold thresh,
-                                @Transient NeighborIterationStrategy nbrStrat,
-                                @MinCommonUsers int minCU,
-                                @ModelSize int size) {
+    public ItemItemModelProvider(@Transient ItemSimilarity similarity,
+                                 @Transient ItemItemBuildContext context,
+                                 @Transient @ItemSimilarityThreshold Threshold thresh,
+                                 @Transient NeighborIterationStrategy nbrStrat,
+                                 @MinCommonUsers int minCU,
+                                 @ModelSize int size) {
         itemSimilarity = similarity;
         buildContext = context;
         threshold = thresh;
