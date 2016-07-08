@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -118,6 +119,21 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         for (int i = 0; i < len; i++) {
             values[i] = keyValueMap.get(keys.getKey(i));
         }
+    }
+
+    /**
+     * Iterate over the intersection of two vectors without the overhead of object creation.
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     * @return A fast iterator over the common keys of the two vectors.
+     */
+    public static Iterable<Pair<VectorEntry,VectorEntry>> fastIntersect(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<Pair<VectorEntry, VectorEntry>>() {
+            @Override
+            public Iterator<Pair<VectorEntry, VectorEntry>> iterator() {
+                return new FastIntersectIterImpl(v1, v2);
+            }
+        };
     }
 
     public Long2DoubleMap asMap() {
