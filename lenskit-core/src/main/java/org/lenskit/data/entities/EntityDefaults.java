@@ -21,7 +21,6 @@
 package org.lenskit.data.entities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -88,8 +87,8 @@ public class EntityDefaults {
             if (stream == null) {
                 return null;
             }
-            ObjectReader read = new ObjectMapper(new YAMLFactory()).readerFor(DefaultsBean.class);
-            DefaultsBean bean = read.readValue(stream);
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            DefaultsBean bean = mapper.readValue(stream, DefaultsBean.class);
             return fromBean(type, bean);
         } catch (IOException e) {
             throw new RuntimeException("error reading defaults", e);

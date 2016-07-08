@@ -44,7 +44,7 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-@DefaultProvider(ItemItemModelBuilder.class)
+@DefaultProvider(ItemItemModelProvider.class)
 @Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = 3L;

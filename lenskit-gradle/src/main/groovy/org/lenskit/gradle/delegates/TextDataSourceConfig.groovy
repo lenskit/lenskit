@@ -61,7 +61,14 @@ class TextDataSourceConfig implements Configurable<TextDataSourceConfig> {
 
     @Override
     TextDataSourceConfig configure(Closure cl) {
-        ConfigureUtil.configure(cl, this, false)
-        return this
+        try {
+            return ConfigureUtil.configureSelf(cl, this)
+        } catch (MissingMethodException ex) {
+            if (ex.method == 'configureSelf') {
+                return ConfigureUtil.configure(cl, this, false)
+            } else {
+                throw ex
+            }
+        }
     }
 }

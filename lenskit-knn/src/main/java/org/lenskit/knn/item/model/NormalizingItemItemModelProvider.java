@@ -45,8 +45,8 @@ import java.util.List;
  * This builder is more advanced than the standard builder. It allows arbitrary
  * vector truncation and normalization.
  */
-public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> {
-    private static final Logger logger = LoggerFactory.getLogger(NormalizingItemItemModelBuilder.class);
+public class NormalizingItemItemModelProvider implements Provider<ItemItemModel> {
+    private static final Logger logger = LoggerFactory.getLogger(NormalizingItemItemModelProvider.class);
 
     private final ItemSimilarity similarity;
     private final ItemItemBuildContext buildContext;
@@ -62,15 +62,15 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
      * @param rowNorm The normalizer for item neighborhood vectors.
      * @param trunc   The truncator for truncating neighborhood vectors.  Bind this to the provider
      *                {@link StandardVectorTruncatorProvider} to get the same threshold and model
-     *                size configuration behavior as {@link ItemItemModelBuilder}.
+     *                size configuration behavior as {@link ItemItemModelProvider}.
      * @param iterStrat The neighbor iteration strategy.
      */
     @Inject
-    public NormalizingItemItemModelBuilder(@Transient ItemSimilarity sim,
-                                           @Transient ItemItemBuildContext context,
-                                           @Transient ItemVectorNormalizer rowNorm,
-                                           @Transient VectorTruncator trunc,
-                                           @Transient NeighborIterationStrategy iterStrat) {
+    public NormalizingItemItemModelProvider(@Transient ItemSimilarity sim,
+                                            @Transient ItemItemBuildContext context,
+                                            @Transient ItemVectorNormalizer rowNorm,
+                                            @Transient VectorTruncator trunc,
+                                            @Transient NeighborIterationStrategy iterStrat) {
         similarity = sim;
         buildContext = context;
         rowNormalizer = rowNorm;
@@ -131,7 +131,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(NormalizingItemItemModelBuilder.class)
+        return MoreObjects.toStringHelper(NormalizingItemItemModelProvider.class)
                           .add("similarity", similarity)
                           .add("normalizer", rowNormalizer)
                           .add("truncator", truncator)

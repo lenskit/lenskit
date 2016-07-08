@@ -80,7 +80,7 @@ public class PackedRatingMatrixTest {
         StaticDataSource source = StaticDataSource.fromList(rs);
         DataAccessObject dao = source.get();
 
-        snap = new PackedRatingMatrixBuilder(dao, new Random()).get();
+        snap = new PackedRatingMatrixProvider(dao, new Random()).get();
         ratingList = rs;
     }
 

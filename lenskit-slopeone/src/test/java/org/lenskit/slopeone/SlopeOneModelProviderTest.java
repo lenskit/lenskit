@@ -36,7 +36,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class SlopeOneModelBuilderTest {
+public class SlopeOneModelProviderTest {
 
     public static final double EPSILON = 1.0e-6;
 
@@ -47,7 +47,7 @@ public class SlopeOneModelBuilderTest {
         RatingVectorDAO rvDAO = new StandardRatingVectorDAO(dao);
         ItemItemBuildContextProvider contextFactory = new ItemItemBuildContextProvider(
                 rvDAO, new DefaultUserVectorNormalizer());
-        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory.get(), 0);
+        SlopeOneModelProvider provider = new SlopeOneModelProvider(idao, contextFactory.get(), 0);
         return provider.get();
     }
 
