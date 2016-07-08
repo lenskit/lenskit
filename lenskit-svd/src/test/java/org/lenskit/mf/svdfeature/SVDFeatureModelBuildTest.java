@@ -18,15 +18,15 @@ public class SVDFeatureModelBuildTest {
 
     @Test
     public void testModelBuildFromInstanceDAO() throws IOException {
-        String insFile = "/Users/qian/Downloads/validIns.txt";
-        String modelFile = "./svdModel.txt";
+        String insFile = "";
+        String modelFile = "";
 
         int biasSize = 10000;
         int factSize = 10000;
         int factDim = 20;
 
         ObjectiveFunction loss = new LogisticLoss();
-        OptimizationMethod method = new StochasticGradientDescent();
+        OptimizationMethod method = new StochasticGradientDescent(50, 0.0, 0.0001, 1.0);
         SVDFeatureInstanceDAO insDao = new SVDFeatureInstanceDAO(new File(insFile), " ");
 
         SVDFeatureModel model = new SVDFeatureModel(biasSize, factSize, factDim, loss);

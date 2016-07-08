@@ -102,7 +102,7 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
         for (int i=0; i<vec.getDimension(); i++) {
             arr[i] = Double.valueOf(vec.getEntry(i)).toString();
         }
-        return StringUtils.join(arr, " ");
+        return StringUtils.join(arr, "\t");
     }
 
     public void dump(File modelFile) {
