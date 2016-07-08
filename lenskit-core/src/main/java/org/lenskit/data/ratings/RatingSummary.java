@@ -35,7 +35,7 @@ import java.io.Serializable;
  * @since 3.0
  */
 @Shareable
-@DefaultProvider(RatingSummaryBuilder.class)
+@DefaultProvider(RatingSummaryProvider.class)
 public class RatingSummary implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -58,7 +58,7 @@ public class RatingSummary implements Serializable {
      * @return The rating summary.
      */
     public static RatingSummary create(DataAccessObject dao) {
-        return new RatingSummaryBuilder(dao).get();
+        return new RatingSummaryProvider(dao).get();
     }
 
     public double getGlobalMean() {

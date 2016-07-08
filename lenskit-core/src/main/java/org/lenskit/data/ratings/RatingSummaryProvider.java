@@ -41,12 +41,12 @@ import java.util.List;
  *
  * @since 3.0
  */
-public class RatingSummaryBuilder implements Provider<RatingSummary> {
-    private static final Logger logger = LoggerFactory.getLogger(RatingSummaryBuilder.class);
+public class RatingSummaryProvider implements Provider<RatingSummary> {
+    private static final Logger logger = LoggerFactory.getLogger(RatingSummaryProvider.class);
     private final DataAccessObject dao;
 
     @Inject
-    public RatingSummaryBuilder(@Transient DataAccessObject dao) {
+    public RatingSummaryProvider(@Transient DataAccessObject dao) {
         this.dao = dao;
     }
 
