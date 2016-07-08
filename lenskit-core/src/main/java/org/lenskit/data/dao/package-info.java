@@ -27,7 +27,7 @@
  * This interface can be reimplemented against other query APIs such as SQL databases, MongoDB, etc.  LensKit provides
  * basic implementations against static files and in-memory collections.
  *
- * <p>LensKit also uses intermediate layers, so-called <em>proxy DAOs</em>, such as {@link org.lenskit.data.ratings.RatingVectorDAO}
+ * <p>LensKit also uses intermediate layers, called <em>proxy DAOs</em>, such as {@link org.lenskit.data.ratings.RatingVectorPDAO}
  * that provide access to intermediate data structures that are usually computed from underlying data accessed via
  * the master DAO.
  *

@@ -30,13 +30,13 @@ import org.lenskit.data.entities.EntityType;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class EntityCountRatingVectorDAOTest {
+public class EntityCountRatingVectorPDAOTest {
     private static final EntityType LIKE = EntityType.forName("LIKE");
 
     @Test
     public void testNoUser() {
         EntityCollectionDAO dao = EntityCollectionDAO.create();
-        RatingVectorDAO source = new EntityCountRatingVectorDAO(dao, LIKE);
+        RatingVectorPDAO source = new EntityCountRatingVectorPDAO(dao, LIKE);
 
         assertThat(source.userRatingVector(42).entrySet(),
                    hasSize(0));
@@ -50,7 +50,7 @@ public class EntityCountRatingVectorDAOTest {
                                                    .setAttribute(CommonAttributes.USER_ID, 42L)
                                                    .setAttribute(CommonAttributes.ITEM_ID, 39L)
                                                    .build());
-        RatingVectorDAO source = new EntityCountRatingVectorDAO(dao, LIKE);
+        RatingVectorPDAO source = new EntityCountRatingVectorPDAO(dao, LIKE);
 
         assertThat(source.userRatingVector(42),
                    hasEntry(39L, 1.0));
@@ -79,7 +79,7 @@ public class EntityCountRatingVectorDAOTest {
                                                    .setAttribute(CommonAttributes.USER_ID, 42L)
                                                    .setAttribute(CommonAttributes.ITEM_ID, 39L)
                                                    .build());
-        RatingVectorDAO source = new EntityCountRatingVectorDAO(dao, LIKE);
+        RatingVectorPDAO source = new EntityCountRatingVectorPDAO(dao, LIKE);
 
         Long2DoubleMap vec = source.userRatingVector(42);
         assertThat(vec.entrySet(), hasSize(2));

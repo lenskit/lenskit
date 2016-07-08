@@ -31,7 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class LiveNeighborFinder implements NeighborFinder {
     private static final Logger logger = LoggerFactory.getLogger(LiveNeighborFinder.class);
 
     private final UserSimilarity similarity;
-    private final RatingVectorDAO rvDAO;
+    private final RatingVectorPDAO rvDAO;
     private final DataAccessObject dao;
     private final UserVectorNormalizer normalizer;
     private final Threshold threshold;
@@ -63,7 +63,7 @@ public class LiveNeighborFinder implements NeighborFinder {
      * @param thresh The threshold for user similarities.
      */
     @Inject
-    public LiveNeighborFinder(RatingVectorDAO rvd, DataAccessObject dao,
+    public LiveNeighborFinder(RatingVectorPDAO rvd, DataAccessObject dao,
                               UserSimilarity sim,
                               UserVectorNormalizer norm,
                               @UserSimilarityThreshold Threshold thresh) {

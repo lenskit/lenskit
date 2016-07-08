@@ -28,15 +28,16 @@ import org.lenskit.util.io.ObjectStream;
 import javax.annotation.Nonnull;
 
 /**
- * Interface for user 'rating vectors', which are mappings of items to user preference.  This is used
+ * Proxy DAO for user 'rating vectors', which are mappings of items to user preference.  This is used
  * to access use ratings, or to transform other types of data into something that looks like a rating vector.
  *
- * This DAO interface is generally a *proxy DAO*: that is, it is implemented on top of the base
- * {@link org.lenskit.data.dao.DataAccessObject} interface.  However, an application can specialize it with
- * some other kind of optimized implementation.
+ * This DAO interface is generally *proxy DAO*: that is, it provides a different view of data typically implemented
+ * on top of the base {@link org.lenskit.data.dao.DataAccessObject} interface.  However, an application can specialize
+ * it with some other kind of optimized implementation if desired; for example, if user rating vectors are stored in
+ * a Redis cache.
  */
-@DefaultImplementation(StandardRatingVectorDAO.class)
-public interface RatingVectorDAO {
+@DefaultImplementation(StandardRatingVectorPDAO.class)
+public interface RatingVectorPDAO {
     /**
      * Get a user's rating vector.
      * @param user The rating vector summarizing a user's historical preferences.

@@ -29,7 +29,7 @@ import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class UserMeanItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanItemScorer.class);
 
     private final ItemScorer baseline;
-    private final RatingVectorDAO rvDAO;
+    private final RatingVectorPDAO rvDAO;
     private final double damping;
 
     /**
@@ -69,7 +69,7 @@ public class UserMeanItemScorer extends AbstractItemScorer {
      * @param damp A damping term for the calculations.
      */
     @Inject
-    public UserMeanItemScorer(RatingVectorDAO rv,
+    public UserMeanItemScorer(RatingVectorPDAO rv,
                               @UserMeanBaseline ItemScorer base,
                               @MeanDamping double damp) {
         Preconditions.checkArgument(damp >= 0, "Negative damping not allowed");

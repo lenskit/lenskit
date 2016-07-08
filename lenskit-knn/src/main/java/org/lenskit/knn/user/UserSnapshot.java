@@ -27,7 +27,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Shareable;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.IdBox;
@@ -91,12 +91,12 @@ public class UserSnapshot implements Serializable {
     }
 
     public static class Builder implements Provider<UserSnapshot> {
-        private final RatingVectorDAO rvDAO;
+        private final RatingVectorPDAO rvDAO;
         private final UserVectorNormalizer normalizer;
 
 
         @Inject
-        public Builder(@Transient RatingVectorDAO rvd,
+        public Builder(@Transient RatingVectorPDAO rvd,
                        @Transient UserVectorNormalizer norm) {
             rvDAO = rvd;
             normalizer = norm;

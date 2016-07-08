@@ -34,9 +34,8 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.config.ConfigHelpers
-import org.lenskit.data.entities.EntityType
-import org.lenskit.data.ratings.EntityCountRatingVectorDAO
-import org.lenskit.data.ratings.RatingVectorDAO
+import org.lenskit.data.ratings.EntityCountRatingVectorPDAO
+import org.lenskit.data.ratings.RatingVectorPDAO
 import org.lenskit.knn.item.model.ItemItemModel
 
 import static org.hamcrest.Matchers.*
@@ -53,8 +52,8 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
             within (UserVectorNormalizer) {
                 bind VectorNormalizer to UnitVectorNormalizer
             }
-            bind RatingVectorDAO to EntityCountRatingVectorDAO
-            set EntityCountRatingVectorDAO.CountedType to LIKE
+            bind RatingVectorPDAO to EntityCountRatingVectorPDAO
+            set EntityCountRatingVectorPDAO.CountedType to LIKE
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         }
