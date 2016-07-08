@@ -28,13 +28,13 @@ import org.lenskit.data.entities.EntityFactory;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class StandardRatingVectorDAOTest {
+public class StandardRatingVectorPDAOTest {
     EntityFactory factory = new EntityFactory();
 
     @Test
     public void testNoUser() {
         EntityCollectionDAO dao = EntityCollectionDAO.create();
-        RatingVectorDAO source = new StandardRatingVectorDAO(dao);
+        RatingVectorPDAO source = new StandardRatingVectorPDAO(dao);
 
         assertThat(source.userRatingVector(42).entrySet(),
                    hasSize(0));
@@ -43,7 +43,7 @@ public class StandardRatingVectorDAOTest {
     @Test
     public void testGetRating() {
         EntityCollectionDAO dao = EntityCollectionDAO.create(factory.rating(42, 39, 2.5));
-        RatingVectorDAO source = new StandardRatingVectorDAO(dao);
+        RatingVectorPDAO source = new StandardRatingVectorPDAO(dao);
 
         assertThat(source.userRatingVector(42),
                    hasEntry(39L, 2.5));
@@ -54,7 +54,7 @@ public class StandardRatingVectorDAOTest {
         EntityCollectionDAO dao = EntityCollectionDAO.create(factory.rating(42, 39, 2.5),
                                                              factory.rating(42, 20, 3.5),
                                                              factory.rating(17, 39, 1.5));
-        RatingVectorDAO source = new StandardRatingVectorDAO(dao);
+        RatingVectorPDAO source = new StandardRatingVectorPDAO(dao);
 
         Long2DoubleMap vec = source.userRatingVector(42);
         assertThat(vec.entrySet(), hasSize(2));

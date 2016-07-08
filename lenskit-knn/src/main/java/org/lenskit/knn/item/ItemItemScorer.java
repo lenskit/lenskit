@@ -36,7 +36,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.knn.item.model.ItemItemModel;
@@ -61,7 +61,7 @@ public class ItemItemScorer extends AbstractItemScorer {
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
-    private final RatingVectorDAO rvDAO;
+    private final RatingVectorPDAO rvDAO;
     @Nonnull
     protected final UserVectorNormalizer normalizer;
     @Nonnull
@@ -79,7 +79,7 @@ public class ItemItemScorer extends AbstractItemScorer {
      * @param min    The minimum number of neighbors.
      */
     @Inject
-    public ItemItemScorer(RatingVectorDAO dao, ItemItemModel m,
+    public ItemItemScorer(RatingVectorPDAO dao, ItemItemModel m,
                           NeighborhoodScorer scorer,
                           UserVectorNormalizer norm,
                           @NeighborhoodSize int nnbrs,

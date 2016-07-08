@@ -31,7 +31,7 @@ import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
@@ -45,12 +45,12 @@ import java.util.List;
  * An {@link ItemScorer} that implements the Slope One algorithm.
  */
 public class SlopeOneItemScorer extends AbstractItemScorer {
-    protected final RatingVectorDAO dao;
+    protected final RatingVectorPDAO dao;
     protected SlopeOneModel model;
     protected final PreferenceDomain domain;
 
     @Inject
-    public SlopeOneItemScorer(RatingVectorDAO dao,
+    public SlopeOneItemScorer(RatingVectorPDAO dao,
                               SlopeOneModel model,
                               @Nullable PreferenceDomain dom) {
         this.dao = dao;

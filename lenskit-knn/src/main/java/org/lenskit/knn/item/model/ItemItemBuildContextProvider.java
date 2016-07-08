@@ -31,7 +31,7 @@ import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
@@ -52,7 +52,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
     private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextProvider.class);
 
-    private final RatingVectorDAO rvDAO;
+    private final RatingVectorPDAO rvDAO;
     private final UserVectorNormalizer normalizer;
 
     /**
@@ -62,7 +62,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
      * @param normalizer The user vector normalizer.
      */
     @Inject
-    public ItemItemBuildContextProvider(@Transient RatingVectorDAO rvd,
+    public ItemItemBuildContextProvider(@Transient RatingVectorPDAO rvd,
                                         @Transient UserVectorNormalizer normalizer) {
         rvDAO = rvd;
         this.normalizer = normalizer;

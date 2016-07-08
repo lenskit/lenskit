@@ -29,13 +29,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.history.History;
-import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.RatingVectorDAO;
-import org.lenskit.data.ratings.Ratings;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
@@ -50,7 +45,7 @@ import java.util.List;
  */
 public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Inject
-    public WeightedSlopeOneItemScorer(RatingVectorDAO dao, SlopeOneModel model,
+    public WeightedSlopeOneItemScorer(RatingVectorPDAO dao, SlopeOneModel model,
                                       @Nullable PreferenceDomain dom) {
         super(dao, model, dom);
     }

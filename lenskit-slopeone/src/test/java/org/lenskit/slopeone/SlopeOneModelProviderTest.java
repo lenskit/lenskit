@@ -27,8 +27,8 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.ItemDAO;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.RatingVectorDAO;
-import org.lenskit.data.ratings.StandardRatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.data.ratings.StandardRatingVectorPDAO;
 import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class SlopeOneModelProviderTest {
         StaticDataSource source = StaticDataSource.fromList(ratings);
         DataAccessObject dao = source.get();
         ItemDAO idao = new BridgeItemDAO(dao);
-        RatingVectorDAO rvDAO = new StandardRatingVectorDAO(dao);
+        RatingVectorPDAO rvDAO = new StandardRatingVectorPDAO(dao);
         ItemItemBuildContextProvider contextFactory = new ItemItemBuildContextProvider(
                 rvDAO, new DefaultUserVectorNormalizer());
         SlopeOneModelProvider provider = new SlopeOneModelProvider(idao, contextFactory.get(), 0);

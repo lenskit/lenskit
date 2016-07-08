@@ -33,7 +33,7 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.ratings.RatingVectorDAO;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.results.Results;
@@ -58,7 +58,7 @@ import static java.lang.Math.abs;
 public class UserUserItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
 
-    private final RatingVectorDAO dao;
+    private final RatingVectorPDAO dao;
     protected final NeighborFinder neighborFinder;
     protected final UserVectorNormalizer normalizer;
     private final int neighborhoodSize;
@@ -66,7 +66,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
     private final Threshold userThreshold;
 
     @Inject
-    public UserUserItemScorer(RatingVectorDAO rvd, NeighborFinder nf,
+    public UserUserItemScorer(RatingVectorPDAO rvd, NeighborFinder nf,
                               UserVectorNormalizer norm,
                               @NeighborhoodSize int nnbrs,
                               @MinNeighbors int minNbrs,

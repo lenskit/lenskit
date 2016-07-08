@@ -26,12 +26,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
-import org.lenskit.data.dao.BridgeEventDAO;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingSummary;
-import org.lenskit.data.ratings.StandardRatingVectorDAO;
+import org.lenskit.data.ratings.StandardRatingVectorPDAO;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.ArrayList;
@@ -79,7 +78,7 @@ public class MeanScorersTest {
     @Test
     public void testUserMeanBaseline() {
         ItemScorer mean = makeGlobalMean();
-        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorDAO(dao),
+        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorPDAO(dao),
                                                  mean,
                                                  0);
         // unseen item
@@ -96,7 +95,7 @@ public class MeanScorersTest {
     @Test
     public void testUserMeanBaselineFallback() {
         ItemScorer mean = makeGlobalMean();
-        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorDAO(dao),
+        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorPDAO(dao),
                                                  mean,
                                                  0);
         // unseen user - should be global mean
@@ -117,7 +116,7 @@ public class MeanScorersTest {
     @Test
     public void testUserItemMeanBaseline() {
         ItemScorer base = new ItemMeanRatingItemScorer(RatingSummary.create(dao), 0.0);
-        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorDAO(dao),
+        ItemScorer pred = new UserMeanItemScorer(new StandardRatingVectorPDAO(dao),
                                                  base,
                                                  0);
         // we use user 8 - their average offset is 0.5
