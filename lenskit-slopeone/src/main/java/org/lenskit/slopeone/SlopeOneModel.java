@@ -33,7 +33,7 @@ import java.io.Serializable;
  * A model for a {@link SlopeOneItemScorer} or {@link WeightedSlopeOneItemScorer}.
  * Stores calculated deviation values and number of co-rating users for each item pair.
  */
-@DefaultProvider(SlopeOneModelBuilder.class)
+@DefaultProvider(SlopeOneModelProvider.class)
 @Shareable
 public class SlopeOneModel implements Serializable {
 
