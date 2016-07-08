@@ -40,13 +40,18 @@ dependencies {
     compile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
     compile group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
-    if ((findProperty('idea.active') ?: 'false').asBoolean()) {
-        compile localGroovy()
-    } else {
-         compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4'
-    }
 
     runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.3'
+}
+
+if ((findProperty('idea.active') ?: 'false').asBoolean()) {
+    dependencies {
+        compile localGroovy()
+    }
+} else {
+    dependencies {
+        compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4'
+    }
 }
 
 meta {
