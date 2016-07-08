@@ -94,9 +94,11 @@ class ExperimentJob extends RecursiveAction {
                                                     dataSet, algorithm);
         RowBuilder outputRow = globalOutput.getLayout().newRowBuilder();
 
+        logger.debug("fetching training data");
+        DataAccessObject trainData = dataSet.getTrainingData().get();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        try (LenskitRecommender rec = buildRecommender()) {
+        try (LenskitRecommender rec = buildRecommender(trainData)) {
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
@@ -104,7 +106,6 @@ class ExperimentJob extends RecursiveAction {
 
             RowBuilder userRow = userOutput != null ? userOutput.getLayout().newRowBuilder() : null;
 
-            Stopwatch testTimer = Stopwatch.createStarted();
 
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
@@ -118,8 +119,9 @@ class ExperimentJob extends RecursiveAction {
                 }
             }
 
-            DataAccessObject trainData = dataSet.getTrainingData().get();
             DataAccessObject testData = dataSet.getTestData().get();
+
+            Stopwatch testTimer = Stopwatch.createStarted();
 
             final NumberFormat pctFormat = NumberFormat.getPercentInstance();
             pctFormat.setMaximumFractionDigits(2);
@@ -195,10 +197,10 @@ class ExperimentJob extends RecursiveAction {
         }
     }
 
-    private LenskitRecommender buildRecommender() throws RecommenderBuildException {
+    private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
         LenskitConfiguration extraConfig = new LenskitConfiguration();
-        extraConfig.addComponent(dataSet.getTrainingData().get());
+        extraConfig.addComponent(dao);
         PreferenceDomain dom = dataSet.getTrainingData().getPreferenceDomain();
         if (dom != null) {
             extraConfig.addComponent(dom);
