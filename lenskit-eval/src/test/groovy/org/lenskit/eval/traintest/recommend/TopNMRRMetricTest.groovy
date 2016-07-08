@@ -63,7 +63,6 @@ class TopNMRRMetricTest {
         assertThat result.recipRank, equalTo(0.0d)
         def agg = metric.getAggregateMeasurements(accum)
         assertThat agg.mrr, closeTo(0.0d)
-        assertThat agg.goodMRR, closeTo(0.0d)
     }
 
     @Test
@@ -76,7 +75,6 @@ class TopNMRRMetricTest {
         assertThat result.recipRank, closeTo(1.0)
         def agg = metric.getAggregateMeasurements(accum)
         assertThat agg.mrr, closeTo(1)
-        assertThat agg.goodMRR, closeTo(1)
     }
 
     @Test
@@ -90,7 +88,6 @@ class TopNMRRMetricTest {
         assertThat result.recipRank, closeTo(0.5)
         def agg = metric.getAggregateMeasurements(accum)
         assertThat agg.mrr, closeTo(0.5)
-        assertThat agg.goodMRR, closeTo(0.5)
     }
 
     @Test
@@ -104,7 +101,6 @@ class TopNMRRMetricTest {
         assertThat result.recipRank, equalTo(0.0d)
         def agg = metric.getAggregateMeasurements(accum)
         assertThat agg.mrr, closeTo(0.0)
-        assertThat agg.goodMRR, closeTo(0.0)
     }
 
     @Test
@@ -121,7 +117,6 @@ class TopNMRRMetricTest {
         assertThat result.recipRank, closeTo(0.05)
         def agg = metric.getAggregateMeasurements(accum)
         assertThat agg.mrr, closeTo(0.05)
-        assertThat agg.goodMRR, closeTo(0.05)
     }
 
     @Test
@@ -143,7 +138,6 @@ class TopNMRRMetricTest {
         // MRR should average 0.05 and 0
         assertThat agg.mrr, closeTo(0.025)
         // Good MRR should only have 0.05
-        assertThat agg.goodMRR, closeTo(0.05)
     }
 
     @Test
