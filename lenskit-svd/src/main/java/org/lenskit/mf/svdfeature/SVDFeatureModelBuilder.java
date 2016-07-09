@@ -46,10 +46,11 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
         this.model = new SVDFeatureModel(biasFeas, ufactFeas, ifactFeas, labelName, weightName,
                                          featureExtractors, biasSize, factSize, factDim, loss);
         this.learningData = new SVDFeatureEntityData(entitySource, model);
+        //TODO: add validating support
     }
 
     public SVDFeatureModel get() {
-        method.minimize(model, learningData);
+        method.minimize(model, learningData, null);
         return model;
     }
 }

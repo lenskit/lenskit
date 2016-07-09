@@ -19,6 +19,7 @@ public class SVDFeatureModelBuildTest {
     @Test
     public void testModelBuildFromInstanceDAO() throws IOException {
         String insFile = "";
+        String validFile = "";
         String modelFile = "";
 
         int biasSize = 10000;
@@ -28,9 +29,10 @@ public class SVDFeatureModelBuildTest {
         ObjectiveFunction loss = new LogisticLoss();
         OptimizationMethod method = new StochasticGradientDescent(50, 0.0, 0.0001, 1.0);
         SVDFeatureInstanceDAO insDao = new SVDFeatureInstanceDAO(new File(insFile), " ");
+        SVDFeatureInstanceDAO validDao = new SVDFeatureInstanceDAO(new File(validFile), " ");
 
         SVDFeatureModel model = new SVDFeatureModel(biasSize, factSize, factDim, loss);
-        method.minimize(model, insDao);
+        method.minimize(model, insDao, validDao);
         model.dump(new File(modelFile));
     }
 

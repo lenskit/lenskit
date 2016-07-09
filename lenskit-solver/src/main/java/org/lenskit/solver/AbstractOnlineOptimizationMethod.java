@@ -1,18 +1,31 @@
 package org.lenskit.solver;
 
-abstract public class AbstractOnlineOptimizationMethod implements OnlineOptimizationMethod {
+abstract public class AbstractOnlineOptimizationMethod extends AbstractOptimizationMethod implements OnlineOptimizationMethod {
     protected double tol;
     protected int maxIter;
 
-    public double minimize(LearningModel learningModel, LearningData learningData) {
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
-        double objVal = 0.0;
-        while (termCrit.keepIterate()) {
-            learningData.startNewIteration();
-            objVal = update(learningModel, learningData);
-            termCrit.addIteration(AbstractOnlineOptimizationMethod.class.toString(), objVal);
+    public double minimize(LearningModel learningModel, LearningData learningData, LearningData validData) {
+        ObjectiveTerminationCriterion learnCrit = new ObjectiveTerminationCriterion(tol, maxIter);
+        ObjectiveTerminationCriterion validCrit = null;
+        if (validData != null) {
+            validCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         }
-        return objVal;
+        double learnObjVal = 0.0;
+        while (learnCrit.keepIterate()) {
+            if (validCrit != null && !(validCrit.keepIterate())) {
+                break;
+            }
+            learningData.startNewIteration();
+            learnObjVal = update(learningModel, learningData);
+            learnCrit.addIteration(AbstractOnlineOptimizationMethod.class.toString()
+                    + " -- Learning", learnObjVal);
+            if (validData != null) {
+                double validObjVal = evaluate(learningModel, validData);
+                validCrit.addIteration(AbstractOnlineOptimizationMethod.class.toString()
+                        + " -- Validating", validObjVal);
+            }
+        }
+        return learnObjVal;
     }
 
 }

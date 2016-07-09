@@ -13,7 +13,7 @@ import java.util.Map;
  */
 
 // Objective function is changed from f(X) to f(X) + l2coef * |X|^2
-public class BatchGradientDescent implements OptimizationMethod {
+public class BatchGradientDescent extends AbstractOptimizationMethod {
     private final HashMap<String, RealVector> scalarGrads = new HashMap<>();
     private final HashMap<String, List<RealVector>> vectorGrads = new HashMap<>();
 
@@ -75,7 +75,8 @@ public class BatchGradientDescent implements OptimizationMethod {
         }
     }
 
-    public double minimize(LearningModel model, LearningData learningData) {
+    public double minimize(LearningModel model, LearningData learningData, LearningData validData) {
+        //TODO: add validating
         ObjectiveFunction objFunc = model.getObjectiveFunction();
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         assignGrads(model);
