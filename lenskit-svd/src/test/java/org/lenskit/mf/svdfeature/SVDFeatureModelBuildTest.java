@@ -1,15 +1,15 @@
 package org.lenskit.mf.svdfeature;
 
 import org.junit.Test;
-import org.lenskit.data.dao.file.CollectionEntitySource;
-import org.lenskit.data.entities.Entity;
+
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.EntityCollectionDAO;
+import org.lenskit.data.entities.*;
 import org.lenskit.featurizer.*;
 import org.lenskit.solver.*;
 
 import java.io.*;
 import java.util.*;
-
-import static org.junit.Assert.assertThat;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -17,25 +17,6 @@ import static org.junit.Assert.assertThat;
 public class SVDFeatureModelBuildTest {
 
     @Test
-    public void testModelBuildFromInstanceDAO() throws IOException {
-        String insFile = "/Users/qian/Study/yahoointern/MFTree/data/trainIns.txt";
-        String validFile = "/Users/qian/Study/yahoointern/MFTree/data/validIns.txt";
-        String modelFile = "/Users/qian/Study/yahoointern/MFTree/data/svdModel.txt";
-
-        int biasSize = 10000;
-        int factSize = 10000;
-        int factDim = 20;
-
-        ObjectiveFunction loss = new LogisticLoss();
-        OptimizationMethod method = new StochasticGradientDescent(50, 0.0, 0.0001, 1.0);
-        SVDFeatureInstanceDAO insDao = new SVDFeatureInstanceDAO(new File(insFile), " ");
-        SVDFeatureInstanceDAO validDao = new SVDFeatureInstanceDAO(new File(validFile), " ");
-
-        SVDFeatureModel model = new SVDFeatureModel(biasSize, factSize, factDim, loss);
-        method.minimize(model, insDao, validDao);
-        model.dump(new File(modelFile));
-    }
-
     public void testModelBuildFromEntityDAO() throws IOException {
 
         int biasSize = 1;
@@ -43,25 +24,37 @@ public class SVDFeatureModelBuildTest {
         int factDim = 5;
         ObjectiveFunction loss = new L2NormLoss();
         OptimizationMethod method = new StochasticGradientDescent();
-        List<Entity> entityList = new ArrayList<>(5);
-        //TODO: add five entities into the list
-
-        CollectionEntitySource entitySource = new CollectionEntitySource(entityList);
+        EntityType entityType = CommonTypes.RATING;
+        List<Entity> entityList = new ArrayList<>(10);
+        Random random = new Random();
+        for (int i=0; i<20; i++) {
+            EntityBuilder entityBuilder = new BasicEntityBuilder(entityType);
+            entityBuilder.setAttribute(CommonAttributes.USER_ID, random.nextLong() % 5);
+            entityBuilder.setAttribute(CommonAttributes.ITEM_ID, random.nextLong() % 10);
+            entityBuilder.setAttribute(CommonAttributes.RATING, (double)(random.nextInt(5) + 1));
+        }
+        DataAccessObject dao = EntityCollectionDAO.create(entityList);
         List<FeatureExtractor> featureExtractors = new ArrayList<>();
-        featureExtractors.add(new ConstantOneExtractor("biases", "globalBias", "globalBiasIdx"));
-        featureExtractors.add(new StringToIdxExtractor("biases", "userId", "userBiasIdx", " "));
-        featureExtractors.add(new StringToIdxExtractor("biases", "movieId", "itemBiasIdx", " "));
-        featureExtractors.add(new StringToIdxExtractor("factors", "userId", "userFactIdx", " "));
-        featureExtractors.add(new StringToIdxExtractor("factors", "movieId", "itemFactIdx", " "));
+        featureExtractors.add(new ConstantOneExtractor(SVDFeatureIndexName.BIASES.get(),
+                                                       "globalBias", "globalBiasIdx"));
+        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.BIASES.get(),
+                                                     "userId", "userBiasIdx"));
+        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.BIASES.get(),
+                                                     "movieId", "itemBiasIdx"));
+        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.FACTORS.get(),
+                                                     "userId", "userFactIdx"));
+        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.FACTORS.get(),
+                                                     "movieId", "itemFactIdx"));
         String[] bFeas = {"globalBiasIdx", "userBiasIdx", "itemBiasIdx"};
         String[] uFeas = {"userFactIdx"};
         String[] iFeas = {"itemFactIdx"};
-        SVDFeatureModelBuilder modelBuilder = new SVDFeatureModelBuilder(entitySource, featureExtractors,
+        SVDFeatureModelBuilder modelBuilder = new SVDFeatureModelBuilder(entityType, dao, null, featureExtractors,
                                                                          new HashSet<>(Arrays.asList(bFeas)),
                                                                          new HashSet<>(Arrays.asList(uFeas)),
                                                                          new HashSet<>(Arrays.asList(iFeas)),
                                                                          biasSize, factSize, factDim,
-                                                                         "rating", "weight", loss, method);
+                                                                         CommonAttributes.RATING.getName(),
+                                                                         "weight", loss, method);
         modelBuilder.get();
     }
 }

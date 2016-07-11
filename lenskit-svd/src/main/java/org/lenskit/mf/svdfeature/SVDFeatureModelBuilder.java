@@ -1,6 +1,7 @@
 package org.lenskit.mf.svdfeature;
 
-import org.lenskit.data.dao.file.EntitySource;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.featurizer.FeatureExtractor;
 import org.lenskit.solver.LearningData;
 import org.lenskit.solver.ObjectiveFunction;
@@ -18,20 +19,14 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
     final private SVDFeatureModel model;
     final private OptimizationMethod method;
     final private LearningData learningData;
-
-    public SVDFeatureModelBuilder(int biasSize, int factSize, int factDim,
-                                  SVDFeatureInstanceDAO dao,
-                                  ObjectiveFunction loss,
-                                  OptimizationMethod method) {
-        this.model = new SVDFeatureModel(biasSize, factSize, factDim, loss);
-        this.method = method;
-        this.learningData = dao;
-    }
+    final private LearningData validData;
 
     //biasFeas, ufactFeas and ifactFeas should be from the configuration
     //especially, label and weight are hard-coded attribute name for now
     @Inject
-    public SVDFeatureModelBuilder(EntitySource entitySource,
+    public SVDFeatureModelBuilder(EntityType entityType,
+                                  DataAccessObject learnDao,
+                                  DataAccessObject validDao,
                                   List<FeatureExtractor> featureExtractors,
                                   Set<String> biasFeas,
                                   Set<String> ufactFeas,
@@ -45,12 +40,16 @@ public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
         this.method = method;
         this.model = new SVDFeatureModel(biasFeas, ufactFeas, ifactFeas, labelName, weightName,
                                          featureExtractors, biasSize, factSize, factDim, loss);
-        this.learningData = new SVDFeatureEntityData(entitySource, model);
-        //TODO: add validating support
+        this.learningData = new SVDFeatureEntityData(entityType, learnDao, model);
+        if (validDao != null) {
+            this.validData = new SVDFeatureEntityData(entityType, validDao, model);
+        } else {
+            this.validData = null;
+        }
     }
 
     public SVDFeatureModel get() {
-        method.minimize(model, learningData, null);
+        method.minimize(model, learningData, validData);
         return model;
     }
 }

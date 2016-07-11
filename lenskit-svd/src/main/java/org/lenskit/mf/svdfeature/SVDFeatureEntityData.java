@@ -1,31 +1,33 @@
 package org.lenskit.mf.svdfeature;
 
-import org.lenskit.data.dao.file.EntitySource;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.solver.LearningData;
 import org.lenskit.solver.LearningInstance;
 import org.lenskit.util.io.ObjectStream;
 
-import java.io.IOException;
-
 public class SVDFeatureEntityData implements LearningData {
 
     private final SVDFeatureModel model;
-    private final EntitySource entitySource;
-    private ObjectStream<Entity> entities = null;
+    private final DataAccessObject dao;
+    private final EntityType entityType;
+    private ObjectStream<Entity> entityStream = null;
 
-    public SVDFeatureEntityData(EntitySource entitySource,
+    public SVDFeatureEntityData(EntityType entityType, DataAccessObject dao,
                                 SVDFeatureModel model) {
         this.model = model;
-        this.entitySource = entitySource;
+        this.entityType = entityType;
+        this.dao = dao;
     }
 
     public LearningInstance getLearningInstance() {
-        if (entities == null) {
+        if (entityStream == null) {
             return null;
         }
-        Entity entity = entities.readObject();
+        Entity entity = entityStream.readObject();
         if (entity == null) {
+            entityStream.close();
             return null;
         } else {
             return model.featurize(entity, true);
@@ -33,10 +35,6 @@ public class SVDFeatureEntityData implements LearningData {
     }
 
     public void startNewIteration() {
-        try {
-            entities = entitySource.openStream();
-        } catch (IOException e) {
-            entities = null;
-        }
+        entityStream = dao.streamEntities(entityType);
     }
 }

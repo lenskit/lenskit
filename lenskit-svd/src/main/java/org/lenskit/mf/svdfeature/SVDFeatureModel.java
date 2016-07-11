@@ -32,8 +32,6 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
     private final int factDim;
 
 
-    //for training with featurized SVDFeatureInstance only.
-    //  the built model is not usable because indexSpace is not initialized
     public SVDFeatureModel(int biasSize, int factSize, int factDim,
                            ObjectiveFunction objectiveFunction) {
         super();

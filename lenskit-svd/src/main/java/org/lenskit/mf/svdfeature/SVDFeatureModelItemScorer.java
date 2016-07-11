@@ -5,16 +5,12 @@ import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.entities.BasicEntityBuilder;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
+import org.lenskit.data.entities.*;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,11 +32,9 @@ public class SVDFeatureModelItemScorer extends AbstractItemScorer {
     public List<SVDFeatureInstance> buildSVDFeatureInstance(long user, Collection<Long> items) {
         List<SVDFeatureInstance> instances = new ArrayList<>(items.size());
         for (Long item : items) {
-            BasicEntityBuilder builder = new BasicEntityBuilder(EntityType.forName("userItemPair"));
-            builder.setAttribute(TypedName.create("userId", String.class),
-                                 Long.valueOf(user).toString());
-            builder.setAttribute(TypedName.create("itemId", String.class),
-                                 item.toString());
+            BasicEntityBuilder builder = new BasicEntityBuilder(CommonTypes.RATING);
+            builder.setAttribute(CommonAttributes.USER_ID, user);
+            builder.setAttribute(CommonAttributes.ITEM_ID, item);
             instances.add((SVDFeatureInstance)(model.featurize(builder.build(), false)));
         }
         return instances;
