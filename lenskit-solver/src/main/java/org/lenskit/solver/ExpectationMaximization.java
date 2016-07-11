@@ -17,7 +17,6 @@ public class ExpectationMaximization extends AbstractOptimizationMethod {
     public double minimize(LearningModel learningModel, LearningData learningData, LearningData validData) {
         //check the type of learningModel
         LatentLearningModel model = (LatentLearningModel)learningModel;
-        ObjectiveFunction objFunc = learningModel.getObjectiveFunction();
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         double objVal = 0;
         while (termCrit.keepIterate()) {

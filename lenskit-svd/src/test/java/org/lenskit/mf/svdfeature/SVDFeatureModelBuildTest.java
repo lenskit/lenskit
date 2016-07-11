@@ -18,9 +18,9 @@ public class SVDFeatureModelBuildTest {
 
     @Test
     public void testModelBuildFromInstanceDAO() throws IOException {
-        String insFile = "";
-        String validFile = "";
-        String modelFile = "";
+        String insFile = "/Users/qian/Study/yahoointern/MFTree/data/trainIns.txt";
+        String validFile = "/Users/qian/Study/yahoointern/MFTree/data/validIns.txt";
+        String modelFile = "/Users/qian/Study/yahoointern/MFTree/data/svdModel.txt";
 
         int biasSize = 10000;
         int factSize = 10000;
