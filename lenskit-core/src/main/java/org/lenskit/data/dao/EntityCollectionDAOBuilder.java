@@ -26,10 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import org.lenskit.data.entities.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Builder for entity collection DAOs.  These builders are *destructive*: their {@link #build()} method cannot be called
@@ -37,6 +34,7 @@ import java.util.Set;
  */
 @NotThreadSafe
 public class EntityCollectionDAOBuilder {
+    private List<TypedName<Long>> defaultIndexes = new ArrayList<>();
     private Map<EntityType, EntityCollectionBuilder> entitySets = new HashMap<>();
     // remember the last builder used as a fast path
     private EntityCollectionBuilder lastBuilder = null;
@@ -53,6 +51,17 @@ public class EntityCollectionDAOBuilder {
         EntityCollectionBuilder builder = findBuilder(et);
         builder.addIndex(attr);
         return this;
+    }
+
+    /**
+     * Add an attribute to index by default on all entities.
+     * @param attr The attribute to index.
+     */
+    public void addDefaultIndex(TypedName<Long> attr) {
+        defaultIndexes.add(attr);
+        for (EntityCollectionBuilder ecb: entitySets.values()) {
+            ecb.addIndex(attr);
+        }
     }
 
     /**
@@ -83,6 +92,9 @@ public class EntityCollectionDAOBuilder {
             last = type;
             if (lastBuilder == null) {
                 lastBuilder = new EntityCollectionBuilder(type);
+                for (TypedName<?> name: defaultIndexes) {
+                    lastBuilder.addIndex(name);
+                }
                 entitySets.put(type, lastBuilder);
             }
         }

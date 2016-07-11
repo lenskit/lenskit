@@ -1,0 +1,17 @@
+apply plugin: 'java'
+
+repositories {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        mavenCentral()
+    }
+}
+
+dependencies {
+    runtime "org.lenskit:lenskit-cli:$project.lenskitVersion"
+}

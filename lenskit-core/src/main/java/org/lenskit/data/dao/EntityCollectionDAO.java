@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.dao;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -141,8 +142,13 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
             return stream;
         }
 
-        // we must sort
-        List<E> list = ObjectStreams.makeList(stream);
+        // we must sort; need to make list ourselves since makeList lists are immutable
+        ArrayList<E> list;
+        try {
+            list = Lists.newArrayList(stream);
+        } finally {
+            stream.close();
+        }
         Ordering<Entity> ord = null;
         for (SortKey k: sort) {
             if (ord == null) {

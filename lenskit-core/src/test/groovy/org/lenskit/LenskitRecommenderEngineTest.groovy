@@ -38,9 +38,10 @@ import org.lenskit.api.ItemScorer
 import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.*
 import org.lenskit.basic.*
+import org.lenskit.data.dao.DataAccessObject
+import org.lenskit.data.dao.EntityCollectionDAO
 import org.lenskit.data.dao.EventCollectionDAO
-import org.lenskit.data.dao.EventDAO
-import org.lenskit.data.events.Event
+import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.RatingMatrix
 import org.lenskit.inject.Shareable
 
@@ -56,19 +57,22 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineTest {
-    private EventDAO dao
+    private StaticDataSource source
+    private DataAccessObject dao
 
     @Before
     public void setup() {
-        dao = new EventCollectionDAO(Collections.<Event>emptyList())
+        source = new StaticDataSource()
+        source.addSource(Collections.emptyList())
+        dao = source.get()
     }
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender(true)
+        LenskitConfiguration config = configureBasicRecommender()
 
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             verifyBasicRecommender(rec)
         } finally {
@@ -77,10 +81,10 @@ public class LenskitRecommenderEngineTest {
     }
 
     @Test
-    public void testGetComponent() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender(true)
+    public void testGetComponentFromEngine() throws RecommenderBuildException {
+        LenskitConfiguration config = configureBasicRecommender()
 
-        def engine = LenskitRecommenderEngine.build(config)
+        def engine = LenskitRecommenderEngine.build(config, dao)
         assertThat(engine.getComponent(ItemScorer.class),
                    notNullValue());
         assertThat(engine.getComponent(ItemScorer.class),
@@ -89,9 +93,9 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testBasicNoEngine() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender(true)
+        LenskitConfiguration config = configureBasicRecommender()
 
-        def rec = LenskitRecommender.build(config)
+        def rec = LenskitRecommender.build(config, dao)
         try {
             verifyBasicRecommender(rec)
         } finally {
@@ -99,24 +103,12 @@ public class LenskitRecommenderEngineTest {
         }
     }
 
-    private LenskitConfiguration configureBasicRecommender(boolean includeData) {
+    private static LenskitConfiguration configureBasicRecommender() {
         LenskitConfiguration config = new LenskitConfiguration()
         config.bind(ItemScorer.class)
               .to(ConstantItemScorer.class)
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class)
-        if (includeData) {
-            makeDAOConfig(config)
-        }
-        return config
-    }
-
-    private LenskitConfiguration makeDAOConfig(LenskitConfiguration config) {
-        if (config == null) {
-            config = new LenskitConfiguration()
-        }
-        config.bind(EventDAO.class)
-              .to(dao)
         return config
     }
 
@@ -134,7 +126,7 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testAddComponentInstance() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender(false)
+        LenskitConfiguration config = configureBasicRecommender()
         config.addComponent(dao)
 
         def engine = LenskitRecommenderEngine.build(config)
@@ -150,10 +142,9 @@ public class LenskitRecommenderEngineTest {
     public void testAddComponentClass() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
         config.addComponent(ConstantItemScorer.class)
-        makeDAOConfig(config)
 
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             verifyBasicRecommender(rec)
         } finally {
@@ -164,13 +155,12 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testArbitraryRoot() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.bind(EventDAO.class).to(dao)
         config.bind(VectorNormalizer.class)
               .to(MeanVarianceNormalizer.class)
         config.addRoot(VectorNormalizer.class)
 
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.get(VectorNormalizer.class),
                        instanceOf(MeanVarianceNormalizer.class))
@@ -182,19 +172,18 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testSeparatePredictor() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.bind(EventDAO.class).to(dao)
         config.bind(UserMeanBaseline.class, ItemScorer.class)
               .to(GlobalMeanRatingItemScorer.class)
         config.bind(ItemScorer.class)
               .to(UserMeanItemScorer.class)
 
-        def engine = LenskitRecommenderEngine.build(config)
+        def engine = LenskitRecommenderEngine.build(config, dao)
 
         LenskitRecommender rec1 = null
         LenskitRecommender rec2 = null
         try {
-            rec1 = engine.createRecommender()
-            rec2 = engine.createRecommender()
+            rec1 = engine.createRecommender(dao)
+            rec2 = engine.createRecommender(dao)
 
             assertThat(rec1.getItemScorer(),
                        instanceOf(UserMeanItemScorer.class))
@@ -222,12 +211,10 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testParameter() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        // FIXME This DAO binding should not be required
-        config.bind(EventDAO.class).to(dao)
         config.set(StoppingThreshold.class).to(0.042)
         config.addRoot(ThresholdStoppingCondition.class)
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
-        LenskitRecommender rec = engine.createRecommender()
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao)
+        LenskitRecommender rec = engine.createRecommender(dao)
         try {
             ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class)
             assertThat(stop, notNullValue())
@@ -254,14 +241,34 @@ public class LenskitRecommenderEngineTest {
      * Test that we can configure data separately.
      */
     @Test
+    @SuppressWarnings(["deprecation", "GrDeprecatedAPIUsage"])
     public void testSeparateBuild() throws RecommenderBuildException {
         LenskitRecommenderEngineBuilder reb = LenskitRecommenderEngine.newBuilder()
-        reb.addConfiguration(configureBasicRecommender(false))
+        reb.addConfiguration(configureBasicRecommender())
         LenskitConfiguration daoConfig = new LenskitConfiguration()
-        daoConfig.bind(EventDAO.class).to(dao)
+        daoConfig.addComponent(dao)
         reb.addConfiguration(daoConfig)
         LenskitRecommenderEngine engine = reb.build()
         LenskitRecommender rec = engine.createRecommender()
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
+    }
+
+    /**
+     * Test that we can configure data separately and remove it
+     */
+    @Test
+    public void testSeparateRemovableBuild() throws RecommenderBuildException {
+        LenskitRecommenderEngineBuilder reb = LenskitRecommenderEngine.newBuilder()
+        reb.addConfiguration(configureBasicRecommender())
+        LenskitConfiguration daoConfig = new LenskitConfiguration()
+        daoConfig.addComponent(dao)
+        reb.addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+        LenskitRecommenderEngine engine = reb.build()
+        LenskitRecommender rec = engine.createRecommender(dao)
         try {
             verifyBasicRecommender(rec)
         } finally {
@@ -274,13 +281,11 @@ public class LenskitRecommenderEngineTest {
      */
     @Test
     public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
-        LenskitConfiguration daoConfig = makeDAOConfig(null)
+        LenskitConfiguration config = configureBasicRecommender()
 
         def engine = LenskitRecommenderEngine.newBuilder()
                                              .addConfiguration(config)
-                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                             .build()
+                                             .build(dao)
 
         def g = engine.graph
         // make sure we have no record of an instance dao
@@ -291,13 +296,40 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
-        LenskitConfiguration daoConfig = makeDAOConfig(null)
+        LenskitConfiguration config = configureBasicRecommender()
 
         def engine = LenskitRecommenderEngine.newBuilder()
                                              .addConfiguration(config)
-                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                             .build()
+                                             .build(dao)
+
+        // engine.setSymbolMapping(null)
+        File tfile = File.createTempFile("lenskit", "engine")
+        try {
+            engine.write(tfile)
+            def e2 = LenskitRecommenderEngine.newLoader()
+                                             .load(tfile)
+            // e2.setSymbolMapping(mapping)
+            def rec = e2.createRecommender(dao)
+            try {
+                verifyBasicRecommender(rec)
+            } finally {
+                rec.close()
+            }
+        } finally {
+            tfile.delete()
+        }
+    }
+
+    @Test
+    public void testSerializeAddConfig() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        LenskitConfiguration config = configureBasicRecommender()
+
+        def engine = LenskitRecommenderEngine.newBuilder()
+                                             .addConfiguration(config)
+                                             .build(dao)
+
+        def daoConfig = new LenskitConfiguration()
+        daoConfig.addComponent(dao)
 
         // engine.setSymbolMapping(null)
         File tfile = File.createTempFile("lenskit", "engine")
@@ -320,23 +352,20 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testSerializeCompressed() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
-        LenskitConfiguration daoConfig = makeDAOConfig(null)
+        LenskitConfiguration config = configureBasicRecommender()
 
         def engine = LenskitRecommenderEngine.newBuilder()
                                              .addConfiguration(config)
-                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                             .build()
+                                             .build(dao)
 
         // engine.setSymbolMapping(null)
         File tfile = File.createTempFile("lenskit", "engine.gz")
         try {
             engine.write(tfile, CompressionMode.GZIP)
             def e2 = LenskitRecommenderEngine.newLoader()
-                                             .addConfiguration(daoConfig)
                                              .load(tfile)
             // e2.setSymbolMapping(mapping)
-            def rec = e2.createRecommender()
+            def rec = e2.createRecommender(dao)
             try {
                 verifyBasicRecommender(rec)
             } finally {
@@ -349,14 +378,15 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testDeserializeValidate() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
-        LenskitConfiguration daoConfig = makeDAOConfig(null)
+        LenskitConfiguration config = configureBasicRecommender()
+        LenskitConfiguration other = new LenskitConfiguration()
+        other.bind(ItemRecommender).to(TopNItemRecommender)
 
         LenskitRecommenderEngine engine =
                 LenskitRecommenderEngine.newBuilder()
                                         .addConfiguration(config)
-                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                        .build()
+                                        .addConfiguration(config, ModelDisposition.EXCLUDED)
+                                        .build(dao)
 
         // engine.setSymbolMapping(null)
         File tfile = File.createTempFile("lenskit", "engine")
@@ -373,14 +403,12 @@ public class LenskitRecommenderEngineTest {
     @Test
     @Ignore("broken for unknown reasons")
     public void testDeserializeDeferredValidate() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(false)
-        LenskitConfiguration daoConfig = makeDAOConfig(null)
+        LenskitConfiguration config = configureBasicRecommender()
 
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()
                                     .addConfiguration(config)
-                                    .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                    .build()
+                                    .build(dao)
 
         // engine.setSymbolMapping(null)
         File tfile = File.createTempFile("lenskit", "engine")
@@ -402,8 +430,6 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testContextDep() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.bind(EventDAO.class)
-              .to(dao)
         config.bind(ItemScorer.class)
               .to(FallbackItemScorer.class)
         config.bind(PrimaryScorer.class, ItemScorer.class)
@@ -421,8 +447,8 @@ public class LenskitRecommenderEngineTest {
               .bind(BaselineScorer.class, ItemScorer.class)
               .to(new ConstantItemScorer(3.0))
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
-        LenskitRecommender rec = engine.createRecommender()
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao)
+        LenskitRecommender rec = engine.createRecommender(dao)
         try {
             ItemScorer scorer = rec.getItemScorer()
             assertThat(scorer, notNullValue())
@@ -444,10 +470,9 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testSubclassedDAO() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.bind(EventDAO.class).to(dao)
         config.addRoot(SubclassedDAODepComponent.class)
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
-        LenskitRecommender rec = engine.createRecommender()
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao)
+        LenskitRecommender rec = engine.createRecommender(dao)
         try {
             SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class)
             assertThat(dep, notNullValue())
@@ -458,10 +483,10 @@ public class LenskitRecommenderEngineTest {
     }
 
     public static class SubclassedDAODepComponent {
-        private final EventCollectionDAO dao
+        private final EntityCollectionDAO dao
 
         @Inject
-        public SubclassedDAODepComponent(EventCollectionDAO dao) {
+        public SubclassedDAODepComponent(EntityCollectionDAO dao) {
             this.dao = dao
         }
     }
@@ -473,7 +498,6 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testAnchoredRoot() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.bind(EventDAO.class).to(dao)
         config.bind(ItemScorer.class)
               .to(ConstantItemScorer.class)
         config.set(ConstantItemScorer.Value.class)
@@ -483,7 +507,7 @@ public class LenskitRecommenderEngineTest {
               .to(FallbackItemScorer.class)
         config.bind(BaselineScorer.class, ItemScorer.class)
               .to(GlobalMeanRatingItemScorer.class)
-        LenskitRecommender rec = LenskitRecommender.build(config)
+        LenskitRecommender rec = LenskitRecommender.build(config, dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(FallbackItemScorer.class))
             def rp = (SimpleRatingPredictor) rec.getRatingPredictor()
@@ -503,32 +527,12 @@ public class LenskitRecommenderEngineTest {
     @Test
     @Ignore("broken for unknown reasons")
     public void testEngineChecksInstantiable() {
-        def config = configureBasicRecommender(false)
-        def daoConfig = new LenskitConfiguration()
-        makeDAOConfig(daoConfig)
+        def config = configureBasicRecommender()
         def engine = LenskitRecommenderEngine.newBuilder()
                                              .addConfiguration(config)
-                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                             .build()
+                                             .build(dao)
         shouldFail(IllegalStateException) {
-            engine.createRecommender()
-        }
-    }
-
-    @Test
-    public void testEngineRewriting() {
-        def config = configureBasicRecommender(false)
-        def daoConfig = new LenskitConfiguration()
-        makeDAOConfig(daoConfig)
-        def engine = LenskitRecommenderEngine.newBuilder()
-                                             .addConfiguration(config)
-                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                             .build()
-        def rec = engine.createRecommender(daoConfig)
-        try {
-            verifyBasicRecommender(rec)
-        } finally {
-            rec.close()
+            engine.createRecommender(dao)
         }
     }
 
@@ -536,20 +540,18 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testShareableProvider() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.bind(EventDAO.class)
-              .to(dao)
         config.addRoot(RootComp.class)
         config.bind(ByteBuffer.class)
               .toProvider(BufferProvider.class)
         config.bind(InputStream.class)
               .toProvider(StreamProvider.class)
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao)
 
         LenskitRecommender rec1 = null
         LenskitRecommender rec2 = null
         try {
-            rec1 = engine.createRecommender()
-            rec2 = engine.createRecommender()
+            rec1 = engine.createRecommender(dao)
+            rec2 = engine.createRecommender(dao)
 
             assertThat(rec2, not(sameInstance(rec1)))
 
@@ -604,8 +606,7 @@ public class LenskitRecommenderEngineTest {
     public void testRemoveShareableSnapshot() {
         def config = new LenskitConfiguration();
         config.bind(ItemScorer).to(LeastSquaresItemScorer)
-        config.bind(EventDAO).to(dao)
-        LenskitRecommender rec = LenskitRecommender.build(config)
+        LenskitRecommender rec = LenskitRecommender.build(config, dao)
         try {
             assertThat rec.getItemScorer(), instanceOf(LeastSquaresItemScorer)
             assertThat rec.get(RatingMatrix), nullValue()

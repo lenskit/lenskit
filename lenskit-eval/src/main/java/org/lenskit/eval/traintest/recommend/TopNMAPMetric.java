@@ -91,7 +91,7 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
     @Nullable
     @Override
     public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
-        return new Context(dataSet.getTestData().getItemDAO().getItemIds(), recommender);
+        return new Context(dataSet.getAllItems(), recommender);
     }
 
     @Nonnull
@@ -106,7 +106,7 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
         LongSet good = goodItems.selectItems(context.universe, context.recommender, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
-            return new UserResult(0, false);
+            return new UserResult(0);
         }
 
         if (recs == null || recs.isEmpty()) {
@@ -127,7 +127,9 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
             }
         }
 
-        UserResult result = new UserResult(sum / good.size(), ngood > 0);
+        double aveP = ngood > 0 ? sum / ngood : 0;
+
+        UserResult result = new UserResult(aveP);
         context.addUser(result);
         return result.withSuffix(suffix);
     }
@@ -135,11 +137,9 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
     public static class UserResult extends TypedMetricResult {
         @MetricColumn("AvgPrec")
         public final double avgPrecision;
-        private final boolean isGood;
 
-        public UserResult(double aveP, boolean good) {
+        public UserResult(double aveP) {
             avgPrecision = aveP;
-            isGood = good;
         }
     }
 
@@ -151,15 +151,8 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
         @MetricColumn("MAP")
         public final double map;
 
-        /**
-         * The MAP over those users for whom a good item could be recommended.
-         */
-        @MetricColumn("MAP.OfGood")
-        public final double goodMAP;
-
         public AggregateResult(Context accum) {
             this.map = accum.allMean.getMean();
-            this.goodMAP = accum.goodMean.getMean();
         }
     }
 
@@ -167,7 +160,6 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
         private final LongSet universe;
         private final Recommender recommender;
         private final MeanAccumulator allMean = new MeanAccumulator();
-        private final MeanAccumulator goodMean = new MeanAccumulator();
 
         Context(LongSet universe, Recommender recommender) {
             this.universe = universe;
@@ -176,9 +168,6 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
 
         void addUser(UserResult ur) {
             allMean.add(ur.avgPrecision);
-            if (ur.isGood) {
-                goodMean.add(ur.avgPrecision);
-            }
         }
     }
 }

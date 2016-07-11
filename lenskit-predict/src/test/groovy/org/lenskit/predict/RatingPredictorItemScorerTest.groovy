@@ -20,19 +20,18 @@
  */
 package org.lenskit.predict
 
-import org.lenskit.basic.RescoringItemRecommender
-import org.lenskit.data.dao.EventCollectionDAO
-import org.lenskit.data.dao.EventDAO
-import org.lenskit.config.ConfigHelpers
-import org.lenskit.data.ratings.Rating
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.api.RatingPredictor
 import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.basic.RescoringItemRecommender
 import org.lenskit.basic.SimpleRatingPredictor
 import org.lenskit.basic.TopNItemRecommender
+import org.lenskit.config.ConfigHelpers
+import org.lenskit.data.dao.file.StaticDataSource
+import org.lenskit.data.ratings.Rating
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -41,15 +40,15 @@ import static org.junit.Assert.fail
 class RatingPredictorItemScorerTest {
     @Test
     void testSophisticatedConfig() {
-        def dao = EventCollectionDAO.create([
+        def source = StaticDataSource.fromList([
                 Rating.create(1, 11, 3.0),
                 Rating.create(1, 12, 5.0),
                 Rating.create(2, 12, 3.5),
                 Rating.create(2, 11, 3.0)
         ])
+        def dao = source.get()
         def config = ConfigHelpers.load {
             domain minimum: 1.0, maximum: 5.0, precision: 1.0
-            bind EventDAO to dao
             bind ItemScorer to ItemMeanRatingItemScorer
             bind RatingPredictor to QuantizedRatingPredictor
             bind ItemRecommender to RescoringItemRecommender
@@ -61,7 +60,7 @@ class RatingPredictorItemScorerTest {
                 bind RatingPredictor to SimpleRatingPredictor
             }
         }
-        def rec = LenskitRecommender.build config
+        def rec = LenskitRecommender.build config, dao
         try {
             assertThat(rec.itemRecommender,
                        instanceOf(RescoringItemRecommender))

@@ -38,8 +38,6 @@ import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.traintest.AlgorithmInstance;
-import org.lenskit.specs.eval.AlgorithmSpec;
-import org.lenskit.specs.eval.SimulateSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.table.TableLayout;
@@ -64,21 +62,18 @@ import static java.lang.Math.sqrt;
 
 public class TemporalEvaluator {
     private static final Logger logger = LoggerFactory.getLogger(TemporalEvaluator.class);
-    private final SimulateSpec spec;
     @Nonnull
     private Random rng;
     private AlgorithmInstance algorithm;
     private BinaryRatingDAO dataSource;
-
-    public TemporalEvaluator(SimulateSpec spec) {
-        this.spec = spec;
-        rng = new Random();
-    }
+    private File outputFile;
+    private File extendedOutputFile;
+    private long rebuildPeriod;
+    private int listSize;
 
     public TemporalEvaluator() {
-        spec = new SimulateSpec();
-        spec.setRebuildPeriod(24 * 3600);
-        spec.setListSize(10);
+        setRebuildPeriod(24, TimeUnit.HOURS);
+        setListSize(10);
         rng = new Random();
     }
 
@@ -127,8 +122,8 @@ public class TemporalEvaluator {
      * @param file The file set as the output of the command
      * @return Itself for  method chaining
      */
-    public TemporalEvaluator setPredictOutputFile(File file) {
-        spec.setOutputFile(file.toPath());
+    public TemporalEvaluator setOutputFile(File file) {
+        outputFile = file;
         return this;
     }
 
@@ -138,7 +133,7 @@ public class TemporalEvaluator {
      */
     @Nullable
     public Path getExtendedOutputFile() {
-        return spec.getExtendedOutputFile();
+        return extendedOutputFile.toPath();
     }
 
     /**
@@ -147,6 +142,7 @@ public class TemporalEvaluator {
      * @return The evaluator (for chaining).
      */
     public TemporalEvaluator setExtendedOutputFile(@Nullable File file) {
+        extendedOutputFile = file;
         return setExtendedOutputFile(file != null ? file.toPath() : null);
     }
 
@@ -156,7 +152,7 @@ public class TemporalEvaluator {
      * @return The evaluator (for chaining).
      */
     public TemporalEvaluator setExtendedOutputFile(@Nullable Path file) {
-        spec.setExtendedOutputFile(file);
+        extendedOutputFile = file.toFile();
         return this;
     }
 
@@ -165,9 +161,8 @@ public class TemporalEvaluator {
      * @param unit Unit of time set
      * @return Itself for  method chaining
      */
-    public TemporalEvaluator setRebuildPeriod(Long time, TimeUnit unit) {
-        spec.setRebuildPeriod(unit.toSeconds(time));
-        return this;
+    public TemporalEvaluator setRebuildPeriod(long time, TimeUnit unit) {
+        return setRebuildPeriod(unit.toSeconds(time));
     }
 
     /**
@@ -175,7 +170,7 @@ public class TemporalEvaluator {
      * @return Itself for  method chaining
      */
     public TemporalEvaluator setRebuildPeriod(long seconds) {
-        spec.setRebuildPeriod(seconds);
+        rebuildPeriod = seconds;
         return this;
     }
 
@@ -186,45 +181,35 @@ public class TemporalEvaluator {
      * @return returns itself
      */
     public TemporalEvaluator setListSize(int lSize) {
-        spec.setListSize(lSize);
+        listSize = lSize;
         return this;
     }
 
     /**
      * @return Returns prediction output file
      */
-    public Path getPredictOutputFile() {
-        return spec.getOutputFile();
+    public Path getOutputFile() {
+        return outputFile.toPath();
     }
 
     /**
      * @return Returns rebuild period
      */
     public long getRebuildPeriod() {
-        return spec.getRebuildPeriod();
+        return rebuildPeriod;
     }
 
     /**
      * @return size of recommendation list
      */
     public int getListSize() {
-        return spec.getListSize();
+        return listSize;
     }
 
     private void loadInputs() throws IOException {
-        Path dataFile = spec.getInputFile();
-        Preconditions.checkState(dataSource != null || dataFile != null, "no data file specified");
-        AlgorithmSpec algoSpec = spec.getAlgorithm();
-        Preconditions.checkState(algorithm != null || algoSpec != null,
+        Preconditions.checkState(dataSource != null, "no input data specified");
+        Preconditions.checkState(algorithm != null,
                                  "no algorithm specified");
-
-        if (dataSource == null) {
-            dataSource = BinaryRatingDAO.open(dataFile.toFile());
-        }
-        if (algorithm == null) {
-            // FIXME Support multiple algorithms
-            algorithm = AlgorithmInstance.fromSpec(spec.getAlgorithm(), null).get(0);
-        }
     }
 
     /**
@@ -267,7 +252,7 @@ public class TemporalEvaluator {
                     config.addComponent(limitedDao);
 
                     //rebuild recommender system if its older then rebuild period set or null
-                    if ((r.getTimestamp() - buildTime >= spec.getRebuildPeriod()) || lre == null) {
+                    if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
                         buildTime = r.getTimestamp();
                         buildsCount++;
 
@@ -369,10 +354,10 @@ public class TemporalEvaluator {
         }
 
         // Add a random set of decoy items
-        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), spec.getListSize() - 1, excludes, rng));
+        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), listSize - 1, excludes, rng));
 
         // get list of recommendations
-        List<Long> recs = irec.recommend(rating.getUserId(), spec.getListSize(), candidates, null);
+        List<Long> recs = irec.recommend(rating.getUserId(), listSize, candidates, null);
         json.put("recommendations", recs);
         rank = recs.indexOf(rating.getItemId());
         if (rank >= 0) {
@@ -386,11 +371,6 @@ public class TemporalEvaluator {
 
     @Nullable
     private TableWriter openOutput() throws IOException {
-        Path path = spec.getOutputFile();
-        if (path == null) {
-            return null;
-        }
-
         TableLayoutBuilder tlb = new TableLayoutBuilder();
 
         tlb.addColumn("User")
@@ -405,19 +385,18 @@ public class TemporalEvaluator {
 
         TableLayout layout = tlb.build();
 
-        return CSVWriter.open(path.toFile(), layout, CompressionMode.AUTO);
+        return CSVWriter.open(outputFile, layout, CompressionMode.AUTO);
     }
 
     @Nullable
     private SequenceWriter openExtendedOutput() throws IOException {
-        Path path = spec.getExtendedOutputFile();
-        if (path == null) {
+        if (extendedOutputFile == null) {
             return null;
         }
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter w = mapper.writer().withRootValueSeparator(System.lineSeparator());
-        return w.writeValues(path.toFile());
+        return w.writeValues(extendedOutputFile);
     }
 }
 

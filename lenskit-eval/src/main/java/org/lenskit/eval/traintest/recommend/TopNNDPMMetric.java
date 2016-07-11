@@ -31,7 +31,6 @@ import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
-import org.lenskit.specs.AbstractSpec;
 import org.lenskit.util.math.Scalars;
 
 import javax.annotation.Nonnull;
@@ -168,7 +167,7 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<MeanAccumulator> {
      * Specification for configuring nDPM metrics.
      */
     @JsonIgnoreProperties("type")
-    public static class Spec extends AbstractSpec {
+    public static class Spec {
 
         public String getColumnName() {
             return DEFAULT_COLUMN;

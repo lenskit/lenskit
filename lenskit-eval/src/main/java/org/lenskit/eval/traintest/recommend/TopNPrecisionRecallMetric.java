@@ -106,7 +106,8 @@ public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionR
             context.addUser(precision, recall);
             return new PresRecResult(precision, recall).withSuffix(suffix);
         } else {
-            return MetricResult.empty();
+            context.addUser(0, 0);
+            return new PresRecResult(0, 0).withSuffix(suffix);
         }
     }
 

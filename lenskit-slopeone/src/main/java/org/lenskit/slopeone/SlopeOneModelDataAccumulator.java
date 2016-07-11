@@ -72,7 +72,7 @@ public class SlopeOneModelDataAccumulator {
         if (id1 < id2) {
             int coratings = 0;
             double deviation = 0.0;
-            for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(itemVec1, itemVec2)) {
+            for (Pair<VectorEntry,VectorEntry> pair: SparseVector.fastIntersect(itemVec1, itemVec2)) {
                 coratings++;
                 deviation += pair.getLeft().getValue() - pair.getRight().getValue();
             }

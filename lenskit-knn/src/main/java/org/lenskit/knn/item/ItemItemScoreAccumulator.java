@@ -21,6 +21,8 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -89,23 +91,33 @@ public abstract class ItemItemScoreAccumulator {
     }
 
     private static class DetailedAccumulator extends ItemItemScoreAccumulator {
+        private final LongSet itemIds = new LongOpenHashSet();
         private final List<ItemItemResult> receiver;
 
         DetailedAccumulator(List<ItemItemResult> recv) {
             receiver = recv;
+            for (ItemItemResult res: recv) {
+                itemIds.add(res.getId());
+            }
         }
 
         @Override
         public void add(long item, double score, int nnbrs, double weight) {
             receiver.add(new ItemItemResult(item, score, nnbrs, weight));
+            itemIds.add(item);
         }
 
         @Override
         public void applyReversedTransform(VectorTransformation transform) {
+            MutableSparseVector vec = MutableSparseVector.create(itemIds);
+            for (ItemItemResult res: receiver) {
+                vec.set(res.getId(), res.getScore());
+            }
+            transform.unapply(vec);
             int n = receiver.size();
             for (int i = 0; i < n; i++) {
                 ItemItemResult res = receiver.get(i);
-                receiver.set(i, res.rescore(transform.unapply(res.getId(), res.getScore())));
+                receiver.set(i, res.rescore(vec.get(res.getId())));
             }
         }
     }

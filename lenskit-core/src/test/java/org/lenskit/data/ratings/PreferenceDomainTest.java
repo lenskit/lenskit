@@ -22,8 +22,6 @@ package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.junit.Test;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.data.PrefDomainSpec;
 
 import java.util.Map;
 
@@ -67,21 +65,6 @@ public class PreferenceDomainTest {
         assertThat(d.getMaximum(), closeTo(5.0, 1.0e-6));
         assertTrue(d.hasPrecision());
         assertThat(d.getPrecision(), equalTo(1.0));
-    }
-
-    @Test
-    public void testBuildFromSpec() {
-        PrefDomainSpec spec = new PrefDomainSpec();
-        spec.setMinimum(1.0);
-        spec.setMaximum(10.0);
-        spec.setPrecision(0.2);
-
-        PreferenceDomain dom = SpecUtils.buildObject(PreferenceDomain.class, spec);
-        assertThat(dom, notNullValue());
-
-        assertThat(dom.getMinimum(), equalTo(1.0));
-        assertThat(dom.getMaximum(), equalTo(10.0));
-        assertThat(dom.getPrecision(), equalTo(0.2));
     }
 
     @Test

@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.dao;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.events.Event;
 
@@ -28,7 +29,10 @@ import org.lenskit.data.events.Event;
  *
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use new {@link DataAccessObject}.
  */
+@DefaultImplementation(value = BridgeEventDAO.class, skipIfUnusable = true)
+@Deprecated
 public interface EventDAO {
     /**
      * Stream all events.

@@ -32,7 +32,6 @@ import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
-import org.lenskit.specs.AbstractSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,7 +144,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
      * Specification for configuring nDCG metrics.
      */
     @JsonIgnoreProperties("type")
-    public static class Spec extends AbstractSpec {
+    public static class Spec {
         private String name;
         private String discount;
 

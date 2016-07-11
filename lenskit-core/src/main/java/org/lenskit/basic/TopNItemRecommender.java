@@ -125,6 +125,8 @@ public class TopNItemRecommender extends AbstractItemRecommender {
         if (exclude == null) {
             exclude = getDefaultExcludes(user);
         }
+        logger.debug("computing effective candidates for user {} from {} candidates and {} excluded items",
+                     user, candidates.size(), exclude.size());
         if (!exclude.isEmpty()) {
             candidates = LongUtils.setDifference(candidates, exclude);
         }

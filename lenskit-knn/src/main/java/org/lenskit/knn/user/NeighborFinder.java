@@ -22,8 +22,6 @@ package org.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
 
 /**
  * Finds candidate neighbors for a user.
@@ -36,11 +34,11 @@ public interface NeighborFinder {
     /**
      * Get potential neighbors for a particular user.
      *
-     * @param user  The user whose neighbors are wanted.
+     * @param user  The user ID whose neighbors are wanted.
      * @param items The items that the client needs to be able to score or recommend.
      * @return A collection of potential neighbors for {@code user}.  This collection may include
      *         neighbors that are not useful for scoring any item in {@code items}; the item set
      *         is just to help the neighbor finder guide its search if relevant.
      */
-    Iterable<Neighbor> getCandidateNeighbors(UserHistory<? extends Event> user, LongSet items);
+    Iterable<Neighbor> getCandidateNeighbors(long user, LongSet items);
 }

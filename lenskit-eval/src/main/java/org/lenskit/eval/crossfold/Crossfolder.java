@@ -20,51 +20,72 @@
  */
 package org.lenskit.eval.crossfold;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
-import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
+import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.EntitySource;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.dao.file.TextEntitySource;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.output.OutputFormat;
 import org.lenskit.data.output.RatingWriter;
 import org.lenskit.data.output.RatingWriters;
-import org.lenskit.data.packed.BinaryFormatFlag;
 import org.lenskit.eval.traintest.DataSet;
-import org.lenskit.eval.traintest.DataSetBuilder;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.CrossfoldSpec;
-import org.lenskit.specs.eval.DataSetSpec;
-import org.lenskit.specs.eval.OutputFormat;
-import org.lenskit.specs.eval.PartitionMethodSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
- * The command to build and run a crossfold on the data source file and output the partition files
+ * Partitions a data set for cross-validation.
+ *
+ * The resulting data is placed in an output directory with the following files:
+ *
+ * - `datasets.yaml` - a manifest file listing all the data sets
+ * - `partNN.train.csv` - a CSV file containing the train data for part *NN*
+ * - `partNN.train.yaml` - a YAML manifest for the training data for part *NN*
+ * - `partNN.test.csv` - a CSV file containing the test data for part *NN*
+ * - `partNN.test.yaml` - a YAML manifest for the test data for part *NN*
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Crossfolder {
+    public static final String ITEM_FILE_NAME = "items.txt";
+
     private static final Logger logger = LoggerFactory.getLogger(Crossfolder.class);
 
     private Random rng;
     private String name;
-    private DataSource source;
+    private StaticDataSource source;
+    private EntityType entityType = CommonTypes.RATING;
     private int partitionCount = 5;
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
     private boolean skipIfUpToDate = false;
     private CrossfoldMethod method = CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10));
     private boolean writeTimestamps = true;
+    private boolean executed = false;
 
     public Crossfolder() {
         this(null);
@@ -76,60 +97,19 @@ public class Crossfolder {
     }
 
     /**
-     * Instantiate a crossfolder from a spec.
-     * @param spec The crossfold spec.
-     * @return The crossfolder.
+     * Get the entity type that this crossfolder will crossfold.
+     * @return The entity type to crossfold.
      */
-    public static Crossfolder fromSpec(CrossfoldSpec spec) {
-        Crossfolder cf = new Crossfolder();
-        cf.setName(spec.getName())
-          .setPartitionCount(spec.getPartitionCount())
-          .setWriteTimestamps(spec.getIncludeTimestamps())
-          .setOutputFormat(spec.getOutputFormat())
-          .setOutputDir(spec.getOutputDir());
+    public EntityType getEntityType() {
+        return entityType;
+    }
 
-        SortOrder order = null;
-        HistoryPartitionMethod part = null;
-        PartitionMethodSpec pm = spec.getUserPartitionMethod();
-        if (pm != null) {
-            logger.debug("configuring partition method");
-            order = SortOrder.fromString(pm.getOrder());
-            if (pm instanceof PartitionMethodSpec.Holdout) {
-                int count = ((PartitionMethodSpec.Holdout) pm).getCount();
-                logger.debug("configuring holdout of {}", count);
-                part = HistoryPartitions.holdout(count);
-            } else if (pm instanceof PartitionMethodSpec.HoldoutFraction) {
-                double fraction = ((PartitionMethodSpec.HoldoutFraction) pm).getFraction();
-                logger.debug("configuring fraction of {}", fraction);
-                part = HistoryPartitions.holdoutFraction(fraction);
-            } else if (pm instanceof PartitionMethodSpec.Retain) {
-                int count = ((PartitionMethodSpec.Retain) pm).getCount();
-                logger.debug("configuring retain of {}", count);
-                part = HistoryPartitions.retain(count);
-            } else {
-                throw new IllegalArgumentException("invalid partition method " + pm);
-            }
-        }
-
-        switch (spec.getMethod()) {
-        case PARTITION_RATINGS:
-            logger.debug("will partition ratings");
-            cf.setMethod(CrossfoldMethods.partitionRatings());
-            break;
-        case PARTITION_USERS:
-            logger.debug("will partition users");
-            cf.setMethod(CrossfoldMethods.partitionUsers(order, part));
-            break;
-        case SAMPLE_USERS:
-            logger.debug("will sample users");
-            cf.setMethod(CrossfoldMethods.sampleUsers(order, part, spec.getSampleSize()));
-            break;
-        }
-
-        // TODO Support custom class loader
-        cf.setSource(SpecUtils.buildObject(DataSource.class, spec.getSource()));
-
-        return cf;
+    /**
+     * Set the entity type that this crossfolder will crossfold.
+     * @param entityType The entity type to crossfold.
+     */
+    public void setEntityType(EntityType entityType) {
+        this.entityType = entityType;
     }
 
     /**
@@ -210,13 +190,12 @@ public class Crossfolder {
     }
 
     /**
-     * Set the input data source.
-     *
-     * @param source The data source to use.
-     * @return The CrossfoldCommand object  (for chaining)
+     * Set the data source.
+     * @param src
+     * @return The crossfolder (for chaining)
      */
-    public Crossfolder setSource(DataSource source) {
-        this.source = source;
+    public Crossfolder setSource(StaticDataSource src) {
+        source = src;
         return this;
     }
 
@@ -284,7 +263,7 @@ public class Crossfolder {
      *
      * @return The underlying data source.
      */
-    public DataSource getSource() {
+    public StaticDataSource getSource() {
         return source;
     }
 
@@ -308,19 +287,38 @@ public class Crossfolder {
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      */
     public void execute() {
-        if (skipIfUpToDate) {
-            UpToDateChecker check = new UpToDateChecker();
-            check.addInput(source.lastModified());
-            for (Path p: Iterables.concat(getTrainingFiles(), getTestFiles(), getSpecFiles())) {
-                check.addOutput(p.toFile());
-            }
-            if (check.isUpToDate()) {
-                logger.info("crossfold {} up to date", getName());
-                return;
-            }
-        }
         try {
-            createTTFiles();
+            if (skipIfUpToDate) {
+                UpToDateChecker check = new UpToDateChecker();
+                for (EntitySource src: source.getSources()) {
+                    if (src instanceof TextEntitySource) {
+                        Path path = ((TextEntitySource) src).getFile();
+                        check.addInput(Files.getLastModifiedTime(path).toMillis());
+                    }
+                }
+                for (Path p: Iterables.concat(getTrainingFiles(), getTestFiles(), getSpecFiles())) {
+                    check.addOutput(p.toFile());
+                }
+                if (check.isUpToDate()) {
+                    logger.info("crossfold {} up to date", getName());
+                    executed = true;
+                    return;
+                }
+            }
+
+            logger.info("ensuring output directory {} exists", outputDir);
+            Files.createDirectories(outputDir);
+            logger.info("making sure item list is available");
+            JsonNode itemDataInfo = writeItemFile(source);
+            logger.info("writing train-test split files");
+            createTTFiles(source);
+            logger.info("writing manifests and specs");
+            Map<String,Object> metadata = new HashMap<>();
+            for (EntitySource src: source.getSourcesForType(entityType)) {
+                metadata.putAll(src.getMetadata());
+            }
+            writeManifests(source, metadata, itemDataInfo);
+            executed = true;
         } catch (IOException ex) {
             // TODO Use application-specific exception
             throw new RuntimeException("Error writing data sets", ex);
@@ -331,8 +329,16 @@ public class Crossfolder {
         return getFileList("part%02d.train." + outputFormat.getExtension());
     }
 
+    List<Path> getTrainingManifestFiles() {
+        return getFileList("part%02d.train.yaml");
+    }
+
     List<Path> getTestFiles() {
         return getFileList("part%02d.test." + outputFormat.getExtension());
+    }
+
+    List<Path> getTestManifestFiles() {
+        return getFileList("part%02d.test.yaml");
     }
 
     List<Path> getSpecFiles() {
@@ -348,31 +354,139 @@ public class Crossfolder {
     }
 
     /**
+     * Write the items to a file.
+     * @param data The input data.
+     * @return The JSON data to include in the manifest to describe the item file.
+     * @throws IOException if there's a problem writing the file.
+     */
+    @Nullable
+    private JsonNode writeItemFile(StaticDataSource data) throws IOException {
+        List<EntitySource> itemSources = data.getSourcesForType(CommonTypes.ITEM);
+        if (itemSources.isEmpty()) {
+            logger.info("writing item IDs to {}", ITEM_FILE_NAME);
+            Path itemFile = outputDir.resolve(ITEM_FILE_NAME);
+            DataAccessObject dao = data.get();
+            LongSet items = dao.getEntityIds(CommonTypes.ITEM);
+            try (BufferedWriter writer = Files.newBufferedWriter(itemFile, Charsets.UTF_8)) {
+                for (Long item: items) { // escape analysis should elide allocations
+                    writer.append(item.toString())
+                          .append(System.lineSeparator());
+                }
+            }
+
+            // make the node describing this
+            JsonNodeFactory fac = JsonNodeFactory.instance;
+            ObjectNode node = fac.objectNode();
+            node.set("type", fac.textNode("textfile"));
+            node.set("format", fac.textNode("tsv"));
+            node.set("file", fac.textNode(ITEM_FILE_NAME));
+            node.set("entity_type", fac.textNode(CommonTypes.ITEM.getName()));
+            ArrayNode cols = fac.arrayNode();
+            cols.add(CommonAttributes.ENTITY_ID.getName());
+            node.set("columns", cols);
+            return node;
+        } else {
+            logger.info("input data specifies an item source, reusing that");
+            return null;
+        }
+    }
+
+    /**
      * Write train-test split files.
      *
      * @throws IOException if there is an error writing the files.
+     * @param data The input data.
      */
-    private void createTTFiles() throws IOException {
-        Files.createDirectories(outputDir);
+    private void createTTFiles(StaticDataSource data) throws IOException {
+        if (entityType != CommonTypes.RATING) {
+            logger.warn("entity type is not 'rating', crossfolding may not work correctly");
+            logger.warn("crossfolding non-rating data is a work in progress");
+        }
+
+        List<EntitySource> sources = data.getSourcesForType(entityType);
+        logger.info("crossfolding {} data from {} sources", entityType, sources);
+
+        for (EntitySource source: sources) {
+            Set<EntityType> types = source.getTypes();
+            if (types.size() > 1) {
+                logger.warn("source {} has multiple entity types", source);
+                logger.warn("the following types will be ignored: {}",
+                            Sets.difference(types, ImmutableSet.of(entityType)));
+            }
+        }
+
         try (CrossfoldOutput out = new CrossfoldOutput(this, rng)) {
             logger.info("running crossfold method {}", method);
-            method.crossfold(source, out);
+            method.crossfold(data.get(), out, entityType);
         }
+    }
 
-        List<Path> specFiles = getSpecFiles();
-        List<DataSet> dataSets = getDataSets();
-        Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
-        List<Object> specs = new ArrayList<>(partitionCount);
-        assert dataSets.size() == partitionCount;
+    private void writeManifests(StaticDataSource data, Map<String,Object> meta, JsonNode itemData) throws IOException {
+        logger.debug("writing manifests");
+        YAMLFactory ioFactory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(ioFactory);
+
+        JsonNodeFactory nf = JsonNodeFactory.instance;
+
+        List<Path> trainFiles = getTrainingFiles();
+        List<Path> trainManifestFiles = getTrainingManifestFiles();
+        List<Path> testFiles = getTestFiles();
+        List<Path> testManifestFiles = getTestManifestFiles();
+        Path dataSetFile = outputDir.resolve("datasets.yaml");
+
+        ObjectNode dsNode = nf.objectNode();
+        dsNode.set("name", nf.textNode(name));
+        ArrayNode dsList = nf.arrayNode();
+
         for (int i = 0; i < partitionCount; i++) {
-            Path file = specFiles.get(i);
-            DataSet ds = dataSets.get(i);
-            DataSetSpec spec = ds.toSpec();
-            specs.add(spec);
-            SpecUtils.write(spec, file);
+            ObjectNode dsListEntry = nf.objectNode();
+            dsListEntry.set("train", nf.textNode(outputDir.relativize(trainManifestFiles.get(i)).toString()));
+            dsListEntry.set("test", nf.textNode(outputDir.relativize(testManifestFiles.get(i)).toString()));
+            dsList.add(dsListEntry);
+
+            // TODO Support various columns in crossfold output
+            logger.debug("writing train manifest {}", i);
+            Path trainFile = trainManifestFiles.get(i);
+            ArrayNode trainList = nf.arrayNode();
+            ObjectNode train = nf.objectNode();
+            train.set("type", nf.textNode("textfile"));
+            train.set("file", nf.textNode(outputDir.relativize(trainFiles.get(i)).toString()));
+            train.set("format", nf.textNode("csv"));
+            train.set("entity_type", nf.textNode(entityType.getName()));
+            train.set("metadata", mapper.valueToTree(meta));
+            trainList.add(train);
+
+            // write the item output
+            if (itemData != null) {
+                trainList.add(itemData);
+            }
+
+            // write the other data files
+            for (EntitySource source: data.getSources()) {
+                if (source.getTypes().contains(entityType)) {
+                    continue; // this one was crossfolded
+                }
+                if (source instanceof TextEntitySource) {
+                    trainList.add(((TextEntitySource) source).toJSON(trainFile.toUri()));
+                } else {
+                    logger.warn("ignoring non-file data source {}", source);
+                }
+            }
+            mapper.writeValue(trainFile.toFile(), trainList);
+
+            logger.debug("writing test manifest {}", i);
+            ObjectNode test = nf.objectNode();
+            test.set("type", nf.textNode("textfile"));
+            test.set("file", nf.textNode(outputDir.relativize(testFiles.get(i)).toString()));
+            test.set("format", nf.textNode("csv"));
+            test.set("entity_type", nf.textNode(entityType.getName()));
+            test.set("metadata", mapper.valueToTree(meta));
+            mapper.writeValue(testManifestFiles.get(i).toFile(), test);
         }
 
-        SpecUtils.write(specs, fullSpecFile);
+        dsNode.set("datasets", dsList);
+
+        mapper.writeValue(dataSetFile.toFile(), dsNode);
     }
 
     /**
@@ -381,48 +495,18 @@ public class Crossfolder {
      * @return The data sets produced by this crossfolder.
      */
     public List<DataSet> getDataSets() {
-        List<DataSet> dataSets = new ArrayList<>(partitionCount);
-        List<Path> trainFiles = getTrainingFiles();
-        List<Path> testFiles = getTestFiles();
-        for (int i = 0; i < partitionCount; i++) {
-            DataSetBuilder dsb = new DataSetBuilder(getName() + "." + i);
+        Preconditions.checkState(executed, "crossfolder has not been executed");
 
-            dataSets.add(dsb.setTest(makeDataSource(testFiles.get(i)))
-                            .setTrain(makeDataSource(trainFiles.get(i)))
-                            .setAttribute("DataSet", getName())
-                            .setAttribute("Partition", i)
-                            .build());
+        Path dataSetFile = outputDir.resolve("datasets.yaml");
+        try {
+            return DataSet.load(dataSetFile);
+        } catch (IOException e) {
+            throw new DataAccessException("cannot load data sets", e);
         }
-        return dataSets;
     }
 
     RatingWriter openWriter(Path file) throws IOException {
-        if (outputFormat.equals(OutputFormat.PACK)) {
-            EnumSet<BinaryFormatFlag> flags = BinaryFormatFlag.makeSet();
-            if (writeTimestamps) {
-                flags.add(BinaryFormatFlag.TIMESTAMPS);
-            }
-            return RatingWriters.packed(file.toFile(), flags);
-        } else {
-            // it is a CSV file, and the file name already has compression
-            return RatingWriters.csv(file.toFile(), writeTimestamps);
-        }
-    }
-
-    protected DataSource makeDataSource(Path file) {
-        switch (outputFormat) {
-        case PACK:
-            return new PackedDataSourceBuilder()
-                    .setDomain(source.getPreferenceDomain())
-                    .setFile(file.toFile())
-                    .build();
-        default:
-            // TODO Don't just encode compression in file name
-            return new CSVDataSourceBuilder()
-                    .setDomain(source.getPreferenceDomain())
-                    .setFile(file.toFile())
-                    .build();
-        }
+        return RatingWriters.csv(file.toFile(), writeTimestamps);
     }
 
     @Override

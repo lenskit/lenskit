@@ -24,22 +24,19 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.History;
-import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.knn.item.model.ItemItemModel;
@@ -64,10 +61,9 @@ public class ItemItemScorer extends AbstractItemScorer {
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
-    private final UserEventDAO dao;
+    private final RatingVectorPDAO rvDAO;
     @Nonnull
     protected final UserVectorNormalizer normalizer;
-    protected final UserHistorySummarizer summarizer;
     @Nonnull
     protected final NeighborhoodScorer scorer;
     private final int neighborhoodSize;
@@ -76,23 +72,20 @@ public class ItemItemScorer extends AbstractItemScorer {
     /**
      * Construct a new item-item scorer.
      *
-     * @param dao    The DAO.
+     * @param dao    The rating vector DAO.
      * @param m      The model
-     * @param sum    The history summarizer.
      * @param scorer The neighborhood scorer.
      * @param nnbrs  The number of neighbors.
      * @param min    The minimum number of neighbors.
      */
     @Inject
-    public ItemItemScorer(UserEventDAO dao, ItemItemModel m,
-                          UserHistorySummarizer sum,
+    public ItemItemScorer(RatingVectorPDAO dao, ItemItemModel m,
                           NeighborhoodScorer scorer,
                           UserVectorNormalizer norm,
                           @NeighborhoodSize int nnbrs,
                           @MinNeighbors int min) {
-        this.dao = dao;
+        rvDAO = dao;
         model = m;
-        summarizer = sum;
         this.scorer = scorer;
         normalizer = norm;
         neighborhoodSize = nnbrs;
@@ -139,12 +132,9 @@ public class ItemItemScorer extends AbstractItemScorer {
      * @param accum The accumulator.
      */
     private void scoreItems(long user, @Nonnull Collection<Long> items, ItemItemScoreAccumulator accum) {
-        UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
-        if (history == null) {
-            history = History.forUser(user);
-        }
+        Long2DoubleMap ratings = rvDAO.userRatingVector(user);
 
-        SparseVector summary = summarizer.summarize(history);
+        SparseVector summary = ImmutableSparseVector.create(ratings);
         logger.trace("user has {} ratings", summary.size());
         VectorTransformation transform = normalizer.makeTransformation(user, summary);
         MutableSparseVector normed = summary.mutableCopy();

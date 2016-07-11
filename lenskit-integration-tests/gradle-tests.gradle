@@ -36,7 +36,6 @@
 /**
  * Integration tests built with Gradle.
  */
-
 def ift = task makeTestRepo(group: 'build setup') {
     for (prj in rootProject.childProjects.values()) {
         if (prj.name =~ /^lenskit-(?!integration-tests)/) {
@@ -59,6 +58,8 @@ file('src/it/gradle').eachDir { testDir ->
     task("test$tname", type: GradleBuild, group: 'test') {
         description "Run the ${testDir.name} test."
         dependsOn makeTestRepo, fetchData
+        mustRunAfter ':lenskit-gradle:check'
+        // inputs.dir rootProject.file('build/test-repo')
         inputs.dir testDir
         inputs.files fileTree('src/it/gradle') {
             include '*.gradle'
@@ -70,6 +71,7 @@ file('src/it/gradle').eachDir { testDir ->
         startParameter.projectProperties = [
                 testRepoURI: rootProject.uri("build/test-repo"),
                 lenskitVersion: project.version,
+                mlDataDir: mlDataDir,
                 ratingsFile: "$mlDataDir/u.data"
         ]
         dir = workDir
@@ -106,6 +108,7 @@ file('src/it/gradle').eachDir { testDir ->
     gradleTests.dependsOn "test$tname"
 }
 
+tasks.testCliClasspath.dependsOn processMLData
 
 task unpackOfflineRepo(type: Copy) {
     dependsOn rootProject.repoZip

@@ -24,7 +24,7 @@ import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.knn.item.model.ItemItemModel
-import org.lenskit.knn.item.model.NormalizingItemItemModelBuilder
+import org.lenskit.knn.item.model.NormalizingItemItemModelProvider
 import org.lenskit.knn.item.model.StandardVectorTruncatorProvider
 
 public class NormalizingItemItemAccuracyTest extends ItemItemAccuracyTest {
@@ -33,7 +33,7 @@ public class NormalizingItemItemAccuracyTest extends ItemItemAccuracyTest {
     protected void configureAlgorithm(LenskitConfiguration config) {
         super.configureAlgorithm(config)
         ConfigHelpers.configure(config) {
-            bind ItemItemModel toProvider NormalizingItemItemModelBuilder
+            bind ItemItemModel toProvider NormalizingItemItemModelProvider
             at (ItemItemModel) {
                 bind VectorTruncator toProvider StandardVectorTruncatorProvider
             }

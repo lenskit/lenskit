@@ -20,30 +20,35 @@
  */
 package org.lenskit.basic;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.util.collections.LongUtils;
+
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class PopularityRankItemScorerTest {
-    EventDAO ratings;
+    private DataAccessObject dao;
     RatingSummary summary;
     ItemScorer recommender;
 
     @Before
     public void setUp() {
-        ratings = EventCollectionDAO.create(Rating.create(42, 1, 3.2),
-                                            Rating.create(39, 1, 2.4),
-                                            Rating.create(42, 2, 2.5));
-        summary = RatingSummary.create(ratings);
+        List<Rating> ratings = ImmutableList.of(Rating.create(42, 1, 3.2),
+                                                Rating.create(39, 1, 2.4),
+                                                Rating.create(42, 2, 2.5));
+        StaticDataSource source = StaticDataSource.fromList(ratings);
+        dao = source.get();
+        summary = RatingSummary.create(dao);
         recommender = new PopularityRankItemScorer(summary);
     }
 

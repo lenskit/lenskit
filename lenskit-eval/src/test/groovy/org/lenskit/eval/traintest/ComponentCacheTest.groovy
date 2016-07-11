@@ -24,6 +24,7 @@ import org.grouplens.grapht.CachePolicy
 import org.grouplens.grapht.Component
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfactions
+import org.lenskit.data.dao.DataAccessObject
 import org.lenskit.data.dao.EventCollectionDAO
 import org.lenskit.data.dao.EventDAO
 import org.junit.Before
@@ -33,6 +34,7 @@ import org.junit.rules.TemporaryFolder
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.config.ConfigHelpers
+import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.Rating
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
@@ -42,16 +44,17 @@ import static org.junit.Assert.assertThat
 class ComponentCacheTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder()
-    def dao = EventCollectionDAO.create([
+    def source = StaticDataSource.fromList([
             Rating.create(1, 10, 3.5),
             Rating.create(1, 11, 2.5),
             Rating.create(2, 10, 3.0)
     ])
+    def dao = source.get()
 
     ComponentCache cache
     def config = ConfigHelpers.load {
         bind ItemScorer to ItemMeanRatingItemScorer
-        bind EventDAO to dao
+        bind DataAccessObject to dao
     }
 
     @Before
@@ -92,7 +95,7 @@ class ComponentCacheTest {
         def config = ConfigHelpers.load {
             bind ItemScorer to ItemMeanRatingItemScorer
             bind ItemMeanRatingItemScorer to null
-            bind EventDAO to dao
+            bind DataAccessObject to dao
         }
         def graph = config.buildGraph()
         def node = graph.reachableNodes.find {

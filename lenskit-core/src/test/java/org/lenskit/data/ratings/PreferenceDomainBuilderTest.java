@@ -21,7 +21,6 @@
 package org.lenskit.data.ratings;
 
 import org.junit.Test;
-import org.lenskit.specs.data.PrefDomainSpec;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -73,15 +72,4 @@ public class PreferenceDomainBuilderTest {
         assertThat(dom.getPrecision(), equalTo(0.5));
     }
 
-    @Test
-    public void testSpecRoundTrip() {
-        PreferenceDomainBuilder bld = new PreferenceDomainBuilder();
-        bld.setMinimum(1.0)
-           .setMaximum(5)
-           .setPrecision(0.5);
-        PreferenceDomain dom = bld.build();
-        PrefDomainSpec spec = dom.toSpec();
-        PreferenceDomain dom2 = PreferenceDomain.fromSpec(spec);
-        assertThat(dom2, equalTo(dom));
-    }
 }

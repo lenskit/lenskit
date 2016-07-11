@@ -20,25 +20,22 @@
  */
 package org.lenskit.knn.item
 
-import org.lenskit.api.RecommenderBuildException
-import org.lenskit.ModelDisposition
-import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.transform.truncate.VectorTruncator
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
+import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.config.ConfigHelpers
+import org.lenskit.data.dao.ItemDAO
 import org.lenskit.knn.item.model.ItemItemModel
-import org.lenskit.knn.item.model.NormalizingItemItemModelBuilder
-import org.lenskit.knn.item.model.StandardVectorTruncatorProvider
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -57,40 +54,6 @@ public class ItemItemBuildSerializeTest extends ML100KTestSuite {
         root ItemDAO
     }
 
-    @Test
-    public void testBuildWithItemSubset() throws RecommenderBuildException, IOException {
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(itemSubsetConfig)
-                                        .build()
-        assertThat(engine, notNullValue())
-        def rec = engine.createRecommender();
-        def dao = rec.get(ItemDAO)
-        def model = rec.get(ItemItemModel)
-        assertThat(model.itemUniverse,
-                   anyOf(hasSize(dao.itemIds.size()),
-                         hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)))
-    }
-
-    @Test
-    public void testNormalizingBuildWithItemSubset() throws RecommenderBuildException, IOException {
-        def cfg = config.copy()
-        cfg.bind(ItemItemModel).toProvider(NormalizingItemItemModelBuilder)
-        cfg.at(ItemItemModel).bind(VectorTruncator).toProvider(StandardVectorTruncatorProvider)
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(cfg)
-                                        .addConfiguration(itemSubsetConfig)
-                                        .build()
-        assertThat(engine, notNullValue())
-        def rec = engine.createRecommender();
-        def dao = rec.get(ItemDAO)
-        def model = rec.get(ItemItemModel)
-        assertThat(model.itemUniverse,
-                   anyOf(hasSize(dao.itemIds.size()),
-                         hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)))
-    }
 
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
@@ -113,15 +76,19 @@ public class ItemItemBuildSerializeTest extends ML100KTestSuite {
         assertThat(loaded, notNullValue())
 
         LenskitRecommender rec = loaded.createRecommender()
-        assertThat(rec.getItemScorer(),
-                   instanceOf(ItemItemScorer.class))
-        assertThat(rec.get(ItemItemModel.class),
-                   notNullValue())
-        /* FIXME Re-enable this logic
+        try {
+            assertThat(rec.getItemScorer(),
+                       instanceOf(ItemItemScorer.class))
+            assertThat(rec.get(ItemItemModel.class),
+                       notNullValue())
+            /* FIXME Re-enable this logic
         assertThat(rec.getRatingPredictor(),
                    instanceOf(SimpleRatingPredictor))
         SimpleRatingPredictor srp = (SimpleRatingPredictor) rec.getRatingPredictor()
         assertThat(srp.getScorer(), sameInstance(rec.getItemScorer()))
         */
+        } finally {
+            rec.close()
+        }
     }
 }

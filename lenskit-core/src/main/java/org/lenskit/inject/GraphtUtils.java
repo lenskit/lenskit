@@ -33,6 +33,7 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.reflect.internal.*;
 import org.lenskit.RecommenderConfigurationException;
+import org.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -66,10 +67,16 @@ public final class GraphtUtils {
         Satisfaction sat = null;
         for (DAGNode<Component,Dependency> node: placeholders) {
             Component csat = node.getLabel();
-            if (sat == null) {
-                sat = csat.getSatisfaction();
+            // special-case DAOs for non-checking
+            if (DataAccessObject.class.isAssignableFrom(csat.getSatisfaction().getErasedType())) {
+                logger.debug("found DAO placeholder {}");
+            } else {
+                // all other placeholders are bad
+                if (sat == null) {
+                    sat = csat.getSatisfaction();
+                }
+                logger.error("placeholder {} not removed", csat.getSatisfaction());
             }
-            logger.error("placeholder {} not removed", csat.getSatisfaction());
         }
         if (sat != null) {
             throw new RecommenderConfigurationException("placeholder " + sat + " not removed");

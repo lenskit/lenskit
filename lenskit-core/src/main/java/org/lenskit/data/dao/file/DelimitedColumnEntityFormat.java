@@ -20,7 +20,11 @@
  */
 package org.lenskit.data.dao.file;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.entities.*;
 
@@ -177,6 +181,17 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     }
 
     /**
+     * Get the list of columns, if {@link #addColumn(TypedName)} has been used.
+     * @return The list of columns.
+     * @throws IllegalStateException if {@link #addColumn(TypedName)} or {@link #addColumns(TypedName[])} have not been
+     * called.
+     */
+    public List<TypedName<?>> getColumnList() {
+        Preconditions.checkState(columns != null);
+        return ImmutableList.copyOf(columns);
+    }
+
+    /**
      * Add a column.
      * @param label The header label.
      * @param attr The attribute to add as a column, or `null` to skip the next column.
@@ -188,6 +203,48 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             labeledColumns = new LinkedHashMap<>();
         }
         labeledColumns.put(label, attr);
+    }
+
+    /**
+     * Clear the columns configured for this format.
+     */
+    public void clearColumns() {
+        columns = null;
+        labeledColumns = null;
+    }
+
+    @Override
+    public ObjectNode toJSON() {
+        JsonNodeFactory nf = JsonNodeFactory.instance;
+
+        ObjectNode json = nf.objectNode();
+        json.put("format", "delimited");
+        json.put("delimiter", delimiter);
+        json.put("entity_type", entityType.getName());
+        if (readHeader) {
+            json.put("header", true);
+        } else if (headerLines > 0) {
+            json.put("header", headerLines);
+        }
+        if (columns != null) {
+            ArrayNode cols = json.putArray("columns");
+            for (TypedName<?> col: columns) {
+                ObjectNode colObj = cols.addObject();
+                colObj.put("name", col.getName());
+                colObj.put("type", col.getType().getName());
+            }
+        } else if (labeledColumns != null) {
+            ObjectNode cols = json.putObject("columns");
+            for (Map.Entry<String,TypedName<?>> colE: labeledColumns.entrySet()) {
+                ObjectNode colNode = cols.putObject(colE.getKey());
+                colNode.put("name", colE.getValue().getName());
+                colNode.put("type", colE.getValue().getType().getName());
+            }
+        } else {
+            throw new IllegalStateException("no labels specified");
+        }
+
+        return json;
     }
 
     @Override
@@ -204,6 +261,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             }
             return new OrderedParser(cols, tok);
         } else {
+            Preconditions.checkState(columns != null, "no columns specified");
             return new OrderedParser(columns, new StrTokenizer("", delimiter));
         }
     }

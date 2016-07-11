@@ -20,6 +20,9 @@
  */
 package org.lenskit.eval.traintest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
@@ -30,11 +33,11 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
-import org.lenskit.specs.eval.*;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
@@ -49,7 +52,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 
@@ -75,7 +80,7 @@ public class TrainTestExperiment {
     private Path userOutputFile;
     private Path cacheDir;
     private boolean shareModelComponents = true;
-    private int threadCount;
+    private int threadCount = 1;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -517,29 +522,112 @@ public class TrainTestExperiment {
         pool.invoke(rootJob);
     }
 
-    public static TrainTestExperiment fromSpec(TrainTestExperimentSpec spec) {
+    /**
+     * Load a train-test experiment from a YAML file.
+     * @param file The file to load.
+     * @return The train-test experiment.
+     */
+    public static TrainTestExperiment load(Path file) throws IOException {
+        YAMLFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(file.toFile());
+
+        return fromJSON(node, file.toUri());
+    }
+
+    /**
+     * Configure a train-test experiment from JSON.
+     * @param json The JSON node.
+     * @param base The base URI for resolving relative paths.
+     * @return The train-test experiment.
+     * @throws IOException if there is an IO error.
+     */
+    static TrainTestExperiment fromJSON(JsonNode json, URI base) throws IOException {
         TrainTestExperiment exp = new TrainTestExperiment();
-        exp.setOutputFile(spec.getOutputFile());
-        exp.setUserOutputFile(spec.getUserOutputFile());
-        exp.setCacheDirectory(spec.getCacheDirectory());
-        exp.setShareModelComponents(spec.getShareModelComponents());
-        exp.setThreadCount(spec.getThreadCount());
-        for (DataSetSpec ds: spec.getDataSets()) {
-            exp.addDataSet(DataSet.fromSpec(ds));
+
+        // configure basic settings
+        String outFile = json.path("output_file").asText(null);
+        if (outFile != null) {
+            exp.setOutputFile(Paths.get(base.resolve(outFile)));
         }
-        for (AlgorithmSpec as: spec.getAlgorithms()) {
-            exp.addAlgorithm(as.getName(), as.getConfigFile());
+        outFile = json.path("user_output_file").asText(null);
+        if (outFile != null) {
+            exp.setUserOutputFile(Paths.get(base.resolve(outFile)));
         }
-        for (EvalTaskSpec ets: spec.getTasks()) {
-            if (ets instanceof PredictEvalTaskSpec) {
-                exp.addTask(PredictEvalTask.fromSpec((PredictEvalTaskSpec) ets));
-            } else if (ets instanceof RecommendEvalTaskSpec) {
-                exp.addTask(RecommendEvalTask.fromSpec((RecommendEvalTaskSpec) ets));
+        String cacheDir = json.path("cache_directory").asText(null);
+        if (cacheDir != null) {
+            exp.setCacheDirectory(Paths.get(base.resolve(cacheDir)));
+        }
+        if (json.has("thread_count")) {
+            exp.setThreadCount(json.get("thread_count").asInt(1));
+        }
+        if (json.has("share_model_components")) {
+            exp.setShareModelComponents(json.get("share_model_components").asBoolean());
+        }
+        if (!json.has("datasets")) {
+            throw new IllegalArgumentException("no data sets specified");
+        }
+
+        // configure data sets
+        for (JsonNode ds: json.get("datasets")) {
+            List<DataSet> dss;
+            if (ds.isTextual()) {
+                URI dsURI = base.resolve(ds.asText());
+                dss = DataSet.load(dsURI.toURL());
             } else {
-                throw new IllegalArgumentException("unusable eval task spec " + ets);
+                dss = DataSet.fromJSON(ds, base);
             }
+            exp.addDataSets(dss);
+        }
+
+        // configure the algorithms
+        JsonNode algo = json.path("algorithms");
+        if (algo.isTextual()) {
+            // name of groovy file
+            URI af = base.resolve(algo.asText());
+            String aname = LKFileUtils.basename(af.getPath(), false);
+            // FIXME Support algorithms from URLs
+            exp.addAlgorithm(aname, Paths.get(af));
+        } else if (algo.isObject()) {
+            // mapping of names to groovy files
+            Iterator<Map.Entry<String,JsonNode>> algoIter = algo.fields();
+            while (algoIter.hasNext()) {
+                Map.Entry<String, JsonNode> e = algoIter.next();
+                URI algoUri = base.resolve(e.getValue().asText());
+                // FIXME Support algorithms from URLs
+                exp.addAlgorithm(e.getKey(), Paths.get(algoUri));
+            }
+        } else if (algo.isArray()) {
+            // list of groovy file names
+            for (JsonNode an: algo) {
+                URI af = base.resolve(an.asText());
+                String aname = LKFileUtils.basename(af.getPath(), false);
+                // FIXME Support algorithms from URLs
+                exp.addAlgorithm(aname, Paths.get(af));
+            }
+        } else if (!algo.isMissingNode()) {
+            throw new IllegalArgumentException("unexpected type for algorithms config");
+        }
+
+        // configure the tasks and their metrics
+        JsonNode tasks = json.get("tasks");
+        for (JsonNode task: tasks) {
+            exp.addTask(configureTask(task, base));
         }
 
         return exp;
+    }
+
+    private static EvalTask configureTask(JsonNode task, URI base) throws IOException {
+        String type = task.path("type").asText(null);
+        Preconditions.checkArgument(type != null, "no task type specified");
+        switch (type) {
+        case "predict":
+            return PredictEvalTask.fromJSON(task, base);
+        case "recommend":
+            return RecommendEvalTask.fromJSON(task, base);
+        default:
+            throw new IllegalArgumentException("invalid eval task type " + type);
+        }
     }
 }

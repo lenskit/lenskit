@@ -6,11 +6,13 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+        classpath "org.lenskit:lenskit-gradle:$project.lenskitVersion"
+        classpath 'org.hamcrest:hamcrest-library:1.3'
     }
 }
 
 import org.lenskit.gradle.*
+import static org.hamcrest.MatcherAssert.assertThat
 
 apply plugin: 'java'
 apply plugin: 'lenskit'
@@ -29,7 +31,7 @@ task crossfold(type: Crossfold) {
         file ratingsFile
         delimiter "\t"
     }
-    outputFormat "PACK"
+    outputFormat "gz"
     partitionCount 5
     userPartitionMethod holdout(5)
     includeTimestamps false
@@ -50,15 +52,8 @@ task trainTest(type: TrainTest) {
     }
 }
 
-task checkGroovy(type: JavaExec) {
-    dependsOn trainTest
-    classpath configurations.analyze
-    enableAssertions true
-
-    main 'groovy.ui.GroovyMain'
-    args 'verify.groovy'
-}
-
-check {
-    dependsOn checkGroovy
+verifyR.dependsOn trainTest
+verifyR.doFirst {
+    assertThat("output file should exist", file('results.csv').exists())
+    assertThat("prediction file should exist", file('predictions.csv').exists())
 }

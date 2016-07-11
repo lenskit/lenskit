@@ -34,7 +34,7 @@
  */
 
 // Aggregate documentation
-ext.masterProjects = ['lenskit-api', 'lenskit-specs', 'lenskit-core', 'lenskit-data-structures',
+ext.masterProjects = ['lenskit-api', 'lenskit-core',
                       'lenskit-groovy', 'lenskit-eval', 'lenskit-cli',
                       'lenskit-knn', 'lenskit-svd',
                       'lenskit-slopeone', 'lenskit-predict']

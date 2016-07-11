@@ -21,13 +21,12 @@
 package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.lenskit.specs.AbstractSpec;
 
 /**
  * Specification class for configuring precision/recall metrics.
  */
 @JsonIgnoreProperties({"type"})
-public class PRMetricSpec extends AbstractSpec {
+public class PRMetricSpec {
     private String goodItems;
     private String suffix;
 

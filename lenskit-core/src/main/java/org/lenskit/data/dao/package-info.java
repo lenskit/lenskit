@@ -23,19 +23,16 @@
  *
  * <p>LensKit uses <a href="http://java.sun.com/blueprints/corej2eepatterns/Patterns/DataAccessObject.html">Data Access Objects</a>
  * to obtain access to rating data.  These objects allow LensKit to query for
- * users, items, ratings, etc.
+ * users, items, ratings, etc.  The master DAO interface is defined by {@link org.lenskit.data.dao.DataAccessObject}.
+ * This interface can be reimplemented against other query APIs such as SQL databases, MongoDB, etc.  LensKit provides
+ * basic implementations against static files and in-memory collections.
  *
- * <p>Many DAO operations are expected to be fast, usually with appropriate caching.  It is typical
- * for DAOs to be instantiated once per {@link org.lenskit.api.Recommender} (and therefore
- * once per request in a web environment), and to cache aggressively in instance variables.  More
- * sophisticated implementations using shared caches or services such as Memcache are certainly
- * feasible.
- *
- * <p>The streaming DAO implementations build up a cache once per instance.  They aren't really
- * suitable for anything besides recommender evaluation, typically.
+ * <p>LensKit also uses intermediate layers, called <em>proxy DAOs</em>, such as {@link org.lenskit.data.ratings.RatingVectorPDAO}
+ * that provide access to intermediate data structures that are usually computed from underlying data accessed via
+ * the master DAO.
  *
  * <p>The data access objects make no transactional or immutability guarantees,
- * and does not provide mutation.  An implementation is, of course, free to
+ * and do not provide mutation.  An implementation is, of course, free to
  * provide mutation.
  */
 package org.lenskit.data.dao;

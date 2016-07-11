@@ -21,9 +21,9 @@
 package org.lenskit.eval.traintest.recommend
 
 import groovy.json.JsonBuilder
+import org.grouplens.grapht.util.ClassLoaders
 import org.junit.Test
-import org.lenskit.specs.DynamicSpec
-import org.lenskit.specs.SpecUtils
+import org.lenskit.eval.traintest.metrics.MetricLoaderHelper
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
@@ -35,8 +35,8 @@ class TopNLengthMetricTest {
         jsb {
             type 'length'
         }
-        def node = SpecUtils.parse(DynamicSpec, jsb.toString())
-        def metric = SpecUtils.buildObject(TopNMetric, node)
+        def mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(), 'topn-metrics')
+        def metric = mlh.createMetric(TopNMetric, jsb.toString())
         assertThat(metric, instanceOf(TopNLengthMetric))
     }
 }

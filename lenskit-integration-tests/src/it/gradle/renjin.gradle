@@ -8,5 +8,16 @@ repositories {
 }
 dependencies {
     analyze localGroovy()
-    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.7.1578'
+    analyze group: 'org.lenskit', name: 'lenskit-test', version: project.lenskitVersion
+    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2124'
 }
+
+task verifyR(type: JavaExec) {
+    classpath configurations.analyze
+    main 'org.lenskit.util.test.RunScript'
+    args file('verify.R')
+    onlyIf {
+        file('verify.R').exists()
+    }
+}
+check.dependsOn verifyR
