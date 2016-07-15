@@ -255,6 +255,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             assert header.size() == 1;
             List<TypedName<?>> cols = new ArrayList<>();
             StrTokenizer tok = new StrTokenizer(header.get(0), delimiter);
+            tok.setQuoteChar('"');
             while (tok.hasNext()) {
                 String label = tok.next();
                 cols.add(labeledColumns.get(label));
@@ -262,7 +263,9 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             return new OrderedParser(cols, tok);
         } else {
             Preconditions.checkState(columns != null, "no columns specified");
-            return new OrderedParser(columns, new StrTokenizer("", delimiter));
+            StrTokenizer tok = new StrTokenizer("", delimiter);
+            tok.setQuoteChar('"');
+            return new OrderedParser(columns, tok);
         }
     }
 
