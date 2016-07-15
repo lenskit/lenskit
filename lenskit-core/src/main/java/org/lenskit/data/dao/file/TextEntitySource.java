@@ -54,7 +54,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -106,7 +105,7 @@ public class TextEntitySource implements EntitySource, Describable {
      */
     public void setFile(Path file) {
         source = LKFileUtils.byteSource(file.toFile(), CompressionMode.AUTO)
-                            .asCharSource(Charset.defaultCharset());
+                            .asCharSource(Charsets.UTF_8);
         try {
             sourceURL = file.toUri().toURL();
         } catch (MalformedURLException e) {
@@ -120,7 +119,8 @@ public class TextEntitySource implements EntitySource, Describable {
      */
     public void setURL(URL url) {
         sourceURL = url;
-        source = LKFileUtils.byteSource(url, CompressionMode.AUTO).asCharSource(Charsets.UTF_8);
+        source = LKFileUtils.byteSource(url, CompressionMode.AUTO)
+                            .asCharSource(Charsets.UTF_8);
     }
 
     /**
