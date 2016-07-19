@@ -279,13 +279,17 @@ public class TextEntitySource implements EntitySource, Describable {
      * @return The new entity reader.
      */
     static TextEntitySource fromJSON(String name, JsonNode object, URI base, ClassLoader loader) {
+        logger.debug("loading source {} with base URI {}", name, base);
         TextEntitySource source = new TextEntitySource(name);
         String filePath = object.path("file").asText(null);
         Preconditions.checkArgument(filePath != null, "no file path specified");
         URI uri = base.resolve(filePath);
+        logger.debug("resolved file URI: {}", uri);
+
         try {
             source.setURL(uri.toURL());
         } catch (MalformedURLException e) {
+            logger.error("cannot load from URI {}", uri);
             throw new IllegalArgumentException("Cannot resolve URI " + uri, e);
         }
         logger.info("loading text file source {} to read from {}", name, source.getURL());
