@@ -73,7 +73,7 @@ task fetchSite {
 task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
     into "$website.directory/master"
 
-    from(javadoc.destinationDir) {
+    from(tasks.javadoc.destinationDir) {
         into 'apidocs'
     }
 }
