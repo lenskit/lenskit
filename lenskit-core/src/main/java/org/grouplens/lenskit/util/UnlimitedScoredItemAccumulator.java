@@ -81,6 +81,9 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
 
     @Override
     public Long2DoubleMap finishMap() {
+        if (scores == null) {
+            return Long2DoubleMaps.EMPTY_MAP;
+        }
         // FIXME Make this efficient
         Long2DoubleMap set = new Long2DoubleOpenHashMap(scores.size());
         for (ScoredId id: finish()) {

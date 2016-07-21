@@ -20,9 +20,9 @@
  */
 package org.lenskit.knn.item.model;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 
@@ -48,12 +48,12 @@ public interface ItemItemModel {
 
     /**
      * Get the neighbors of an item scored by similarity. This is the corresponding
-     * <em>row</em> of the item-item similarity matrix (see {@link org.grouplens.lenskit.knn.item}).
+     * <em>row</em> of the item-item similarity matrix (see {@link org.lenskit.knn.item}).
      *
      * @param item The item to get the neighborhood for.
      * @return The row of the similarity matrix. If the item is unknown, an empty
      *         vector is returned.
      */
     @Nonnull
-    SparseVector getNeighbors(long item);
+    Long2DoubleMap getNeighbors(long item);
 }

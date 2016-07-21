@@ -33,7 +33,6 @@ import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
@@ -151,7 +150,7 @@ public class ItemItemScorer extends AbstractItemScorer {
     }
 
     protected void scoreItem(Long2DoubleMap userData, long item, ItemItemScoreAccumulator accum) {
-        SparseVector allNeighbors = model.getNeighbors(item);
+        Long2DoubleMap allNeighbors = model.getNeighbors(item);
         ScoredItemAccumulator acc;
         if (neighborhoodSize > 0) {
             // FIXME Abstract accumulator selection logic
@@ -160,9 +159,9 @@ public class ItemItemScorer extends AbstractItemScorer {
             acc = new UnlimitedScoredItemAccumulator();
         }
 
-        for (VectorEntry e: allNeighbors) {
-            if (userData.containsKey(e.getKey())) {
-                acc.put(e.getKey(), e.getValue());
+        for (Long2DoubleMap.Entry nbr: allNeighbors.long2DoubleEntrySet()) {
+            if (userData.containsKey(nbr.getLongKey())) {
+                acc.put(nbr.getLongKey(), nbr.getDoubleValue());
             }
         }
 

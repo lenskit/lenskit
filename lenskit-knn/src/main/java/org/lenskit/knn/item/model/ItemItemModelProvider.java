@@ -25,7 +25,6 @@ import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
@@ -164,10 +163,10 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         return rows;
     }
 
-    private Long2ObjectMap<ImmutableSparseVector> finishRows(Long2ObjectMap<ScoredItemAccumulator> rows) {
-        Long2ObjectMap<ImmutableSparseVector> results = new Long2ObjectOpenHashMap<>(rows.size());
+    private Long2ObjectMap<Long2DoubleMap> finishRows(Long2ObjectMap<ScoredItemAccumulator> rows) {
+        Long2ObjectMap<Long2DoubleMap> results = new Long2ObjectOpenHashMap<>(rows.size());
         for (Long2ObjectMap.Entry<ScoredItemAccumulator> e: rows.long2ObjectEntrySet()) {
-            results.put(e.getLongKey(), e.getValue().finishVector().freeze());
+            results.put(e.getLongKey(), e.getValue().finishMap());
         }
         return results;
     }
