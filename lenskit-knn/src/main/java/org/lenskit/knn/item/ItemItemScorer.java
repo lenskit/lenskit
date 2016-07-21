@@ -27,9 +27,9 @@ import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.UnlimitedScoredIdAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -151,12 +151,12 @@ public class ItemItemScorer extends AbstractItemScorer {
 
     protected void scoreItem(Long2DoubleMap userData, long item, ItemItemScoreAccumulator accum) {
         Long2DoubleMap allNeighbors = model.getNeighbors(item);
-        ScoredItemAccumulator acc;
+        ScoredIdAccumulator acc;
         if (neighborhoodSize > 0) {
             // FIXME Abstract accumulator selection logic
-            acc = new TopNScoredItemAccumulator(neighborhoodSize);
+            acc = new TopNScoredIdAccumulator(neighborhoodSize);
         } else {
-            acc = new UnlimitedScoredItemAccumulator();
+            acc = new UnlimitedScoredIdAccumulator();
         }
 
         for (Long2DoubleMap.Entry nbr: allNeighbors.long2DoubleEntrySet()) {

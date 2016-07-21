@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.lenskit.util;
 
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -37,10 +37,8 @@ import java.util.List;
 /**
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
+public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
     private final int count;
     private DoubleArrayList scores;
     private CompactableLongArrayList items;
@@ -57,7 +55,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
      *
      * @param n The number of IDs to retain.
      */
-    public TopNScoredItemAccumulator(int n) {
+    public TopNScoredIdAccumulator(int n) {
         this.count = n;
 
         slot = 0;

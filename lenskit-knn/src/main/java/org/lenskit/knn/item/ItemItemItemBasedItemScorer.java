@@ -21,9 +21,9 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.UnlimitedScoredIdAccumulator;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemBasedItemScorer;
 import org.lenskit.knn.NeighborhoodSize;
@@ -104,12 +104,12 @@ public class ItemItemItemBasedItemScorer extends AbstractItemBasedItemScorer {
      */
     protected void scoreItem(Long2DoubleMap scores, long item, ItemItemScoreAccumulator accum) {
         Long2DoubleMap allNeighbors = model.getNeighbors(item);
-        ScoredItemAccumulator acc;
+        ScoredIdAccumulator acc;
         if (neighborhoodSize > 0) {
             // FIXME Abstract accumulator selection logic
-            acc = new TopNScoredItemAccumulator(neighborhoodSize);
+            acc = new TopNScoredIdAccumulator(neighborhoodSize);
         } else {
-            acc = new UnlimitedScoredItemAccumulator();
+            acc = new UnlimitedScoredIdAccumulator();
         }
 
         for (Long2DoubleMap.Entry nbr: allNeighbors.long2DoubleEntrySet()) {
