@@ -55,7 +55,7 @@ task ciPublish {
 
 allprojects { project ->
     group 'org.lenskit'
-    version '3.0-SNAPSHOT'
+    version '3.0-M1'
 
     ext.getConfigProperty = { name, dft ->
         if (project.hasProperty(name)) {
