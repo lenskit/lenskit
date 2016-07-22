@@ -89,10 +89,7 @@ public final class BasicResult extends AbstractResult implements Serializable {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                          .add("id", id)
-                          .add("score", score)
-                          .toString();
+        return String.format("<%d:%.4f>", id, score);
     }
     //endregion
 }
