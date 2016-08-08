@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.lenskit.util;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -29,11 +29,9 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import java.util.List;
 
 /**
- * Accumulate a sorted list of scored items.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Accumulate a sorted list of scored IDs.
  */
-public interface ScoredItemAccumulator {
+public interface ScoredIdAccumulator {
     /**
      * Query whether the accumulator is empty.
      *

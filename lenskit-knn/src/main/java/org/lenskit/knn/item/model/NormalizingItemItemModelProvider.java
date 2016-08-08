@@ -23,15 +23,16 @@ package org.lenskit.knn.item.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.inject.Transient;
-import org.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Transient;
+import org.lenskit.knn.item.ItemSimilarity;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +91,7 @@ public class NormalizingItemItemModelProvider implements Provider<ItemItemModel>
 
         SortedKeyIndex itemDomain = SortedKeyIndex.fromCollection(itemUniverse);
         assert itemDomain.size() == nitems;
-        List<ImmutableSparseVector> matrix = Lists.newArrayListWithCapacity(itemDomain.size());
+        List<Long2DoubleMap> matrix = Lists.newArrayListWithCapacity(itemDomain.size());
 
         // working space for accumulating each row (reuse between rows)
         MutableSparseVector currentRow = MutableSparseVector.create(itemUniverse);
@@ -120,7 +121,7 @@ public class NormalizingItemItemModelProvider implements Provider<ItemItemModel>
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
 
-            matrix.add(normalized.immutable());
+            matrix.add(LongUtils.frozenMap(normalized.asMap()));
         }
 
         timer.stop();

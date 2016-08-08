@@ -136,7 +136,7 @@ subprojects {
         task.mustRunAfter check
     }
     // defer javadoc until after the build
-    javadoc.mustRunAfter 'classes'
+    tasks.javadoc.mustRunAfter 'classes'
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'

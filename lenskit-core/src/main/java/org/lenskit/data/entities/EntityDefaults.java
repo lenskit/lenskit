@@ -189,9 +189,9 @@ public class EntityDefaults {
     }
 
     private static class DefaultsBean {
-        private Map<String, String> attributes;
-        private Map<String, String> derivations;
-        private List<String> columns;
+        private Map<String, String> attributes = new HashMap<>();
+        private Map<String, String> derivations = new HashMap<>();
+        private List<String> columns = new ArrayList<>();
         private String builder;
 
         public Map<String, String> getAttributes() {

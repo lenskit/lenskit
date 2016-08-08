@@ -23,9 +23,9 @@ package org.lenskit.basic;
 
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.UnlimitedScoredIdAccumulator;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
@@ -85,11 +85,11 @@ public class TopNItemRecommender extends AbstractItemRecommender {
                      n, user, candidates.size());
 
         Map<Long, Double> scores = scorer.score(user, candidates);
-        ScoredItemAccumulator accum;
+        ScoredIdAccumulator accum;
         if (n >= 0) {
-            accum = new TopNScoredItemAccumulator(n);
+            accum = new TopNScoredIdAccumulator(n);
         } else {
-            accum = new UnlimitedScoredItemAccumulator();
+            accum = new UnlimitedScoredIdAccumulator();
         }
 
         Long2DoubleFunction map = LongUtils.asLong2DoubleFunction(scores);

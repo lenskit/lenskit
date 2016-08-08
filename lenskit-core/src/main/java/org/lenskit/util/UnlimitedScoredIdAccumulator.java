@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.lenskit.util;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -31,13 +31,11 @@ import java.util.List;
 
 /**
  * Scored item accumulator with no upper bound.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
+public final class UnlimitedScoredIdAccumulator implements ScoredIdAccumulator {
     private ScoredIdListBuilder scores;
 
-    public UnlimitedScoredItemAccumulator() {}
+    public UnlimitedScoredIdAccumulator() {}
 
     @Override
     public boolean isEmpty() {
@@ -81,6 +79,9 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
 
     @Override
     public Long2DoubleMap finishMap() {
+        if (scores == null) {
+            return Long2DoubleMaps.EMPTY_MAP;
+        }
         // FIXME Make this efficient
         Long2DoubleMap set = new Long2DoubleOpenHashMap(scores.size());
         for (ScoredId id: finish()) {
