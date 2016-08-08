@@ -1,6 +1,9 @@
 package org.lenskit.solver;
 
+import javax.inject.Inject;
+
 public class LogisticLoss implements ObjectiveFunction {
+    @Inject
     public LogisticLoss() { }
 
     //unused

@@ -1,5 +1,7 @@
 package org.lenskit.solver;
 
+import javax.inject.Inject;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -7,7 +9,8 @@ public class ExpectationMaximization extends AbstractOptimizationMethod {
     private int maxIter;
     private double tol;
     private OptimizationMethod method;
-    
+
+    @Inject
     public ExpectationMaximization() {
         maxIter = 50;
         tol = 1.0;

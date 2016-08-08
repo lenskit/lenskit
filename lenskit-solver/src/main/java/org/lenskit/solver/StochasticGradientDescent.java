@@ -2,6 +2,7 @@ package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import javax.inject.Inject;
 import java.util.List;
 
 /**
@@ -13,12 +14,13 @@ public class StochasticGradientDescent extends AbstractOnlineOptimizationMethod 
     private double l2coef;
     private double lr;
 
+    @Inject
     public StochasticGradientDescent() {
         super();
         maxIter = 50;
-        l2coef = 0.01;
-        lr = 0.005;
-        tol = 1.0;
+        l2coef = 0.1;
+        lr = 0.01;
+        tol = 5.0;
     }
 
     public StochasticGradientDescent(int maxIter, double l2coef, double learningRate, double tol) {

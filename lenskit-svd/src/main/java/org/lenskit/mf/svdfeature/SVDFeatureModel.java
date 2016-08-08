@@ -5,6 +5,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.featurizer.Feature;
@@ -21,6 +22,7 @@ import java.util.*;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@DefaultProvider(SVDFeatureModelProvider.class)
 public class SVDFeatureModel extends AbstractLearningModel implements Featurizer {
     private final ObjectiveFunction objectiveFunction;
     private final Set<String> biasFeas = new HashSet<>();
@@ -36,7 +38,7 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
                            ObjectiveFunction objectiveFunction) {
         super();
         this.factDim = factDim;
-        this.labelName = "label";
+        this.labelName = "rating";
         this.weightName = "weight";
         this.objectiveFunction = objectiveFunction;
         this.variableSpace.requestScalarVar(SVDFeatureIndexName.BIASES.get(),
@@ -136,9 +138,7 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
             ensureVectorVarSpace(ifeas);
         }
         SVDFeatureInstance ins = new SVDFeatureInstance(gfeas, ufeas, ifeas);
-        if (entity.hasAttribute(labelName)) {
-            ins.label = entity.getDouble(TypedName.create(labelName, Double.class));
-        }
+        ins.label = entity.getDouble(TypedName.create(labelName, Double.class));
         if (entity.hasAttribute(weightName)) {
             ins.weight = entity.getDouble(TypedName.create(weightName, Double.class));
         }

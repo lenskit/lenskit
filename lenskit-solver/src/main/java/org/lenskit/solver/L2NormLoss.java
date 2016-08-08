@@ -1,9 +1,12 @@
 package org.lenskit.solver;
 
+import javax.inject.Inject;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L2NormLoss implements ObjectiveFunction {
+    @Inject
     public L2NormLoss() { }
 
     public void wrapOracle(StochasticOracle orc) {

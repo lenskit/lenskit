@@ -3,22 +3,24 @@ package org.lenskit.mf.svdfeature;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
+import org.lenskit.featurizer.Featurizer;
 import org.lenskit.solver.LearningData;
 import org.lenskit.solver.LearningInstance;
 import org.lenskit.util.io.ObjectStream;
 
-public class SVDFeatureEntityData implements LearningData {
+public class SVDFeatureLearningData implements LearningData {
 
-    private final SVDFeatureModel model;
+    private final Featurizer featurizer;
     private final DataAccessObject dao;
     private final EntityType entityType;
     private ObjectStream<Entity> entityStream = null;
 
-    public SVDFeatureEntityData(EntityType entityType, DataAccessObject dao,
-                                SVDFeatureModel model) {
-        this.model = model;
+    public SVDFeatureLearningData(EntityType entityType,
+                                  DataAccessObject dao,
+                                  Featurizer featurizer) {
         this.entityType = entityType;
         this.dao = dao;
+        this.featurizer = featurizer;
     }
 
     public LearningInstance getLearningInstance() {
@@ -30,7 +32,7 @@ public class SVDFeatureEntityData implements LearningData {
             entityStream.close();
             return null;
         } else {
-            return model.featurize(entity, true);
+            return featurizer.featurize(entity, true);
         }
     }
 

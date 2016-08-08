@@ -17,16 +17,16 @@ import java.util.List;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureModelItemScorer extends AbstractItemScorer {
+public class SVDFeatureItemScorer extends AbstractItemScorer {
     final private SVDFeatureModel model;
 
     @Inject
-    public SVDFeatureModelItemScorer(SVDFeatureModel model) {
+    public SVDFeatureItemScorer(SVDFeatureModel model) {
         this.model = model;
     }
 
     public double predict(SVDFeatureInstance ins) {
-        return model.predict(ins, true);
+        return model.predict(ins, false);
     }
 
     public List<SVDFeatureInstance> buildSVDFeatureInstance(long user, Collection<Long> items) {
@@ -35,6 +35,8 @@ public class SVDFeatureModelItemScorer extends AbstractItemScorer {
             BasicEntityBuilder builder = new BasicEntityBuilder(CommonTypes.RATING);
             builder.setAttribute(CommonAttributes.USER_ID, user);
             builder.setAttribute(CommonAttributes.ITEM_ID, item);
+            builder.setAttribute(CommonAttributes.ENTITY_ID, item);
+            builder.setAttribute(CommonAttributes.RATING, 0.0);
             instances.add((SVDFeatureInstance)(model.featurize(builder.build(), false)));
         }
         return instances;

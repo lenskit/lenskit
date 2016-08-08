@@ -2,6 +2,7 @@ package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.RealVector;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L2Regularizer {
+    @Inject
     public L2Regularizer() {}
 
     public double getValue(double var) {

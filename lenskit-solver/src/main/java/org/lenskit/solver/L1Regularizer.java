@@ -1,9 +1,12 @@
 package org.lenskit.solver;
 
+import javax.inject.Inject;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L1Regularizer {
+    @Inject
     public L1Regularizer() {}
 
     public double getValue(double var) {

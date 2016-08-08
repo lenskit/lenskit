@@ -22,8 +22,9 @@ public class IdentityExtractor implements FeatureExtractor {
 
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
                                               IndexSpace indexSpace) {
-        List<Feature> feaList = new ArrayList<>();
+        Map<String, List<Feature>> feaMap = new HashMap<>();
         if (entity.hasAttribute(attrName)) {
+            List<Feature> feaList = new ArrayList<>();
             double val = entity.getDouble(TypedName.create(attrName, Double.class));
             if (indexSpace.containsKey(indexName, attrName)) {
                 Feature feature = new Feature(
@@ -34,9 +35,8 @@ public class IdentityExtractor implements FeatureExtractor {
                 Feature feature = new Feature(index, val);
                 feaList.add(feature);
             }
+            feaMap.put(feaName, feaList);
         }
-        Map<String, List<Feature>> feaMap = new HashMap<>();
-        feaMap.put(feaName, feaList);
         return feaMap;
     }
 }

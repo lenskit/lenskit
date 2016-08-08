@@ -9,17 +9,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LongToIdxExtractor implements FeatureExtractor {
+public class SeparatedStringToIdxExtractor implements FeatureExtractor {
     private final String indexName;
     private final String attrName;
     private final String feaName;
+    private final String separator;
 
-    public LongToIdxExtractor(String indexName,
-                                String attrName,
-                                String feaName) {
+    public SeparatedStringToIdxExtractor(String indexName,
+                                         String attrName,
+                                         String feaName,
+                                         String separator) {
         this.indexName = indexName;
         this.attrName = attrName;
         this.feaName = feaName;
+        this.separator = separator;
     }
 
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
@@ -27,10 +30,13 @@ public class LongToIdxExtractor implements FeatureExtractor {
         Map<String, List<Feature>> feaMap = new HashMap<>();
         if (entity.hasAttribute(attrName)) {
             List<Feature> features = new ArrayList<>();
-            Long attr = entity.get(TypedName.create(attrName, Long.class));
-            String key = attrName + "=" + attr.toString();
-            FeatureExtractorUtilities.getOrSetIndexSpaceToFeaturize(features, update,
-                                                                    indexSpace, indexName, key);
+            String attr = entity.get(TypedName.create(attrName, String.class));
+            String[] fields = attr.split(separator);
+            for (String field : fields) {
+                String key = attrName + "=" + field;
+                FeatureExtractorUtilities.getOrSetIndexSpaceToFeaturize(features, update,
+                                                                        indexSpace, indexName, key);
+            }
             feaMap.put(feaName, features);
         }
         return feaMap;

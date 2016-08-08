@@ -3,6 +3,7 @@ package org.lenskit.solver;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ public class BatchGradientDescent extends AbstractOptimizationMethod {
     private double lr;
     private double tol;
 
+    @Inject
     public BatchGradientDescent() {
         maxIter = 50;
         l2coef = 0.01;

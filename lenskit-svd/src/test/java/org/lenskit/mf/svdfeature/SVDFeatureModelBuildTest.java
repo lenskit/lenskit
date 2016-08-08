@@ -34,27 +34,13 @@ public class SVDFeatureModelBuildTest {
             entityBuilder.setAttribute(CommonAttributes.RATING, (double)(random.nextInt(5) + 1));
         }
         DataAccessObject dao = EntityCollectionDAO.create(entityList);
-        List<FeatureExtractor> featureExtractors = new ArrayList<>();
-        featureExtractors.add(new ConstantOneExtractor(SVDFeatureIndexName.BIASES.get(),
-                                                       "globalBias", "globalBiasIdx"));
-        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.BIASES.get(),
-                                                     "userId", "userBiasIdx"));
-        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.BIASES.get(),
-                                                     "movieId", "itemBiasIdx"));
-        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.FACTORS.get(),
-                                                     "userId", "userFactIdx"));
-        featureExtractors.add(new LongToIdxExtractor(SVDFeatureIndexName.FACTORS.get(),
-                                                     "movieId", "itemFactIdx"));
-        String[] bFeas = {"globalBiasIdx", "userBiasIdx", "itemBiasIdx"};
-        String[] uFeas = {"userFactIdx"};
-        String[] iFeas = {"itemFactIdx"};
-        SVDFeatureModelBuilder modelBuilder = new SVDFeatureModelBuilder(entityType, dao, null, featureExtractors,
-                                                                         new HashSet<>(Arrays.asList(bFeas)),
-                                                                         new HashSet<>(Arrays.asList(uFeas)),
-                                                                         new HashSet<>(Arrays.asList(iFeas)),
-                                                                         biasSize, factSize, factDim,
-                                                                         CommonAttributes.RATING.getName(),
-                                                                         "weight", loss, method);
+        SVDFeatureModelProvider modelBuilder = new SVDFeatureModelProvider(dao, null, null,
+                                                                           null,
+                                                                           null,
+                                                                           null,
+                                                                           biasSize, factSize, factDim,
+                                                                           CommonAttributes.RATING.getName(),
+                                                                           "weight", loss, method);
         modelBuilder.get();
     }
 }
