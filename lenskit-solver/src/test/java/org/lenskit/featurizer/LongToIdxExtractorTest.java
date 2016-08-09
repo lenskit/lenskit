@@ -19,24 +19,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-package org.lenskit.space;
+package org.lenskit.featurizer;
 
 import org.junit.Test;
+import org.lenskit.data.entities.BasicEntityBuilder;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.space.IndexSpace;
+import org.lenskit.space.SynchronizedIndexSpace;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class SynchronizedIndexSpaceTest {
+public class LongToIdxExtractorTest {
 
     @Test
-    public void testSynchronizedIndexSpace() {
+    public void testLongToIdxExtractor() {
+        LongToIdxExtractor extractor = new LongToIdxExtractor("biases", "user", "userBiasIdx");
         IndexSpace indexSpace = new SynchronizedIndexSpace();
         indexSpace.requestKeyMap("biases");
-        indexSpace.setKey("biases", "user=1");
-        indexSpace.setKey("biases", "item=1");
-        assertThat(indexSpace.containsKey("biases", "user=1"), equalTo(true));
-        assertThat(indexSpace.containsKey("biases", "item=1"), equalTo(true));
-        assertThat(indexSpace.getIndexForKey("biases", "user=1"), equalTo(0));
-        assertThat(indexSpace.getIndexForKey("biases", "item=1"), equalTo(1));
+        BasicEntityBuilder builder = new BasicEntityBuilder(CommonTypes.RATING);
+        builder.setAttribute(CommonAttributes.ENTITY_ID, 1L);
+        builder.setAttribute(CommonAttributes.USER_ID, 1L);
+        Map<String, List<Feature>> features = extractor.extract(builder.build(), true, indexSpace);
+        assertThat(features.containsKey("userBiasIdx"), equalTo(true));
+        assertThat(features.get("userBiasIdx").size(), equalTo(1));
+        assertThat(features.get("userBiasIdx").get(0).getValue(), equalTo(1.0));
     }
 }

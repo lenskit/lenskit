@@ -19,24 +19,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-package org.lenskit.space;
+package org.lenskit.featurizer;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;
+import org.lenskit.data.entities.*;
+import org.lenskit.space.IndexSpace;
+import org.lenskit.space.SynchronizedIndexSpace;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class SynchronizedVariableSpaceTest {
-
+public class StringToIdxExtractorTest {
     @Test
-    public void testSynchronizedVariableSpace() {
-        VariableSpace variableSpace = new SynchronizedVariableSpace();
-        variableSpace.requestScalarVar("biases", 10, 0.0, false, false);
-        assertThat(variableSpace.getScalarVarByName("biases").getDimension(), equalTo(10));
-        assertThat(variableSpace.getScalarVarByNameIndex("biases", 0), equalTo(0.0));
-        variableSpace.requestVectorVar("factors", 10, 10, 0.0, true, true);
-        assertThat(variableSpace.getVectorVarByName("factors").size(), equalTo(10));
-        assertThat(StatUtils.sum(variableSpace.getVectorVarByNameIndex("factors", 0).toArray()), equalTo(1.0));
+    public void testStringToIdxExtractor() {
+        StringToIdxExtractor extractor = new StringToIdxExtractor("biases", "tag", "tagBiasIdx");
+        IndexSpace indexSpace = new SynchronizedIndexSpace();
+        indexSpace.requestKeyMap("biases");
+        BasicEntityBuilder builder = new BasicEntityBuilder(EntityType.forName("tagging"));
+        builder.setAttribute(CommonAttributes.ENTITY_ID, 1L);
+        builder.setAttribute(TypedName.create("tag", String.class), "sci-fi");
+        Map<String, List<Feature>> features = extractor.extract(builder.build(), true, indexSpace);
+        assertThat(features.containsKey("tagBiasIdx"), equalTo(true));
+        assertThat(features.get("tagBiasIdx").size(), equalTo(1));
+        assertThat(features.get("tagBiasIdx").get(0).getValue(), equalTo(1.0));
     }
 }

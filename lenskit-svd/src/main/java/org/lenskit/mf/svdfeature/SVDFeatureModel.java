@@ -21,7 +21,6 @@
 
 package org.lenskit.mf.svdfeature;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.linear.MatrixUtils;
 
 import org.apache.commons.math3.linear.RealVector;
@@ -34,10 +33,6 @@ import org.lenskit.featurizer.FeatureExtractor;
 import org.lenskit.featurizer.Featurizer;
 import org.lenskit.solver.*;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -53,20 +48,6 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
     private final String weightName;
     private final List<FeatureExtractor> featureExtractors = new ArrayList<>();
     private final int factDim;
-
-
-    public SVDFeatureModel(int biasSize, int factSize, int factDim,
-                           ObjectiveFunction objectiveFunction) {
-        super();
-        this.factDim = factDim;
-        this.labelName = "rating";
-        this.weightName = "weight";
-        this.objectiveFunction = objectiveFunction;
-        this.variableSpace.requestScalarVar(SVDFeatureIndexName.BIASES.get(),
-                                            biasSize, 0, false, false);
-        this.variableSpace.requestVectorVar(SVDFeatureIndexName.FACTORS.get(),
-                                            factSize, this.factDim, 0, true, false);
-    }
 
     public SVDFeatureModel(Set<String> biasFeas,
                            Set<String> ufactFeas,
@@ -115,32 +96,6 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
             variableSpace.ensureVectorVar(SVDFeatureIndexName.FACTORS.get(),
                                           fea.getIndex() + 1, factDim,
                                           0, true, true);
-        }
-    }
-
-    private String realVectorToString(RealVector vec) {
-        String[] arr = new String[vec.getDimension()];
-        for (int i=0; i<vec.getDimension(); i++) {
-            arr[i] = Double.valueOf(vec.getEntry(i)).toString();
-        }
-        return StringUtils.join(arr, "\t");
-    }
-
-    public void dump(File modelFile) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(modelFile));
-            RealVector biases = variableSpace.getScalarVarByName(SVDFeatureIndexName.BIASES.get());
-            writer.write(Double.valueOf(biases.getEntry(0)).toString() + "\n");
-            String biasLine = realVectorToString(biases.getSubVector(1, biases.getDimension() - 1));
-            writer.write(biasLine + "\n");
-            List<RealVector> factors = variableSpace.getVectorVarByName(SVDFeatureIndexName.FACTORS.get());
-            for (int i=0; i<factors.size(); i++) {
-                String factLine = realVectorToString(factors.get(i));
-                writer.write(factLine + "\n");
-            }
-            writer.close();
-        } catch (IOException e) {
-
         }
     }
 
@@ -205,13 +160,7 @@ public class SVDFeatureModel extends AbstractLearningModel implements Featurizer
     }
 
     public StochasticOracle getStochasticOracle(LearningInstance inIns) {
-        SVDFeatureInstance ins;
-        if (inIns instanceof SVDFeatureInstance) {
-            ins = (SVDFeatureInstance) inIns;
-        } else {
-            //raise exception
-            return null;
-        }
+        SVDFeatureInstance ins = (SVDFeatureInstance) inIns;
         StochasticOracle orc = new StochasticOracle();
         RealVector ufactSum = MatrixUtils.createRealVector(new double[factDim]);
         RealVector ifactSum = MatrixUtils.createRealVector(new double[factDim]);

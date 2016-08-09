@@ -72,14 +72,14 @@ public class StochasticGradientDescent extends AbstractOnlineOptimizationMethod 
             objFunc.wrapOracle(orc);
             for (int i=0; i<orc.scalarNames.size(); i++) {
                 String name = orc.scalarNames.get(i);
-                int idx = orc.scalarIndexes.get(i);
-                double grad = orc.scalarGrads.get(i);
+                int idx = orc.scalarIndexes.getInt(i);
+                double grad = orc.scalarGrads.getDouble(i);
                 double var = model.getScalarVarByNameIndex(name, idx);
                 model.setScalarVarByNameIndex(name, idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
             }
             for (int i=0; i<orc.vectorNames.size(); i++) {
                 String name = orc.vectorNames.get(i);
-                int idx = orc.vectorIndexes.get(i);
+                int idx = orc.vectorIndexes.getInt(i);
                 RealVector var = model.getVectorVarByNameIndex(name, idx);
                 RealVector grad = orc.vectorGrads.get(i);
                 model.setVectorVarByNameIndex(name, idx, var.combineToSelf(1.0, -lr,

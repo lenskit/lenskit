@@ -21,6 +21,7 @@
 package org.lenskit.mf.svd;
 
 import org.apache.commons.math3.linear.MatrixUtils;
+
 import org.apache.commons.math3.linear.RealMatrix;
 import org.lenskit.util.keys.HashKeyIndex;
 import org.junit.Before;

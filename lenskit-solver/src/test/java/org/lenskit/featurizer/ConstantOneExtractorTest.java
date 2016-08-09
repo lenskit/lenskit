@@ -19,24 +19,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-package org.lenskit.space;
+package org.lenskit.featurizer;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Test;
+import org.lenskit.data.entities.BasicEntityBuilder;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.space.IndexSpace;
+import org.lenskit.space.SynchronizedIndexSpace;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class SynchronizedVariableSpaceTest {
+public class ConstantOneExtractorTest {
 
     @Test
-    public void testSynchronizedVariableSpace() {
-        VariableSpace variableSpace = new SynchronizedVariableSpace();
-        variableSpace.requestScalarVar("biases", 10, 0.0, false, false);
-        assertThat(variableSpace.getScalarVarByName("biases").getDimension(), equalTo(10));
-        assertThat(variableSpace.getScalarVarByNameIndex("biases", 0), equalTo(0.0));
-        variableSpace.requestVectorVar("factors", 10, 10, 0.0, true, true);
-        assertThat(variableSpace.getVectorVarByName("factors").size(), equalTo(10));
-        assertThat(StatUtils.sum(variableSpace.getVectorVarByNameIndex("factors", 0).toArray()), equalTo(1.0));
+    public void testConstantOneExtractor() {
+        ConstantOneExtractor extractor = new ConstantOneExtractor("biases", "globalBias", "globalBiasIdx");
+        IndexSpace indexSpace = new SynchronizedIndexSpace();
+        indexSpace.requestKeyMap("biases");
+        BasicEntityBuilder builder = new BasicEntityBuilder(CommonTypes.RATING);
+        builder.setAttribute(CommonAttributes.ENTITY_ID, 1L);
+        Map<String, List<Feature>> features = extractor.extract(builder.build(), true, indexSpace);
+        assertThat(features.containsKey("globalBiasIdx"), equalTo(true));
+        assertThat(features.get("globalBiasIdx").size(), equalTo(1));
+        assertThat(features.get("globalBiasIdx").get(0).getValue(), equalTo(1.0));
     }
 }

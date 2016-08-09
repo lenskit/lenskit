@@ -38,7 +38,7 @@ import java.util.*;
 public class SVDFeatureModelBuildTest {
 
     @Test
-    public void testModelBuildFromEntityDAO() throws IOException {
+    public void testModelBuildFromEntityDAO() {
 
         int biasSize = 1;
         int factSize = 1;

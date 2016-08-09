@@ -22,13 +22,14 @@
 package org.lenskit.solver;
 
 import org.apache.commons.math3.linear.MatrixUtils;
+
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.data.entities.BasicEntityBuilder;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -99,13 +100,19 @@ public class BatchGradientDescent extends AbstractOptimizationMethod {
     }
 
     public double minimize(LearningModel model, LearningData learningData, LearningData validData) {
-        //TODO: add validating
         ObjectiveFunction objFunc = model.getObjectiveFunction();
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
+        ObjectiveTerminationCriterion validCrit = null;
+        if (validData != null) {
+            validCrit = new ObjectiveTerminationCriterion(tol, maxIter);
+        }
         assignGrads(model);
         L2Regularizer l2term = new L2Regularizer();
         double objVal = 0;
         while (termCrit.keepIterate()) {
+            if (validCrit != null && !(validCrit.keepIterate())) {
+                break;
+            }
             objVal = 0;
             List<String> allScalarVarNames = model.getAllScalarVarNames();
             for (String name : allScalarVarNames) {
@@ -125,14 +132,14 @@ public class BatchGradientDescent extends AbstractOptimizationMethod {
                 objFunc.wrapOracle(orc);
                 for (int i=0; i<orc.scalarNames.size(); i++) {
                     String name = orc.scalarNames.get(i);
-                    int idx = orc.scalarIndexes.get(i);
-                    double grad = orc.scalarGrads.get(i);
+                    int idx = orc.scalarIndexes.getInt(i);
+                    double grad = orc.scalarGrads.getDouble(i);
                     double var = model.getScalarVarByNameIndex(name, idx);
                     scalarGrads.get(name).addToEntry(idx, grad + l2coef * l2term.getGradient(var));
                 }
                 for (int i=0; i<orc.vectorNames.size(); i++) {
                     String name = orc.vectorNames.get(i);
-                    int idx = orc.vectorIndexes.get(i);
+                    int idx = orc.vectorIndexes.getInt(i);
                     RealVector var = model.getVectorVarByNameIndex(name, idx);
                     RealVector grad = orc.vectorGrads.get(i);
                     vectorGrads.get(name).get(idx).combineToSelf(1.0, 1.0, l2term.addGradient(grad, var, l2coef));
@@ -140,7 +147,13 @@ public class BatchGradientDescent extends AbstractOptimizationMethod {
                 objVal += orc.objVal;
             }
             updateVars(model);
-            termCrit.addIteration("BatchGradientDescent", objVal);
+            termCrit.addIteration(BatchGradientDescent.class.toString() + " -- Learning", objVal);
+
+            if (validData != null) {
+                double validObjVal = evaluate(model, validData);
+                validCrit.addIteration(BatchGradientDescent.class.toString()
+                                               + " -- Validating", validObjVal);
+            }
         }
         return objVal;
     }

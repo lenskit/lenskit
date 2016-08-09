@@ -34,9 +34,9 @@ import java.util.List;
 public class SVDFeatureInstance implements LearningInstance {
     double weight;
     double label;
-    List<Feature> gfeas;
-    List<Feature> ufeas;
-    List<Feature> ifeas;
+    final List<Feature> gfeas;
+    final List<Feature> ufeas;
+    final List<Feature> ifeas;
 
     public SVDFeatureInstance() {
         gfeas = new ArrayList<>();
