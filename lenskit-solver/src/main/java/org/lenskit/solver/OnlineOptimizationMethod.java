@@ -31,5 +31,10 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
  */
 @DefaultImplementation(StochasticGradientDescent.class)
 public interface OnlineOptimizationMethod extends OptimizationMethod {
+
+    /**
+     * Update the learningModel by going through the learningData for one iteration.
+     * @return the objective (loss) value of the whole learningData.
+     */
     double update(LearningModel learningModel, LearningData learningData);
 }

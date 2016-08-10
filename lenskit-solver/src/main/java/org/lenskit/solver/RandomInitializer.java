@@ -37,16 +37,27 @@ public class RandomInitializer {
     double multi;
     Random rand;
 
+    /**
+     * Construct a RandomInitializer with default java Random class and 0.001 as the multiplier
+     * (see {@link #RandomInitializer(long, double) for the multiplier.}
+     */
     public RandomInitializer() {
         multi = 0.001;
         rand = new Random();
     }
 
+    /**
+     * Construct a RandomInitializer with see as the seed of java Random class and multiplier,
+     * which is used to multiply each generated random value.
+     */
     public RandomInitializer(long seed, double multiplier) {
         multi = multiplier;
         rand = new Random(seed);
     }
 
+    /**
+     * Randomly initialize vec. If normalize is true, vec will be positive and sum up to be one.
+     */
     public void randInitVector(RealVector vec, boolean normalize) {
         int len = vec.getDimension();
         double sum = 0.0;
@@ -62,6 +73,9 @@ public class RandomInitializer {
         }
     }
 
+    /**
+     * Randomly initialize doubleList. If normalize is true, doubleList will be positive and sum up to be one.
+     */
     public void randInitDoubleList(List<Double> doubleList, boolean normalize) {
         int size = doubleList.size();
         double sum = 0.0;
@@ -79,6 +93,9 @@ public class RandomInitializer {
         }
     }
 
+    /**
+     * Randomly initialize mat. If normalize is true, each row of mat will be positive and sum up to be one.
+     */
     public void randInitMatrix(RealMatrix mat, boolean normalize) {
         int len = mat.getRowDimension();
         RealVector vec = MatrixUtils.createRealVector(new double[mat.getColumnDimension()]);

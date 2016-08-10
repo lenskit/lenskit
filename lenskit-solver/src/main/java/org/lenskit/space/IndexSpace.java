@@ -29,8 +29,24 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface IndexSpace extends Serializable {
+
+    /**
+     * Create an index with the indicated name.
+     */
     void requestKeyMap(String name);
+
+    /**
+     * Set the key into the given name index. The index value of the key will be auto-incremental.
+     */
     int setKey(String name, Object key);
+
+    /**
+     * Test whether the key is in the name index.
+     */
     boolean containsKey(String name, Object key);
+
+    /**
+     * Retrieve the index value for the given key in the name index.
+     */
     int getIndexForKey(String name, Object key);
 }

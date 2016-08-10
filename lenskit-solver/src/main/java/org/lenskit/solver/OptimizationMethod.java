@@ -30,5 +30,11 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
  */
 @DefaultImplementation(StochasticGradientDescent.class)
 public interface OptimizationMethod {
+
+    /**
+     * An optimization method minimizing the objective function of model by iterating on the learningData.
+     * After each iteration, it tests on validData to prevent over-fitting.
+     * @return the objective (loss) value of model on learningData after convergence.
+     */
     double minimize(LearningModel model, LearningData learningData, LearningData validData);
 }

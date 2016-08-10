@@ -34,6 +34,15 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface FeatureExtractor extends Serializable {
+
+    /**
+     * Feature extractor interface.
+     *
+     * @param entity the data entity to extract feature from.
+     * @param indexSpace the look-up index space to use
+     * @param update whether update indexSpace if the used attributes are not present in the indexSpace
+     * @return a feature map from feature names to a list of features.
+     */
     Map<String, List<Feature>> extract(Entity entity, boolean update,
                                        IndexSpace indexSpace);
 }

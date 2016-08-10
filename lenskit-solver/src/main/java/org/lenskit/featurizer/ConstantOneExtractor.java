@@ -45,6 +45,15 @@ public class ConstantOneExtractor implements FeatureExtractor {
         this.indexName = indexName;
     }
 
+    /**
+     * Extracting a feature called feaName with feature value one. It will extract out a feature except when
+     * update is false and attrName is not present in the indexSpace.
+     *
+     * @param entity the data entity to extract feature from, which is not used for this feature extractor.
+     * @param indexSpace the look-up index space to use, which should have a index for indexName in the space
+     * @param update whether update indexSpace if the attrName is not present in the index indexName
+     * @return a feature map from feaName to a list of features.
+     */
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
                                               IndexSpace indexSpace) {
         List<Feature> feaList = new ArrayList<>();

@@ -49,6 +49,16 @@ public class LongToIdxExtractor implements FeatureExtractor {
         this.feaName = feaName;
     }
 
+    /**
+     * Convert a long-typed attribute in entity to be a one-hot encoded categorical feature with feature value one.
+     * The attrName together with its attribute value (i.e. a long integer) are treated as the key. It will extract
+     * out a feature except when attrName is not in entity, or attrName is not in indexSpace and update is false.
+     *
+     * @param entity the data entity to extract feature from.
+     * @param indexSpace the look-up index space to use
+     * @param update whether update indexSpace if the used attributes are not present in the indexSpace
+     * @return a feature map from feature names to a list of features.
+     */
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
                                               IndexSpace indexSpace) {
         Map<String, List<Feature>> feaMap = new HashMap<>();

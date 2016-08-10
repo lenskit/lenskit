@@ -27,6 +27,16 @@ package org.lenskit.solver;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface LearningData {
+
+    /**
+     * Every call of this method returns a learning instance similar to an iterator. If it returns null,
+     * the optimization algorithm takes as the end of the current iteration.
+     * @return
+     */
     LearningInstance getLearningInstance();
+
+    /**
+     * Start a new iteration, after which the {@link #getLearningInstance()} iterates the learning data set.
+     */
     void startNewIteration();
 }

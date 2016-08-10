@@ -33,12 +33,16 @@ import java.util.List;
 public class FeatureExtractorUtilities {
     private FeatureExtractorUtilities() {}
 
+    /**
+     * A utility function to construct {@link Feature} from a key-value pair. It will add the constructed feature
+     * into features unless update is false and key is not in the indexName of indexSpace.
+     */
     static public void getOrSetIndexSpaceToFeaturize(List<Feature> features,
                                                      boolean update,
                                                      IndexSpace indexSpace,
-                                                     String indexName, Object key, double val) {
+                                                     String indexName, Object key, double value) {
         if (indexSpace.containsKey(indexName, key)) {
-            Feature feature = new Feature(indexSpace.getIndexForKey(indexName, key), val);
+            Feature feature = new Feature(indexSpace.getIndexForKey(indexName, key), value);
             features.add(feature);
         } else if (update) {
             int index = indexSpace.setKey(indexName, key);

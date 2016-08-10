@@ -30,5 +30,9 @@ import org.lenskit.solver.LearningInstance;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Featurizer {
+
+    /**
+     * Extract features from entity by calling feature extractors and return a learning instance.
+     */
     LearningInstance featurize(Entity entity, boolean update);
 }

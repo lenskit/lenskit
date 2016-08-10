@@ -49,6 +49,15 @@ public class IdentityNumericalExtractor implements FeatureExtractor {
         this.feaName = feaName;
     }
 
+    /**
+     * Identically extract a numerical feature from entity. It will extract out a feature except when attrName
+     * is not in entity, or attrName is not in indexSpace and update is false.
+     *
+     * @param entity the data entity to extract feature from, which may contain attribute attrName
+     * @param indexSpace the look-up index space to use, which should have an index indexName
+     * @param update whether update indexSpace if the used attributes are not present in the indexSpace
+     * @return a feature map from feaName to a list of features.
+     */
     public Map<String, List<Feature>> extract(Entity entity, boolean update,
                                               IndexSpace indexSpace) {
         Map<String, List<Feature>> feaMap = new HashMap<>();

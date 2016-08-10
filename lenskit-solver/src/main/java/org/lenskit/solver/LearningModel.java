@@ -27,7 +27,8 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * An interface for learning model in order to be optimized by {@link OptimizationMethod}.
+ * An interface for learning model in order to be optimized by {@link OptimizationMethod}. It is usually backed up
+ * by a {@link org.lenskit.space.VariableSpace}.
  * See {@link AbstractLearningModel} for a boil-plate implementation.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -48,7 +49,21 @@ public interface LearningModel extends Serializable {
     List<String> getAllScalarVarNames();
     List<String> getAllVectorVarNames();
 
+    /**
+     * Make prediction on the learning instance ins.
+     * @return a real valued prediction, e.g. predicted rating or probability.
+     */
     double predict(LearningInstance ins);
+
+    /**
+     * A learning model takes in an instance and construct a stochastic oracle, i.e. stochastic gradient for the current
+     * instance, including the label, model prediction and the weight of the instance.
+     * @return
+     */
     StochasticOracle getStochasticOracle(LearningInstance ins);
+
+    /**
+     * @return the objective function of the learning model which is specified by the users of LearningModel.
+     */
     ObjectiveFunction getObjectiveFunction();
 }

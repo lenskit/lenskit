@@ -32,5 +32,10 @@ import java.io.Serializable;
  */
 @DefaultImplementation(L2NormLoss.class)
 public interface ObjectiveFunction extends Serializable {
+
+    /**
+     * An objective function wraps a stochastic oracle from a learning model, e.g. computing the loss value
+     * based on the learning model's prediction, wrapping the gradient etc.
+     */
     void wrapOracle(StochasticOracle orc);
 }

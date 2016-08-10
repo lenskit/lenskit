@@ -82,6 +82,30 @@ public class SVDFeatureModelProvider implements Provider<SVDFeatureModel> {
         return CommonTypes.RATING;
     }
 
+    /**
+     * @param entityType the EntityType to retrieve from learnDao or validDao.
+     * @param learnDao the DAO used to construct learning data.
+     * @param validDao the DAO used to construct validation data. Can be null, i.e. without validation.
+     * @param featureExtractors the list of feature extractors to featurize. Can be null which will use the default
+     *                              extractors including
+                                    ConstantOneExtractor(SVDFeatureIndexName.BIASES.get(), "globalBias", "globalBiasIdx")
+                                    LongToIdxExtractor(SVDFeatureIndexName.BIASES.get(), "user", "userBiasIdx")
+                                    LongToIdxExtractor(SVDFeatureIndexName.BIASES.get(), "item", "itemBiasIdx")
+                                    LongToIdxExtractor(SVDFeatureIndexName.FACTORS.get(), "user", "userFactIdx")
+                                    LongToIdxExtractor(SVDFeatureIndexName.FACTORS.get(), "item", "itemFactIdx")
+     * @param biasFeas the set of bias features. Can be null which will use the default
+     *                 {"globalBiasIdx", "userBiasIdx", "itemBiasIdx"}
+     * @param ufactFeas the set of user factor features. Can be null which will use the default {"userFactIdx"}
+     * @param ifactFeas the set of item factor features. Can be null which will use the default {"itemFactIdx"}
+     * @param biasSize the initial size of the scalar variable space with name SVDFeatureIndexName.BIASES.get()
+     * @param factSize the initial size of the vector variable space with name SVDFeatureIndexName.FACTORS.get()
+     * @param factDim the dimension of the factorization.
+     * @param labelName the label attribute name used for featurization and prediction.
+     * @param weightName the label attribute name used for featurization and optimization.
+     * @param loss the objective function for the problem, i.e. LogisticLoss for binary classification and L2NormLoss
+     *             for regression.
+     * @param method the online optimization method used to learn the svdfeature model.
+     */
     @Inject
     public SVDFeatureModelProvider(@Nullable @SVDFeatureEntityType EntityType entityType,
                                    DataAccessObject learnDao,
