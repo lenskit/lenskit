@@ -36,7 +36,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class StringToIdxExtractor {
+public class StringToIdxExtractor implements FeatureExtractor {
     final private String indexName;
     final private String feaName;
     final private String attrName;
