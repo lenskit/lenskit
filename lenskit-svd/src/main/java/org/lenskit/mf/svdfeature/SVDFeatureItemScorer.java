@@ -36,6 +36,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * An item scored backed up by the predictive model: {@link SVDFeatureModel}.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureItemScorer extends AbstractItemScorer {

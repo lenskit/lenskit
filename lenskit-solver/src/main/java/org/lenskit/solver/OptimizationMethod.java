@@ -24,6 +24,8 @@ package org.lenskit.solver;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
+ * Batch optimization method interface.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(StochasticGradientDescent.class)

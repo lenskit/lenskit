@@ -31,19 +31,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A feature extractor that takes a long type input entity attribute and one-hot encode it with appropriate
- * index in the given index space and using feature value as one.
+ * A feature extractor that takes a numerical input entity attribute and directly output it as the feature value
+ * while encoding feature name in a given index space.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class LongToIdxExtractor implements FeatureExtractor {
+public class IdentityNumericalExtractor {
     private final String indexName;
     private final String attrName;
     private final String feaName;
 
-    public LongToIdxExtractor(String indexName,
-                                String attrName,
-                                String feaName) {
+    public IdentityNumericalExtractor(String indexName,
+                              String attrName,
+                              String feaName) {
         this.indexName = indexName;
         this.attrName = attrName;
         this.feaName = feaName;
@@ -54,10 +54,9 @@ public class LongToIdxExtractor implements FeatureExtractor {
         Map<String, List<Feature>> feaMap = new HashMap<>();
         if (entity.hasAttribute(attrName)) {
             List<Feature> features = new ArrayList<>();
-            Long attr = entity.get(TypedName.create(attrName, Long.class));
-            String key = attrName + "=" + attr.toString();
+            double val = entity.get(TypedName.create(attrName, Double.class));
             FeatureExtractorUtilities.getOrSetIndexSpaceToFeaturize(features, update,
-                                                                    indexSpace, indexName, key, 1.0);
+                                                                    indexSpace, indexName, attrName, val);
             feaMap.put(feaName, features);
         }
         return feaMap;

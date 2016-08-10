@@ -29,6 +29,11 @@ import org.lenskit.solver.LearningData;
 import org.lenskit.solver.LearningInstance;
 import org.lenskit.util.io.ObjectStream;
 
+/**
+ * Learing data implementation for {@link SVDFeatureModel}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class SVDFeatureLearningData implements LearningData {
 
     private final Featurizer featurizer;

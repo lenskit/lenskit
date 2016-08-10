@@ -26,15 +26,10 @@ import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAO;
 import org.lenskit.data.entities.*;
-import org.lenskit.featurizer.*;
 import org.lenskit.solver.*;
 
-import java.io.*;
 import java.util.*;
 
-/**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
 public class SVDFeatureModelBuildTest {
 
     @Test
@@ -50,6 +45,7 @@ public class SVDFeatureModelBuildTest {
         Random random = new Random();
         for (int i=0; i<20; i++) {
             EntityBuilder entityBuilder = new BasicEntityBuilder(entityType);
+            entityBuilder.setAttribute(CommonAttributes.ENTITY_ID, (long)i);
             entityBuilder.setAttribute(CommonAttributes.USER_ID, random.nextLong() % 5);
             entityBuilder.setAttribute(CommonAttributes.ITEM_ID, random.nextLong() % 10);
             entityBuilder.setAttribute(CommonAttributes.RATING, (double)(random.nextInt(5) + 1));

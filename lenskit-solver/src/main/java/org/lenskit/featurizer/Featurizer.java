@@ -24,6 +24,11 @@ package org.lenskit.featurizer;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.solver.LearningInstance;
 
+/**
+ * The general interface for featurize an entity into learning instance by calling multiple feature extractors.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface Featurizer {
     LearningInstance featurize(Entity entity, boolean update);
 }

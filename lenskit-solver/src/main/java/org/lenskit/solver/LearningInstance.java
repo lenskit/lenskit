@@ -21,5 +21,11 @@
 
 package org.lenskit.solver;
 
+/**
+ * An interface (place holder) for learning instances which is used by {@link OptimizationMethod}, which
+ * should be extended for a specific model.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface LearningInstance {
 }

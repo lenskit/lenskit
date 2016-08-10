@@ -27,6 +27,11 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * A placeholder for {@link SVDFeatureModelProvider}'s input entity type (to be extracted from data access object).
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @Documented
 @Parameter(EntityType.class)
 @Qualifier

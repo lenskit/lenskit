@@ -26,6 +26,8 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import java.io.Serializable;
 
 /**
+ * Interface of objective function which wraps a prediction function.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(L2NormLoss.class)

@@ -26,6 +26,11 @@ import org.apache.commons.math3.linear.RealVector;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * A general interface of variable space (i.e. parameter server) for supporting any learning models.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface VariableSpace extends Serializable {
     void requestScalarVar(String name, int size, double initial,
                                        boolean randomize, boolean normalize);

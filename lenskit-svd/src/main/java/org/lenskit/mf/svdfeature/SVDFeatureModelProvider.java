@@ -38,6 +38,8 @@ import javax.inject.Provider;
 import java.util.*;
 
 /**
+ * Set up default configurations for {@link SVDFeatureModel} if not indicated and build a model with given learning data.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureModelProvider implements Provider<SVDFeatureModel> {

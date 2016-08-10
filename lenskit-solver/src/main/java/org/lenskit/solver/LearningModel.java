@@ -26,6 +26,12 @@ import org.apache.commons.math3.linear.RealVector;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * An interface for learning model in order to be optimized by {@link OptimizationMethod}.
+ * See {@link AbstractLearningModel} for a boil-plate implementation.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface LearningModel extends Serializable {
     RealVector getScalarVarByName(String name);
     int getScalarVarSizeByName(String name);

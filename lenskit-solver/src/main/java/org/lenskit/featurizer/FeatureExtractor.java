@@ -28,6 +28,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The general interface for feature extractors.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface FeatureExtractor extends Serializable {
     Map<String, List<Feature>> extract(Entity entity, boolean update,
                                        IndexSpace indexSpace);

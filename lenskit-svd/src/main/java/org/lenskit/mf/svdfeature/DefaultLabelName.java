@@ -27,6 +27,12 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * "rating" is used as the default response (to predict) attribute name while {@link SVDFeatureModel}
+ * featurizes an entity to be an instance.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @Documented
 @DefaultString("rating")
 @Parameter(String.class)

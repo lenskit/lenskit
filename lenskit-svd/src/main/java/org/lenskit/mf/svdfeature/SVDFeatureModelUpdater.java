@@ -26,6 +26,11 @@ import org.lenskit.solver.OnlineOptimizationMethod;
 
 import javax.inject.Inject;
 
+/**
+ * Update {@link SVDFeatureModel} with given learning data by calling an online optimization method.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class SVDFeatureModelUpdater {
     final private SVDFeatureModel model;
     final private OnlineOptimizationMethod method;

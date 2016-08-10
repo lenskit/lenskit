@@ -22,6 +22,8 @@
 package org.lenskit.featurizer;
 
 /**
+ * The data structure used for representing a feature.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Feature {

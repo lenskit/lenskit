@@ -27,6 +27,12 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * "weight" is used as the default weighting attribute name while {@link SVDFeatureModel}
+ * featurizes an entity to be an instance.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @Documented
 @DefaultString("weight")
 @Parameter(String.class)

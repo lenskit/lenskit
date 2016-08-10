@@ -21,6 +21,11 @@
 
 package org.lenskit.solver;
 
+/**
+ * An interface of learning data to support optimization method ({@link OptimizationMethod}).
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface LearningData {
     LearningInstance getLearningInstance();
     void startNewIteration();

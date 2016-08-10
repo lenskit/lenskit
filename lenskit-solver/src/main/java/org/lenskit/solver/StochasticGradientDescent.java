@@ -27,10 +27,12 @@ import javax.inject.Inject;
 import java.util.List;
 
 /**
+ * A general online optimization solver, stochastic gradient descent algorithm.
+ * Objective function is changed from f(X) to f(X) + l2coef * |X|^2
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
-// Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class StochasticGradientDescent extends AbstractOnlineOptimizationMethod {
     private double l2coef;
     private double lr;

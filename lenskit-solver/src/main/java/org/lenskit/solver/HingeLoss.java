@@ -24,6 +24,8 @@ package org.lenskit.solver;
 import javax.inject.Inject;
 
 /**
+ * Hinge loss objective function.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class HingeLoss implements ObjectiveFunction {

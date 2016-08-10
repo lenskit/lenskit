@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * A random initializer for initializing model variables/parameters.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RandomInitializer {

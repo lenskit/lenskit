@@ -23,6 +23,12 @@ package org.lenskit.solver;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
 
+
+/**
+ * Online optimization method interface.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @DefaultImplementation(StochasticGradientDescent.class)
 public interface OnlineOptimizationMethod extends OptimizationMethod {
     double update(LearningModel learningModel, LearningData learningData);

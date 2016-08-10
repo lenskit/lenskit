@@ -26,6 +26,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.Serializable;
 
+/**
+ * A general in-memory back-end for indices, supporting {@link SynchronizedIndexSpace}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class ObjectKeyIndex<K> implements Serializable {
     private Object2IntOpenHashMap<K> key2idx;
     private ObjectArrayList<K> keyList;

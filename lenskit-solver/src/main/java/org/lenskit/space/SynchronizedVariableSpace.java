@@ -34,6 +34,8 @@ import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.solver.RandomInitializer;
 
 /**
+ * A synchronized in-memory variable space implementation.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class SynchronizedVariableSpace implements VariableSpace {

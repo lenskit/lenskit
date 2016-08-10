@@ -29,7 +29,13 @@ import org.apache.commons.math3.linear.RealVector;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StochasticOracle { 
+/**
+ * The data structure carrying oracle information for optimization methods in oracle-based framework, which connects
+ * optimization methods and learning models.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+public class StochasticOracle {
     List<String> scalarNames;
     IntArrayList scalarIndexes;
     DoubleArrayList scalarGrads;

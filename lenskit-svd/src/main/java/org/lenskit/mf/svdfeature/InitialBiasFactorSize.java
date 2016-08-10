@@ -27,6 +27,11 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * An initial value for {@link SVDFeatureModelProvider}'s bias and factor variable vector size.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @Documented
 @DefaultInteger(100)
 @Parameter(Integer.class)

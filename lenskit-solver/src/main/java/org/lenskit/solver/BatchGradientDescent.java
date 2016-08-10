@@ -24,7 +24,6 @@ package org.lenskit.solver;
 import org.apache.commons.math3.linear.MatrixUtils;
 
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.data.entities.BasicEntityBuilder;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -32,10 +31,12 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * Batch gradient descent algorithm.
+ * Objective function is changed from f(X) to f(X) + l2coef * |X|^2
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
-// Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class BatchGradientDescent extends AbstractOptimizationMethod {
     private final HashMap<String, RealVector> scalarGrads = new HashMap<>();
     private final HashMap<String, List<RealVector>> vectorGrads = new HashMap<>();

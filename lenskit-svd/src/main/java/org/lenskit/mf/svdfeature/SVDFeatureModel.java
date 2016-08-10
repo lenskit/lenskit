@@ -36,6 +36,10 @@ import org.lenskit.solver.*;
 import java.util.*;
 
 /**
+ * A generalized matrix factorization model: SVDFeature. See Chen et al.'s <a href="http://svdfeature.apexlab.org/wiki/Main_Page">
+ * SVDFeature: A Toolkit for Feature-based Collaborative Filtering</a>. It is similar to Rendle's
+ * <a href="http://www.libfm.org/">Factorization Machine</a> as well.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(SVDFeatureModelProvider.class)

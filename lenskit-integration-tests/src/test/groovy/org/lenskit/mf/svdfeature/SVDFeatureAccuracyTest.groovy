@@ -23,6 +23,7 @@ package org.lenskit.mf.svdfeature
 
 import org.lenskit.LenskitConfiguration
 
+
 import org.lenskit.api.ItemScorer
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.entities.CommonTypes
@@ -30,6 +31,11 @@ import org.lenskit.mf.funksvd.FeatureCount
 import org.lenskit.mf.funksvd.FunkSVDAccuracyTest;
 
 
+/**
+ * Do major tests on the SVDFeature recommender.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class SVDFeatureAccuracyTest extends FunkSVDAccuracyTest {
     @SuppressWarnings("unchecked")
     @Override

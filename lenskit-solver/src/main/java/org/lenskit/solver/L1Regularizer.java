@@ -24,6 +24,8 @@ package org.lenskit.solver;
 import javax.inject.Inject;
 
 /**
+ * L1 norm regularizer.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L1Regularizer {

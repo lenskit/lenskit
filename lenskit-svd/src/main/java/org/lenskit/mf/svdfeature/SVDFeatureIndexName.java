@@ -21,6 +21,10 @@
 
 package org.lenskit.mf.svdfeature;
 
+/**
+ * Two index space names used by the {@link SVDFeatureModel}.
+ *
+ */
 public enum SVDFeatureIndexName {
     BIASES("biases"),
     FACTORS("factors");

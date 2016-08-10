@@ -25,15 +25,20 @@ import org.lenskit.space.IndexSpace;
 
 import java.util.List;
 
+/**
+ * Some utility functions for feature extraction.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class FeatureExtractorUtilities {
     private FeatureExtractorUtilities() {}
 
     static public void getOrSetIndexSpaceToFeaturize(List<Feature> features,
                                                      boolean update,
                                                      IndexSpace indexSpace,
-                                                     String indexName, Object key) {
+                                                     String indexName, Object key, double val) {
         if (indexSpace.containsKey(indexName, key)) {
-            Feature feature = new Feature(indexSpace.getIndexForKey(indexName, key), 1.0);
+            Feature feature = new Feature(indexSpace.getIndexForKey(indexName, key), val);
             features.add(feature);
         } else if (update) {
             int index = indexSpace.setKey(indexName, key);

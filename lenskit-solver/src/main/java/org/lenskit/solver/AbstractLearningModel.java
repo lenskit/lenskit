@@ -30,6 +30,11 @@ import org.lenskit.space.VariableSpace;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * A boil-plate implementation for the interface {@link LearningModel}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 abstract public class AbstractLearningModel implements LearningModel {
     final protected VariableSpace variableSpace = new SynchronizedVariableSpace();
     final protected IndexSpace indexSpace = new SynchronizedIndexSpace();

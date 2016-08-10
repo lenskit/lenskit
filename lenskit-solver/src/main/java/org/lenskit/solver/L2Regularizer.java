@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * L2 norm regularizer.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L2Regularizer {

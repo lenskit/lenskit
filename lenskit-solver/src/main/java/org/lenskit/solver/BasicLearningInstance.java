@@ -27,6 +27,11 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A basic learning instance implementation with a list of features, label and weight.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class BasicLearningInstance implements LearningInstance {
     private double weight;
     private double label;

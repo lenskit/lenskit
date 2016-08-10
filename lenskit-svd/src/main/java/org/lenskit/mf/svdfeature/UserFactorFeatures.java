@@ -27,6 +27,11 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 import java.util.Set;
 
+/**
+ * A placeholder for {@link SVDFeatureModelProvider}'s user factor feature set.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @Documented
 @Parameter(Set.class)
 @Qualifier

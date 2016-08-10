@@ -26,6 +26,11 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * A synchronized in-memory implementation of index space.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public final class SynchronizedIndexSpace implements IndexSpace {
     private final Map<String, ObjectKeyIndex<Object>> keyMap = new HashMap<>();
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();

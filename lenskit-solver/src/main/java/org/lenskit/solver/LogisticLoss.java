@@ -23,11 +23,15 @@ package org.lenskit.solver;
 
 import javax.inject.Inject;
 
+/**
+ * Logistic loss objective function.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class LogisticLoss implements ObjectiveFunction {
     @Inject
     public LogisticLoss() { }
 
-    //unused
     static public double sigmoid(double y) {
         if (y < -30.0) {
             return 0.001;

@@ -24,6 +24,8 @@ package org.lenskit.solver;
 import javax.inject.Inject;
 
 /**
+ * Identity objective function.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class IdentityFunction implements ObjectiveFunction {

@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * A simple termination criterion for optimization method, i.e. testing for convergence.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ObjectiveTerminationCriterion {

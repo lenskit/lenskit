@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Learning instance implementation used by the {@link SVDFeatureModel}.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureInstance implements LearningInstance {

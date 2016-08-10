@@ -21,6 +21,11 @@
 
 package org.lenskit.solver;
 
+/**
+ * A boil-place implementation for evaluating on a given validation data after one iteration of learning a model.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 abstract public class AbstractOptimizationMethod implements OptimizationMethod {
     public double evaluate(LearningModel model, LearningData validData) {
         double objVal = 0.0;

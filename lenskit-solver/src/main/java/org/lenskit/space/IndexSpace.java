@@ -23,6 +23,11 @@ package org.lenskit.space;
 
 import java.io.Serializable;
 
+/**
+ * Index space interface for supporting transforming any object into a index in the variable space or memory.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public interface IndexSpace extends Serializable {
     void requestKeyMap(String name);
     int setKey(String name, Object key);

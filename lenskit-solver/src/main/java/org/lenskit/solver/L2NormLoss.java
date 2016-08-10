@@ -24,6 +24,8 @@ package org.lenskit.solver;
 import javax.inject.Inject;
 
 /**
+ * L2 norm loss objective function, i.e. least squares.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L2NormLoss implements ObjectiveFunction {

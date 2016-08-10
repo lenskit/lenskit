@@ -21,6 +21,11 @@
 
 package org.lenskit.solver;
 
+/**
+ * A simple online optimization method which achieves batch optimization by iteratively calling the online updating.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 abstract public class AbstractOnlineOptimizationMethod extends AbstractOptimizationMethod implements OnlineOptimizationMethod {
     protected double tol;
     protected int maxIter;

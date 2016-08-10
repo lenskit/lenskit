@@ -30,6 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A feature extractor that takes a string type input entity attribute and one-hot encode it with appropriate
+ * index in the given index space and using feature value as one.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class StringToIdxExtractor {
     final private String indexName;
     final private String feaName;
@@ -51,7 +57,7 @@ public class StringToIdxExtractor {
             String attr = entity.get(TypedName.create(attrName, String.class));
             String key = attrName + "=" + attr.toString();
             FeatureExtractorUtilities.getOrSetIndexSpaceToFeaturize(features, update,
-                                                                    indexSpace, indexName, key);
+                                                                    indexSpace, indexName, key, 1.0);
             feaMap.put(feaName, features);
         }
         return feaMap;
