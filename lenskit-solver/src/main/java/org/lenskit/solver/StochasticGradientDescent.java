@@ -40,7 +40,7 @@ public class StochasticGradientDescent extends AbstractOnlineOptimizationMethod 
     @Inject
     public StochasticGradientDescent() {
         super();
-        maxIter = 50;
+        maxIter = 60;
         l2coef = 0.1;
         lr = 0.01;
         tol = 5.0;
