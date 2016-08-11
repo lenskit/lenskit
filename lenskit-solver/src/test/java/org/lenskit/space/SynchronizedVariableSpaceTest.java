@@ -37,6 +37,6 @@ public class SynchronizedVariableSpaceTest {
         assertThat(variableSpace.getScalarVarByNameIndex("biases", 0), equalTo(0.0));
         variableSpace.requestVectorVar("factors", 10, 10, 0.0, true, true);
         assertThat(variableSpace.getVectorVarByName("factors").size(), equalTo(10));
-        assertThat(StatUtils.sum(variableSpace.getVectorVarByNameIndex("factors", 0).toArray()), equalTo(1.0));
+        assertThat(StatUtils.sum(variableSpace.getVectorVarByNameIndex("factors", 0).toArray()), closeTo(1.0, 0.01));
     }
 }
