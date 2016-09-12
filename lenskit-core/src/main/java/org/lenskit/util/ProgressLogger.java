@@ -133,7 +133,7 @@ public class ProgressLogger {
             double est = (total - ndone) * rate;
             logger.info("{}: finished {} of {} ({}%, {}s/row, ETA {})",
                         label, ndone, total,
-                        String.format("%.2f", ((double) ndone) / total),
+                        String.format("%.2f", (((double) ndone) * 100) / total),
                         String.format("%.3f", rate),
                         formatElapsedTime(est));
         } else {
