@@ -23,11 +23,11 @@ package org.lenskit.cli.commands;
 import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.grouplens.grapht.util.ClassLoaderContext;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.lenskit.eval.traintest.TrainTestExperiment;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.TrainTestExperimentSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,15 +50,15 @@ public class TrainTest implements Command {
     @Override
     public void configureArguments(ArgumentParser parser) {
         ScriptEnvironment.configureArguments(parser);
-        parser.addArgument("specFile")
-              .metavar("SPEC")
-              .help("Load train-test configuration from SPEC")
+        parser.addArgument("config_file")
+              .metavar("CONFIG")
+              .help("Load train-test configuration from CONFIG")
               .type(File.class)
               .required(true);
     }
 
     private File getSpecFile(Namespace options) {
-        return options.get("specFile");
+        return options.get("config_file");
     }
 
     @Override
@@ -66,9 +66,16 @@ public class TrainTest implements Command {
         ScriptEnvironment env = new ScriptEnvironment(options);
         File specFile = getSpecFile(options);
         logger.info("loading train-test configuration from {}", specFile);
-        // FIXME Use the class loader
-        TrainTestExperimentSpec spec = SpecUtils.load(TrainTestExperimentSpec.class, specFile.toPath());
-        TrainTestExperiment experiment = TrainTestExperiment.fromSpec(spec);
-        experiment.execute();
+
+        ClassLoader cl = env.getClassLoader();
+        ClassLoaderContext ctx = ClassLoaders.pushContext(cl);
+
+        try {
+            TrainTestExperiment experiment = TrainTestExperiment.load(specFile.toPath());
+            experiment.execute();
+        } finally {
+            ctx.pop();
+        }
+
     }
 }

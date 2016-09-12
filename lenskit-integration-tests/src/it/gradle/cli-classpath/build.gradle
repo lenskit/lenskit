@@ -11,6 +11,7 @@ task recommend(type: JavaExec) {
     args '-C', "$buildDir/classes/main"
     args '-c', 'predictor.groovy'
     args "--tsv-file", ratingsFile
+    args '--item-names', "$mlDataDir/movies.csv"
     args '100'
 }
 

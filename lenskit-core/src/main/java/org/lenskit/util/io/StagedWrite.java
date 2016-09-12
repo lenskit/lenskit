@@ -23,10 +23,7 @@ package org.lenskit.util.io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.util.UUID;
 
@@ -50,6 +47,11 @@ import java.util.UUID;
  */
 public class StagedWrite implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(StagedWrite.class);
+    /**
+     * How many times will we retry a failed commit?
+     */
+    private static final int TRIES_MAX = 3;
+
     private final Path targetFile;
     private final Path stagingFile;
     private boolean opened = false;
@@ -130,16 +132,35 @@ public class StagedWrite implements Closeable {
         }
         logger.debug("finishing write of {}", targetFile);
 
-        try {
-            Files.move(stagingFile, targetFile,
-                       StandardCopyOption.REPLACE_EXISTING,
-                       StandardCopyOption.ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException ex) {
-            logger.error("file system does not support atomic moves", ex);
-            logger.info("for more information, see: http://lenskit.org/master/apidocs/org/lenskit/util/io/StagedWrite.html");
-            throw ex;
+        int ntries = 0;
+
+        while (!committed) {
+            ntries += 1;
+            try {
+                Files.move(stagingFile, targetFile,
+                           StandardCopyOption.REPLACE_EXISTING,
+                           StandardCopyOption.ATOMIC_MOVE);
+                committed = true;
+            } catch (AccessDeniedException ex) {
+                // on Windows, we get access denied in certain race conditions
+                // try again
+                if (ntries >= TRIES_MAX) {
+                    logger.debug("renaming {} failed too many times", targetFile);
+                    throw ex;
+                } else {
+                    logger.debug("access denied committing {}, retrying", targetFile);
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        throw new InterruptedIOException("interrupted waiting for commit");
+                    }
+                }
+            } catch (AtomicMoveNotSupportedException ex) {
+                logger.error("file system does not support atomic moves", ex);
+                logger.info("for more information, see: http://lenskit.org/master/apidocs/org/lenskit/util/io/StagedWrite.html");
+                throw ex;
+            }
         }
-        committed = true;
     }
 
     /**

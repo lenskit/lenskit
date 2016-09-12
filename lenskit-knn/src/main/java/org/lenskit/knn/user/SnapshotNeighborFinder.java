@@ -25,18 +25,18 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -52,28 +52,31 @@ public class SnapshotNeighborFinder implements NeighborFinder {
 
     private final UserSnapshot snapshot;
     private final UserSimilarity similarity;
-    private final UserHistorySummarizer summarizer;
+    private final RatingVectorPDAO rvDAO;
     private final UserVectorNormalizer normalizer;
     private final Threshold threshold;
 
     @Inject
     public SnapshotNeighborFinder(UserSnapshot snap,
                                   UserSimilarity sim,
-                                  UserHistorySummarizer sum,
+                                  RatingVectorPDAO rvd,
                                   UserVectorNormalizer norm,
                                   @UserSimilarityThreshold Threshold thresh) {
         snapshot = snap;
         similarity = sim;
-        summarizer = sum;
+        rvDAO = rvd;
         normalizer = norm;
         threshold = thresh;
     }
 
     @Override
-    public Iterable<Neighbor> getCandidateNeighbors(UserHistory<? extends Event> user, LongSet items) {
-        final long uid = user.getUserId();
-        SparseVector urs = summarizer.summarize(user);
-        final ImmutableSparseVector vector = normalizer.normalize(user.getUserId(), urs, null)
+    public Iterable<Neighbor> getCandidateNeighbors(final long user, LongSet items) {
+        SparseVector urs = MutableSparseVector.create(rvDAO.userRatingVector(user));
+        if (urs.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final ImmutableSparseVector vector = normalizer.normalize(user, urs, null)
                                                  .freeze();
 
         LongCollection qset = items;
@@ -88,12 +91,12 @@ public class SnapshotNeighborFinder implements NeighborFinder {
                 candidates.addAll(users);
             }
         }
-        candidates.remove(uid);
-        logger.debug("Found {} candidate neighbors for user {}", candidates.size(), uid);
+        candidates.remove(user);
+        logger.debug("Found {} candidate neighbors for user {}", candidates.size(), user);
         return new Iterable<Neighbor>() {
             @Override
             public Iterator<Neighbor> iterator() {
-                return new NeighborIterator(uid, vector, candidates);
+                return new NeighborIterator(user, vector, candidates);
             }
         };
     }

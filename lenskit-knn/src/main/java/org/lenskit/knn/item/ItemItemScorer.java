@@ -21,24 +21,21 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.UnlimitedScoredIdAccumulator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.History;
-import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.knn.item.model.ItemItemModel;
@@ -51,6 +48,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
@@ -62,10 +60,9 @@ public class ItemItemScorer extends AbstractItemScorer {
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
-    private final UserEventDAO dao;
+    private final RatingVectorPDAO rvDAO;
     @Nonnull
     protected final UserVectorNormalizer normalizer;
-    protected final UserHistorySummarizer summarizer;
     @Nonnull
     protected final NeighborhoodScorer scorer;
     private final int neighborhoodSize;
@@ -74,23 +71,20 @@ public class ItemItemScorer extends AbstractItemScorer {
     /**
      * Construct a new item-item scorer.
      *
-     * @param dao    The DAO.
+     * @param dao    The rating vector DAO.
      * @param m      The model
-     * @param sum    The history summarizer.
      * @param scorer The neighborhood scorer.
      * @param nnbrs  The number of neighbors.
      * @param min    The minimum number of neighbors.
      */
     @Inject
-    public ItemItemScorer(UserEventDAO dao, ItemItemModel m,
-                          UserHistorySummarizer sum,
+    public ItemItemScorer(RatingVectorPDAO dao, ItemItemModel m,
                           NeighborhoodScorer scorer,
                           UserVectorNormalizer norm,
                           @NeighborhoodSize int nnbrs,
                           @MinNeighbors int min) {
-        this.dao = dao;
+        rvDAO = dao;
         model = m;
-        summarizer = sum;
         this.scorer = scorer;
         normalizer = norm;
         neighborhoodSize = nnbrs;
@@ -103,64 +97,82 @@ public class ItemItemScorer extends AbstractItemScorer {
         return normalizer;
     }
 
+    @Nonnull
+    @Override
+    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
+        logger.debug("scoring {} items for user {}", items.size(), user);
+        Long2DoubleMap results = new Long2DoubleOpenHashMap(items.size());
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.basic(results);
+
+        scoreItems(user, items, accum);
+
+        return results;
+    }
+
     /**
      * Score items by computing predicted ratings.
      */
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        logger.debug("scoring {} items for user {}", items.size(), user);
-        UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
-        if (history == null) {
-            history = History.forUser(user);
-        }
-        SparseVector summary = summarizer.summarize(history);
+        logger.debug("scoring {} items for user {} with details", items.size(), user);
+        List<ItemItemResult> results = new ArrayList<>(items.size());
+        ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
+
+        scoreItems(user, items, accum);
+
+        return Results.newResultMap(results);
+    }
+
+    /**
+     * Score all items into an accumulator.
+     * @param user The user.
+     * @param items The items to score.
+     * @param accum The accumulator.
+     */
+    private void scoreItems(long user, @Nonnull Collection<Long> items, ItemItemScoreAccumulator accum) {
+        Long2DoubleMap ratings = rvDAO.userRatingVector(user);
+
+        SparseVector summary = ImmutableSparseVector.create(ratings);
         logger.trace("user has {} ratings", summary.size());
         VectorTransformation transform = normalizer.makeTransformation(user, summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
         Long2DoubleMap itemScores = normed.asMap();
 
-        List<ItemItemResult> results = new ArrayList<>(items.size());
         LongIterator iter = LongIterators.asLongIterator(items.iterator());
         while (iter.hasNext()) {
             final long item = iter.nextLong();
-            ItemItemResult score = scoreItem(itemScores, item);
-            if (score != null) {
-                results.add(new ItemItemResult(item, transform.unapply(item, score.getScore()),
-                                               score.getNeighborhoodSize(),
-                                               score.getNeighborWeight()));
-            }
+            scoreItem(itemScores, item, accum);
         }
 
-        return Results.newResultMap(results);
+        accum.applyReversedTransform(transform);
     }
 
-    protected ItemItemResult scoreItem(Long2DoubleMap userData, long item) {
-        SparseVector allNeighbors = model.getNeighbors(item);
-        ScoredItemAccumulator acc;
+    protected void scoreItem(Long2DoubleMap userData, long item, ItemItemScoreAccumulator accum) {
+        Long2DoubleMap allNeighbors = model.getNeighbors(item);
+        ScoredIdAccumulator acc;
         if (neighborhoodSize > 0) {
             // FIXME Abstract accumulator selection logic
-            acc = new TopNScoredItemAccumulator(neighborhoodSize);
+            acc = new TopNScoredIdAccumulator(neighborhoodSize);
         } else {
-            acc = new UnlimitedScoredItemAccumulator();
+            acc = new UnlimitedScoredIdAccumulator();
         }
 
-        for (VectorEntry e: allNeighbors) {
-            if (userData.containsKey(e.getKey())) {
-                acc.put(e.getKey(), e.getValue());
+        for (Long2DoubleMap.Entry nbr: allNeighbors.long2DoubleEntrySet()) {
+            if (userData.containsKey(nbr.getLongKey())) {
+                acc.put(nbr.getLongKey(), nbr.getDoubleValue());
             }
         }
 
         Long2DoubleMap neighborhood = acc.finishMap();
         assert neighborhoodSize <= 0 || neighborhood.size() <= neighborhoodSize;
         if (neighborhood.size() < minNeighbors) {
-            return null;
+            return;
         }
         logger.trace("scoring item {} with {} of {} neighbors",
                      item, neighborhood.size(), allNeighbors.size());
-        ItemItemResult score = scorer.score(item, neighborhood, userData);
-        logger.trace("computed score {}", score);
-        return score;
+        scorer.score(item, neighborhood, userData, accum);
+        // logger.trace("computed score {}", score);
     }
 }

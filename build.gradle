@@ -36,6 +36,7 @@ import org.grouplens.lenskit.build.GitExtension
 
 plugins {
     id "org.sonarqube" version "1.0"
+    id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 apply plugin: 'base'
 apply plugin: 'project-report'
@@ -53,7 +54,7 @@ task ciPublish {
 }
 
 allprojects { project ->
-    group 'org.grouplens.lenskit'
+    group 'org.lenskit'
     version '3.0-SNAPSHOT'
 
     ext.getConfigProperty = { name, dft ->
@@ -135,7 +136,7 @@ subprojects {
         task.mustRunAfter check
     }
     // defer javadoc until after the build
-    javadoc.mustRunAfter 'classes'
+    tasks.javadoc.mustRunAfter 'classes'
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'

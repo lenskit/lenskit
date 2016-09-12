@@ -5,8 +5,9 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 
-    compile project(':lenskit-specs')
     compile 'org.joda:joda-convert:1.8.1'
+    compile group: 'com.google.guava', name: 'guava', version: guavaVersion
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
 }
 
 apply from: 'integration-tests.gradle'
@@ -34,5 +35,4 @@ groovydoc {
         document.getElementsByTagName('head')[0].appendChild(link)
       </script>
     '''
-    // source rootProject.childProjects['lenskit-specs'].sourceSets.main.allJava
 }

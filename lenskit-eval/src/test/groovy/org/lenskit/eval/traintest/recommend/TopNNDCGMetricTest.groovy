@@ -21,12 +21,12 @@
 package org.lenskit.eval.traintest.recommend
 
 import groovy.json.JsonBuilder
+import org.grouplens.grapht.util.ClassLoaders
 import org.junit.Test
 import org.lenskit.eval.traintest.TestUser
 import org.lenskit.eval.traintest.metrics.Discounts
+import org.lenskit.eval.traintest.metrics.MetricLoaderHelper
 import org.lenskit.results.Results
-import org.lenskit.specs.DynamicSpec
-import org.lenskit.specs.SpecUtils
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -39,8 +39,8 @@ class TopNNDCGMetricTest {
             type 'ndcg'
             discount 'exp(5)'
         }
-        def node = SpecUtils.parse(DynamicSpec, jsb.toString())
-        def metric = SpecUtils.buildObject(TopNMetric, node)
+        def mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(), 'topn-metrics')
+        def metric = mlh.createMetric(TopNMetric, jsb.toString())
         assertThat(metric, instanceOf(TopNNDCGMetric))
         def ndcg = metric as TopNNDCGMetric
         assertThat(ndcg.discount, equalTo(Discounts.exp(5)))

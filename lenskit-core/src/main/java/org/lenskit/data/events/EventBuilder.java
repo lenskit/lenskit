@@ -33,7 +33,7 @@ public interface EventBuilder<E extends Event> {
     /**
      * Clear the rating builder, as if it were freshly instantiated..
      */
-    void reset();
+    EventBuilder<E> reset();
 
     /**
      * Set the user ID for this event.

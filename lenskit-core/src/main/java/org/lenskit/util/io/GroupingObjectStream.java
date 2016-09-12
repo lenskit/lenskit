@@ -22,6 +22,7 @@ package org.lenskit.util.io;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
 
 /**
  * Base class for streams that group the output of another stream.
@@ -34,7 +35,7 @@ public abstract class GroupingObjectStream<C, E> extends AbstractObjectStream<C>
     private final ObjectStream<? extends E> baseStream;
     private E nextItem;
 
-    protected GroupingObjectStream(ObjectStream<? extends E> base) {
+    protected GroupingObjectStream(@WillCloseWhenClosed ObjectStream<? extends E> base) {
         baseStream = base;
         // prime the stream;
         nextItem = baseStream.readObject();

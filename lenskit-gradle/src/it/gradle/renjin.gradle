@@ -1,0 +1,20 @@
+configurations {
+    analyze
+}
+repositories {
+    maven {
+        url "https://nexus.bedatadriven.com/content/groups/public/"
+    }
+}
+dependencies {
+    analyze localGroovy()
+    analyze group: 'org.lenskit', name: 'lenskit-test', version: project.lenskitVersion
+    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2124'
+}
+
+task runVerifyScript(type: JavaExec) {
+    classpath configurations.analyze
+    main 'org.lenskit.util.test.RunScript'
+    args file('verify.R')
+}
+check.dependsOn runVerifyScript

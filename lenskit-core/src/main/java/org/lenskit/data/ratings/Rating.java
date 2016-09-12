@@ -20,12 +20,14 @@
  */
 package org.lenskit.data.ratings;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.lenskit.data.events.BuiltBy;
+import org.lenskit.data.entities.*;
 import org.lenskit.data.events.Event;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * A user rating an item. A rating is an expression of preference, in the form of a real-valued rating, for an item by
@@ -38,16 +40,32 @@ import java.io.Serializable;
  *
  * @compat Public
  */
+@org.lenskit.data.events.BuiltBy(RatingBuilder.class)
 @BuiltBy(RatingBuilder.class)
-public final class Rating implements Event, Preference, Serializable {
+@DefaultEntityType("rating")
+public final class Rating extends AbstractEntity implements Event, Preference, Serializable {
     private static final long serialVersionUID = 2L;
+    private static final EntityFactory factory = new EntityFactory();
+    private static final Set<TypedName<?>> FULL_ATTR_NAMES =
+            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
+                                          CommonAttributes.USER_ID,
+                                          CommonAttributes.ITEM_ID,
+                                          CommonAttributes.RATING,
+                                          CommonAttributes.TIMESTAMP);
+    private static final Set<TypedName<?>> NOTIME_ATTR_NAMES =
+            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
+                                          CommonAttributes.USER_ID,
+                                          CommonAttributes.ITEM_ID,
+                                          CommonAttributes.RATING);
+
 
     private final long user;
     private final long item;
     private final double value;
     private final long timestamp;
 
-    Rating(long uid, long iid, double v, long time) {
+    Rating(long eid, long uid, long iid, double v, long time) {
+        super(CommonTypes.RATING, eid);
         user = uid;
         item = iid;
         value = v;
@@ -62,7 +80,9 @@ public final class Rating implements Event, Preference, Serializable {
      * @param rating The rating value.  Cannot be NaN.
      * @return The new rating object.
      * @see #create(long, long, double, long)
+     * @deprecated Use {@link EntityFactory#rating(long, long, double)}
      */
+    @Deprecated
     public static Rating create(long uid, long iid, double rating) {
         return create(uid, iid, rating, -1);
     }
@@ -80,12 +100,14 @@ public final class Rating implements Event, Preference, Serializable {
      * @param ts The timestamp.
      * @return The new rating object.
      * @throws IllegalArgumentException if {@code rating} is NaN.
+     * @deprecated Use {@link EntityFactory#rating(long, long, double, long)}
      */
+    @Deprecated
     public static Rating create(long uid, long iid, double rating, long ts) {
         if (Double.isNaN(rating)) {
             throw new IllegalArgumentException("rating is not a number");
         }
-        return new Rating(uid, iid, rating, ts);
+        return factory.rating(uid, iid, rating, ts);
     }
 
     /**
@@ -95,9 +117,11 @@ public final class Rating implements Event, Preference, Serializable {
      * @param iid The item ID.
      * @param ts The timestamp.
      * @return The new rating object.
+     * @deprecated Unrates have gone away.
      */
+    @Deprecated
     public static Rating createUnrate(long uid, long iid, long ts) {
-        return new Rating(uid, iid, Double.NaN, ts);
+        return new Rating(-1, uid, iid, Double.NaN, ts);
     }
 
     /**
@@ -129,7 +153,9 @@ public final class Rating implements Event, Preference, Serializable {
      * returns null.
      *  
      * @return {code true} if there is a rating (the preference is non-null).
+     * @deprecated Unrates have gone away.
      */
+    @Deprecated
     public boolean hasValue() {
         return !Double.isNaN(value);
     }
@@ -141,6 +167,45 @@ public final class Rating implements Event, Preference, Serializable {
      */
     public double getValue() {
         return value;
+    }
+
+    @Override
+    public Set<TypedName<?>> getTypedAttributeNames() {
+        return timestamp >= 0 ? FULL_ATTR_NAMES : NOTIME_ATTR_NAMES;
+    }
+
+    @Override
+    public boolean hasAttribute(String name) {
+        switch (name) {
+        case "id":
+        case "user":
+        case "item":
+        case "rating":
+            return true;
+        case "timestamp":
+            return timestamp > -1;
+        default:
+            return false;
+        }
+    }
+
+    @Nullable
+    @Override
+    public Object maybeGet(String attr) {
+        switch (attr) {
+        case "id":
+            return id;
+        case "user":
+            return user;
+        case "item":
+            return item;
+        case "rating":
+            return value;
+        case "timestamp":
+            return timestamp >= 0 ? timestamp : null;
+        default:
+            return null;
+        }
     }
 
     /**
@@ -160,15 +225,6 @@ public final class Rating implements Event, Preference, Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(user)
-                                    .append(item)
-                                    .append(value)
-                                    .append(timestamp)
-                                    .toHashCode();
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -180,7 +236,7 @@ public final class Rating implements Event, Preference, Serializable {
                                       .append(timestamp, r.timestamp)
                                       .isEquals();
         } else {
-            return false;
+            return super.equals(obj);
         }
     }
 }

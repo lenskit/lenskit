@@ -48,7 +48,7 @@ public final class CrossfoldMethods {
      * Create a crossfold method that partitions ratings into disjoint partitions.
      * @return The crossfold method.
      */
-    public static CrossfoldMethod partitionRatings() {
-        return new RatingPartitionCrossfoldMethod();
+    public static CrossfoldMethod partitionEntities() {
+        return new EntityPartitionCrossfoldMethod();
     }
 }

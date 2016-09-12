@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.ratings;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
@@ -92,6 +93,7 @@ public class RatingBuilderTest {
     }
 
     @Test
+    @Ignore
     public void testBuildUnrate() {
         Rating r = new RatingBuilder()
                 .setUserId(692)

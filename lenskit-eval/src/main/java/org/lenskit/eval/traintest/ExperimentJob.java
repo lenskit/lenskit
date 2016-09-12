@@ -22,8 +22,6 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
@@ -32,12 +30,12 @@ import org.grouplens.grapht.graph.MergePool;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.ItemListItemDAO;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.History;
-import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
 import org.lenskit.inject.RecommenderInstantiator;
@@ -96,9 +94,11 @@ class ExperimentJob extends RecursiveAction {
                                                     dataSet, algorithm);
         RowBuilder outputRow = globalOutput.getLayout().newRowBuilder();
 
+        logger.debug("fetching training data");
+        DataAccessObject trainData = dataSet.getTrainingData().get();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        try (LenskitRecommender rec = buildRecommender()) {
+        try (LenskitRecommender rec = buildRecommender(trainData)) {
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
@@ -106,7 +106,6 @@ class ExperimentJob extends RecursiveAction {
 
             RowBuilder userRow = userOutput != null ? userOutput.getLayout().newRowBuilder() : null;
 
-            Stopwatch testTimer = Stopwatch.createStarted();
 
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
@@ -120,38 +119,42 @@ class ExperimentJob extends RecursiveAction {
                 }
             }
 
-            LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
-            UserEventDAO trainEvents = dataSet.getTrainingData().getUserEventDAO();
-            UserEventDAO userEvents = dataSet.getTestData().getUserEventDAO();
+            DataAccessObject testData = dataSet.getTestData().get();
+
+            Stopwatch testTimer = Stopwatch.createStarted();
+
             final NumberFormat pctFormat = NumberFormat.getPercentInstance();
             pctFormat.setMaximumFractionDigits(2);
             pctFormat.setMinimumFractionDigits(2);
-            final int nusers = testUsers.size();
+            final int nusers = testData.query(CommonTypes.USER).count();
             logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
             ProgressLogger progress = ProgressLogger.create(logger)
                                                     .setCount(nusers)
                                                     .setLabel("testing users")
                                                     .start();
-            for (LongIterator iter = testUsers.iterator(); iter.hasNext(); ) {
+            // TODO Support something other than ratings
+            for (Entity user: testData.query(CommonTypes.USER).get()) {
                 if (Thread.interrupted()) {
-                    throw new RuntimeException("eval job interrupted");
+                    throw new EvaluationException("eval job interrupted");
                 }
-                long uid = iter.nextLong();
+                long uid = user.getId();
                 if (userRow != null) {
                     userRow.add("User", uid);
                 }
 
-                UserHistory<Event> trainData = trainEvents.getEventsForUser(uid);
-                if (trainData == null) {
-                    trainData = History.forUser(uid);
-                }
-                UserHistory<Event> userData = userEvents.getEventsForUser(uid);
-                TestUser user = new TestUser(trainData, userData);
+
+                List<Rating> userTrainHistory = trainData.query(Rating.class)
+                                                         .withAttribute(CommonAttributes.USER_ID, uid)
+                                                         .get();
+                List<Rating> userTestHistory = testData.query(Rating.class)
+                                                       .withAttribute(CommonAttributes.USER_ID, uid)
+                                                       .get();
+                TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
 
                 Stopwatch userTimer = Stopwatch.createStarted();
 
                 for (ConditionEvaluator eval : accumulators) {
-                    Map<String, Object> ures = eval.measureUser(user);
+                    Map<String, Object> ures = eval.measureUser(testUser);
                     if (userRow != null) {
                         userRow.addAll(ures);
                     }
@@ -194,22 +197,16 @@ class ExperimentJob extends RecursiveAction {
         }
     }
 
-    private LenskitRecommender buildRecommender() throws RecommenderBuildException {
+    private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
-        LenskitConfiguration dataConfig = new LenskitConfiguration(sharedConfig);
-        dataSet.configure(dataConfig);
-
         LenskitConfiguration extraConfig = new LenskitConfiguration();
-
-        // Fix the train items
-        LongSet trainItems = dataSet.getTrainingData().getItemDAO().getItemIds();
-        LongSet allItems = dataSet.getAllItems();
-        if (!trainItems.containsAll(allItems)) {
-            logger.info("train data is missing items, overriding item DAO");
-            extraConfig.bind(ItemDAO.class).to(new ItemListItemDAO(allItems));
+        extraConfig.addComponent(dao);
+        PreferenceDomain dom = dataSet.getTrainingData().getPreferenceDomain();
+        if (dom != null) {
+            extraConfig.addComponent(dom);
         }
 
-        DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(dataConfig);
+        DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(sharedConfig, extraConfig);
         if (mergePool != null) {
             logger.debug("deduplicating configuration graph");
             synchronized (mergePool) {

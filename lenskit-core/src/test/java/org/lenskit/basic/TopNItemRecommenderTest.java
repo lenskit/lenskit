@@ -20,29 +20,30 @@
  */
 package org.lenskit.basic;
 
-import it.unimi.dsi.fastutil.longs.LongLists;
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.lenskit.data.dao.*;
 import org.junit.Test;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.ResultList;
+import org.lenskit.data.dao.*;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entities;
 import org.lenskit.results.Results;
-import org.lenskit.util.collections.LongUtils;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class TopNItemRecommenderTest {
     @Test
     public void testNoScores() {
-        EventDAO dao = EventCollectionDAO.empty();
-        ItemDAO idao = new PrefetchingItemDAO(dao);
-        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        StaticDataSource source = new StaticDataSource();
+        DataAccessObject dao = source.get();
+        ItemDAO idao = new BridgeItemDAO(dao);
+        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .build();
         ItemRecommender rec = new TopNItemRecommender(uedao, idao, scorer);
@@ -56,9 +57,11 @@ public class TopNItemRecommenderTest {
 
     @Test
     public void testGetScoreOnly() {
-        EventDAO dao = EventCollectionDAO.empty();
-        ItemDAO idao = new ItemListItemDAO(LongLists.singleton(3));
-        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        StaticDataSource source = new StaticDataSource();
+        source.addSource(ImmutableList.of(Entities.create(CommonTypes.ITEM, 3)));
+        DataAccessObject dao = source.get();
+        ItemDAO idao = new BridgeItemDAO(dao);
+        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .addScore(42, 3, 3.5)
                                                  .build();
@@ -75,9 +78,11 @@ public class TopNItemRecommenderTest {
 
     @Test
     public void testExcludeScore() {
-        EventDAO dao = EventCollectionDAO.empty();
-        ItemDAO idao = new ItemListItemDAO(LongLists.singleton(3));
-        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        StaticDataSource source = new StaticDataSource();
+        source.addSource(ImmutableList.of(Entities.create(CommonTypes.ITEM, 3)));
+        DataAccessObject dao = source.get();
+        ItemDAO idao = new BridgeItemDAO(dao);
+        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .addScore(42, 3, 3.5)
                                                  .build();
@@ -93,9 +98,13 @@ public class TopNItemRecommenderTest {
 
     @Test
     public void testFindSomeItems() {
-        EventDAO dao = EventCollectionDAO.empty();
-        ItemDAO idao = new ItemListItemDAO(LongUtils.packedSet(2, 7, 3));
-        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        StaticDataSource source = new StaticDataSource();
+        source.addSource(ImmutableList.of(Entities.create(CommonTypes.ITEM, 3),
+                                          Entities.create(CommonTypes.ITEM, 2),
+                                          Entities.create(CommonTypes.ITEM, 7)));
+        DataAccessObject dao = source.get();
+        ItemDAO idao = new BridgeItemDAO(dao);
+        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .addScore(42, 2, 3.0)
                                                  .addScore(42, 7, 1.0)

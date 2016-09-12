@@ -21,11 +21,14 @@
 package org.lenskit.knn.item.model;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.lenskit.api.ResultList;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.results.Results;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
@@ -44,13 +47,13 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-@DefaultProvider(ItemItemModelBuilder.class)
+@DefaultProvider(ItemItemModelProvider.class)
 @Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = 3L;
 
     private final SortedKeyIndex itemDomain;
-    private final ImmutableList<ImmutableSparseVector> neighborhoods;
+    private final ImmutableList<Long2DoubleMap> neighborhoods;
     private transient volatile String stringValue;
 
     /**
@@ -61,7 +64,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      * @deprecated This is deprecated for public usage.  It is better to use the other constructor.
      */
     @Deprecated
-    public SimilarityMatrixModel(SortedKeyIndex items, List<ImmutableSparseVector> nbrs) {
+    public SimilarityMatrixModel(SortedKeyIndex items, List<Long2DoubleMap> nbrs) {
         itemDomain = items;
         neighborhoods = ImmutableList.copyOf(nbrs);
     }
@@ -71,13 +74,13 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *
      * @param nbrs  The item neighborhoods.  The item neighborhood lists are not copied.
      */
-    public SimilarityMatrixModel(Map<Long,ImmutableSparseVector> nbrs) {
+    public SimilarityMatrixModel(Map<Long,Long2DoubleMap> nbrs) {
         itemDomain = SortedKeyIndex.fromCollection(nbrs.keySet());
         int n = itemDomain.size();
         assert n == nbrs.size();
-        ImmutableList.Builder<ImmutableSparseVector> neighbors = ImmutableList.builder();
+        ImmutableList.Builder<Long2DoubleMap> neighbors = ImmutableList.builder();
         for (int i = 0; i < n; i++) {
-            neighbors.add(nbrs.get(itemDomain.getKey(i)));
+            neighbors.add(LongUtils.frozenMap(nbrs.get(itemDomain.getKey(i))));
         }
         neighborhoods = neighbors.build();
     }
@@ -89,10 +92,10 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     @Override
     @Nonnull
-    public SparseVector getNeighbors(long item) {
+    public Long2DoubleMap getNeighbors(long item) {
         int idx = itemDomain.tryGetIndex(item);
         if (idx < 0) {
-            return ImmutableSparseVector.empty();
+            return Long2DoubleMaps.EMPTY_MAP;
         } else {
             return neighborhoods.get(idx);
         }
@@ -103,7 +106,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
         String val = stringValue;
         if (val == null) {
             int nsims = 0;
-            for (SparseVector nbrs: neighborhoods) {
+            for (Long2DoubleMap nbrs: neighborhoods) {
                 nsims += nbrs.size();
             }
             val = String.format("matrix of %d similarities for %d items", nsims, neighborhoods.size());

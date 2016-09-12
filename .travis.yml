@@ -34,7 +34,6 @@ notifications:
       - https://webhooks.gitter.im/e/12b880d9f4086ef2a62c
     on_success: always
     on_failure: always
-    on_start: always
   slack:
     rooms:
     - secure: "ldy/nkD8cNi3nNv8g+LEDmvsPKcKrHmuwctmCfc/kbmzmvmeG3DDa5RItSXnrmPGJhzbTEKKyrNIeA7U9awA7XYcZ7gSe7S5HogfCULrak2OYvLXVs69yQAP5ZuNF3c/AnuZz8rrE2UObMU22raZYrzrHM+LR7fUnurCaFq0S9w="
@@ -45,12 +44,23 @@ env:
   - TZ=CST6CDT
   - MALLOC_ARENA_MAX=2
   - "_JAVA_OPTIONS='-Xmx512m -XX:MaxPermSize=128m'"
-  # SONAR_USER
-  - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="
-  # SONAR_PASSWORD
-  - secure: "Jnb1CH82yypZMk4UdNWvu8qRXrTEVRgj7H/c/jsPXqtXWVkxexB8ehPyQL1Mkzplw9SZ270ta+42RYuuUSCUKLYsER2c4rcEwyERC6V55CYib5+NbXL98e+zyteUcs2xWi6qJNajcC+gR26I4bepXffCDEAOcrJ3ezONbT4k+gY="
+  # SONAR_TOKEN
+  - secure: "JSzx8Y50B4uPM5jYyED1d4LdlhxqG0pmGLnNfdHlxfwx3HWn7Trzlip2eNeVXor1OMbQxyDfzOLXjepfXY/lLB3FrmOdkEROy+WnZUBjMM55g+sOKskOzI3FbnKl09uf1hvprzij8UMImfZHgoQIbDgf2GpAmp1vskCVe7BDqsE="
   # SONATYPE_USER
   - secure: "KZlIPTwPJwh3mbsk4M98YnY+Jf7B0on5MVK4Q+0nKR6HJS9cn5zAmO5NU7ouLfl6/HCzD7YftqQEybuV3w1S5WM2CJvSe1yS5RDilQ0cFSx8QZe6xDprcFPawMfQ+DN3fEtqXieu8lVcqGtKL+JqF7piTmrN26ojCCdC6zpiy24="
   # SONATYPE_PASSWORD
   - secure: "JSZlPX3fbNrbUfBRcH6OdfQfAk65G3l1diJ4vxu/VvKGsH+eAOt6gfaKVNe8JRuPyyzmArgSK4QlM2lwvxKwgSEblw2hF1VDotJwHeD//NxTQBjeeOu3dV8BtsJE7kxT66ywyLai5jcGxLgFgWEEiA1ZwZjmBaZzn1rCwJVGKHk="
+  # Coverity token
+  - secure: "Bj66Sq92T/khNFGwMU4JYExlycwrkogdsf35GFeB4YiEC7bhrDsshpFWMWcQstUMo5+tJmTBCuXY6YHOHMUcjxjr+RFSuetwluzCumklJGHQms3s83peqle4E8Lu6b5Y1VKekf8Iri6P2+efI2fii5Pr0BD1RozPdBCQfZGqQYc="
+
+addons:
+  coverity_scan:
+    project:
+      name: "lenskit/lenskit"
+      description: "<Your project description here>"
+    notification_email: md@ekstrandom.net
+    build_command_prepend: "./gradlew clean"
+    build_command:   "./gradlew classes"
+    branch_pattern: coverity_scan
+
 sudo: false

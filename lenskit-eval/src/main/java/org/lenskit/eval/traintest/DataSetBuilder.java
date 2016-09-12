@@ -22,7 +22,7 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.source.DataSource;
+import org.lenskit.data.dao.file.StaticDataSource;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -36,10 +36,10 @@ import java.util.UUID;
  */
 public class DataSetBuilder implements Builder<DataSet> {
     private String name;
-    private DataSource trainingData;
-    private DataSource testData;
+    private StaticDataSource trainingData;
+    private StaticDataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<>();
-    private DataSource queryData;
+    private StaticDataSource queryData;
     private UUID isoGroup = new UUID(0, 0);
 
     public DataSetBuilder() {
@@ -60,17 +60,17 @@ public class DataSetBuilder implements Builder<DataSet> {
         return this;
     }
 
-    public DataSetBuilder setTrain(DataSource ds) {
+    public DataSetBuilder setTrain(StaticDataSource ds) {
         trainingData = ds;
         return this;
     }
 
-    public DataSetBuilder setQuery(DataSource query) {
+    public DataSetBuilder setQuery(StaticDataSource query) {
         queryData = query;
         return this;
     }
 
-    public DataSetBuilder setTest(DataSource ds) {
+    public DataSetBuilder setTest(StaticDataSource ds) {
         testData = ds;
         return this;
     }

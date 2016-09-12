@@ -22,13 +22,13 @@ package org.lenskit.eval.traintest.recommend
 
 import groovy.json.JsonBuilder
 import it.unimi.dsi.fastutil.longs.LongSet
+import org.grouplens.grapht.util.ClassLoaders
 import org.junit.Before
 import org.junit.Test
 import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.TestUser
+import org.lenskit.eval.traintest.metrics.MetricLoaderHelper
 import org.lenskit.results.Results
-import org.lenskit.specs.DynamicSpec
-import org.lenskit.specs.SpecUtils
 import org.lenskit.util.collections.LongUtils
 
 import static org.hamcrest.Matchers.*
@@ -46,8 +46,8 @@ class TopNPrecisionRecallMetricTest {
         accum = new TopNPrecisionRecallMetric.Context(universe, null)
         user = TestUser.newBuilder()
                        .setUserId(42)
-                       .addTestEvent(Rating.create(42L, 1L, 3.5),
-                                     Rating.create(42L, 5L, 2.5))
+                       .addTestEntity(Rating.create(42L, 1L, 3.5),
+                                      Rating.create(42L, 5L, 2.5))
                        .build()
     }
 
@@ -58,11 +58,11 @@ class TopNPrecisionRecallMetricTest {
             type 'pr'
             suffix 'bar'
         }
-        def node = SpecUtils.parse(DynamicSpec, jsb.toString())
-        def metric = SpecUtils.buildObject(TopNMetric, node)
+        def mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(), 'topn-metrics')
+        def metric = mlh.createMetric(TopNMetric, jsb.toString())
         assertThat(metric, instanceOf(TopNPrecisionRecallMetric))
-        def ndcg = metric as TopNPrecisionRecallMetric
-        assertThat(ndcg.suffix, equalTo('bar'));
+        def pr = metric as TopNPrecisionRecallMetric
+        assertThat(pr.suffix, equalTo('bar'));
     }
 
     @Test

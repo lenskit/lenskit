@@ -20,12 +20,10 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.eval.traintest.AlgorithmInstanceBuilder;
 import org.lenskit.eval.traintest.SimpleEvaluator;
 import org.lenskit.util.table.Table;
@@ -54,8 +52,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo.build());
 
-        evalCommand.addDataSet(new GenericDataSource("ml-100k", ratingDAO, PreferenceDomain.fromString("[1,5]/1")),
-                               5, 0.2);
+        evalCommand.addDataSet(source, 5, 0.2);
         addExtraConfig(evalCommand);
 
         Table result = evalCommand.execute();

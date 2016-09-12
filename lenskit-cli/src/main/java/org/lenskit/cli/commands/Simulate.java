@@ -24,18 +24,19 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.eval.temporal.TemporalEvaluator;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.AlgorithmSpec;
-import org.lenskit.specs.eval.SimulateSpec;
+import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -98,34 +99,32 @@ public class Simulate implements Command {
     public void execute(Namespace opts) throws IOException, RecommenderBuildException {
 
         Context ctx = new Context(opts);
-        SimulateSpec spec;
 
-        File specFile = opts.get("spec_file");
-        if (specFile != null) {
-            spec = SpecUtils.load(SimulateSpec.class, specFile.toPath());
-        } else {
-            spec = new SimulateSpec();
+        TemporalEvaluator eval = new TemporalEvaluator();
 
-            spec.setListSize(ctx.getListSize());
-            spec.setRebuildPeriod(ctx.getRebuildPeriod());
+        eval.setListSize(ctx.getListSize());
+        eval.setRebuildPeriod(ctx.getRebuildPeriod());
 
-            spec.setInputFile(ctx.getInputFile().toPath());
-            File out = ctx.getOutputFile();
-            if (out != null) {
-                spec.setOutputFile(out.toPath());
-            }
-            out = ctx.getExtendedOutputFile();
-            if (out != null) {
-                spec.setExtendedOutputFile(out.toPath());
-            }
-
-            AlgorithmSpec algo = new AlgorithmSpec();
-            File cfg = ctx.getConfigFile();
-            algo.setName(cfg.getName());
-            algo.setConfigFile(cfg.toPath());
+        eval.setDataSource(BinaryRatingDAO.open(ctx.getInputFile()));
+        File out = ctx.getOutputFile();
+        if (out != null) {
+            eval.setOutputFile(out);
+        }
+        out = ctx.getExtendedOutputFile();
+        if (out != null) {
+            eval.setExtendedOutputFile(out.toPath());
         }
 
-        TemporalEvaluator eval = new TemporalEvaluator(spec);
+        // FIXME Use a proper class loader
+        List<AlgorithmInstance> algos = AlgorithmInstance.load(ctx.getConfigFile().toPath(), "algorithm",
+                                                               ClassLoaders.inferDefault());
+        if (algos.size() != 1) {
+            logger.error("expected 1 algorithm, found {}", algos.size());
+            System.exit(2);
+        } else {
+            eval.setAlgorithm(algos.get(0));
+        }
+
         Stopwatch timer = Stopwatch.createStarted();
         logger.info("beginning temporal evaluator");
         eval.execute();

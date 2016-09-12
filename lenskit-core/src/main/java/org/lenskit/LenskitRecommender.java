@@ -25,6 +25,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.lenskit.api.*;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.StaticInjector;
 
 import javax.annotation.Nullable;
@@ -69,7 +70,7 @@ public class LenskitRecommender implements Recommender {
         try {
             return injector.tryGetInstance(cls);
         } catch (InjectionException e) {
-            throw new RuntimeException("error instantiating component", e);
+            throw new RecommenderBuildException("error instantiating component", e);
         }
     }
 
@@ -88,7 +89,7 @@ public class LenskitRecommender implements Recommender {
         try {
             return injector.tryGetInstance(qual, cls);
         } catch (InjectionException e) {
-            throw new RuntimeException("error instantiating component", e);
+            throw new RecommenderBuildException("error instantiating component", e);
         }
     }
 
@@ -107,7 +108,7 @@ public class LenskitRecommender implements Recommender {
         try {
             return injector.getInstance(qual, cls);
         } catch (InjectionException e) {
-            throw new RuntimeException("error instantiating component", e);
+            throw new RecommenderBuildException("error instantiating component", e);
         }
     }
 
@@ -153,8 +154,27 @@ public class LenskitRecommender implements Recommender {
      * @return The recommender.
      * @throws RecommenderBuildException If there is an error building the recommender.
      * @since 2.0
+     * @deprecated Use {@link #build(LenskitConfiguration, DataAccessObject)}
      */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public static LenskitRecommender build(LenskitConfiguration config) throws RecommenderBuildException {
         return LenskitRecommenderEngine.build(config).createRecommender();
+    }
+
+    /**
+     * Build a recommender from a configuration.  The recommender is immediately usable.  This is
+     * mostly useful for evaluations and test programs; more sophisticated applications that need
+     * to build multiple recommenders from the same model should use a {@linkplain LenskitRecommenderEngine
+     * recommender engine}.
+     *
+     * @param config The configuration.
+     * @param dao The data access object.
+     * @return The recommender.
+     * @throws RecommenderBuildException If there is an error building the recommender.
+     * @since 2.0
+     */
+    public static LenskitRecommender build(LenskitConfiguration config, DataAccessObject dao) throws RecommenderBuildException {
+        return LenskitRecommenderEngine.build(config, dao).createRecommender(dao);
     }
 }

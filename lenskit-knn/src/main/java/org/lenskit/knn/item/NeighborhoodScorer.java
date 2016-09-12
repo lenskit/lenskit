@@ -22,8 +22,6 @@ package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Compute scores from neighborhoods and score vectors.
@@ -42,14 +40,11 @@ public interface NeighborhoodScorer {
      * Compute a score based on similar neighbors and their corresponding
      * scores.
      *
-     *
-     *
-     * @param item
+     * @param item      The item ID to score.
      * @param neighbors A vector of neighbors with similarity measures.
      * @param scores    A vector of item scores. It should contain a score for
      *                  every item in <var>neighbors</var>.
-     * @return An accumulated score from the neighbors, or {@code null} if
-     *         no score could be computed.
+     * @param accum     An accumulator to receive the score computed by this method.
      */
-    ItemItemResult score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores);
+    void score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores, ItemItemScoreAccumulator accum);
 }

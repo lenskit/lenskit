@@ -127,6 +127,24 @@ public class KeyedObjectMapTest {
         assertThat(m2.get(42L), equalTo("42"));
     }
 
+    @Test
+    public void testAddDuplicates() {
+        KeyedObjectMap<String> m = createMap("37", "59", "37");
+        assertThat(m.size(), equalTo(2));
+        assertThat(m.keySet(),
+                   contains(37L, 59L));
+    }
+
+    @Test
+    public void testContainsValue() {
+        KeyedObjectMap<String> m = createMap("42", "39", "108");
+        assertThat(m.containsValue("42"), equalTo(true));
+        assertThat(m.containsValue(null), equalTo(false));
+        assertThat(m.containsValue("108"), equalTo(true));
+        assertThat(m.containsValue("107"), equalTo(false));
+        assertThat(m.containsValue(107L), equalTo(false));
+    }
+
     static KeyedObjectMap<String> createMap(String... strings) {
         return KeyedObjectMap.newBuilder(StringEx.INSTANCE)
                              .add(strings)

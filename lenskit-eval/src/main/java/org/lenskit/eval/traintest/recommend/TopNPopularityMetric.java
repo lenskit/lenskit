@@ -20,11 +20,11 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.Recommender;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
 import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -43,7 +43,7 @@ import java.util.Set;
  *
  * This metric is registered with the type name `popularity`.
  */
-public class TopNPopularityMetric extends TopNMetric<TopNPopularityMetric.Context> {
+public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetric.Context> {
     public TopNPopularityMetric() {
         super(PopResult.class, PopResult.class);
     }
@@ -64,13 +64,14 @@ public class TopNPopularityMetric extends TopNMetric<TopNPopularityMetric.Contex
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, ResultList recs, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, LongList recs, Context context) {
         if (recs == null || recs.isEmpty()) {
             return MetricResult.empty();
         }
         double pop = 0;
-        for (Result r: recs) {
-            pop += context.summary.getItemRatingCount(r.getId());
+        LongIterator iter = recs.iterator();
+        while (iter.hasNext()) {
+            pop += context.summary.getItemRatingCount(iter.nextLong());
         }
         pop = pop / recs.size();
 

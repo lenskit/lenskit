@@ -20,6 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.data.events.Event;
 
 import java.util.List;
@@ -52,5 +54,25 @@ public class FractionHistoryPartitionMethod implements HistoryPartitionMethod {
     @Override
     public String toString() {
         return String.format("fraction(%f)", fraction);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FractionHistoryPartitionMethod that = (FractionHistoryPartitionMethod) o;
+
+        return new EqualsBuilder()
+                .append(fraction, that.fraction)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(fraction)
+                .toHashCode();
     }
 }

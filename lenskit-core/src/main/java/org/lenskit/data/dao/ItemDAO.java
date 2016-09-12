@@ -22,14 +22,17 @@ package org.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.grapht.annotation.DefaultProvider;
 
 /**
  * DAO for items. The base interface only exposes the set of item IDs.
  *
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use new {@link DataAccessObject}.
  */
-@DefaultImplementation(PrefetchingItemDAO.class)
+@DefaultProvider(BridgeItemDAO.DynamicProvider.class)
+@Deprecated
 public interface ItemDAO {
     /**
      * Get all known item IDs.

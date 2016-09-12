@@ -1,0 +1,10 @@
+builder: org.lenskit.data.ratings.RatingBuilder
+attributes:
+  user: long
+  item: long
+  rating: double
+  timestamp: long
+derivations:
+  user: user
+  item: item
+columns: [user, item, rating, timestamp]

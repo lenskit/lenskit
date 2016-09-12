@@ -22,7 +22,9 @@ package org.lenskit.knn.user
 
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
@@ -46,7 +48,9 @@ public class UserUserAccuracyTest extends CrossfoldTestSuite {
         ConfigHelpers.configure(config) {
             bind ItemScorer to UserUserItemScorer
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-            bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+            within (UserVectorNormalizer) {
+                bind VectorNormalizer to MeanCenteringVectorNormalizer
+            }
             set NeighborhoodSize to 30
         }
     }

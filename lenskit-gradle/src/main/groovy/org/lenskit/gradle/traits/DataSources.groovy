@@ -21,10 +21,7 @@
 package org.lenskit.gradle.traits
 
 import org.gradle.api.Project
-import org.lenskit.gradle.delegates.SpecDelegate
-import org.lenskit.specs.data.DataSourceSpec
-import org.lenskit.specs.data.PackedDataSourceSpec
-import org.lenskit.specs.data.TextDataSourceSpec
+import org.lenskit.gradle.delegates.TextDataSourceConfig
 
 /**
  * Support for specifying various types of data sources.
@@ -34,38 +31,24 @@ trait DataSources {
 
     /**
      * Configure a text file data source.
-     * @param block The configuration block, used to configureSpec a {@link TextDataSourceSpec}.
+     * @param block The configuration block, used to configure a data source.
      * @return A JSON specification of a text file data source.
-     * @see TextDataSourceSpec
-     * @see SpecDelegate
      */
-    DataSourceSpec textFile(Closure block) {
-        SpecDelegate.configureSpec(project, TextDataSourceSpec, block)
+    def textFile(@DelegatesTo(TextDataSourceConfig) Closure block) {
+        project.logger.warn('textFile is deprecated')
+        def spec = new TextDataSourceConfig(project)
+        spec.configure(block)
+        return spec.json
     }
 
     /**
      * Configure a rating CSV file data source.
      * @param fn The file to use.
      * @return A JSON specification of a text file data source.
-     * @see TextDataSourceSpec
-     * @see SpecDelegate
      */
-    DataSourceSpec textFile(Object fn) {
-        def f = project.file(fn)
-        return textFile {
-            file f.toPath()
-        }
-    }
-
-    /**
-     * Construct a data source for a pack file.
-     * @param fn The name of the pack file.
-     * @return The data source spec.
-     */
-    DataSourceSpec packFile(Object fn) {
-        def f = project.file(fn)
-        def spec = new PackedDataSourceSpec()
-        spec.file = f.toPath()
-        return spec
+    def textFile(Object fn) {
+        project.logger.warn('textFile is deprecated')
+        return [type: 'textfile', file: project.uri(fn).toString(),
+                format: 'csv', event_type: 'rating']
     }
 }

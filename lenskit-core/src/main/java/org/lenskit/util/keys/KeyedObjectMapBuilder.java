@@ -20,7 +20,13 @@
  */
 package org.lenskit.util.keys;
 
-import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Builder for keyed object maps.
@@ -28,29 +34,61 @@ import com.google.common.collect.ImmutableList;
  */
 public class KeyedObjectMapBuilder<T> {
     private final KeyExtractor<? super T> extractor;
-    private final ImmutableList.Builder<T> builder;
+    private final List<T> builder;
+    private final Long2IntMap posMap;
 
     public KeyedObjectMapBuilder(KeyExtractor<? super T> ex) {
         extractor = ex;
-        builder = ImmutableList.builder();
+        builder = new ArrayList<>();
+        posMap = new Long2IntOpenHashMap();
+        posMap.defaultReturnValue(-1);
     }
 
     public KeyedObjectMapBuilder<T> add(T item) {
-        builder.add(item);
+        long key = extractor.getKey(item);
+        int pos = posMap.get(key);
+        if (pos < 0) {
+            pos = builder.size();
+            posMap.put(key, pos);
+            builder.add(item);
+        } else {
+            builder.set(pos, item);
+        }
         return this;
     }
 
     public KeyedObjectMapBuilder<T> addAll(Iterable<? extends T> items) {
-        builder.addAll(items);
+        for (T item: items) {
+            add(item);
+        }
         return this;
     }
 
     public KeyedObjectMapBuilder<T> add(T... items) {
-        builder.add(items);
+        for (T item: items) {
+            add(item);
+        }
         return this;
     }
 
+    /**
+     * Get the objects that have been added so far.  Useful for re-processing them before finalizing the builder.
+     * @return The objects added so far.
+     */
+    public Collection<T> objects() {
+        return Collections.unmodifiableList(builder);
+    }
+
+    /**
+     * Query whether an object with the specified key has been added.
+     * @param key The key to query.
+     * @return `true` if an object with key `key` has been added.
+     */
+    public boolean containsKey(long key) {
+        return posMap.containsKey(key);
+    }
+
     public KeyedObjectMap<T> build() {
-        return new KeyedObjectMap<>(builder.build(), extractor);
+        return new KeyedObjectMap<>(builder, extractor);
     }
 }

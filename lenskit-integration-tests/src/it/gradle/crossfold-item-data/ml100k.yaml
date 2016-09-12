@@ -1,0 +1,11 @@
+ratings:
+  file: ml100k/ratings.tsv
+  format: tsv
+  entity_type: rating
+items:
+  file: ml100k/movies.csv
+  format: csv
+  entity_type: item
+  columns:
+  - id
+  - name

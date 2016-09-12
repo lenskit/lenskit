@@ -92,7 +92,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
             }
         }
         if (closest < 0) {
-            throw new RuntimeException("could not quantize value");
+            throw new IllegalArgumentException("could not quantize value");
         } else {
             return closest;
         }
