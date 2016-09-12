@@ -21,11 +21,12 @@
 package org.lenskit.eval.traintest.metrics;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.ClassUtils;
-import org.lenskit.specs.SpecUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +127,7 @@ public class MetricLoaderHelper {
 
     @Nullable
     public <T> T createMetric(Class<T> type, JsonNode node) {
+        ObjectMapper mapper = new ObjectMapper();
         String typeName = getMetricTypeName(node);
         if (typeName == null) {
             return null;
@@ -141,7 +143,7 @@ public class MetricLoaderHelper {
         }
         for (Constructor<?> ctor: metric.getConstructors()) {
             if (ctor.getAnnotation(JsonCreator.class) != null) {
-                return type.cast(SpecUtils.createMapper().convertValue(node, metric));
+                return type.cast(mapper.convertValue(node, metric));
             }
         }
 
@@ -151,5 +153,17 @@ public class MetricLoaderHelper {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("Cannot instantiate " + metric, e);
         }
+    }
+
+    @Nullable
+    public <T> T createMetric(Class<T> type, String json) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = null;
+        try {
+            node = mapper.readTree(json);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("cannot read JSON string");
+        }
+        return createMetric(type, node);
     }
 }

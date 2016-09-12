@@ -36,11 +36,14 @@ import org.grouplens.lenskit.build.GitExtension
 
 plugins {
     id "org.sonarqube" version "1.0"
+    id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 apply plugin: 'base'
 apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
+
+ext.guavaVersion = '19.0'
 
 configurations {
     allDeps // collect all external dependencies of all modules
@@ -51,7 +54,7 @@ task ciPublish {
 }
 
 allprojects { project ->
-    group 'org.grouplens.lenskit'
+    group 'org.lenskit'
     version '3.0-SNAPSHOT'
 
     ext.getConfigProperty = { name, dft ->
@@ -122,12 +125,6 @@ subprojects {
     sourceCompatibility = '1.7'
     targetCompatibility = '1.7'
 
-    // Create a compileOnly configuration
-    configurations {
-        compileOnly.visible = false
-        compile.extendsFrom compileOnly
-    }
-
     sourceSets.all { ss ->
         // generate resources & classes to same dir
         ss.output.resourcesDir = ss.output.classesDir
@@ -139,17 +136,10 @@ subprojects {
         task.mustRunAfter check
     }
     // defer javadoc until after the build
-    javadoc.mustRunAfter 'classes'
+    tasks.javadoc.mustRunAfter 'classes'
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
-        task.options.fork = false
-        task.options.forkOptions.memoryMaximumSize = '128m'
-    }
-    tasks.withType(GroovyCompile).all { task ->
-        task.options.fork = false
-        task.groovyOptions.fork = false
-        task.groovyOptions.forkOptions.memoryMaximumSize = '128m'
     }
     compileJava {
         options.deprecation = true

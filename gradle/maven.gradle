@@ -46,8 +46,6 @@ buildscript {
     }
 }
 
-import net.elehack.gradle.util.*
-
 apply plugin: 'maven'
 apply plugin: 'signing'
 
@@ -82,7 +80,6 @@ artifacts {
 }
 
 signing {
-    signatories = new GnuPGSignatoryProvider()
     required {
         !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask('uploadArchives')
     }

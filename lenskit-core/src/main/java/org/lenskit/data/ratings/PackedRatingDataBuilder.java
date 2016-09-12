@@ -131,7 +131,7 @@ class PackedRatingDataBuilder implements Builder<PackedRatingData> {
 
         final int idx = freeList.isEmpty() ? nprefs : freeList.dequeueInt();
         if (idx == Integer.MAX_VALUE) {
-            throw new RuntimeException("data pack full");
+            throw new IllegalStateException("data pack full");
         }
         final int ci = chunk(idx);
         final int ei = element(idx);

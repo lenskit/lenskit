@@ -26,8 +26,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -55,7 +57,7 @@ public final class LenskitInfo {
                     revisions.add(StringUtils.trim(line));
                 }
             } catch (IOException e) {
-                throw new RuntimeException("error reading revision list", e);
+                logger.warn("Could not read Git revision list", e);
             } finally {
                 try {
                     input.close();
@@ -76,6 +78,7 @@ public final class LenskitInfo {
      * so the head revision is first.
      * @return The set of revisions included in this build of LensKit.
      */
+    @Nonnull
     public static synchronized Set<String> getRevisions() {
         Set<String> revisions = revisionSet == null ? null : revisionSet.get();
         if (revisions == null) {
@@ -99,28 +102,28 @@ public final class LenskitInfo {
      * Get the HEAD revision from which LensKit was built.
      * @return The revision from which this version of LensKit was built.
      */
+    @Nonnull
     public static String getHeadRevision() {
-        return getRevisions().iterator().next();
+        Iterator<String> iter = getRevisions().iterator();
+        if (iter.hasNext()) {
+            return iter.next();
+        } else {
+            return "UNKNOWN";
+        }
     }
 
     /**
      * Get the current LensKit version.
      * @return The LensKit version.
      */
+    @Nonnull
     public static String lenskitVersion() {
         Properties props = new Properties();
-        InputStream stream = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/version.properties");
-        try {
+        try (InputStream stream = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/version.properties")) {
             props.load(stream);
         } catch (IOException e) {
-            throw new RuntimeException("properties error", e);
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            logger.warn("could not load LensKit version properties", e);
         }
-        return props.getProperty("lenskit.version");
+        return props.getProperty("lenskit.version", "UNKNOWN");
     }
 }

@@ -20,20 +20,29 @@
  */
 package org.lenskit.gradle
 
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.nativeintegration.console.ConsoleDetector
+import org.gradle.internal.nativeintegration.console.ConsoleMetaData
+import org.gradle.internal.nativeintegration.services.NativeServices
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.JavaExecHandleBuilder
-import org.gradle.util.ConfigureUtil;
+import org.gradle.util.ConfigureUtil
 
 /**
  * Base class for LensKit tasks.
  */
 public abstract class LenskitTask extends ConventionTask {
+    /**
+     * Enable dry-run support. If turned on, the runner prepares but does not execute the task.
+     */
+    def boolean dryRun
+
     /**
      * The maximum memory the LensKit task should use.  Defaults to {@link LenskitExtension#getMaxMemory()}.
      */
@@ -106,8 +115,19 @@ public abstract class LenskitTask extends ConventionTask {
         if (logbackConfiguration) {
             invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
+
         logger.info('applying JVM arguments {}', getJvmArgs())
         invoker.jvmArgs getJvmArgs() // add all the arguments in the invoker
+
+        // the LensKit process will have stderr redirected, even if we're on a terminal
+        // so we need to detect console things
+        ConsoleDetector console = NativeServices.getInstance().get(ConsoleDetector.class);
+        ConsoleMetaData cmd = console.getConsole();
+        if (cmd?.isStdErr()) {
+            // stderr is a console
+            logger.info('color output, turning on color passthrough')
+            invoker.systemProperties 'jansi.passthrough': true
+        }
     }
 
     /**
@@ -153,6 +173,9 @@ public abstract class LenskitTask extends ConventionTask {
             for (f in getClasspath().files) {
                 logger.info('  {}', f)
             }
+        }
+        if (getDryRun()) {
+            throw new StopExecutionException()
         }
         invoker.main = 'org.lenskit.cli.Main'
         if (getLogFile() != null) {

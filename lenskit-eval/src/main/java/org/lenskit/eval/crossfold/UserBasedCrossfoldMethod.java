@@ -22,10 +22,15 @@ package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.util.io.ObjectStream;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.source.DataSource;
+import org.lenskit.util.IdBox;
+import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,18 +49,20 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
         partition = pa;
     }
 
-    public void crossfold(DataSource input, CrossfoldOutput output) throws IOException {
+    @Override
+    public void crossfold(DataAccessObject input, CrossfoldOutput output, EntityType type) throws IOException {
         final int count = output.getCount();
-        logger.info("splitting data source {} to {} partitions by users",
-                    input.getName(), count);
-        Long2IntMap splits = splitUsers(input.getUserDAO().getUserIds(), count, output.getRandom());
+        logger.info("splitting {} data from {} to {} partitions by users with method {}",
+                    input, input, count, partition);
+        Long2IntMap splits = splitUsers(input.getEntityIds(CommonTypes.USER), count, output.getRandom());
         splits.defaultReturnValue(-1); // unpartitioned users should only be trained
-        ObjectStream<UserHistory<Rating>> historyObjectStream = input.getUserEventDAO().streamEventsByUser(Rating.class);
-
-        try {
-            for (UserHistory<Rating> history : historyObjectStream) {
-                int foldNum = splits.get(history.getUserId());
-                List<Rating> ratings = new ArrayList<>(history);
+        try (ObjectStream<IdBox<List<Rating>>> userStream = input.query(type)
+                                                                 .asType(Rating.class)
+                                                                 .groupBy(CommonAttributes.USER_ID)
+                                                                 .stream()) {
+            for (IdBox<List<Rating>> history : userStream) {
+                int foldNum = splits.get(history.getId());
+                List<Rating> ratings = new ArrayList<>(history.getValue());
                 final int n = ratings.size();
 
                 for (int f = 0; f < count; f++) {
@@ -76,8 +83,6 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
                 }
 
             }
-        } finally {
-            historyObjectStream.close();
         }
     }
 
@@ -89,4 +94,12 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
      * @return A mapping of users to their test partitions.
      */
     protected abstract Long2IntMap splitUsers(LongSet users, int np, Random rng);
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("order", order)
+                .append("partition", partition)
+                .toString();
+    }
 }

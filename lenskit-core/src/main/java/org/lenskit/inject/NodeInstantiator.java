@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.*;
 import org.grouplens.grapht.graph.DAGNode;
+import org.lenskit.api.RecommenderBuildException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,7 +69,7 @@ public abstract class NodeInstantiator implements Function<DAGNode<Component,Dep
         try {
             return instantiate(input);
         } catch (InjectionException e) {
-            throw new RuntimeException("Instantiation error on " + input.getLabel(), e);
+            throw new RecommenderBuildException("cannot instantiate " + input.getLabel(), e);
         }
     }
 

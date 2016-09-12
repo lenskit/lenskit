@@ -36,11 +36,22 @@
 apply plugin: 'groovy'
 apply from: "$rootDir/gradle/test-utils.gradle"
 
+repositories {
+    maven {
+        url "https://nexus.bedatadriven.com/content/groups/public/"
+    }
+}
+configurations {
+    renjin
+}
 dependencies {
     compile project(':lenskit-all')
     compile project(':lenskit-test')
 
     testRuntime project(':lenskit-cli')
+
+    renjin project(':lenskit-test')
+    renjin group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2124'
 }
 
 // These tests require the MovieLens data set - arrange to download it
@@ -48,7 +59,7 @@ ext.mlDataDir = file("$buildDir/ml-100k")
 ext.mlDataFile = file("$buildDir/ml-100k.zip")
 ext.mlDataURL = 'http://files.grouplens.org/datasets/movielens/ml-100k.zip'
 
-task fetchData(group: 'build') {
+task fetchData(group: 'prep') {
     description "Fetch data for integration tests."
     inputs.property 'url', mlDataURL
     outputs.file mlDataFile
@@ -67,12 +78,35 @@ fetchData << {
     }
 }
 
+task processMLData(group: 'prep', type: JavaExec) {
+    dependsOn fetchData
+    classpath configurations.renjin
+    main 'org.lenskit.util.test.RunScript'
+    args 'make-item-csv.R'
+    args "$mlDataDir/u.item"
+    args "$mlDataDir/movies.csv"
+
+    inputs.file "$mlDataDir/u.item"
+    outputs.file "$mlDataDir/movies.csv"
+}
+
 // Configure the tests to use the data set
 test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
     maxHeapSize = '384m';
+    testLogging {
+        events = ["passed", "failed", "started", "skipped"]
+    }
+    jacoco {
+        enabled = false
+    }
+    onlyIf {
+        travis.branch != 'coverity_scan'
+    }
 }
+
+task crossCheck(group: 'verification')
 
 // import code to run the integration tests
 apply from: 'gradle-tests.gradle'

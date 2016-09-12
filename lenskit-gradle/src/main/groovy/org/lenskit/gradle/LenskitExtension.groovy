@@ -24,7 +24,7 @@ import org.gradle.api.file.FileCollection
 
 /**
  * Extension for configuring LensKit.  This is registered as `lenskit` by the LensKit plugin, so you can globally
- * configure LensKit options:
+ * configureSpec LensKit options:
  *
  * ```groovy
  * lenskit {

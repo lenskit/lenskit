@@ -21,10 +21,10 @@
 package org.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.lenskit.util.io.ObjectStream;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.ItemEventCollection;
+import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -34,8 +34,10 @@ import java.util.List;
  *
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use new {@link DataAccessObject}.
  */
-@DefaultImplementation(PrefetchingItemEventDAO.class)
+@DefaultProvider(BridgeItemEventDAO.DynamicProvider.class)
+@Deprecated
 public interface ItemEventDAO {
     /**
      * Stream events grouped by item.

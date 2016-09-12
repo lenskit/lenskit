@@ -26,13 +26,10 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -40,6 +37,10 @@ import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractRatingPredictor;
+import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
 import org.lenskit.results.AbstractResult;
 import org.lenskit.results.Results;
 import org.lenskit.transform.quantize.Quantizer;
@@ -123,7 +124,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
         SparseVector vector = null;
         if (history != null) {
-            vector = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+            vector = ImmutableSparseVector.create(Ratings.userRatingVector(history));
         }
 
         return vector;

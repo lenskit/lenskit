@@ -9,6 +9,6 @@ repositories {
 }
 
 dependencies {
-    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
-    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+    compile "org.lenskit:lenskit-all:$lenskitVersion"
+    runtime "org.lenskit:lenskit-cli:$lenskitVersion"
 }

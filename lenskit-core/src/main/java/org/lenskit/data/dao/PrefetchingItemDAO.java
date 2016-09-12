@@ -40,6 +40,8 @@ import javax.inject.Inject;
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
+@SuppressWarnings("deprecation")
 public final class PrefetchingItemDAO implements ItemDAO, Describable {
     private final EventDAO eventDAO;
     private final Supplier<LongSet> itemCache;

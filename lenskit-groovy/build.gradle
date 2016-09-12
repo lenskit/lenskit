@@ -37,8 +37,18 @@ apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
 apply from: "$rootDir/gradle/test-utils.gradle"
 
+if ((findProperty('idea.active') ?: 'false').asBoolean()) {
+    dependencies {
+        compile localGroovy()
+    }
+} else {
+    dependencies {
+        compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4'
+    }
+}
+
 dependencies {
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.3.10'
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4'
     compile project(':lenskit-core')
 }
 

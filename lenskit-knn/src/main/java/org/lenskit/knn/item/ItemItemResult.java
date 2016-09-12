@@ -57,6 +57,15 @@ public class ItemItemResult extends AbstractResult {
         return neighborWeight;
     }
 
+    /**
+     * Rescore this item-item result.
+     * @param score The new score.
+     * @return The rescored result.
+     */
+    ItemItemResult rescore(double score) {
+        return new ItemItemResult(getId(), score, getNeighborhoodSize(), getNeighborWeight());
+    }
+
     @Override
     public String toString() {
         return "ItemItemResult{" +

@@ -27,6 +27,8 @@ import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.LongSortedArraySet;
 import org.lenskit.util.keys.SortedKeyIndex;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
 /**
@@ -36,6 +38,7 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
+@ParametersAreNonnullByDefault
 public final class LongUtils {
     private LongUtils() {}
 
@@ -163,7 +166,7 @@ public final class LongUtils {
      * @return {@code longs} as a fastutil {@link LongSet}. If {@code longs} is already
      *         a LongSet, it is cast.
      */
-    public static LongSet asLongSet(final Set<Long> longs) {
+    public static LongSet asLongSet(@Nullable final Set<Long> longs) {
         if (longs == null) {
             return null;
         } else if (longs instanceof LongSet) {
@@ -243,7 +246,7 @@ public final class LongUtils {
      * Count the common items in two sets.
      * @param a The first set.
      * @param b The second set.
-     * @param max The maximum number of common items to count; nonpositive values mean no limit.
+     * @param max The maximum number of common items to count; negative means no limit.
      * @return The number of common items, or `max` if there are at least `max` common items.
      */
     private static int countCommonItems(LongSortedSet a, LongSortedSet b, int max) {
@@ -353,8 +356,8 @@ public final class LongUtils {
      * @return An item selector that selects the items selected by {@code base} plus an additional
      * {@code nRandom} items.
      */
-    public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude, Random rng) {
-        // FIXME The RNG should come from configuration
+    public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude,
+                                             Random rng) {
         LongSet initial = exclude;
         LongList selected = new LongArrayList(num);
         int n = 0;
@@ -383,6 +386,5 @@ public final class LongUtils {
             }
         }
         return LongUtils.packedSet(selected);
-
     }
 }

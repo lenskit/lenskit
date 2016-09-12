@@ -227,7 +227,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             proc = pb.start();
         } catch (IOException e) {
             logger.error("could not start {}: {}", executable, e);
-            throw new RuntimeException("could not start external process", e);
+            throw new ExternalProcessException("could not start external process", e);
         }
         Thread slurp = new LoggingStreamSlurper("build-" + executable, proc.getErrorStream(),
                                                 logger, "");
@@ -238,7 +238,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
              BufferedReader buf = new BufferedReader(rdr)) {
             scorer = PrecomputedItemScorer.fromCSV(buf);
         } catch (IOException e) {
-            throw new RuntimeException("cannot open output", e);
+            throw new ExternalProcessException("cannot open output", e);
         }
 
         int ec;
@@ -246,13 +246,13 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             ec = proc.waitFor();
         } catch (InterruptedException e) {
             proc.destroy();
-            throw new RuntimeException("external process interrupted", e);
+            throw new ExternalProcessException("external process interrupted", e);
         }
         if (ec == 0) {
             return scorer;
         } else {
             logger.error("{} exited with code {}", executable, ec);
-            throw new RuntimeException("external process failed with code " + ec);
+            throw new ExternalProcessException("external process failed with code " + ec);
         }
     }
 
@@ -293,7 +293,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                     writer.println();
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Error creating ratings file", e);
+                throw new ExternalProcessException("Error creating ratings file", e);
             }
             return name;
         }
@@ -325,7 +325,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                     writer.println(iter.nextLong());
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Error creating ratings file", e);
+                throw new ExternalProcessException("Error creating ratings file", e);
             }
             return name;
         }

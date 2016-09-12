@@ -22,20 +22,19 @@ package org.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.junit.After;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
-import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +67,9 @@ public class UserUserRecommenderTest {
         rs.add(Rating.create(3, 9, 4));
         rs.add(Rating.create(6, 9, 4));
         rs.add(Rating.create(5, 9, 4));
-        EventDAO dao = new EventCollectionDAO(rs);
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
         config.bind(NeighborFinder.class).to(LiveNeighborFinder.class);
         config.within(UserSimilarity.class)
@@ -80,8 +79,7 @@ public class UserUserRecommenderTest {
 /*        factory.setComponent(UserVectorNormalizer.class,
                              VectorNormalizer.class,
                              IdentityVectorNormalizer.class);*/
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        rec = engine.createRecommender();
+        rec = LenskitRecommender.build(config, dao);
     }
 
     @After

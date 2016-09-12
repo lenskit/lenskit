@@ -136,8 +136,14 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
         userStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUsers());
         itemStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItems());
         for (SortOrder order : SortOrder.values()) {
-            eventStatements.put(order, new CachedPreparedStatement(dbc,
-                                                                   statementFactory.prepareEvents(order)));
+            switch (order) {
+            case ASCENDING:
+            case DESCENDING:
+                break;
+            default:
+                eventStatements.put(order, new CachedPreparedStatement(dbc,
+                                                                       statementFactory.prepareEvents(order)));
+            }
         }
         userEventStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUserEvents());
         itemEventStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItemEvents());

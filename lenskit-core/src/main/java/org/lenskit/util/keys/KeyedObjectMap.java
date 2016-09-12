@@ -207,6 +207,28 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
     }
 
     @Override
+    public boolean containsKey(long k) {
+        return findIndex(k) >= 0;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean containsValue(Object v) {
+        if (v == null) {
+            return false;
+        }
+
+        long key;
+        try {
+            key = extractor.getKey((T) v);
+        } catch (ClassCastException ex) {
+            return false;
+        }
+        int idx = findIndex(key);
+        return idx >= 0 && data.get(idx).equals(v);
+    }
+
+    @Override
     public int size() {
         return data.size();
     }

@@ -20,11 +20,11 @@
  */
 package org.lenskit.eval.traintest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import groovy.lang.Closure;
@@ -32,11 +32,13 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.config.ConfigHelpers;
-import org.lenskit.config.ConfigurationLoader;
-import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.config.LenskitConfigScript;
+import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.config.ConfigHelpers;
+import org.lenskit.eval.traintest.predict.PredictEvalTask;
+import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
+import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
 import org.lenskit.util.table.TableLayout;
@@ -44,21 +46,17 @@ import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.lenskit.util.table.writer.TableWriter;
-import org.lenskit.eval.traintest.predict.PredictEvalTask;
-import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
-import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.*;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Sets up and runs train-test evaluations.  This class can be used directly, but it will usually be controlled from
@@ -82,7 +80,7 @@ public class TrainTestExperiment {
     private Path userOutputFile;
     private Path cacheDir;
     private boolean shareModelComponents = true;
-    private int threadCount;
+    private int threadCount = 1;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -94,6 +92,8 @@ public class TrainTestExperiment {
     private TableBuilder resultBuilder;
     private Closer resultCloser;
     private ExperimentOutputLayout outputLayout;
+    private List<ExperimentJob> allJobs;
+    private TaskGroup rootJob;
 
     /**
      * Set the primary output file.
@@ -169,23 +169,7 @@ public class TrainTestExperiment {
      * @param file The config file to load.
      */
     public void addAlgorithm(String name, Path file) {
-        ConfigurationLoader loader = new ConfigurationLoader(classLoader);
-        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
-        MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(loader, aib);
-        try {
-            LenskitConfigScript script = loader.loadScript(file.toFile());
-            dsl.setBaseURI(script.getDelegate().getBaseURI());
-            script.setDelegate(dsl);
-            script.configure();
-        } catch (IOException e) {
-            throw new RuntimeException("cannot load configuration from " + file);
-        }
-        List<AlgorithmInstance> multi = dsl.getInstances();
-        if (multi.isEmpty()) {
-            addAlgorithm(aib.build());
-        } else {
-            addAlgorithms(multi);
-        }
+        addAlgorithms(AlgorithmInstance.load(file, name, classLoader));
     }
 
     /**
@@ -379,8 +363,15 @@ public class TrainTestExperiment {
                 }
 
                 logger.debug("gathering jobs");
-                ListMultimap<UUID,Runnable> jobs = makeJobList();
-                runJobList(jobs);
+                buildJobGraph();
+                int nthreads = getThreadCount();
+                if (nthreads > 1) {
+                    logger.info("running with {} threads", nthreads);
+                    runJobGraph(nthreads);
+                } else {
+                    logger.info("running in a single thread");
+                    runJobList();
+                }
 
                 logger.info("train-test evaluation complete");
                 // done before closing, but that is ok
@@ -459,17 +450,17 @@ public class TrainTestExperiment {
 
 
     /**
-     * Create the list of jobs to run in this experiment.
-     * @return The jobs, as a multimap from isolation group IDs to tasks.
+     * Create the tree of jobs to run in this experiment.
+     * @return The job tree, as a root fork-join task.
      */
-    private ListMultimap<UUID,Runnable> makeJobList() {
+    @Nonnull
+    private void buildJobGraph() {
+        allJobs = new ArrayList<>();
         ComponentCache cache = null;
         if (shareModelComponents) {
             cache = new ComponentCache(cacheDir, classLoader);
         }
-        ListMultimap<UUID, Runnable> jobs = MultimapBuilder.linkedHashKeys()
-                                                           .linkedListValues()
-                                                           .build();
+        Map<UUID,TaskGroup> groups = new HashMap<>();
 
         // set up the roots
         LenskitConfiguration config = new LenskitConfiguration();
@@ -482,99 +473,161 @@ public class TrainTestExperiment {
         // make tasks
         for (DataSet ds: getDataSets()) {
             // TODO support global isolation
-            UUID group = ds.getIsolationGroup();
+            UUID gid = ds.getIsolationGroup();
+            TaskGroup group = groups.get(gid);
+            if (group == null) {
+                group = new TaskGroup(true);
+                groups.put(gid, group);
+            }
             MergePool<Component,Dependency> pool = null;
             if (cache != null) {
                 pool = MergePool.create();
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
                 ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool);
-                jobs.put(group, job);
+                allJobs.add(job);
+                group.addTask(job);
             }
         }
 
-        return jobs;
+        TaskGroup root;
+        if (groups.size() > 1) {
+            root = new TaskGroup(false);
+            for (TaskGroup g: groups.values()) {
+                root.addTask(g);
+            }
+        } else {
+            root = FluentIterable.from(groups.values()).first().orNull();
+        }
+        if (root == null) {
+            throw new IllegalStateException("no jobs defined");
+        }
+        rootJob = root;
     }
 
     /**
-     * Run the jobs.
-     * @param jobs The jobs to run.
+     * Run the jobs in sequence.
      */
-    private void runJobList(ListMultimap<UUID, Runnable> jobs) {
-        ExecutorService service = null;
-        ExecutorCompletionService<Void> ecs = null;
-        int nthreads = getThreadCount();
-        if (nthreads > 1) {
-            logger.info("running with {} threads", nthreads);
-            service = Executors.newFixedThreadPool(nthreads);
-            ecs = new ExecutorCompletionService<>(service);
-        } else {
-            logger.info("running in a single thread");
-        }
-        try {
-            for (UUID group: jobs.keySet()) {
-                logger.info("running group {}", group);
-                List<Future<?>> results = new ArrayList<>();
-                for (Runnable job: jobs.get(group)) {
-                    if (ecs == null) {
-                        job.run();
-                    } else {
-                        results.add(ecs.submit(job, null));
-                    }
-                }
-                if (ecs != null) {
-                    // handle completion in order, cancelling tasks if we are interrupted or if there is an errors
-                    int remaining = results.size();
-                    while (remaining > 0) {
-                        try {
-                            Future<Void> r = ecs.take();
-                            r.get();
-                            remaining -= 1;
-                        } catch (InterruptedException ex) {
-                            logger.debug("thread interrupted, cancelling", ex);
-                            for (Future<?> r: results) {
-                                r.cancel(true);
-                            }
-                            // FIXME What should we do with remaining here?
-                        } catch (ExecutionException ex) {
-                            Throwables.propagateIfInstanceOf(ex.getCause(), EvaluationException.class);
-                            for (Future<?> r: results) {
-                                r.cancel(true);
-                            }
-                            throw new EvaluationException("error running evaluation", ex.getCause());
-                        }
-                    }
-                }
-            }
-        } finally{
-            if (service != null) {
-                service.shutdown();
-            }
+    private void runJobList() {
+        Preconditions.checkState(allJobs != null, "job graph not built");
+
+        for (ExperimentJob job: allJobs) {
+            job.execute();
         }
     }
 
-    public static TrainTestExperiment fromSpec(TrainTestExperimentSpec spec) {
+    private void runJobGraph(int nthreads) {
+        Preconditions.checkState(rootJob != null, "job graph not built");
+        ForkJoinPool pool = new ForkJoinPool(nthreads);
+        pool.invoke(rootJob);
+    }
+
+    /**
+     * Load a train-test experiment from a YAML file.
+     * @param file The file to load.
+     * @return The train-test experiment.
+     */
+    public static TrainTestExperiment load(Path file) throws IOException {
+        YAMLFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        JsonNode node = mapper.readTree(file.toFile());
+
+        return fromJSON(node, file.toUri());
+    }
+
+    /**
+     * Configure a train-test experiment from JSON.
+     * @param json The JSON node.
+     * @param base The base URI for resolving relative paths.
+     * @return The train-test experiment.
+     * @throws IOException if there is an IO error.
+     */
+    static TrainTestExperiment fromJSON(JsonNode json, URI base) throws IOException {
         TrainTestExperiment exp = new TrainTestExperiment();
-        exp.setOutputFile(spec.getOutputFile());
-        exp.setUserOutputFile(spec.getUserOutputFile());
-        exp.setCacheDirectory(spec.getCacheDirectory());
-        exp.setShareModelComponents(spec.getShareModelComponents());
-        for (DataSetSpec ds: spec.getDataSets()) {
-            exp.addDataSet(DataSet.fromSpec(ds));
+
+        // configure basic settings
+        String outFile = json.path("output_file").asText(null);
+        if (outFile != null) {
+            exp.setOutputFile(Paths.get(base.resolve(outFile)));
         }
-        for (AlgorithmSpec as: spec.getAlgorithms()) {
-            exp.addAlgorithm(as.getName(), as.getConfigFile());
+        outFile = json.path("user_output_file").asText(null);
+        if (outFile != null) {
+            exp.setUserOutputFile(Paths.get(base.resolve(outFile)));
         }
-        for (EvalTaskSpec ets: spec.getTasks()) {
-            if (ets instanceof PredictEvalTaskSpec) {
-                exp.addTask(PredictEvalTask.fromSpec((PredictEvalTaskSpec) ets));
-            } else if (ets instanceof RecommendEvalTaskSpec) {
-                exp.addTask(RecommendEvalTask.fromSpec((RecommendEvalTaskSpec) ets));
+        String cacheDir = json.path("cache_directory").asText(null);
+        if (cacheDir != null) {
+            exp.setCacheDirectory(Paths.get(base.resolve(cacheDir)));
+        }
+        if (json.has("thread_count")) {
+            exp.setThreadCount(json.get("thread_count").asInt(1));
+        }
+        if (json.has("share_model_components")) {
+            exp.setShareModelComponents(json.get("share_model_components").asBoolean());
+        }
+        if (!json.has("datasets")) {
+            throw new IllegalArgumentException("no data sets specified");
+        }
+
+        // configure data sets
+        for (JsonNode ds: json.get("datasets")) {
+            List<DataSet> dss;
+            if (ds.isTextual()) {
+                URI dsURI = base.resolve(ds.asText());
+                dss = DataSet.load(dsURI.toURL());
             } else {
-                throw new IllegalArgumentException("unusable eval task spec " + ets);
+                dss = DataSet.fromJSON(ds, base);
             }
+            exp.addDataSets(dss);
+        }
+
+        // configure the algorithms
+        JsonNode algo = json.path("algorithms");
+        if (algo.isTextual()) {
+            // name of groovy file
+            URI af = base.resolve(algo.asText());
+            String aname = LKFileUtils.basename(af.getPath(), false);
+            // FIXME Support algorithms from URLs
+            exp.addAlgorithm(aname, Paths.get(af));
+        } else if (algo.isObject()) {
+            // mapping of names to groovy files
+            Iterator<Map.Entry<String,JsonNode>> algoIter = algo.fields();
+            while (algoIter.hasNext()) {
+                Map.Entry<String, JsonNode> e = algoIter.next();
+                URI algoUri = base.resolve(e.getValue().asText());
+                // FIXME Support algorithms from URLs
+                exp.addAlgorithm(e.getKey(), Paths.get(algoUri));
+            }
+        } else if (algo.isArray()) {
+            // list of groovy file names
+            for (JsonNode an: algo) {
+                URI af = base.resolve(an.asText());
+                String aname = LKFileUtils.basename(af.getPath(), false);
+                // FIXME Support algorithms from URLs
+                exp.addAlgorithm(aname, Paths.get(af));
+            }
+        } else if (!algo.isMissingNode()) {
+            throw new IllegalArgumentException("unexpected type for algorithms config");
+        }
+
+        // configure the tasks and their metrics
+        JsonNode tasks = json.get("tasks");
+        for (JsonNode task: tasks) {
+            exp.addTask(configureTask(task, base));
         }
 
         return exp;
+    }
+
+    private static EvalTask configureTask(JsonNode task, URI base) throws IOException {
+        String type = task.path("type").asText(null);
+        Preconditions.checkArgument(type != null, "no task type specified");
+        switch (type) {
+        case "predict":
+            return PredictEvalTask.fromJSON(task, base);
+        case "recommend":
+            return RecommendEvalTask.fromJSON(task, base);
+        default:
+            throw new IllegalArgumentException("invalid eval task type " + type);
+        }
     }
 }

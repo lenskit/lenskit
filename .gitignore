@@ -1,4 +1,5 @@
 target
+/classes
 .project
 .classpath
 .settings
@@ -12,6 +13,6 @@ local.gradle
 *.iml
 *.ipr
 *.iws
-
+.DS_Store
 TAGS
 ERRS

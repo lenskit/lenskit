@@ -22,8 +22,15 @@ package org.lenskit.data.ratings;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.text.DefaultFields;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.EntityBuilder;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.events.EventBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Build a {@link Rating}.
@@ -31,8 +38,13 @@ import org.lenskit.data.events.EventBuilder;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultFields({"userId", "itemId", "rating", "timestamp?"})
-public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
+public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
+    private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
+    private static final AtomicLong idGenerator = new AtomicLong();
+    private static volatile boolean hasWarned;
+
+    private boolean hasId;
+    private long id;
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -44,7 +56,20 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating>, Clo
     /**
      * Create an uninitialized rating builder.
      */
-    public RatingBuilder() {}
+    public RatingBuilder() {
+        super(CommonTypes.RATING);
+    }
+
+    /**
+     * Create an unitialized rating builder.
+     * @param type The rating builder.
+     */
+    public RatingBuilder(EntityType type) {
+        super(type);
+        if (type != CommonTypes.RATING) {
+            throw new IllegalArgumentException("only 'rating' entities can be viewed as ratings");
+        }
+    }
 
     /**
      * Construct a new rating builder that is a copy of a particular rating.
@@ -56,9 +81,29 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating>, Clo
     }
 
     @Override
-    public void reset() {
-        hasUserId = hasItemId = hasRating = false;
+    public RatingBuilder reset() {
+        hasId = hasUserId = hasItemId = hasRating = false;
         timestamp = -1;
+        return this;
+    }
+
+    /**
+     * Get the rating ID.
+     * @return The rating ID.
+     */
+    public long getId() {
+        return id;
+    }
+
+    /**
+     * Set the rating ID.
+     * @param id The rating ID.
+     * @return The builder (for chaining).
+     */
+    public RatingBuilder setId(long id) {
+        this.id = id;
+        hasId = true;
+        return this;
     }
 
     /**
@@ -165,14 +210,60 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating>, Clo
     }
 
     @Override
+    public <T> EntityBuilder setAttribute(TypedName<T> name, T val) {
+        switch (name.getName()) {
+        case "user":
+            return setUserId((Long) val);
+        case "item":
+            return setItemId((Long) val);
+        case "rating":
+            return setRating((Double) val);
+        case "id":
+            return setId((Long) val);
+        case "timestamp":
+            return setTimestamp((Long) val);
+        default:
+            throw new IllegalArgumentException("invalid column " + name + " for rating object");
+        }
+    }
+
+    @Override
+    public EntityBuilder clearAttribute(TypedName<?> name) {
+        switch (name.getName()) {
+        case "user":
+            hasUserId = false;
+            break;
+        case "item":
+            hasItemId = false;
+            break;
+        case "rating":
+            hasRating = false;
+            break;
+        case "id":
+            hasId = false;
+            break;
+        case "timestamp":
+            timestamp = -1;
+            break;
+        default:
+            throw new IllegalArgumentException("invalid column " + name + " for rating object");
+        }
+        return this;
+    }
+
+    @Override
     public Rating build() {
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
-        if (hasRating) {
-            return Rating.create(userId, itemId, rating, timestamp);
-        } else {
-            return Rating.createUnrate(userId, itemId, timestamp);
+        Preconditions.checkState(hasRating, "no rating set");
+        if (!hasId) {
+            if (!hasWarned) {
+                logger.warn("creating rating without ID");
+                hasWarned = true;
+            }
+            id = idGenerator.incrementAndGet();
         }
+        return new Rating(id, userId, itemId, rating, timestamp);
     }
 
     @Override

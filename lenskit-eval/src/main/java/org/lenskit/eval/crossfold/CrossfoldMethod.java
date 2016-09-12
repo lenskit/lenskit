@@ -20,7 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.grouplens.lenskit.data.source.DataSource;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.EntityType;
 
 import java.io.IOException;
 
@@ -33,6 +34,7 @@ public interface CrossfoldMethod {
      *
      * @param input  The input.
      * @param output The outputs.
+     * @param type The type of entity to crossfold.
      */
-    void crossfold(DataSource input, CrossfoldOutput output) throws IOException;
+    void crossfold(DataAccessObject input, CrossfoldOutput output, EntityType type) throws IOException;
 }

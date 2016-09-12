@@ -22,16 +22,15 @@ package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-
-import org.lenskit.config.ConfigurationLoader;
-import org.lenskit.eval.temporal.TemporalEvaluator;
-import org.lenskit.LenskitConfiguration;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.packed.BinaryRatingDAO;
+import org.lenskit.eval.temporal.TemporalEvaluator;
+import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +38,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Simulates a recommender algorithm over time.
  */
 @AutoService(Command.class)
 public class Simulate implements Command {
@@ -57,15 +57,31 @@ public class Simulate implements Command {
         parser.addArgument("-o", "--output-file")
               .type(File.class)
               .metavar("FILE")
-              .setDefault("ratings.pack")
-              .help("write predicted score to FILE");
+              .setDefault("predictions.csv")
+              .help("write predictions and errors to FILE");
+        parser.addArgument("--extended-output")
+              .type(File.class)
+              .metavar("FILE")
+              .setDefault("extended-output.txt")
+              .help("write extended output as JSON lines in FILE");
+        parser.addArgument("-n", "--list-size")
+              .type(Integer.class)
+              .metavar("INTEGER")
+              .setDefault(10)
+              .help("Length of recommendation lists");
         parser.addArgument("-r", "--rebuild-period")
               .type(Long.class)
+              .setDefault(86400L)
               .metavar("SECONDS")
               .help("Rebuild Period for next build");
+        parser.addArgument("--spec-file")
+              .type(File.class)
+              .metavar("SPEC")
+              .help("load from spec file SPEC");
         parser.addArgument("config")
               .type(File.class)
               .metavar("CONFIG")
+              .nargs("?")
               .help("load algorithm configuration from CONFIG");
     }
 
@@ -76,33 +92,44 @@ public class Simulate implements Command {
 
     @Override
     public String getHelp() {
-        return "simulate";
+        return "Simulate a recommender algorithm over time";
     }
 
     @Override
     public void execute(Namespace opts) throws IOException, RecommenderBuildException {
 
         Context ctx = new Context(opts);
-        TemporalEvaluator tempEval = new TemporalEvaluator();
+
+        TemporalEvaluator eval = new TemporalEvaluator();
+
+        eval.setListSize(ctx.getListSize());
+        eval.setRebuildPeriod(ctx.getRebuildPeriod());
+
+        eval.setDataSource(BinaryRatingDAO.open(ctx.getInputFile()));
+        File out = ctx.getOutputFile();
+        if (out != null) {
+            eval.setOutputFile(out);
+        }
+        out = ctx.getExtendedOutputFile();
+        if (out != null) {
+            eval.setExtendedOutputFile(out.toPath());
+        }
+
+        // FIXME Use a proper class loader
+        List<AlgorithmInstance> algos = AlgorithmInstance.load(ctx.getConfigFile().toPath(), "algorithm",
+                                                               ClassLoaders.inferDefault());
+        if (algos.size() != 1) {
+            logger.error("expected 1 algorithm, found {}", algos.size());
+            System.exit(2);
+        } else {
+            eval.setAlgorithm(algos.get(0));
+        }
 
         Stopwatch timer = Stopwatch.createStarted();
-
-        Long rebuildPeriod = ctx.getRebuildPeriod();
-        tempEval.setDataSource(ctx.getInputFile());
-        tempEval.setPredictOutputFile(ctx.getOutputFile());
-        tempEval.setRebuildPeriod(rebuildPeriod);
-
-        ConfigurationLoader loader = new ConfigurationLoader();
-        LenskitConfiguration config = loader.load(ctx.getConfigFile());
-        tempEval.setAlgorithm(config.toString(), config);
-
-        tempEval.execute();
+        logger.info("beginning temporal evaluator");
+        eval.execute();
         timer.stop();
         logger.info("evaluator executed  in {}", timer);
-        logger.info("written predicted score to {}", ctx.getOutputFile());
-        if (rebuildPeriod != null) {
-            logger.info("Rebuild period set to {}", ctx.getRebuildPeriod());
-        }
     }
 
     private static class Context {
@@ -120,12 +147,20 @@ public class Simulate implements Command {
             return options.get("output_file");
         }
 
+        public File getExtendedOutputFile() {
+            return options.get("extended_output");
+        }
+
         public File getConfigFile() {
             return options.get("config");
         }
 
-        public Long getRebuildPeriod() {
+        public long getRebuildPeriod() {
             return options.get("rebuild_period");
+        }
+
+        public int getListSize() {
+            return options.get("list_size");
         }
     }
 }

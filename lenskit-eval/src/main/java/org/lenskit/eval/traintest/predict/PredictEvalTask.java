@@ -20,36 +20,36 @@
  */
 package org.lenskit.eval.traintest.predict;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.util.table.TableLayout;
-import org.lenskit.util.table.TableLayoutBuilder;
-import org.lenskit.util.table.writer.CSVWriter;
-import org.lenskit.util.table.writer.TableWriter;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
+import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
-import org.lenskit.specs.DynamicSpec;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.PredictEvalTaskSpec;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -58,46 +58,49 @@ import java.util.*;
  */
 public class PredictEvalTask implements EvalTask {
     private static final Logger logger = LoggerFactory.getLogger(PredictEvalTask.class);
-    private static final PredictMetric<?>[] DEFAULT_METRICS = {
+    static final PredictMetric<?>[] DEFAULT_METRICS = {
             new CoveragePredictMetric(),
             new MAEPredictMetric(),
             new RMSEPredictMetric()
     };
 
-    private final PredictEvalTaskSpec spec;
+    private Path outputFile;
     private List<PredictMetric<?>> predictMetrics = Lists.newArrayList(DEFAULT_METRICS);
 
     private ExperimentOutputLayout experimentOutputLayout;
     private TableWriter outputTable;
 
+    /**
+     * Create a new eval task.
+     */
     public PredictEvalTask() {
-        this(new PredictEvalTaskSpec());
-    }
-
-    PredictEvalTask(PredictEvalTaskSpec spec) {
-        // We just use the spec for storing things.
-        this.spec = SpecUtils.copySpec(spec);
-        if (!spec.getMetrics().isEmpty()) {
-            // FIXME keep this in sync with the metrics
-            predictMetrics.clear();
-            for (DynamicSpec ms: spec.getMetrics()) {
-                PredictMetric<?> metric = SpecUtils.buildObject(PredictMetric.class, ms);
-                if (metric != null) {
-                    addMetric(metric);
-                } else {
-                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
-                }
-            }
-        }
     }
 
     /**
-     * Create a predict eval task from a specification.
-     * @param ets The task specification.
+     * Create a predict eval task from a JSON/YAML file.
+     * @param json The task specification.
+     * @param base The base URI from which `json` came, used for resolving relative paths.
      * @return The task.
      */
-    public static PredictEvalTask fromSpec(PredictEvalTaskSpec ets) {
-        return new PredictEvalTask(ets);
+    public static PredictEvalTask fromJSON(JsonNode json, URI base) throws IOException {
+        PredictEvalTask task = new PredictEvalTask();
+        String outFile = json.path("output_file").asText(null);
+        if (outFile != null) {
+            task.setOutputFile(Paths.get(base.resolve(outFile)));
+        }
+
+        MetricLoaderHelper mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(PredictEvalTask.class),
+                                                        "predict-metrics");
+        JsonNode metricNode = json.get("metrics");
+        if (metricNode != null && !metricNode.isNull()) {
+            task.predictMetrics.clear();
+            for (JsonNode mn : metricNode) {
+                PredictMetric metric = mlh.createMetric(PredictMetric.class, mn);
+                task.addMetric(metric);
+            }
+        }
+
+        return task;
     }
 
     /**
@@ -105,7 +108,7 @@ public class PredictEvalTask implements EvalTask {
      * @return The output file, or {@code null} if no file is configured.
      */
     public Path getOutputFile() {
-        return spec.getOutputFile();
+        return outputFile;
     }
 
     /**
@@ -113,7 +116,7 @@ public class PredictEvalTask implements EvalTask {
      * @param file The output file for writing predictions. Will get a CSV file.
      */
     public void setOutputFile(Path file) {
-        spec.setOutputFile(file);
+        outputFile = file;
     }
 
     /**
@@ -256,7 +259,6 @@ public class PredictEvalTask implements EvalTask {
     class PredictConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
         private final RatingPredictor predictor;
-        private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         private final List<MetricContext<?>> predictMetricContexts;
 
         public PredictConditionEvaluator(TableWriter tw, RatingPredictor pred, List<MetricContext<?>> mcs) {

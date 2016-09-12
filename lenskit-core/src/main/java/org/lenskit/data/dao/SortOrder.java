@@ -36,8 +36,17 @@ import java.util.Comparator;
  */
 public enum SortOrder {
     /**
+     * Ascending order.
+     */
+    ASCENDING,
+    /**
+     * Descending order.
+     */
+    DESCENDING,
+    /**
      * Any order is acceptable.
      */
+    @Deprecated
     ANY {
         @Nullable
         @Override
@@ -48,6 +57,7 @@ public enum SortOrder {
     /**
      * Sort by timestamp.
      */
+    @Deprecated
     TIMESTAMP {
         @Override
         public Comparator<Event> getEventComparator() {
@@ -57,6 +67,7 @@ public enum SortOrder {
     /**
      * Sort by user, then by timestamp.
      */
+    @Deprecated
     USER {
         @Override
         public Comparator<Event> getEventComparator() {
@@ -66,6 +77,7 @@ public enum SortOrder {
     /**
      * Sort by item, then by timestamp.
      */
+    @Deprecated
     ITEM {
         public Comparator<Event> getEventComparator() {
             return Events.ITEM_TIME_COMPARATOR;
@@ -77,5 +89,7 @@ public enum SortOrder {
      * @return An appropriate comparator, or {@code null} if the order is unsorted.
      */
     @Nullable
-    public abstract Comparator<Event> getEventComparator();
+    public Comparator<Event> getEventComparator() {
+        throw new UnsupportedOperationException();
+    };
 }

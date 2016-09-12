@@ -29,9 +29,10 @@ import org.grouplens.grapht.reflect.Qualifiers;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.RecommenderEngine;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.WillClose;
+import javax.annotation.WillNotClose;
 import java.io.*;
 
 /**
@@ -169,6 +171,12 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         }
     }
 
+    /**
+     * Create a recommender.
+     * @return The recommender
+     * @deprecated Use {@link #createRecommender(DataAccessObject)}
+     */
+    @Deprecated
     @Override
     public LenskitRecommender createRecommender() {
         Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
@@ -179,6 +187,8 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * Construct a recommender with some additional configuration.  This can be used to do things
      * like add data source configuration on a per-recommender, rather than per-engine, basis.
      *
+     * This method is only used for special cases needing detailed access to the recommender.
+     *
      * @param config The configuration to adjust the recommender.
      * @return The constructed recommender.
      * @throws RecommenderConfigurationException if there is an error configuring the recommender.
@@ -187,6 +197,17 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         final DAGNode<Component, Dependency> toBuild = createRecommenderGraph(config);
 
         return new LenskitRecommender(toBuild);
+    }
+
+    /**
+     * Create a LensKit recommender.
+     * @param dao The data access object
+     * @return The constructed recommender.
+     */
+    public LenskitRecommender createRecommender(@WillNotClose DataAccessObject dao) throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.addComponent(dao);
+        return createRecommender(config);
     }
 
     public DAGNode<Component, Dependency> createRecommenderGraph(LenskitConfiguration config) throws RecommenderConfigurationException {
@@ -247,14 +268,26 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
 
     /**
      * Build a LensKit recommender engine from a configuration.  The resulting recommender is
-     * independent of any subsequent modifications to the configuration.  The recommender is built
-     * without a symbol mapping.
+     * independent of any subsequent modifications to the configuration.
      *
      * @param config     The configuration.
      * @return The recommender engine.
      */
+    @SuppressWarnings("deprecation")
     public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
         return newBuilder().addConfiguration(config).build();
+    }
+
+    /**
+     * Build a LensKit recommender engine from a configuration.  The resulting recommender is
+     * independent of any subsequent modifications to the configuration.
+     *
+     * @param config     The configuration.
+     * @param dao The data access object
+     * @return The recommender engine.
+     */
+    public static LenskitRecommenderEngine build(LenskitConfiguration config, DataAccessObject dao) throws RecommenderBuildException {
+        return newBuilder().addConfiguration(config).build(dao);
     }
 
     /**

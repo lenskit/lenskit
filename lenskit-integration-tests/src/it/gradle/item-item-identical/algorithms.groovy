@@ -52,7 +52,7 @@ algorithm("Standard") {
 }
 algorithm("Normalizing") {
     include common
-    bind ItemItemModel toProvider NormalizingItemItemModelBuilder
+    bind ItemItemModel toProvider NormalizingItemItemModelProvider
     at (ItemItemModel) {
         bind VectorTruncator toProvider StandardVectorTruncatorProvider
     }

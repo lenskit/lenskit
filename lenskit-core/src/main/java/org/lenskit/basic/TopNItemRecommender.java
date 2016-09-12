@@ -21,18 +21,19 @@
 package org.lenskit.basic;
 
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSets;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
+import it.unimi.dsi.fastutil.longs.*;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.UnlimitedScoredIdAccumulator;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.api.ResultMap;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
@@ -83,11 +84,24 @@ public class TopNItemRecommender extends AbstractItemRecommender {
         logger.debug("Computing {} recommendations for user {} from {} candidates",
                      n, user, candidates.size());
 
-        // FIXME Make this more efficient - don't allocate extra BasicResults
         Map<Long, Double> scores = scorer.score(user, candidates);
-        Iterable<Result> res = Iterables.transform(scores.entrySet(), Results.fromEntryFunction());
-        return getTopNResults(n, res).idList();
+        ScoredIdAccumulator accum;
+        if (n >= 0) {
+            accum = new TopNScoredIdAccumulator(n);
+        } else {
+            accum = new UnlimitedScoredIdAccumulator();
+        }
+
+        Long2DoubleFunction map = LongUtils.asLong2DoubleFunction(scores);
+
+        LongIterator iter = LongIterators.asLongIterator(scores.keySet().iterator());
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
+            accum.put(item, map.get(item));
+        }
+        return accum.finishList();
     }
+
 
     /**
      * Implement recommendation by calling {@link ItemScorer#scoreWithDetails(long, Collection)} and sorting
@@ -111,6 +125,8 @@ public class TopNItemRecommender extends AbstractItemRecommender {
         if (exclude == null) {
             exclude = getDefaultExcludes(user);
         }
+        logger.debug("computing effective candidates for user {} from {} candidates and {} excluded items",
+                     user, candidates.size(), exclude.size());
         if (!exclude.isEmpty()) {
             candidates = LongUtils.setDifference(candidates, exclude);
         }

@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.traintest.predict;
 
-import org.grouplens.lenskit.collections.LongUtils;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -28,6 +27,7 @@ import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -20,36 +20,84 @@
  */
 package org.lenskit.gradle
 
-import org.gradle.api.tasks.InputFiles
+import com.google.common.io.Files
+import groovy.json.JsonOutput
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
-import org.lenskit.gradle.delegates.EvalTaskDelegate
-import org.lenskit.gradle.delegates.SpecDelegate
-import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.eval.*
+import org.gradle.api.tasks.TaskAction
+import org.gradle.util.ConfigureUtil
+import org.lenskit.gradle.delegates.DataSetConfig
+import org.lenskit.gradle.delegates.EvalTaskConfig
+import org.lenskit.gradle.delegates.RecommendEvalTaskConfig
+import org.lenskit.gradle.traits.GradleUtils
+
+import java.util.concurrent.Callable
 
 /**
  * Run a train-test evaluation.
- *
- * @see http://mooc.lenskit.org/documentation/evaluator/train-test/
  */
-class TrainTest extends LenskitTask {
-    private def spec = new TrainTestExperimentSpec()
-    private def specDelegate = new SpecDelegate(spec)
+class TrainTest extends LenskitTask implements GradleUtils {
+    /**
+     * The output file for recommendation output.
+     */
+    def outputFile
+
+    /**
+     * The user output file for recommendation output.
+     */
+    def userOutputFile
+
+    /**
+     * The cache directory for the recommender.
+     */
+    def cacheDirectory
+
+    /**
+     * The thread count for the evaluator.
+     */
+    def int threadCount
+
+    /**
+     * Configure whether the evaluator should share model components between algorithms.
+     */
+    def boolean shareModelComponents = true
+
+    private Map<String,Object> algorithms = new HashMap<>()
+    private List<Callable> dataSets = []
+    private List<EvalTaskConfig> evalTasks = []
+
+    /**
+     * The file name for writing out the experiment description. Do not change unless absolutely necessary.
+     */
     def File specFile
-    private Deque<Closure<?>> deferredInput = new ArrayDeque<>()
 
     public TrainTest() {
+        conventionMapping.threadCount = {
+            project.lenskit.threadCount
+        }
+        conventionMapping.outputFile = {
+            "$project.buildDir/${name}.csv"
+        }
         conventionMapping.specFile = {
-            project.file("$project.buildDir/${name}.json")
+            project.file("$project.buildDir/${name}-spec.json")
         }
     }
 
     /**
      * Add a data set.
-     * @param ds The data set to add.
+     * @param ds The data set configuration to add.
      */
-    void dataSet(DataSetSpec ds) {
-        spec.addDataSet(ds)
+    void dataSet(Map ds) {
+        dataSets.add {ds}
+    }
+
+    /**
+     * Add a data set.
+     * @param ds The file of the data set to add.
+     */
+    void dataSet(Object ds) {
+        inputs.file ds
+        dataSets.add({makeUrl(ds, getSpecFile())})
     }
 
     /**
@@ -62,7 +110,19 @@ class TrainTest extends LenskitTask {
     }
 
     /**
-     * Add a data sets produced by a crossfold task.
+     * Configure a train-test data set.
+     * @param block A block which will be used to configure a data set.
+     */
+    void dataSet(@DelegatesTo(DataSetConfig) Closure block) {
+        def set = new DataSetConfig(project)
+        ConfigureUtil.configure(block, set)
+        dataSets.add({[name: set.name,
+                       test: makeUrl(set.testSource, getSpecFile()),
+                       train: makeUrl(set.trainSource, getSpecFile())]})
+    }
+
+    /**
+     * Add a data sets produced by a crossfold task or other data set provider.
      *
      * <p>This method supports options for adding the crossfolded data sets:
      *
@@ -77,13 +137,11 @@ class TrainTest extends LenskitTask {
      */
     def dataSet(Map<String,Object> options, DataSetProvider cf) {
         inputs.files cf
-        deferredInput << { spec ->
-            cf.dataSets.each {
-                def dss = SpecUtils.copySpec(it)
-                if (options.isolate) {
-                    dss.isolationGroup = UUID.randomUUID()
-                }
-                spec.addDataSet(dss)
+        if (options.isolate) {
+            throw new UnsupportedOperationException("isolation not currently supported")
+        } else {
+            dataSets.add {
+                makeUrl(cf.dataSetFile, getSpecFile())
             }
         }
     }
@@ -94,10 +152,8 @@ class TrainTest extends LenskitTask {
      * @param file The file.
      */
     void algorithm(String name, file) {
-        def aspec = new AlgorithmSpec()
-        aspec.name = name
-        aspec.configFile = project.file(file).toPath()
-        spec.addAlgorithm(aspec)
+        algorithms[name ?: Files.getNameWithoutExtension(file)] = file
+        inputs.file file
     }
 
     /**
@@ -111,25 +167,48 @@ class TrainTest extends LenskitTask {
     /**
      * Configure a prediction task.
      * @param block The block.
-     * @see PredictEvalTaskSpec
      */
-    void predict(@DelegatesTo(EvalTaskDelegate) Closure block) {
-        def task = SpecDelegate.configure(PredictEvalTaskSpec, EvalTaskDelegate, block)
-        spec.addTask(task)
+    void predict(@DelegatesTo(EvalTaskConfig) Closure block) {
+        def task = new EvalTaskConfig(project, 'predict')
+        task.configure block
+        evalTasks.add(task)
     }
 
     /**
      * Configure a prediction task.
      * @param block The block.
-     * @see PredictEvalTaskSpec
      */
-    void recommend(@DelegatesTo(EvalTaskDelegate) Closure block) {
-        def task = SpecDelegate.configure(RecommendEvalTaskSpec, EvalTaskDelegate, block)
-        spec.addTask(task)
+    void recommend(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
+        def task = new RecommendEvalTaskConfig(project)
+        task.configure block
+        evalTasks.add(task)
     }
 
-    def methodMissing(String name, def args) {
-        specDelegate.invokeMethod(name, args)
+    @Override
+    @TaskAction
+    void perform() {
+        try {
+            super.perform()
+        } catch (Throwable th) {
+            logger.error('error running train-test task', th)
+            throw new RuntimeException('train-test failed', th)
+        }
+    }
+
+    @Input
+    def getJson() {
+        def json = [output_file           : makeUrl(getOutputFile(), getSpecFile()),
+                    user_output_file      : makeUrl(getUserOutputFile(), getSpecFile()),
+                    cache_directory       : makeUrl(getCacheDirectory(), getSpecFile()),
+                    thread_count          : getThreadCount(),
+                    share_model_components: getShareModelComponents()]
+        json.datasets = dataSets.collect {it.call()}
+        json.algorithms = algorithms.collectEntries {k, v ->
+            [k, makeUrl(v, getSpecFile())]
+        }
+        json.tasks = evalTasks.collect({it.json})
+
+        return json
     }
 
     @Override
@@ -137,41 +216,21 @@ class TrainTest extends LenskitTask {
         'train-test'
     }
 
-    @InputFiles
-    public Set<File> getDataInputs() {
-        runDeferredTasks()
-        Set<File> files = new HashSet<>()
-        for (ds in spec.dataSets) {
-            files.addAll(ds.testSource.inputFiles*.toFile())
-            files.addAll(ds.trainSource.inputFiles*.toFile())
-        }
-        return files
-    }
-
-    @InputFiles
-    public Set<File> getConfigInputs() {
-        return spec.algorithms*.configFile*.toFile().toSet()
-    }
-
     @OutputFiles
     public Set<File> getOutputFiles() {
-        spec.outputFiles*.toFile()
-    }
-
-    private void runDeferredTasks() {
-        while (!deferredInput.isEmpty()) {
-            def di = deferredInput.removeFirst()
-            di.call(spec)
-        }
+        Set files = [outputFile, userOutputFile].findAll().collect { project.file(it) }
+        files.addAll(evalTasks.collect({it.outputFile}).findAll().collect {
+            project.file(it)
+        })
+        return files
     }
 
     @Override
     void doPrepare() {
-        runDeferredTasks()
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info 'preparing spec file {}', file
-        SpecUtils.write(spec, file.toPath())
+        file.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))
     }
 
     @Override

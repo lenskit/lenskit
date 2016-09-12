@@ -37,10 +37,6 @@
  * Integration tests built with Gradle.
  */
 
-task makeTestRepo(group: 'build setup') {
-    dependsOn installForTesting, ':lenskit-specs:installForTesting'
-}
-
 task gradleTests(group: 'verification')
 check.dependsOn gradleTests
 
@@ -50,11 +46,13 @@ file('src/it/gradle').eachDir { testDir ->
     def workDir = file("build/gradle-tests/$fname")
 
     task("test$tname", type: GradleBuild) {
-        dependsOn makeTestRepo
+        dependsOn ':lenskit-integration-tests:makeTestRepo'
+        mustRunAfter test, ':lenskit-eval:test'
         inputs.dir testDir
-        inputs.dir "$buildDir/test-repo"
+        inputs.dir rootProject.uri('build/test-repo')
         outputs.dir workDir
 
+        startParameter.searchUpwards = false
         startParameter.projectProperties = [
                 testRepoURI: rootProject.uri("build/test-repo"),
                 lenskitVersion: project.version
@@ -70,6 +68,11 @@ file('src/it/gradle').eachDir { testDir ->
             copy {
                 from testDir
                 into workDir
+            }
+            copy {
+                from 'src/it/gradle'
+                into workDir
+                include '*.gradle'
             }
             println "running gradle build for $testDir"
         }

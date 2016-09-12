@@ -36,12 +36,10 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
     private static final long serialVersionUID = 1L;
 
     @Override
-    public ItemItemResult score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores) {
-        if (neighbors.size() == 0) {
-            return null;
-        } else {
+    public void score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores, ItemItemScoreAccumulator accum) {
+        if (neighbors.size() > 0) {
             double sum = Vectors.sum(neighbors);
-            return new ItemItemResult(item, sum, neighbors.size(), sum);
+            accum.add(item, sum, neighbors.size(), sum);
         }
     }
 

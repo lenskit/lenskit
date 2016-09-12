@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hamcrest:hamcrest-library:1.3'
+        classpath "org.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import org.lenskit.gradle.*
+import static org.hamcrest.MatcherAssert.*
+import static org.hamcrest.Matchers.*
+
+apply plugin: 'java'
+apply from: 'common.gradle'
+apply plugin: 'lenskit'
+
+dependencies {
+    testCompile "org.lenskit:lenskit-all:$project.lenskitVersion"
+}
+
+task copyData(type: Copy) {
+    from mlDataDir
+    into 'ml100k'
+    include 'u.data'
+    include 'movies.csv'
+    rename(/u.data/, 'ratings.tsv')
+}
+
+task crossfold(type: Crossfold) {
+    dependsOn copyData
+
+    input 'ml100k.yaml'
+    outputFormat "gz"
+    includeTimestamps false
+}
+
+task checkOutputFiles {
+    dependsOn crossfold
+    doLast {
+        def dir = file("$buildDir/crossfold.out")
+        assertThat dir.exists(), equalTo(true)
+        assertThat "datasets file should exist", file("$dir/datasets.yaml").exists()
+        for (int i = 1; i <= 5; i++) {
+            assertThat "train file $i should exist", file(String.format("$dir/part%02d.train.csv.gz", i)).exists()
+            assertThat "test file $i should exist", file(String.format("$dir/part%02d.test.csv.gz", i)).exists()
+        }
+    }
+}
+
+// make sure that an evaluation runs with this new crossfolded data
+// if it runs successfully, that's what we want
+task evaluate(type: TrainTest) {
+    dependsOn checkOutputFiles
+
+    dataSet crossfold
+    algorithm 'algorithms.groovy'
+    predict {
+        metric 'rmse'
+    }
+}
+
+check {
+    dependsOn evaluate
+}

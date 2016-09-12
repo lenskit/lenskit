@@ -382,7 +382,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             try {
                 return open(dataFile);
             } catch (IOException e) {
-                throw new RuntimeException("cannot open rating file", e);
+                throw new DataAccessException("cannot open rating file", e);
             }
         }
     }

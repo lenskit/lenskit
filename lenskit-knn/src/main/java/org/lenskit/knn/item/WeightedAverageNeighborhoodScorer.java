@@ -21,11 +21,9 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Vectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -41,13 +39,11 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodWeight");
 
     @Override
-    public ItemItemResult score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores) {
+    public void score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores, ItemItemScoreAccumulator accum) {
         double weight = Vectors.sumAbs(neighbors);
         if (weight > 0) {
             double weightedSum = Vectors.dotProduct(neighbors, scores);
-            return new ItemItemResult(item, weightedSum / weight, neighbors.size(), weight);
-        } else {
-            return null;
+            accum.add(item, weightedSum / weight, neighbors.size(), weight);
         }
     }
 

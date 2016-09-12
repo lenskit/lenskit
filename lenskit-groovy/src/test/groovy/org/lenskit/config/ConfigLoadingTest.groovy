@@ -20,9 +20,6 @@
  */
 package org.lenskit.config
 
-
-import org.lenskit.data.dao.EventCollectionDAO
-import org.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
 import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
@@ -34,12 +31,15 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.basic.ConstantItemScorer
 import org.lenskit.basic.SimpleRatingPredictor
 import org.lenskit.basic.TopNItemRecommender
+import org.lenskit.data.dao.DataAccessObject
+import org.lenskit.data.dao.file.StaticDataSource
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 class ConfigLoadingTest {
-    EventDAO dao = new EventCollectionDAO([])
+    StaticDataSource source = StaticDataSource.fromList([])
+    DataAccessObject dao = source.get()
 
     @Test
     void testLoadBasicConfig() {
@@ -47,9 +47,8 @@ class ConfigLoadingTest {
             bind ItemScorer to ConstantItemScorer
             set ConstantItemScorer.Value to Math.PI
         }
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -68,9 +67,8 @@ class ConfigLoadingTest {
         ConfigHelpers.configure(config) {
             bind ItemScorer to ConstantItemScorer
         }
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -88,9 +86,8 @@ class ConfigLoadingTest {
             root VectorSimilarity
             bind VectorSimilarity to PearsonCorrelation
         }
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), nullValue());
             assertThat(rec.getItemRecommender(), nullValue())
@@ -111,9 +108,8 @@ class ConfigLoadingTest {
                 bind VectorSimilarity to PearsonCorrelation
             }
         }
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), nullValue());
             assertThat(rec.getItemRecommender(), nullValue())
@@ -133,9 +129,8 @@ class ConfigLoadingTest {
                 """import org.lenskit.baseline.*
 bind ItemScorer to ConstantItemScorer
 set ConstantItemScorer.Value to Math.PI""");
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -149,9 +144,8 @@ set ConstantItemScorer.Value to Math.PI""");
     @Test
     void testLoadBasicURL() {
         LenskitConfiguration config = ConfigHelpers.load(getClass().getResource('test-config.groovy'))
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getItemBasedItemRecommender(), nullValue());
@@ -161,9 +155,8 @@ set ConstantItemScorer.Value to Math.PI""");
     @Test
     void testLoadURLWithInclude() {
         LenskitConfiguration config = ConfigHelpers.load(getClass().getResource('test-include.groovy'))
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -182,10 +175,9 @@ set ConstantItemScorer.Value to Math.PI""");
                 """
 bind ItemScorer to ConstantItemScorer
 set ConstantItemScorer.Value to Math.PI""");
-        config.bind(EventDAO).to(dao)
         script.configure(config);
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -202,9 +194,8 @@ set ConstantItemScorer.Value to Math.PI""");
             bind ItemScorer to ItemMeanRatingItemScorer
             domain minimum: 1, maximum: 5, precision: 0.5
         }
-        config.bind(EventDAO).to(dao)
-        def engine = LenskitRecommenderEngine.build(config)
-        def rec = engine.createRecommender()
+        def engine = LenskitRecommenderEngine.build(config, dao)
+        def rec = engine.createRecommender(dao)
         try {
             assertThat(rec.getItemScorer(), instanceOf(ItemMeanRatingItemScorer));
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))

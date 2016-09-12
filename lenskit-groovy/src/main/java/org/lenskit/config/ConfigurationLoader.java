@@ -56,7 +56,7 @@ public class ConfigurationLoader {
      * Construct a new configuration loader. It uses the current thread's class loader.
      */
     public ConfigurationLoader() {
-        this(ClassLoaders.inferDefault(ConfigurationLoader.class));
+        this(null);
     }
 
     /**
@@ -64,7 +64,7 @@ public class ConfigurationLoader {
      * @param loader The class loader to use.
      */
     public ConfigurationLoader(ClassLoader loader) {
-        classLoader = loader;
+        classLoader = loader != null ? loader : ClassLoaders.inferDefault(ConfigurationLoader.class);
         binding = new Binding();
         CompilerConfiguration config = new CompilerConfiguration();
         config.setScriptBaseClass(LenskitConfigScript.class.getName());
@@ -73,7 +73,7 @@ public class ConfigurationLoader {
         imports.addStarImports("org.lenskit.basic");
         config.addCompilationCustomizers(imports);
         shell = new GroovyShell(loader, binding, config);
-        directory = ClassDirectory.forClassLoader(loader);
+        directory = ClassDirectory.forClassLoader(classLoader);
     }
 
     public ClassDirectory getDirectory() {

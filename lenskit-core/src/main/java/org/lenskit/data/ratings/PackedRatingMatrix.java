@@ -26,25 +26,22 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyIndex;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
  */
-@DefaultProvider(PackedRatingMatrixBuilder.class)
+@DefaultProvider(PackedRatingMatrixProvider.class)
 @Shareable
 public class PackedRatingMatrix implements RatingMatrix {
-    public static RatingMatrix pack(EventDAO dao) {
-        PackedRatingMatrixBuilder p = new PackedRatingMatrixBuilder(dao, new Random());
-        return p.get();
-    }
-
     private PackedRatingData data;
     @SuppressWarnings("deprecation")
     private Supplier<List<Collection<RatingMatrixEntry>>> userIndexLists;

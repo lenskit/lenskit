@@ -82,7 +82,7 @@ public class GlobalRecommend implements Command {
                 throw new UnsupportedOperationException("no global recommender");
             }
 
-            logger.info("using {} reference items", items.size());
+            logger.info("using {} reference items: {}", items.size(), items);
             Stopwatch timer = Stopwatch.createStarted();
 
             ResultList recs = irec.recommendRelatedItemsWithDetails(LongUtils.packedSet(items), n, null, null);

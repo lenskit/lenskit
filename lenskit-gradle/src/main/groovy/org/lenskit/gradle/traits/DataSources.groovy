@@ -21,9 +21,7 @@
 package org.lenskit.gradle.traits
 
 import org.gradle.api.Project
-import org.lenskit.gradle.delegates.SpecDelegate
-import org.lenskit.specs.data.DataSourceSpec
-import org.lenskit.specs.data.TextDataSourceSpec
+import org.lenskit.gradle.delegates.TextDataSourceConfig
 
 /**
  * Support for specifying various types of data sources.
@@ -33,12 +31,24 @@ trait DataSources {
 
     /**
      * Configure a text file data source.
-     * @param block The configuration block, used to configure a {@link TextDataSourceSpec}.
+     * @param block The configuration block, used to configure a data source.
      * @return A JSON specification of a text file data source.
-     * @see TextDataSourceSpec
-     * @see SpecDelegate
      */
-    DataSourceSpec textFile(Closure block) {
-        SpecDelegate.configure(TextDataSourceSpec, block)
+    def textFile(@DelegatesTo(TextDataSourceConfig) Closure block) {
+        project.logger.warn('textFile is deprecated')
+        def spec = new TextDataSourceConfig(project)
+        spec.configure(block)
+        return spec.json
+    }
+
+    /**
+     * Configure a rating CSV file data source.
+     * @param fn The file to use.
+     * @return A JSON specification of a text file data source.
+     */
+    def textFile(Object fn) {
+        project.logger.warn('textFile is deprecated')
+        return [type: 'textfile', file: project.uri(fn).toString(),
+                format: 'csv', event_type: 'rating']
     }
 }

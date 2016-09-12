@@ -59,7 +59,7 @@ class ListClasses extends SourceTask {
             for (cf in classFiles) {
                 def path = cf.absolutePath.replace('\\', '/')
                 // extract org.grouplens... and sanitize
-                path = path.replaceAll(~/.*(org\/grouplens.*)\.class/) { m ->
+                path = path.replaceAll(~/.*(org\/(?:grouplens\/)?lenskit\/.*)\.class/) { m ->
                     // convert slashes and $ to dots
                     m[1].replaceAll(~/[\/$]/, '.')
                 }

@@ -27,8 +27,8 @@ import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.*;
 import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemRecommender;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -50,10 +50,11 @@ public class UserUserRecommenderBuildTest {
         rs.add(Rating.create(8, 4, 5));
         rs.add(Rating.create(8, 5, 4));
 
-        EventDAO dao = new EventCollectionDAO(rs);
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
 
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
+        config.bind(DataAccessObject.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
         config.bind(NeighborFinder.class).to(LiveNeighborFinder.class);
 
@@ -85,22 +86,22 @@ public class UserUserRecommenderBuildTest {
         rs.add(Rating.create(8, 4, 5));
         rs.add(Rating.create(8, 5, 4));
 
-        EventDAO dao = EventCollectionDAO.create(rs);
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        DataAccessObject dao = source.get();
 
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
         config.bind(NeighborFinder.class).to(SnapshotNeighborFinder.class);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        try (Recommender rec = engine.createRecommender()) {
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao);
+        try (Recommender rec = engine.createRecommender(dao)) {
             assertThat(rec.getItemScorer(),
                        instanceOf(UserUserItemScorer.class));
             assertThat(rec.getItemRecommender(),
                        instanceOf(TopNItemRecommender.class));
             RatingPredictor pred = rec.getRatingPredictor();
             assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-            try (Recommender rec2 = engine.createRecommender()) {
+            try (Recommender rec2 = engine.createRecommender(dao)) {
                 assertThat(rec2.getItemScorer(), not(sameInstance(rec.getItemScorer())));
             }
         }

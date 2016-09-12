@@ -25,18 +25,15 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.data.source.DataSource;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.output.OutputFormat;
 import org.lenskit.eval.crossfold.*;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.CrossfoldSpec;
-import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -47,7 +44,7 @@ import java.io.IOException;
  */
 @AutoService(Command.class)
 public class Crossfold implements Command {
-    private final Logger logger = LoggerFactory.getLogger(Crossfold.class);
+    private static final Logger logger = LoggerFactory.getLogger(Crossfold.class);
 
     @Override
     public String getName() {
@@ -59,29 +56,26 @@ public class Crossfold implements Command {
         return "crossfold a data set";
     }
 
-    public String getDelimiter(Namespace opts) {
+    public static String getDelimiter(Namespace opts) {
         return opts.get("delimiter");
     }
 
     @Override
     public void execute(Namespace options) throws IOException {
+        Crossfolder cf;
+        cf = configureCrossfolder(options);
+
+        cf.execute();
+    }
+
+    Crossfolder configureCrossfolder(Namespace options) throws IOException {
         InputData input = new InputData(null, options);
         logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter(options));
-        Crossfolder cf;
-        File specFile = options.get("spec");
-        if (specFile != null) {
-            if (!specFile.exists()) {
-                logger.error("Spec file {} does not exist", specFile);
-                throw new FileNotFoundException("specification " + specFile);
-            }
-            CrossfoldSpec spec = SpecUtils.load(CrossfoldSpec.class, specFile.toPath());
-            cf = Crossfolder.fromSpec(spec);
-        } else {
-            cf = new Crossfolder();
-        }
 
-        DataSource src = input.getSource();
+        Crossfolder cf = new Crossfolder();
+
+        StaticDataSource src = input.getSource();
         if (src != null) {
             cf.setSource(src);
         }
@@ -89,28 +83,33 @@ public class Crossfold implements Command {
         if (k != null) {
             cf.setPartitionCount(k);
         }
-
-        String dir = options.get("output_dir");
-        if (dir != null) {
-            cf.setOutputDir(dir);
+        String name = options.get("name");
+        if (name != null) {
+            cf.setName(name);
         }
-        if (options.getBoolean("pack_output")) {
-            cf.setOutputFormat(OutputFormat.PACK);
+
+        OutputFormat outFmt = options.get("output_format");
+        if (outFmt != null) {
+            cf.setOutputFormat(outFmt);
         }
         if (!options.getBoolean("use_timestamps")) {
             cf.setWriteTimestamps(false);
         }
+        cf.setEntityType(EntityType.forName(options.getString("entity_type")));
 
         String method = options.get("crossfold_mode");
         if (method == null) {
             method = "partition-users";
         }
 
-        if (method.equals("partition-ratings")) {
-            cf.setMethod(CrossfoldMethods.partitionRatings());
+        if (method.equals("partition-ratings") || method.equals("partition-entities")) {
+            if (method.equals("partition-ratings")) {
+                logger.warn("--partition-ratings is deprecated, use --partition-entities");
+            }
+            cf.setMethod(CrossfoldMethods.partitionEntities());
         } else {
             String order = options.get("order");
-            SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.TIMESTAMP;
+            SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.RANDOM;
 
             HistoryPartitionMethod part = HistoryPartitions.holdout(10);
             Integer n;
@@ -134,24 +133,40 @@ public class Crossfold implements Command {
             }
         }
 
-        cf.execute();
+        String dir = options.get("output_dir");
+        if (dir != null) {
+            cf.setOutputDir(dir);
+        }
+
+        return cf;
     }
 
+    @Override
     public void configureArguments(ArgumentParser parser) {
         parser.addArgument("-o", "--output-dir")
               .dest("output_dir")
               .type(String.class)
               .metavar("DIR")
               .help("write splits to DIR");
-        parser.addArgument("--pack-output")
-              .action(Arguments.storeTrue())
-              .dest("pack_output")
-              .help("store output in binary-packed files");
+        parser.addArgument("-n", "--name")
+              .dest("name")
+              .metavar("NAME")
+              .help("name the data set NAME");
+        parser.addArgument("--gzip-output")
+              .type(OutputFormat.class)
+              .action(Arguments.storeConst())
+              .setConst(OutputFormat.CSV_GZIP)
+              .dest("output_format")
+              .help("specify output file type");
         parser.addArgument("--no-timestamps")
               .action(Arguments.storeFalse())
               .setDefault(true)
               .dest("use_timestamps")
               .help("don't include timestamps in output");
+        parser.addArgument("--entity-type")
+              .metavar("TYPE")
+              .setDefault("rating")
+              .help("specify the type of entity to crossfold");
 
         parser.addArgument("-k", "--partition-count")
               .metavar("K")
@@ -167,6 +182,11 @@ public class Crossfold implements Command {
             .action(Arguments.storeConst())
             .setConst("partition-users")
             .help("Partition users into K partitions (the default)");
+        mode.addArgument("--partition-entities")
+            .dest("crossfold_mode")
+            .action(Arguments.storeConst())
+            .setConst("partition-entities")
+            .help("Partition entities into K partitions");
         mode.addArgument("--partition-ratings")
             .dest("crossfold_mode")
             .action(Arguments.storeConst())
@@ -205,16 +225,11 @@ public class Crossfold implements Command {
                 .help("Retain N training ratings per user.");
 
         parser.addArgument("--timestamp-order")
-                .dest("order")
-                .setConst("timestamp")
-                .action(Arguments.storeConst())
-                .help("Test on latest ratings from each user, not random.");
-
-        parser.addArgument("spec")
-              .type(File.class)
-              .metavar("SPEC")
-              .nargs("?")
-              .help("Read crossfold configuration from SPEC (command line opts will override)");
+              .dest("order")
+              .setConst("timestamp")
+              .setDefault("random")
+              .action(Arguments.storeConst())
+              .help("Test on latest ratings from each user, not random.");
 
         InputData.configureArguments(parser);
     }

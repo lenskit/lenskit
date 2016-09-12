@@ -20,20 +20,23 @@
  */
 package org.lenskit.cli.util;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.BridgeEventDAO;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
-import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
-import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
-import org.grouplens.lenskit.data.text.EventFormat;
-import org.grouplens.lenskit.data.text.Formats;
-import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.data.DataSourceSpec;
+import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.dao.file.TextEntitySource;
+import org.lenskit.data.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,43 +62,52 @@ public class InputData {
     }
 
     @Nullable
-    public DataSource getSource() {
-        TextDataSourceBuilder dsb = new TextDataSourceBuilder();
-
+    public StaticDataSource getSource() {
         File sourceFile = options.get("data_source");
         if (sourceFile != null) {
             ClassLoader cl = null;
             if (environment != null) {
                 cl = environment.getClassLoader();
             }
-            DataSourceSpec spec;
-            try {
-                spec = SpecUtils.load(DataSourceSpec.class, sourceFile.toPath());
-            } catch (IOException e) {
-                logger.error("error loading " + sourceFile, e);
-                throw new RuntimeException("error loading " + sourceFile, e);
-            }
-            return SpecUtils.buildObject(DataSource.class, spec, cl);
+            return loadDataSource(sourceFile, cl);
         }
 
+        StaticDataSource source = new StaticDataSource();
+        TextEntitySource entities = new TextEntitySource();
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setEntityType(CommonTypes.RATING);
+        format.addColumns(CommonAttributes.USER_ID, CommonAttributes.ITEM_ID,
+                          CommonAttributes.RATING, CommonAttributes.TIMESTAMP);
+
         String type = options.get("event_type");
-        File nameFile = options.get("item_names");
-        Integer header = options.get("header_lines");
-        if (nameFile != null) {
-            dsb.setItemNameFile(nameFile);
+        if (type != null) {
+            EntityType etype = EntityType.forName(type);
+            format.setEntityType(etype);
+            EntityDefaults defaults = EntityDefaults.lookup(etype);
+            if (defaults == null) {
+                logger.warn("no defaults found for entity type {}", type);
+            } else {
+                format.clearColumns();
+                for (TypedName<?> col: defaults.getDefaultColumns()) {
+                    format.addColumn(col);
+                }
+            }
         }
+        Integer header = options.get("header_lines");
+        if (header != null) {
+            format.setHeaderLines(header);
+        }
+
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
-            return dsb.setFile(ratingFile)
-                      .setFormat(Formats.csvRatings().setHeaderLines(header))
-                      .build();
+            format.setDelimiter(",");
+            entities.setFile(ratingFile.toPath());
         }
 
         ratingFile = options.get("tsv_file");
         if (ratingFile != null) {
-            return dsb.setFile(ratingFile)
-                      .setFormat(Formats.delimitedRatings("\t").setHeaderLines(header))
-                      .build();
+            format.setDelimiter("\t");
+            entities.setFile(ratingFile.toPath());
         }
 
         ratingFile = options.get("ratings_file");
@@ -104,44 +116,76 @@ public class InputData {
         }
         if (ratingFile != null) {
             String delim = options.getString("delimiter");
-            EventFormat fmt = DelimitedColumnEventFormat.create(type)
-                                                        .setDelimiter(delim)
-                                                        .setHeaderLines(header);
-            return dsb.setFormat(fmt)
-                      .setFile(ratingFile)
-                      .build();
+            format.setDelimiter(delim);
+            entities.setFile(ratingFile.toPath());
+        }
+        if (entities.getURL() == null) {
+            // we found no configuration
+            return null;
+        }
+        entities.setFormat(format);
+        source.addSource(entities);
+
+        File nameFile = options.get("item_names");
+        if (nameFile != null) {
+            TextEntitySource itemSource = new TextEntitySource();
+            DelimitedColumnEntityFormat itemFormat = new DelimitedColumnEntityFormat();
+            itemFormat.setDelimiter(",");
+            itemFormat.setEntityType(CommonTypes.ITEM);
+            itemFormat.addColumns(CommonAttributes.ENTITY_ID,
+                                  CommonAttributes.NAME);
+            itemSource.setFormat(itemFormat);
+            itemSource.setFile(nameFile.toPath());
+            source.addSource(itemSource);
         }
 
-        File packFile = options.get("pack_file");
-        if (packFile != null) {
-            if (nameFile != null) {
-                logger.warn("item name file ignored for packed rating input");
-            }
-            return new PackedDataSourceBuilder(packFile).build();
-        }
+        return source;
+    }
 
-        return null;
+    private StaticDataSource loadDataSource(File sourceFile, ClassLoader loader) {
+        JsonNode node;
+        JsonFactory factory = new YAMLFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        try {
+            node = mapper.readTree(sourceFile);
+
+            StaticDataSource provider = StaticDataSource.fromJSON(node, sourceFile.toURI());
+            return provider;
+        } catch (IOException e) {
+            logger.error("error loading " + sourceFile, e);
+            throw new DataAccessException("error loading " + sourceFile, e);
+        }
+    }
+
+    /**
+     * Get the data access object from the input data.
+     * @return The data access object.
+     */
+    @Nullable
+    public DataAccessObject getDAO() {
+        StaticDataSource source = getSource();
+        return source != null ? source.get() : null;
     }
 
     @Nullable
     public EventDAO getEventDAO() throws IOException {
-        DataSource src = getSource();
-        return (src == null) ? null : src.getEventDAO();
+        DataAccessObject dao = getDAO();
+        return new BridgeEventDAO(dao);
     }
 
     @Nonnull
     public LenskitConfiguration getConfiguration() {
-        DataSource src = getSource();
+        StaticDataSource src = getSource();
         LenskitConfiguration config = new LenskitConfiguration();
         if (src != null) {
-            src.configure(config);
+            config.bind(DataAccessObject.class).toProvider(src);
         }
         return config;
     }
 
     @Override
     public String toString() {
-        DataSource src = getSource();
+        StaticDataSource src = getSource();
         return (src == null) ? "null" : src.toString();
     }
 
@@ -168,7 +212,7 @@ public class InputData {
              .type(File.class)
              .metavar("FILE")
              .help("read from delimited text FILE");
-        group.addArgument("--events-file")
+        group.addArgument("--entities-file")
              .type(File.class)
              .metavar("FILE")
              .help("read from delimited text FILE");
@@ -181,18 +225,14 @@ public class InputData {
                .setDefault(0)
                .metavar("N")
                .help("skip N header lines at top of input file");
-        options.addArgument("-t", "--event-type")
+        options.addArgument("-t", "--input-entity-type", "--event-type")
                .setDefault("rating")
                .metavar("TYPE")
-               .help("read events of type TYPE from input file");
+               .help("read entitites of type TYPE from input file");
         options.addArgument("--item-names")
                .type(File.class)
                .metavar("FILE")
                .help("Read item names from CSV file FILE");
-        group.addArgument("--pack-file")
-             .type(File.class)
-             .metavar("FILE")
-             .help("read from binary packed FILE");
         group.addArgument("--data-source")
              .type(File.class)
              .metavar("FILE")

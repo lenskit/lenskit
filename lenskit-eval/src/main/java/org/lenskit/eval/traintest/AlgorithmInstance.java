@@ -27,14 +27,19 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.*;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.config.ConfigurationLoader;
+import org.lenskit.config.LenskitConfigScript;
 import org.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -125,16 +130,16 @@ public class AlgorithmInstance {
     /**
      * Build a recommender graph (but don't instantiate any objects).
      *
-     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
-     *                 algorithm's configuration, so it is overridden if appropriate.  It is used
+     * @param defaults Additional configurations.  These configurations come <em>before</em> the
+     *                 algorithm's configuration, so they are overridden if appropriate.  They are used
      *                 for providing things such as DAOs.
      * @return The recommender graph.
      * @throws RecommenderConfigurationException if there is an error configuring the recommender.
      */
-    public DAGNode<Component,Dependency> buildRecommenderGraph(@Nullable LenskitConfiguration defaults) throws RecommenderConfigurationException {
+    public DAGNode<Component,Dependency> buildRecommenderGraph(@Nullable LenskitConfiguration... defaults) throws RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-        if (defaults != null) {
-            rgb.addConfiguration(defaults);
+        for (LenskitConfiguration dft: defaults) {
+            rgb.addConfiguration(dft);
         }
         for (LenskitConfiguration cfg: configurations) {
             rgb.addConfiguration(cfg);
@@ -144,6 +149,38 @@ public class AlgorithmInstance {
         } catch (ResolutionException e) {
             throw new RecommenderConfigurationException("error configuring recommender", e);
         }
+    }
+
+    /**
+     * Load an algorithm instance from a file.
+     *
+     * @param file The file to load.
+     * @param name The algorithm name, or `null` to use the file's basename.
+     * @param classLoader The class loader, or `null` to use a default.
+     *
+     * @return The list of loaded algorithm instances.
+     */
+    public static List<AlgorithmInstance> load(Path file, String name, ClassLoader classLoader) {
+        ConfigurationLoader loader = new ConfigurationLoader(classLoader);
+        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
+        if (name == null) {
+            aib.setName(file.getFileName().toString());
+        }
+        MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(loader, aib);
+        try {
+            LenskitConfigScript script = loader.loadScript(file.toFile());
+            dsl.setBaseURI(script.getDelegate().getBaseURI());
+            script.setDelegate(dsl);
+            script.configure();
+        } catch (IOException e) {
+            throw new EvaluationException("cannot load configuration from " + file);
+        }
+        List<AlgorithmInstance> multi = dsl.getInstances();
+        if (multi.isEmpty()) {
+            multi = Collections.singletonList(aib.build());
+        }
+        logger.info("loaded {} algorithms from {}", multi.size(), file);
+        return multi;
     }
 
     @Override

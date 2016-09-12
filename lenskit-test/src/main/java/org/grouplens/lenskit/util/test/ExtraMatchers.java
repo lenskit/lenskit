@@ -24,6 +24,7 @@ import com.google.common.base.Equivalence;
 import org.hamcrest.Matcher;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.equalTo;
 
@@ -51,6 +52,15 @@ public final class ExtraMatchers {
 
     public static Matcher<File> hasLineCount(Matcher<? extends Integer> m) {
         return new LineCountMatcher(m);
+    }
+
+    /**
+     * Match a string against a regular expression.
+     * @param pattern The regular expression to match.
+     * @return A matcher that tests strings against the specified regular expression.
+     */
+    public static Matcher<CharSequence> matchesPattern(String pattern) {
+        return new RegexMatcher(Pattern.compile(pattern));
     }
 
     /**

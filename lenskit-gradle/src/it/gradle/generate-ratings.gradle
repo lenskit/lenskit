@@ -1,0 +1,28 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
+    }
+}
+
+import static net.java.quickcheck.generator.PrimitiveGenerators.*
+import static net.java.quickcheck.generator.iterable.Iterables.toIterable
+
+task generateRatings {
+    outputs.file "$buildDir/ratings.csv"
+}
+generateRatings << {
+    mkdir buildDir
+    def sizes = integers(20, 50);
+    file("$buildDir/ratings.csv").withPrintWriter { pw ->
+        for (user in toIterable(longs(1, 1000000000), 100)) {
+            for (item in toIterable(longs(1, 1000), sizes.next())) {
+                double rating = doubles(1,5).next()
+                pw.format('%d,%d,%.2f\n', user, item, rating);
+            }
+        }
+    }
+}
