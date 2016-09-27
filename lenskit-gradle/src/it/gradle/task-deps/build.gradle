@@ -20,10 +20,9 @@ apply plugin: 'lenskit'
 
 task crossfold(type: Crossfold)
 
-task('check', overwrite: true) {
-    doLast {
-        def dep = crossfold.taskDependencies
-        def deps = dep.getDependencies(crossfold)
-        assertThat(deps, hasItem(classes))
-    }
+task verifyCrossfoldOutput << {
+    def dep = crossfold.taskDependencies
+    def deps = dep.getDependencies(crossfold)
+    assertThat(deps, hasItem(classes))
 }
+check.dependsOn verifyCrossfoldOutput
