@@ -36,7 +36,7 @@ public class GlobalBiasModel implements BiasModel {
 
     @Override
     public double getIntercept() {
-        return 0;
+        return intercept;
     }
 
     @Override
