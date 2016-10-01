@@ -20,21 +20,18 @@
  */
 package org.lenskit.data.ratings;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.keys.KeyedObjectMap;
+import org.lenskit.util.keys.HashKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Default builder for rating summaries.
@@ -52,32 +49,46 @@ public class RatingSummaryProvider implements Provider<RatingSummary> {
 
     @Override
     public RatingSummary get() {
-        Long2DoubleMap sums = new Long2DoubleOpenHashMap();
-        Long2IntMap counts = new Long2IntOpenHashMap();
+        HashKeyIndex index = new HashKeyIndex();
+        DoubleArrayList sums = new DoubleArrayList();
+        IntArrayList counts = new IntArrayList();
+
         double totalSum = 0;
         int totalCount = 0;
 
         try (ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
             for (Rating r: ratings) {
+                assert sums.size() == counts.size();
                 long item = r.getItemId();
-                counts.put(item, counts.get(item) + 1);
-                sums.put(item, sums.get(item) + r.getValue());
+                int idx = index.internId(item);
+                if (idx >= sums.size()) {
+                    assert idx == sums.size() && idx == counts.size();
+                    sums.add(r.getValue());
+                    counts.add(1);
+                } else {
+                    sums.set(idx, sums.getDouble(idx) + r.getValue());
+                    counts.set(idx, counts.getInt(idx) + 1);
+                }
                 totalSum += r.getValue();
                 totalCount += 1;
             }
         }
 
-        List<RatingSummary.ItemSummary> summaries = new ArrayList<>(sums.size());
+        double mean = totalCount > 0 ? totalSum / totalCount : 0;
 
-        for (Long2DoubleMap.Entry e: sums.long2DoubleEntrySet()) {
-            long item = e.getLongKey();
-            double sum = e.getDoubleValue();
-            int count = counts.get(item);
-            summaries.add(new RatingSummary.ItemSummary(item, sum / count, count));
+        SortedKeyIndex items = SortedKeyIndex.fromCollection(index.getKeyList());
+        final int n = items.size();
+        int[] countArray = new int[n];
+        double[] offsets = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            int oidx = index.getIndex(items.getKey(i));
+            countArray[i] = counts.getInt(oidx);
+            offsets[i] = sums.getDouble(oidx) / countArray[i] - mean;
         }
 
         logger.info("summarized {} items with {} ratings", sums.size(), totalCount);
 
-        return new RatingSummary(totalSum / totalCount, KeyedObjectMap.create(summaries));
+        return new RatingSummary(mean, items, offsets, countArray);
     }
 }

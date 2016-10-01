@@ -20,12 +20,13 @@
  */
 package org.lenskit.data.ratings;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.Shareable;
-import org.lenskit.util.keys.KeyedObject;
-import org.lenskit.util.keys.KeyedObjectMap;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import java.io.Serializable;
 
@@ -40,16 +41,24 @@ public class RatingSummary implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final double globalMean;
-    private final KeyedObjectMap<ItemSummary> itemSummaries;
+    private final SortedKeyIndex itemIndex;
+    private final double[] itemOffsets;
+    private final int[] itemCounts;
 
     /**
      * Construct a new rating summary.
      * @param mean The global mean rating.
-     * @param items The item summaries.
+     * @param keys The item IDs.
+     * @param offsets The item mean offsets.
+     * @param counts The item rating counts.
      */
-    RatingSummary(double mean, KeyedObjectMap<ItemSummary> items) {
+    RatingSummary(double mean, SortedKeyIndex keys, double[] offsets, int[] counts) {
+        Preconditions.checkArgument(offsets.length == keys.size(), "offset array length");
+        Preconditions.checkArgument(counts.length == keys.size(), "count array length");
         globalMean = mean;
-        itemSummaries = items;
+        itemIndex = keys;
+        itemOffsets = offsets;
+        itemCounts = counts;
     }
 
     /**
@@ -66,7 +75,7 @@ public class RatingSummary implements Serializable {
     }
 
     public LongSet getItems() {
-        return itemSummaries.keySet();
+        return itemIndex.keySet();
     }
 
     /**
@@ -75,8 +84,8 @@ public class RatingSummary implements Serializable {
      * @return The item's mean rating, or {@link Double#NaN} if the item is absent.
      */
     public double getItemMean(long item) {
-        ItemSummary sum = itemSummaries.get(item);
-        return sum != null ? sum.getMeanRating() : Double.NaN;
+        int idx = itemIndex.tryGetIndex(item);
+        return idx >= 0 ? itemOffsets[idx] + globalMean : Double.NaN;
     }
 
     /**
@@ -85,50 +94,19 @@ public class RatingSummary implements Serializable {
      * @return The item's average offset from the global mean rating, or 0 if the item is missing
      */
     public double getItemOffset(long item) {
-        ItemSummary sum = itemSummaries.get(item);
-        if (sum == null) {
-            return 0;
-        } else {
-            return sum.getMeanRating() - globalMean;
-        }
+        int idx = itemIndex.tryGetIndex(item);
+        return idx >= 0 ? itemOffsets[idx] : 0;
     }
 
     /**
      * Get the number of ratings for the item.
      */
     public int getItemRatingCount(long item) {
-        ItemSummary sum = itemSummaries.get(item);
-        return sum != null ? sum.getRatingCount() : 0;
+        int idx = itemIndex.tryGetIndex(item);
+        return idx >= 0 ? itemCounts[idx] : 0;
     }
 
-    static class ItemSummary implements Serializable, KeyedObject {
-        private static final long serialVersionUID = 1L;
-
-        private final long id;
-        private final double sumOfRatings;
-        private final int ratingCount;
-
-        public ItemSummary(long item, double sum, int count) {
-            id = item;
-            sumOfRatings = sum;
-            ratingCount = count;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        @Override
-        public long getKey() {
-            return id;
-        }
-
-        public double getMeanRating() {
-            return sumOfRatings;
-        }
-
-        public int getRatingCount() {
-            return ratingCount;
-        }
+    public Long2DoubleSortedArrayMap getItemOffets() {
+        return Long2DoubleSortedArrayMap.wrap(itemIndex, itemOffsets);
     }
 }
