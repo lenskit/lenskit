@@ -27,9 +27,6 @@ import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.SortedKeyIndex;
-import org.lenskit.util.math.Vectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -42,7 +39,7 @@ public class UserItemAverageRatingBiasModelProvider implements Provider<UserItem
     private final RatingVectorPDAO dao;
 
     @Inject
-    public UserItemAverageRatingBiasModelProvider(@Transient RatingSummary rs, @Transient RatingVectorPDAO dao) {
+    public UserItemAverageRatingBiasModelProvider(RatingSummary rs, @Transient RatingVectorPDAO dao) {
         summary = rs;
         this.dao = dao;
     }
@@ -51,14 +48,7 @@ public class UserItemAverageRatingBiasModelProvider implements Provider<UserItem
     public UserItemBiasModel get() {
         double intercept = summary.getGlobalMean();
 
-        SortedKeyIndex items = SortedKeyIndex.fromCollection(summary.getItems());
-        final int ni = items.size();
-        double[] ivalues = new double[ni];
-        for (int i = 0; i < ni; i++) {
-            ivalues[i] = summary.getItemOffset(items.getKey(i));
-        }
-
-        Long2DoubleMap itemOff = Long2DoubleSortedArrayMap.wrap(items, ivalues);
+        Long2DoubleMap itemOff = summary.getItemOffets();
 
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
         try (ObjectStream<IdBox<Long2DoubleMap>> stream = dao.streamUsers()) {

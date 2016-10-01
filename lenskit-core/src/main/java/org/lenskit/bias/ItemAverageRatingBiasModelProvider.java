@@ -21,9 +21,6 @@
 package org.lenskit.bias;
 
 import org.lenskit.data.ratings.RatingSummary;
-import org.lenskit.inject.Transient;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -35,19 +32,12 @@ public class ItemAverageRatingBiasModelProvider implements Provider<ItemBiasMode
     private final RatingSummary summary;
 
     @Inject
-    public ItemAverageRatingBiasModelProvider(@Transient RatingSummary rs) {
+    public ItemAverageRatingBiasModelProvider(RatingSummary rs) {
         summary = rs;
     }
 
     @Override
     public ItemBiasModel get() {
-        SortedKeyIndex keys = SortedKeyIndex.fromCollection(summary.getItems());
-        final int n = keys.size();
-        double[] values = new double[n];
-        for (int i = 0; i < n; i++) {
-            values[i] = summary.getItemOffset(keys.getKey(i));
-        }
-
-        return new ItemBiasModel(summary.getGlobalMean(), Long2DoubleSortedArrayMap.wrap(keys, values));
+        return new ItemBiasModel(summary.getGlobalMean(), summary.getItemOffets());
     }
 }
