@@ -21,12 +21,11 @@
 package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import javax.annotation.concurrent.Immutable;
-import java.io.Serializable;
 
 /**
  * Bias model that provides global and item biases. The item biases are precomputed and are *not* updated based on
@@ -35,11 +34,8 @@ import java.io.Serializable;
 @Shareable
 @Immutable
 @DefaultProvider(ItemAverageRatingBiasModelProvider.class)
-public class ItemBiasModel implements BiasModel, Serializable {
+public class ItemBiasModel extends UserItemBiasModel {
     private static final long serialVersionUID = 1L;
-
-    private final double intercept;
-    private final Long2DoubleSortedArrayMap itemBiases;
 
     /**
      * Construct a new item bias model.
@@ -47,22 +43,6 @@ public class ItemBiasModel implements BiasModel, Serializable {
      * @param items The item biases.
      */
     public ItemBiasModel(double global, Long2DoubleMap items) {
-        intercept = global;
-        itemBiases = Long2DoubleSortedArrayMap.create(items);
-    }
-
-    @Override
-    public double getIntercept() {
-        return intercept;
-    }
-
-    @Override
-    public double getUserBias(long user) {
-        return 0;
-    }
-
-    @Override
-    public double getItemBias(long item) {
-        return itemBiases.get(item);
+        super(global, Long2DoubleMaps.EMPTY_MAP, items);
     }
 }
