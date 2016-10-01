@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import java.util.Iterator;
 
@@ -172,6 +173,31 @@ public final class Vectors {
      */
     public static double mean(Long2DoubleMap vec) {
         return sum(vec) / vec.size();
+    }
+
+    /**
+     * Add a scalar to each element of a vector.
+     * @param vec The vector to rescale.
+     * @param val The value to add.
+     * @return A new map with every value in {@code vec} increased by {@code val}.
+     */
+    public static Long2DoubleMap addScalar(Long2DoubleMap vec, double val) {
+        SortedKeyIndex keys = SortedKeyIndex.fromCollection(vec.keySet());
+        final int n = keys.size();
+        double[] values = new double[n];
+        if (vec instanceof Long2DoubleSortedArrayMap) {
+            Long2DoubleSortedArrayMap sorted = (Long2DoubleSortedArrayMap) vec;
+            for (int i = 0; i < n; i++) {
+                assert sorted.getKeyByIndex(i) == keys.getKey(i);
+                values[i] = sorted.getValueByIndex(i) + val;
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                values[i] = vec.get(keys.getKey(i)) + val;
+            }
+        }
+
+        return Long2DoubleSortedArrayMap.wrap(keys, values);
     }
 
     private static class DftAdaptingL2DFunction implements Long2DoubleFunction {

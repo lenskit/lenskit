@@ -106,4 +106,34 @@ public class VectorsTest {
             }
         }
     }
+
+    @Test
+    public void testAddScalar() {
+        for (Map<Long,Double> map: someMaps(longs(), doubles(-1000, 1000))) {
+            double scalar = doubles(-250, 250).next();
+            Long2DoubleMap m = new Long2DoubleOpenHashMap(map);
+
+            Long2DoubleMap result = Vectors.addScalar(m, scalar);
+            assertThat(Vectors.sum(result), closeTo(Vectors.sum(m) + m.size() * scalar, 1.0e-6));
+
+            for (long key: result.keySet()) {
+                assertThat(result.get(key), closeTo(map.get(key) + scalar, 1.0e-6));
+            }
+        }
+    }
+
+    @Test
+    public void testAddScalarSorted() {
+        for (Map<Long,Double> map: someMaps(longs(), doubles(-1000, 1000))) {
+            double scalar = doubles(-250, 250).next();
+            Long2DoubleMap m = Long2DoubleSortedArrayMap.create(map);
+
+            Long2DoubleMap result = Vectors.addScalar(m, scalar);
+            assertThat(Vectors.sum(result), closeTo(Vectors.sum(m) + m.size() * scalar, 1.0e-6));
+
+            for (long key: result.keySet()) {
+                assertThat(result.get(key), closeTo(map.get(key) + scalar, 1.0e-6));
+            }
+        }
+    }
 }
