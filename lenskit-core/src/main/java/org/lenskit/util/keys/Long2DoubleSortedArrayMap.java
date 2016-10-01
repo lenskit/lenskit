@@ -55,6 +55,11 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         values = vs;
     }
 
+    /**
+     * Create a new map with existing data.
+     * @param data Use {@link #create(Map)} instead, as it can avoid copying maps that are already packed.
+     */
+    @Deprecated
     public Long2DoubleSortedArrayMap(Map<Long,Double> data) {
         Long2DoubleFunction vf = LongUtils.asLong2DoubleFunction(data);
         keys = SortedKeyIndex.fromCollection(data.keySet());
@@ -129,6 +134,20 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
             nvs[i] = values.get(origIndex);
         }
         return wrap(index, nvs);
+    }
+
+    /**
+     * Create a new sorted array map from input data.
+     * @param data The input data.
+     * @return The sorted array map.
+     */
+    @SuppressWarnings("deprecation")
+    public static Long2DoubleSortedArrayMap create(Map<Long,Double> data) {
+        if (data instanceof Long2DoubleSortedArrayMap) {
+            return (Long2DoubleSortedArrayMap) data;
+        } else {
+            return new Long2DoubleSortedArrayMap(data);
+        }
     }
 
     @Override
