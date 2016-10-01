@@ -20,10 +20,21 @@
  */
 package org.lenskit.bias;
 
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.lenskit.inject.Shareable;
+
+import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
+
 /**
  * Bias model that only uses a global bias.
  */
-public class GlobalBiasModel implements BiasModel {
+@Shareable
+@Immutable
+@DefaultProvider(GlobalAverageRatingBiasModelProvider.class)
+public class GlobalBiasModel implements BiasModel, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final double intercept;
 
     /**
