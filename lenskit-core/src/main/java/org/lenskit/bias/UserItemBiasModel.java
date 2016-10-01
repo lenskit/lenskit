@@ -29,25 +29,28 @@ import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 
 /**
- * Bias model that provides global and item biases. The item biases are precomputed and are *not* updated based on
- * new data added since the model builds
+ * Bias model that provides global, user, and item biases.  The user and item biases are precomputed and are *not*
+ * refreshed based on user data added since the model build.
  */
 @Shareable
 @Immutable
-@DefaultProvider(ItemAverageRatingBiasModelProvider.class)
-public class ItemBiasModel implements BiasModel, Serializable {
+@DefaultProvider(UserAverageRatingBiasModelProvider.class)
+public class UserItemBiasModel implements BiasModel, Serializable {
     private static final long serialVersionUID = 1L;
 
     private final double intercept;
-    private final Long2DoubleSortedArrayMap itemBiases;
+    private final Long2DoubleMap userBiases;
+    private final Long2DoubleMap itemBiases;
 
     /**
-     * Construct a new item bias model.
+     * Construct a new user bias model.
      * @param global The global bias.
+     * @param users The user biases.
      * @param items The item biases.
      */
-    public ItemBiasModel(double global, Long2DoubleMap items) {
+    public UserItemBiasModel(double global, Long2DoubleMap users, Long2DoubleMap items) {
         intercept = global;
+        userBiases = Long2DoubleSortedArrayMap.create(users);
         itemBiases = Long2DoubleSortedArrayMap.create(items);
     }
 
@@ -58,7 +61,7 @@ public class ItemBiasModel implements BiasModel, Serializable {
 
     @Override
     public double getUserBias(long user) {
-        return 0;
+        return userBiases.get(user);
     }
 
     @Override
