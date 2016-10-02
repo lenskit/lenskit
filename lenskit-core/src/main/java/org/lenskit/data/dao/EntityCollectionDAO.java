@@ -63,7 +63,7 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
      * @param data The data to store in the DAO.
      * @return The DAO.
      */
-    public static EntityCollectionDAO create(Collection<Entity> data) {
+    public static EntityCollectionDAO create(Collection<? extends Entity> data) {
         return newBuilder().addEntities(data).build();
     }
 

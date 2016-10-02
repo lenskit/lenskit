@@ -116,7 +116,7 @@ public class EntityCollectionDAOBuilder {
      * @param entities The entity list.
      * @return The builder (for chaining).
      */
-    public EntityCollectionDAOBuilder addEntities(Iterable<Entity> entities) {
+    public EntityCollectionDAOBuilder addEntities(Iterable<? extends Entity> entities) {
         for (Entity e: entities) {
             addEntity(e);
         }

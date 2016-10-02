@@ -21,51 +21,52 @@
 package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.grapht.annotation.DefaultProvider;
-import org.lenskit.inject.Shareable;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 
-import javax.annotation.concurrent.Immutable;
-import java.io.Serializable;
+import javax.inject.Inject;
 
 /**
- * Bias model that provides global, user, and item biases.  The user and item biases are precomputed and are *not*
- * refreshed based on user data added since the model build.
+ * Bias model that provides global, user, and item biases.  The global and item biases are precomputed and are *not*
+ * refreshed based on user data added since the model build, but the user bias (mean rating from the rating DAO) is
+ * recomputed live.
  */
-@Shareable
-@Immutable
-@DefaultProvider(UserItemAverageRatingBiasModelProvider.class)
-public class UserItemBiasModel implements BiasModel, Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private final double intercept;
-    private final Long2DoubleMap userBiases;
-    private final Long2DoubleMap itemBiases;
+public final class LiveUserItemBiasModel implements BiasModel{
+    private final ItemBiasModel delegate;
+    private final RatingVectorPDAO dao;
 
     /**
      * Construct a new user bias model.
-     * @param global The global bias.
-     * @param users The user biases.
-     * @param items The item biases.
+     * @param base An item bias model to use as the base model.
+     * @param dao The rating vector DAO to fetch user data.
      */
-    public UserItemBiasModel(double global, Long2DoubleMap users, Long2DoubleMap items) {
-        intercept = global;
-        userBiases = Long2DoubleSortedArrayMap.create(users);
-        itemBiases = Long2DoubleSortedArrayMap.create(items);
+    @Inject
+    public LiveUserItemBiasModel(ItemBiasModel base, RatingVectorPDAO dao) {
+        delegate = base;
+        this.dao = dao;
     }
 
     @Override
     public double getIntercept() {
-        return intercept;
+        return delegate.getIntercept();
     }
 
     @Override
     public double getUserBias(long user) {
-        return userBiases.get(user);
+        Long2DoubleMap vec = dao.userRatingVector(user);
+        if (vec.isEmpty()) {
+            return 0;
+        } else {
+            double sum = 0;
+            double mean = getIntercept();
+            for (Long2DoubleMap.Entry e: vec.long2DoubleEntrySet()) {
+                sum += e.getDoubleValue() - mean - getItemBias(e.getLongKey());
+            }
+            return sum / vec.size();
+        }
     }
 
     @Override
     public double getItemBias(long item) {
-        return itemBiases.get(item);
+        return delegate.getItemBias(item);
     }
 }
