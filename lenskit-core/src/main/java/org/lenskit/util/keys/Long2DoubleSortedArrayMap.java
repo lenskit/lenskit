@@ -29,12 +29,14 @@ import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
+import org.lenskit.util.collections.CollectionUtils;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static it.unimi.dsi.fastutil.Arrays.quickSort;
 
@@ -192,6 +194,34 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         int startIdx = keys.findLowerBound(from); // include 'from'
         int endIdx = keys.findLowerBound(to); // lower bound so we don't include 'to'
         return createSubMap(startIdx, endIdx);
+    }
+
+    /**
+     * Return a subset of this map containing only the keys that appear in another set.
+     * @param toKeep The set of keys to keep.
+     * @return A copy of this map containing only those keys that appear in {@code keys}.
+     */
+    public Long2DoubleSortedMap subMap(LongSet toKeep) {
+        if (toKeep == keySet()) {
+            return this;
+        }
+
+        LongSortedSet kept = LongUtils.setIntersect(keySet(), toKeep);
+        double[] nvs = new double[kept.size()];
+        int i = keys.getLowerBound();
+        int j = 0;
+        LongIterator iter = kept.iterator();
+        while (iter.hasNext()) {
+            long key = iter.nextLong();
+            while (keys.getKey(i) < key) {
+                i++;
+                assert i <= keys.getUpperBound();
+            }
+            nvs[j] = values[i];
+            j++;
+            i++;
+        }
+        return wrap(SortedKeyIndex.fromCollection(kept), nvs);
     }
 
     @Override

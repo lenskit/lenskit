@@ -133,6 +133,25 @@ public class Long2DoubleSortedArrayMapTest {
     }
 
     @Test
+    public void testSubMap() {
+        SortedKeyIndex idx = SortedKeyIndex.create(1, 2, 3, 4, 5);
+        double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
+        Long2DoubleSortedArrayMap map = new Long2DoubleSortedArrayMap(idx, values);
+        assertThat(map.size(), equalTo(5));
+
+        Long2DoubleSortedMap sub = map.subMap(LongUtils.packedSet(2L, 4L));
+        assertThat(sub.size(), equalTo(2));
+        assertThat(sub.containsKey(2L), equalTo(true));
+        assertThat(sub.containsKey(1L), equalTo(false));
+        assertThat(sub.containsKey(5L), equalTo(false));
+        assertThat(sub.containsKey(4L), equalTo(true));
+        assertThat(sub.containsKey(3L), equalTo(false));
+        assertThat(sub.keySet(), contains(2L, 4L));
+        assertThat(sub, hasEntry(2L, 2.4));
+        assertThat(sub, hasEntry(4L, 4.3));
+    }
+
+    @Test
     public void testIterStartFrom() {
         double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
         Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(SortedKeyIndex.create(1, 2, 3, 4, 5),

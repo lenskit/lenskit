@@ -61,7 +61,7 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
      */
     public static SortedKeyIndex fromCollection(Collection<Long> keys) {
         if (keys instanceof LongSortedArraySet) {
-            return ((LongSortedArraySet) keys).getDomain();
+            return ((LongSortedArraySet) keys).getIndex();
         } else {
             return fromIterator(keys.size(), keys.iterator());
         }
