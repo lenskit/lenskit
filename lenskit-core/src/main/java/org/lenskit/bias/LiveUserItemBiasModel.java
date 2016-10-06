@@ -21,7 +21,10 @@
 package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.inject.Inject;
 
@@ -68,5 +71,23 @@ public final class LiveUserItemBiasModel implements BiasModel{
     @Override
     public double getItemBias(long item) {
         return delegate.getItemBias(item);
+    }
+
+    @Override
+    public Long2DoubleMap getUserBiases(LongSet users) {
+        SortedKeyIndex index = SortedKeyIndex.fromCollection(users);
+        final int n = index.size();
+        double[] values = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            values[i] = getUserBias(index.getKey(i));
+        }
+
+        return Long2DoubleSortedArrayMap.wrap(index, values);
+    }
+
+    @Override
+    public Long2DoubleMap getItemBiases(LongSet items) {
+        return delegate.getItemBiases(items);
     }
 }

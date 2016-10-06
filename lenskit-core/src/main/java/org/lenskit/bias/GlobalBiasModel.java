@@ -20,6 +20,9 @@
  */
 package org.lenskit.bias;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
 
@@ -58,5 +61,15 @@ public class GlobalBiasModel implements BiasModel, Serializable {
     @Override
     public double getItemBias(long item) {
         return 0;
+    }
+
+    @Override
+    public Long2DoubleMap getUserBiases(LongSet users) {
+        return Long2DoubleMaps.EMPTY_MAP;
+    }
+
+    @Override
+    public Long2DoubleMap getItemBiases(LongSet items) {
+        return Long2DoubleMaps.EMPTY_MAP;
     }
 }

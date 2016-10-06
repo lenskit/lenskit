@@ -20,16 +20,27 @@
  */
 package org.lenskit.bias;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import net.java.quickcheck.Generator;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
 import org.lenskit.data.entities.EntityFactory;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import java.util.Map;
+import java.util.Set;
+
+import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someMaps;
+import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someSets;
+import static net.java.quickcheck.generator.PrimitiveGenerators.doubles;
+import static net.java.quickcheck.generator.PrimitiveGenerators.longs;
+import static net.java.quickcheck.generator.PrimitiveGenerators.positiveLongs;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class UserItemBiasModelTest {
     @Test
@@ -65,6 +76,54 @@ public class UserItemBiasModelTest {
         assertThat(model.getUserBias(42L), equalTo(1.0));
         assertThat(model.getUserBias(37L), equalTo(0.0));
         assertThat(model.getItemBias(42L), equalTo(0.0));
+    }
+
+    @Test
+    public void testManyUsers() {
+        Generator<Double> globals = doubles();
+        for (Map<Long,Double> map: someMaps(positiveLongs(), doubles())) {
+            double bias = globals.next();
+            Long2DoubleMap userBiases = Long2DoubleSortedArrayMap.create(map);
+            BiasModel model = new UserItemBiasModel(bias, userBiases, Long2DoubleMaps.EMPTY_MAP);
+            assertThat(model.getIntercept(), equalTo(bias));
+            assertThat(model.getUserBiases(userBiases.keySet()),
+                       equalTo(userBiases));
+
+            for (Set<Long> users : someSets(positiveLongs())) {
+                Long2DoubleMap biases = model.getUserBiases(LongUtils.packedSet(users));
+                for (long user: users) {
+                    if (userBiases.containsKey(user)) {
+                        assertThat(biases.get(user), equalTo(userBiases.get(user)));
+                    } else {
+                        assertThat(biases.get(user), equalTo(0.0));
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testManyItems() {
+        Generator<Double> globals = doubles();
+        for (Map<Long,Double> map: someMaps(positiveLongs(), doubles())) {
+            double bias = globals.next();
+            Long2DoubleMap itemBiases = Long2DoubleSortedArrayMap.create(map);
+            BiasModel model = new UserItemBiasModel(bias, Long2DoubleMaps.EMPTY_MAP, itemBiases);
+            assertThat(model.getIntercept(), equalTo(bias));
+            assertThat(model.getItemBiases(itemBiases.keySet()),
+                       equalTo(itemBiases));
+
+            for (Set<Long> users : someSets(positiveLongs())) {
+                Long2DoubleMap biases = model.getItemBiases(LongUtils.packedSet(users));
+                for (long user: users) {
+                    if (itemBiases.containsKey(user)) {
+                        assertThat(biases.get(user), equalTo(itemBiases.get(user)));
+                    } else {
+                        assertThat(biases.get(user), equalTo(0.0));
+                    }
+                }
+            }
+        }
     }
 
     @Test

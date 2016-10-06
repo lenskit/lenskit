@@ -20,6 +20,9 @@
  */
 package org.lenskit.bias;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+
 /**
  * Interface for bias models that can be based on the user, item, or both.
  */
@@ -38,9 +41,25 @@ public interface BiasModel {
     double getUserBias(long user);
 
     /**
+     * Get a set of user biases.
+     * @param users The users whose biases are to be returned.
+     * @return A mapping from user IDs to biases. It is not guaranteed to contain all user IDs in its key set, but its
+     * {@link Long2DoubleMap#defaultReturnValue()} will be 0.
+     */
+    Long2DoubleMap getUserBiases(LongSet users);
+
+    /**
      * Get the item bias.
      * @param item The item ID.
      * @return The bias for the specified ite, or 0 if the item's bias is unknown.
      */
     double getItemBias(long item);
+
+    /**
+     * Get a set of item biases.
+     * @param items The itemms whose biases are to be returned.
+     * @return A mapping from item IDs to biases. It is not guaranteed to contain all item IDs in its key set, but its
+     * {@link Long2DoubleMap#defaultReturnValue()} will be 0.
+     */
+    Long2DoubleMap getItemBiases(LongSet items);
 }
