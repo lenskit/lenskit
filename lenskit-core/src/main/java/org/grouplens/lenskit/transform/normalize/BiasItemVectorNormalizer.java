@@ -25,7 +25,9 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.bias.BiasModel;
+import org.lenskit.util.math.Vectors;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -83,6 +85,19 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
         @Override
         public double unapply(long key, double value) {
             return value + itemBias + model.getUserBias(key);
+        }
+
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap input) {
+            Long2DoubleMap biases = model.getUserBiases(input.keySet());
+            return Vectors.combine(input, biases, 1.0, itemBias);
+        }
+
+        @Nullable
+        @Override
+        public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
+            Long2DoubleMap biases = model.getUserBiases(input.keySet());
+            return Vectors.combine(input, biases, -1.0, -itemBias);
         }
     }
 }

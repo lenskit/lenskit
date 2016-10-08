@@ -51,6 +51,36 @@ public class BiasUserVectorNormalizerTest {
     public void testNormalizeVectorForUser() {
         VectorTransformation tx = normalizer.makeTransformation(42L, null);
 
+        Long2DoubleMap vec = new Long2DoubleOpenHashMap();
+        vec.put(1L, 3.0);
+        vec.put(2L, 3.5);
+        vec.put(3L, 4.0);
+
+        Long2DoubleMap out = tx.apply(vec);
+        assertThat(out.get(1L), closeTo(3.0 - 3.0 - 0.5 - 0.2, 0.0001));
+        assertThat(out.get(2L), closeTo(3.5 - 3.0 - 0.5 + 0.1, 0.0001));
+        assertThat(out.get(3L), closeTo(4.0 - 3.0 - 0.5, 0.0001));
+    }
+
+    @Test
+    public void testDenormalizeVectorForUser() {
+        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+
+        Long2DoubleMap vec = new Long2DoubleOpenHashMap();
+        vec.put(1L, -1.0);
+        vec.put(2L, -0.5);
+        vec.put(3L, 0.2);
+
+        Long2DoubleMap out = tx.unapply(vec);
+        assertThat(out.get(1L), closeTo(-1.0 + 3.0 + 0.5 + 0.2, 0.0001));
+        assertThat(out.get(2L), closeTo(-0.5 + 3.0 + 0.5 - 0.1, 0.0001));
+        assertThat(out.get(3L), closeTo(0.2 + 3.0 + 0.5, 0.0001));
+    }
+
+    @Test
+    public void testNormalizeOldVectorForUser() {
+        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+
         MutableSparseVector vec = MutableSparseVector.create(1L, 2L, 3L);
         vec.set(1L, 3.0);
         vec.set(2L, 3.5);
@@ -62,7 +92,7 @@ public class BiasUserVectorNormalizerTest {
     }
 
     @Test
-    public void testDenormalizeVectorForUser() {
+    public void testDenormalizeOldVectorForUser() {
         VectorTransformation tx = normalizer.makeTransformation(42L, null);
 
         MutableSparseVector vec = MutableSparseVector.create(1L, 2L, 3L);
@@ -83,14 +113,14 @@ public class BiasUserVectorNormalizerTest {
     }
 
     @Test
-    public void testDeormalizeForUser() {
+    public void testDenormalizeValueForUser() {
         VectorTransformation tx = normalizer.makeTransformation(37L, null);
         assertThat(tx.unapply(1L, 0), closeTo(3.0, 0.0001));
         assertThat(tx.unapply(3L, 0), closeTo(2.8, 0.0001));
     }
 
     @Test
-    public void testForUnknownUser() {
+    public void testValueForUnknownUser() {
         VectorTransformation tx = normalizer.makeTransformation(92L, null);
         assertThat(tx.apply(1L, 4), closeTo(0.8, 0.0001));
         assertThat(tx.unapply(3L, 1.2), closeTo(4.2, 0.0001));
