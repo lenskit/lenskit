@@ -71,6 +71,25 @@ public final class FrozenHashKeyIndex implements KeyIndex, Serializable {
         return new FrozenHashKeyIndex(keys);
     }
 
+    /**
+     * Create a new key index.
+     *
+     * @param keys The keys.
+     * @return A key index containing the elements of {@code keys}.
+     */
+    public static FrozenHashKeyIndex create(LongCollection keys) {
+        if (keys instanceof  LongList) {
+            return create((LongList) keys);
+        } else {
+            HashKeyIndex index = new HashKeyIndex();
+            LongIterator iter = keys.iterator();
+            while (iter.hasNext()) {
+                index.internId(iter.nextLong());
+            }
+            return index.frozenCopy();
+        }
+    }
+
     @Override
     public int getIndex(long id) {
         int idx = tryGetIndex(id);
