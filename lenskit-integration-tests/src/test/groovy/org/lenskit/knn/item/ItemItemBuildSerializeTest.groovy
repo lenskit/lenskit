@@ -21,7 +21,7 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.test.ML100KTestSuite
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.BiasUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.junit.Test
 import org.lenskit.LenskitRecommender
@@ -30,14 +30,15 @@ import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
 import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.BaselineScorer
-import org.lenskit.baseline.ItemMeanRatingItemScorer
-import org.lenskit.baseline.UserMeanBaseline
-import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.bias.BiasItemScorer
+import org.lenskit.bias.BiasModel
+import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.dao.ItemDAO
 import org.lenskit.knn.item.model.ItemItemModel
 
-import static org.hamcrest.Matchers.*
+import static org.hamcrest.Matchers.instanceOf
+import static org.hamcrest.Matchers.notNullValue
 import static org.junit.Assert.assertThat
 
 /**
@@ -48,9 +49,9 @@ import static org.junit.Assert.assertThat
 public class ItemItemBuildSerializeTest extends ML100KTestSuite {
     def config = ConfigHelpers.load {
         bind ItemScorer to ItemItemScorer
-        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-        bind(BaselineScorer, ItemScorer) to UserMeanItemScorer
-        bind(UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+        bind (BaselineScorer, ItemScorer) to BiasItemScorer
+        bind BiasModel to UserItemBiasModel
+        bind UserVectorNormalizer to BiasUserVectorNormalizer
         root ItemDAO
     }
 
