@@ -131,7 +131,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
 
         if (size == count) {
             // already at capacity, so remove and reuse smallest item
-            slot = heap.dequeue();
+            slot = heap.dequeueInt();
         } else {
             // we have free space, so increment the slot and size
             slot += 1;
@@ -145,7 +145,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeue();
+            indices[i] = heap.dequeueInt();
         }
         ScoredIdListBuilder bld = ScoredIds.newListBuilder(size);
         for (int i : indices) {
@@ -169,7 +169,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeue();
+            indices[i] = heap.dequeueInt();
         }
         assert heap.isEmpty();
 
@@ -194,7 +194,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeue();
+            indices[i] = heap.dequeueInt();
         }
         assert heap.isEmpty();
 
@@ -215,7 +215,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
 
         LongSet longs = new LongOpenHashSet(size);
         while (!heap.isEmpty()) {
-            longs.add(items.getLong(heap.dequeue()));
+            longs.add(items.getLong(heap.dequeueInt()));
         }
         clear();
 
@@ -228,7 +228,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeue();
+            indices[i] = heap.dequeueInt();
         }
         LongList list = new LongArrayList(size);
         for (int i : indices) {
