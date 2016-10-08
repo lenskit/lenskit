@@ -20,14 +20,15 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +93,71 @@ public class MeanVarianceNormalizerTest {
     public void testMakeTransformation() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
+        VectorTransformation trans = urvn.makeTransformation(userRatings.asMap());
+        Long2DoubleMap nUR = trans.apply(userRatings.asMap());
+        final double mean = 2.0;
+        final double stdev = Math.sqrt(8.0 / 3.0);
+
+        assertThat(nUR, notNullValue());
+
+        //Test apply
+        Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
+
+        //Test unapply
+        nUR = trans.unapply(nUR);
+        Assert.assertEquals(0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+    }
+
+    @Test
+    public void testUniformRatings() {
+        MeanVarianceNormalizer urvn;
+        urvn = new MeanVarianceNormalizer();
+        VectorTransformation trans = urvn.makeTransformation(uniformUserRatings.asMap());
+        Long2DoubleMap nUR = trans.apply(userRatings.asMap());
+        assertThat(nUR, notNullValue());
+
+        //Test apply - shoudl subtract mean
+        assertThat(nUR.get(0L), closeTo(-2.0, 1.0e-6));
+        assertThat(nUR.get(1L), closeTo(0.0, 1.0e-6));
+        assertThat(nUR.get(2L), closeTo(2.0, 1.0e-6));
+        nUR = trans.unapply(nUR);
+
+        //Test unapply
+        assertThat(nUR.get(0L), closeTo(0.0, 1.0e-6));
+        assertThat(nUR.get(1L), closeTo(2.0, 1.0e-6));
+        assertThat(nUR.get(2L), closeTo(4.0, 1.0e-6));
+    }
+
+    @Test
+    public void testSmoothingDetailed() {
+        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3.0).get();
+
+        VectorTransformation trans = urvn.makeTransformation(userRatings.asMap());
+        final double mean = 2.0;
+        final double stdev = Math.sqrt(7.0 / 3.0);
+        Long2DoubleMap nUR = trans.apply(userRatings.asMap());
+        assertThat(nUR, notNullValue());
+
+        //Test apply
+        Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
+
+        //Test unapply
+        nUR = trans.unapply(nUR);
+        Assert.assertEquals(0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
+        Assert.assertEquals(4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
+    }
+
+    @Test
+    public void testMakeTransformationOldVector() {
+        MeanVarianceNormalizer urvn;
+        urvn = new MeanVarianceNormalizer();
         VectorTransformation trans = urvn.makeTransformation(userRatings);
         MutableSparseVector nUR = userRatings.mutableCopy();
         final double mean = 2.0;
@@ -109,7 +175,7 @@ public class MeanVarianceNormalizerTest {
     }
 
     @Test
-    public void testUniformRatings() {
+    public void testUniformRatingsOldVector() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
         VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
@@ -127,7 +193,7 @@ public class MeanVarianceNormalizerTest {
     }
 
     @Test
-    public void testSmoothingDetailed() {
+    public void testSmoothingDetailedOldVector() {
         MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
         VectorTransformation trans = urvn.makeTransformation(userRatings);
