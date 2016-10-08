@@ -20,9 +20,11 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.InvertibleFunction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,6 +74,11 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
 
     @Override
     public VectorTransformation makeTransformation(long user, SparseVector vector) {
+        return delegate.makeTransformation(vector);
+    }
+
+    @Override
+    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long user, Long2DoubleMap vector) {
         return delegate.makeTransformation(vector);
     }
 }

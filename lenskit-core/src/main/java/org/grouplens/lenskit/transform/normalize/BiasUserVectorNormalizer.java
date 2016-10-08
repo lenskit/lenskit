@@ -25,6 +25,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.bias.BiasModel;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
 
 import javax.annotation.Nullable;
@@ -48,6 +49,11 @@ public class BiasUserVectorNormalizer extends AbstractUserVectorNormalizer {
     @Override
     public VectorTransformation makeTransformation(long userId, SparseVector vector) {
         return new Transform(userId);
+    }
+
+    @Override
+    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long user, Long2DoubleMap vector) {
+        return new Transform(user);
     }
 
     private class Transform implements VectorTransformation {

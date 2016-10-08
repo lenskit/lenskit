@@ -21,15 +21,15 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
-import org.lenskit.api.Result;
-import org.lenskit.inject.Shareable;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.Result;
 import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.inject.Shareable;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
@@ -62,6 +62,11 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
     @Override
     public VectorTransformation makeTransformation(long user, SparseVector ratings) {
+        return new Transformation(user);
+    }
+
+    @Override
+    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long user, Long2DoubleMap vector) {
         return new Transformation(user);
     }
 

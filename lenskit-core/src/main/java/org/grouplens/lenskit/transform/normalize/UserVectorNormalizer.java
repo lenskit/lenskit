@@ -20,9 +20,11 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.InvertibleFunction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,7 +70,17 @@ public interface UserVectorNormalizer {
      *
      * @param user   The user ID to normalize for.
      * @param vector The user's vector to use as the reference vector.
-     * @return The vector transformaition normalizing for this user.
+     * @return The vector transformation normalizing for this user.
      */
     VectorTransformation makeTransformation(long user, SparseVector vector);
+
+    /**
+     * Make a vector transformation for a user. The resulting transformation will be applied
+     * to user vectors to normalize and denormalize them.
+     *
+     * @param user   The user ID to normalize for.
+     * @param vector The user's vector to use as the reference vector.
+     * @return The vector transformation normalizing for this user.
+     */
+    InvertibleFunction<Long2DoubleMap,Long2DoubleMap> makeTransformation(long user, Long2DoubleMap vector);
 }

@@ -21,12 +21,15 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.bias.UserItemBiasModel;
+import org.lenskit.util.InvertibleFunction;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -49,7 +52,8 @@ public class BiasUserVectorNormalizerTest {
 
     @Test
     public void testNormalizeVectorForUser() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+        InvertibleFunction<Long2DoubleMap, Long2DoubleMap> tx =
+                normalizer.makeTransformation(42L, Long2DoubleMaps.EMPTY_MAP);
 
         Long2DoubleMap vec = new Long2DoubleOpenHashMap();
         vec.put(1L, 3.0);
@@ -64,7 +68,8 @@ public class BiasUserVectorNormalizerTest {
 
     @Test
     public void testDenormalizeVectorForUser() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+        InvertibleFunction<Long2DoubleMap, Long2DoubleMap> tx =
+                normalizer.makeTransformation(42L, Long2DoubleMaps.EMPTY_MAP);
 
         Long2DoubleMap vec = new Long2DoubleOpenHashMap();
         vec.put(1L, -1.0);
@@ -79,7 +84,7 @@ public class BiasUserVectorNormalizerTest {
 
     @Test
     public void testNormalizeOldVectorForUser() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+        VectorTransformation tx = normalizer.makeTransformation(42L, SparseVector.empty());
 
         MutableSparseVector vec = MutableSparseVector.create(1L, 2L, 3L);
         vec.set(1L, 3.0);
@@ -93,7 +98,7 @@ public class BiasUserVectorNormalizerTest {
 
     @Test
     public void testDenormalizeOldVectorForUser() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+        VectorTransformation tx = normalizer.makeTransformation(42L, SparseVector.empty());
 
         MutableSparseVector vec = MutableSparseVector.create(1L, 2L, 3L);
         vec.set(1L, -1.0);
@@ -107,21 +112,21 @@ public class BiasUserVectorNormalizerTest {
 
     @Test
     public void testNormalizeValueForUser() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, null);
+        VectorTransformation tx = normalizer.makeTransformation(42L, SparseVector.empty());
         assertThat(tx.apply(1L, 3.7), closeTo(0, 0.0001));
         assertThat(tx.apply(3L, 3.7), closeTo(0.2, 0.0001));
     }
 
     @Test
     public void testDenormalizeValueForUser() {
-        VectorTransformation tx = normalizer.makeTransformation(37L, null);
+        VectorTransformation tx = normalizer.makeTransformation(37L, SparseVector.empty());
         assertThat(tx.unapply(1L, 0), closeTo(3.0, 0.0001));
         assertThat(tx.unapply(3L, 0), closeTo(2.8, 0.0001));
     }
 
     @Test
     public void testValueForUnknownUser() {
-        VectorTransformation tx = normalizer.makeTransformation(92L, null);
+        VectorTransformation tx = normalizer.makeTransformation(92L, SparseVector.empty());
         assertThat(tx.apply(1L, 4), closeTo(0.8, 0.0001));
         assertThat(tx.unapply(3L, 1.2), closeTo(4.2, 0.0001));
     }
