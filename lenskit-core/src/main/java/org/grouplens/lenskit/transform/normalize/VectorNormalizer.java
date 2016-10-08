@@ -59,7 +59,9 @@ public interface VectorNormalizer {
      *                  copy of <var>reference</var> is created.
      * @return <var>target</var>, or a normalized mutable copy of
      *         <var>reference</var> if <var>target</var> is {@code null}.
+     * @deprecated Old vectors are going away.
      */
+    @Deprecated
     MutableSparseVector normalize(@Nonnull SparseVector reference,
                                   @Nullable MutableSparseVector target);
 
@@ -77,7 +79,9 @@ public interface VectorNormalizer {
      *
      * @param reference The reference vector.
      * @return A transformation built from the reference vector.
+     * @deprecated Use {@link #makeTransformation(Long2DoubleMap)}.
      */
+    @Deprecated
     VectorTransformation makeTransformation(SparseVector reference);
 
     /**

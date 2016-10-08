@@ -42,7 +42,9 @@ public interface ItemVectorNormalizer {
      * @param target The vector to normalize. If {@code null}, the item vector is normalized.
      * @return The {@code target} vector, if specified. Otherwise, a fresh mutable vector
      *         containing a normalized copy of the item vector is returned.
+     * @deprecated Old vectors are going away.
      */
+    @Deprecated
     MutableSparseVector normalize(long itemId, @Nonnull SparseVector vector,
                                   @Nullable MutableSparseVector target);
 
@@ -53,7 +55,9 @@ public interface ItemVectorNormalizer {
      * @param itemId The item id to normalize for.
      * @param vector The item's vector to use as the reference vector.
      * @return The vector transformaition normalizing for this item.
+     * @deprecated Use {@link #makeTransformation(long, Long2DoubleMap)}.
      */
+    @Deprecated
     VectorTransformation makeTransformation(long itemId, SparseVector vector);
 
     /**

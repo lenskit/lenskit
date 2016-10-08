@@ -60,7 +60,9 @@ public interface UserVectorNormalizer {
      * @param target The vector to normalize. If {@code null}, the user vector is normalized.
      * @return The {@code target} vector, if specified. Otherwise, a fresh mutable vector
      *         containing a normalized copy of the user vector is returned.
+     * @deprecated Old vectors are going away.
      */
+    @Deprecated
     MutableSparseVector normalize(long user, @Nonnull SparseVector vector,
                                   @Nullable MutableSparseVector target);
 
@@ -71,7 +73,9 @@ public interface UserVectorNormalizer {
      * @param user   The user ID to normalize for.
      * @param vector The user's vector to use as the reference vector.
      * @return The vector transformation normalizing for this user.
+     * @deprecated Use {@link #makeTransformation(long, Long2DoubleMap)}.
      */
+    @Deprecated
     VectorTransformation makeTransformation(long user, SparseVector vector);
 
     /**
