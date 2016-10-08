@@ -212,10 +212,28 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
     class Transform implements VectorTransformation {
         private final double mean;
         private final double stdev;
+        private final UnivariateFunction function;
+        private final UnivariateFunction inverse;
 
         public Transform(double m, double sd) {
             mean = m;
             stdev = sd;
+
+            // set up the function
+            UnivariateFunction op = FunctionUtils.fix2ndArgument(new Subtract(), mean);
+            if (!Scalars.isZero(stdev)) {
+                // we have a standard deviation, divide by it
+                op = FunctionUtils.compose(FunctionUtils.fix2ndArgument(new Multiply(), 1.0 / stdev), op);
+            }
+            function = op;
+
+            // set up its inverse
+            op = FunctionUtils.fix2ndArgument(new Add(), mean);
+            if (!Scalars.isZero(stdev)) {
+                // we have a standard deviation, first multiply it
+                op = FunctionUtils.compose(op, FunctionUtils.fix2ndArgument(new Multiply(), stdev));
+            }
+            inverse = op;
         }
 
         @Override
@@ -243,14 +261,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             if (input == null) return null;
 
-            // add the mean
-            UnivariateFunction op = FunctionUtils.fix2ndArgument(new Add(), mean);
-
-            if (!Scalars.isZero(stdev)) {
-                // we have a standard deviation, first multiply it
-                op = FunctionUtils.compose(op, FunctionUtils.fix2ndArgument(new Multiply(), stdev));
-            }
-            return Vectors.transform(input, op);
+            return Vectors.transform(input, inverse);
         }
 
         @Nullable
@@ -258,15 +269,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
             if (input == null) return null;
 
-            // subtract the mean
-            UnivariateFunction op = FunctionUtils.fix2ndArgument(new Subtract(), mean);
-
-            if (!Scalars.isZero(stdev)) {
-                // we have a standard deviation, first divde by it
-                op = FunctionUtils.compose(op, FunctionUtils.fix2ndArgument(new Multiply(), 1.0 / stdev));
-            }
-
-            return Vectors.transform(input, op);
+            return Vectors.transform(input, function);
         }
 
         @Override
