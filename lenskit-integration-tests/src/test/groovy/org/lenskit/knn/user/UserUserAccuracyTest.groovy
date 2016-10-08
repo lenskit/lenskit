@@ -21,10 +21,9 @@
 package org.lenskit.knn.user
 
 import org.grouplens.lenskit.test.CrossfoldTestSuite
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer

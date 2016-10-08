@@ -21,9 +21,9 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.test.ML100KTestSuite
-import org.grouplens.lenskit.transform.normalize.UnitVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.transform.normalize.UnitVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine

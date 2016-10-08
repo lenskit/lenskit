@@ -25,8 +25,8 @@ import org.lenskit.knn.NeighborhoodSize
 import org.lenskit.knn.item.ItemItemItemBasedItemScorer
 import org.lenskit.knn.item.ItemItemScorer
 import org.lenskit.knn.user.UserUserItemScorer
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
 
 dumpGraph {
     output "${config.analysisDir}/item-item.dot"

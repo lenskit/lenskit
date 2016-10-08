@@ -40,10 +40,6 @@ package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +50,10 @@ import org.lenskit.api.*;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.transform.normalize.DefaultUserVectorNormalizer;
+import org.lenskit.transform.normalize.IdentityVectorNormalizer;
+import org.lenskit.transform.normalize.UserVectorNormalizer;
+import org.lenskit.transform.normalize.VectorNormalizer;
 
 import java.util.ArrayList;
 import java.util.HashSet;

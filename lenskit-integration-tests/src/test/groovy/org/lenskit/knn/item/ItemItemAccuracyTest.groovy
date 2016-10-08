@@ -21,8 +21,8 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.test.CrossfoldTestSuite
-import org.grouplens.lenskit.transform.normalize.BiasUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.BiasUserVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.vectors.similarity.SimilarityDamping
 import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer

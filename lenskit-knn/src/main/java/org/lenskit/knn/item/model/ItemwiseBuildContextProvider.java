@@ -25,6 +25,8 @@ import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.inject.Transient;
 import org.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.lenskit.transform.normalize.ItemVectorNormalizer;
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.dao.ItemDAO;
 import org.lenskit.data.dao.ItemEventDAO;
@@ -32,7 +34,6 @@ import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
 import org.lenskit.data.history.ItemEventCollection;
-import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -64,7 +65,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
      * @param idao The item DAO.
      * @param norm The item vector normalizer.  This is applied to item rating vectors.  You should
      *             take care to use a compatible normalizer for the item scorer (e.g. if this uses
-     *             a {@link org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer},
+     *             a {@link MeanCenteringVectorNormalizer},
      *             then you should use {@link ItemMeanRatingItemScorer}
      *             for the user vector normalization in the scorer).
      */

@@ -18,35 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.normalize;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-
 /**
- * Abstract vector normalizer implementation.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Interfaces and classes for data normalization. Normalization is typically
+ * done prior to training a recommender.
  */
-public abstract class AbstractVectorNormalizer implements VectorNormalizer {
-
-    /**
-     * {@inheritDoc}
-     * <p>Delegates to {@link #makeTransformation(SparseVector)} and the
-     * resulting {@link VectorTransformation}.
-     */
-    @Override
-    public MutableSparseVector normalize(@Nonnull SparseVector reference,
-                                         @Nullable MutableSparseVector target) {
-        MutableSparseVector v = target;
-        if (v == null) {
-            v = reference.mutableCopy();
-        }
-
-        VectorTransformation tform = makeTransformation(reference);
-        return tform.apply(v);
-    }
-}
+package org.lenskit.transform.normalize;

@@ -21,10 +21,10 @@
 package org.lenskit.knn.user
 
 import org.grouplens.lenskit.test.ML100KTestSuite
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
 import org.junit.Test

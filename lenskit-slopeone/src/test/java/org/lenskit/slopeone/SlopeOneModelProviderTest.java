@@ -20,7 +20,6 @@
  */
 package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 import org.lenskit.data.dao.BridgeItemDAO;
 import org.lenskit.data.dao.DataAccessObject;
@@ -30,6 +29,7 @@ import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.data.ratings.StandardRatingVectorPDAO;
 import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
+import org.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 
 import java.util.ArrayList;
 import java.util.List;

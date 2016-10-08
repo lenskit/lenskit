@@ -18,12 +18,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.normalize;
+package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 
 import javax.annotation.Nonnull;
@@ -32,31 +32,41 @@ import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
- * Default item vector normalizer that delegates to a generic
- * {@link org.grouplens.lenskit.transform.normalize.VectorNormalizer}.
+ * Default user vector normalizer that delegates to a generic {@link VectorNormalizer}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 0.11
  */
 @Shareable
-public class DefaultItemVectorNormalizer implements ItemVectorNormalizer, Serializable {
+public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serializable {
     private static final long serialVersionUID = 1L;
     protected final VectorNormalizer delegate;
 
     /**
-     * Construct a new item vector normalizer that uses the identity normalization.
+     * Construct a new user vector normalizer that uses the identity normalization.
      */
-    public DefaultItemVectorNormalizer() {
+    public DefaultUserVectorNormalizer() {
         this(new IdentityVectorNormalizer());
     }
 
     /**
-     * Construct a new item vector normalizer wrapping a generic vector normalizer.
+     * Construct a new user vector normalizer wrapping a generic vector normalizer.
      *
      * @param norm The generic normalizer to use.
      */
     @Inject
-    public DefaultItemVectorNormalizer(VectorNormalizer norm) {
+    public DefaultUserVectorNormalizer(VectorNormalizer norm) {
         delegate = norm;
     }
 
+    /**
+     * Get the delegate vector normalizer.
+     * @return The vector normalizer used by this UVN.
+     */
+    public VectorNormalizer getVectorNormalizer() {
+        return delegate;
+    }
+    
     @Override
     public MutableSparseVector normalize(long user, @Nonnull SparseVector vector, @Nullable MutableSparseVector target) {
         return delegate.normalize(vector, target);
@@ -68,7 +78,7 @@ public class DefaultItemVectorNormalizer implements ItemVectorNormalizer, Serial
     }
 
     @Override
-    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long itemId, Long2DoubleMap vector) {
+    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long user, Long2DoubleMap vector) {
         return delegate.makeTransformation(vector);
     }
 }

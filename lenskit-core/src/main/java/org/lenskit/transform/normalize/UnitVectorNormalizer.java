@@ -18,83 +18,107 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.normalize;
+package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
- * Vector normlizer that subtracts the mean from every value.
+ * Vector normalizer that scales a vector by the factor needed to scale the
+ * reference vector to a unit vector. If the length of the reference vector
+ * is 0, no normalization is applied.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
+    private final static long serialVersionUID = 1L;
+    private final double tolerance;
+
+    /**
+     * Create a unit vector normalizer with a tolerance of 1.0e-6.
+     */
+    @Inject
+    public UnitVectorNormalizer() {
+        this(1.0e-6);
+    }
+
+    /**
+     * Create a unit vector normalizer a specified tolerance around 0. Any
+     * vector norm whose absolute value is less than <var>t</var> is converted
+     * to a no-op.
+     *
+     * @param t The error tolerance for 0-checking.
+     */
+    public UnitVectorNormalizer(double t) {
+        tolerance = t;
+    }
 
     @Override
     public VectorTransformation makeTransformation(SparseVector reference) {
-        return new Transform(reference.mean());
+        double s = reference.norm();
+        if (Math.abs(s) < tolerance) {
+            return new IdentityVectorNormalizer().makeTransformation(reference);
+        } else {
+            return new ScalingTransform(s);
+        }
     }
 
     @Override
     public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
-        return new Transform(Vectors.mean(reference));
+        double s = Vectors.euclideanNorm(reference);
+        if (Math.abs(s) < tolerance) {
+            return new IdentityVectorNormalizer().makeTransformation(reference);
+        } else {
+            return new ScalingTransform(s);
+        }
     }
 
-    private static class Transform implements VectorTransformation {
-        private final double mean;
+    static class ScalingTransform implements VectorTransformation {
+        final double factor;
 
-        public Transform(double mean) {
-            this.mean = mean;
+        public ScalingTransform(double f) {
+            factor = f;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            vector.add(-mean);
+            vector.multiply(1 / factor);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            vector.add(mean);
+            vector.multiply(factor);
             return vector;
+        }
+
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap input) {
+            return input == null ? null : Vectors.multiplyScalar(input, factor);
         }
 
         @Nullable
         @Override
         public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
-            if (input == null) {
-                return null;
-            }
-
-            return Vectors.addScalar(input, -mean);
+            return input == null ? null : Vectors.multiplyScalar(input, 1.0 / factor);
         }
-
-        @Override
-        public Long2DoubleMap unapply(Long2DoubleMap input) {
-            if (input == null) {
-                return null;
-            }
-
-            return Vectors.addScalar(input, mean);
-        }
-
-
         @Override
         public double apply(long key, double value) {
-            return value - mean;
+            return value / factor;
         }
 
         @Override
         public double unapply(long key, double value) {
-            return value + mean;
+            return value * factor;
         }
     }
 }

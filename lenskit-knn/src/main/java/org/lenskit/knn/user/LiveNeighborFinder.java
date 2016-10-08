@@ -23,7 +23,6 @@ package org.lenskit.knn.user;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -32,6 +31,7 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

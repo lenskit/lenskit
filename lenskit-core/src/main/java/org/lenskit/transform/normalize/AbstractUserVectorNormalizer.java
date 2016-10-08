@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.normalize;
+package org.lenskit.transform.normalize;
 
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -27,9 +27,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Abstract item vector normalizer implementation.
+ * Abstract user vector normalizer implementation.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 0.11
  */
-public abstract class AbstractItemVectorNormalizer implements ItemVectorNormalizer {
+public abstract class AbstractUserVectorNormalizer implements UserVectorNormalizer {
 
     /**
      * {@inheritDoc}
@@ -37,14 +40,14 @@ public abstract class AbstractItemVectorNormalizer implements ItemVectorNormaliz
      * and the resulting {@link VectorTransformation}.
      */
     @Override
-    public MutableSparseVector normalize(long item, @Nonnull SparseVector vector,
+    public MutableSparseVector normalize(long user, @Nonnull SparseVector vector,
                                          @Nullable MutableSparseVector target) {
         MutableSparseVector v = target;
         if (v == null) {
             v = vector.mutableCopy();
         }
 
-        VectorTransformation tform = makeTransformation(item, vector);
+        VectorTransformation tform = makeTransformation(user, vector);
         return tform.apply(v);
     }
 }

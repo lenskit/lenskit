@@ -23,8 +23,8 @@ package org.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.transform.normalize.VectorTransformation;
 
 import java.util.List;
 

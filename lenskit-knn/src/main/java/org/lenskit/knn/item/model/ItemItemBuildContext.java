@@ -27,7 +27,6 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.SortedKeyIndex;
@@ -89,7 +88,7 @@ public class ItemItemBuildContext implements Serializable {
 
     /**
      * Get the rating vector for an item. Rating vectors contain normalized ratings,
-     * using the applicable {@link VectorNormalizer} on the user rating vectors.
+     * using the applicable user-vector normalizer on the user rating vectors.
      *
      * @param item The item to query.
      * @return The rating vector for {@code item}.

@@ -27,8 +27,6 @@ import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
-import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.util.io.CompressionMode
 import org.junit.Before
 import org.junit.Ignore
@@ -44,6 +42,8 @@ import org.lenskit.data.dao.EventCollectionDAO
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.RatingMatrix
 import org.lenskit.inject.Shareable
+import org.lenskit.transform.normalize.MeanVarianceNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 
 import javax.inject.Inject
 import javax.inject.Provider

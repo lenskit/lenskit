@@ -18,13 +18,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.normalize;
+package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.lenskit.util.InvertibleFunction;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.io.Serializable;

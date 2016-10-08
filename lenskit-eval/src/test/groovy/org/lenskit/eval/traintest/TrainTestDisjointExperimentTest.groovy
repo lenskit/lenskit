@@ -20,8 +20,8 @@
  */
 package org.lenskit.eval.traintest
 
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

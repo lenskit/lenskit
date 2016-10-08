@@ -20,8 +20,8 @@
  */
 
 
-import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
 import org.lenskit.api.ItemScorer
 import org.lenskit.api.RatingPredictor
