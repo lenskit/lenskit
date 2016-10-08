@@ -20,12 +20,15 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+import org.lenskit.util.InvertibleFunction;
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -34,7 +37,26 @@ public class MeanCenteringVectorNormalizerTest {
     VectorNormalizer norm = new MeanCenteringVectorNormalizer();
 
     @Test
-    public void testEmptyReference() {
+    public void testTransform() {
+        Long2DoubleMap reference = new Long2DoubleOpenHashMap();
+        reference.put(4L, 3.5);
+        reference.put(5L, 2.5);
+
+        InvertibleFunction<Long2DoubleMap, Long2DoubleMap> tx = norm.makeTransformation(reference);
+
+        Long2DoubleMap out = tx.apply(reference);
+        assertThat(out, notNullValue());
+        assertThat(out.get(4L), closeTo(0.5, 1.0e-5));
+        assertThat(out.get(5L), closeTo(-0.5, 1.0e-5));
+
+        Long2DoubleMap toRev = new Long2DoubleOpenHashMap(out);
+        toRev.put(4L, 2.0);
+        out = tx.unapply(toRev);
+        assertThat(out.get(4L), closeTo(5, 1.0e-5));
+    }
+
+    @Test
+    public void testEmptyReferenceOld() {
         MutableSparseVector msv = MutableSparseVector.create(4L);
         msv.set(4, 3.5);
         norm.normalize(SparseVector.empty(), msv);
@@ -42,7 +64,7 @@ public class MeanCenteringVectorNormalizerTest {
     }
 
     @Test
-    public void testSameReference() {
+    public void testSameReferenceOld() {
         MutableSparseVector msv = MutableSparseVector.create(4L);
         msv.set(4, 3.5);
         norm.normalize(msv, msv);
@@ -50,7 +72,7 @@ public class MeanCenteringVectorNormalizerTest {
     }
 
     @Test
-    public void testTransform() {
+    public void testTransformOld() {
         MutableSparseVector reference = MutableSparseVector.create(4L, 5L);
         reference.set(4, 3.5);
         reference.set(5, 2.5);
