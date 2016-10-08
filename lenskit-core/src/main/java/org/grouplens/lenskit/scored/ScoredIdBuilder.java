@@ -41,6 +41,7 @@ import java.util.List;
  * @deprecated Scored IDs are going away in LensKit 3.0.
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public class ScoredIdBuilder implements Builder<ScoredId> {
     private long id;
     private double score;

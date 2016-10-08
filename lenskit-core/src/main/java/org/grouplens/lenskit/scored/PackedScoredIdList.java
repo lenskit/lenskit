@@ -52,6 +52,7 @@ import java.util.*;
  * @deprecated Scored IDs are going away in LensKit 3.0.
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public final class PackedScoredIdList extends AbstractList<ScoredId> implements Collection<ScoredId>, Serializable {
     private static final long serialVersionUID = 1L;
     private final LongList ids;

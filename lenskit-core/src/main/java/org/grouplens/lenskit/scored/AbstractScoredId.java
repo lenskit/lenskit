@@ -45,6 +45,7 @@ import java.util.Set;
  * @deprecated Scored IDs are going away in LensKit 3.0.
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public abstract class AbstractScoredId implements ScoredId {
 
     private transient volatile int hashCode;

@@ -53,6 +53,7 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
  * @deprecated Scored IDs are going away in LensKit 3.0.
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     // INVARIANT: all arrays (including channel arrays) have same size, which is capacity
     // INVARIANT: all arrays are non-null unless finish() has been called

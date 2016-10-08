@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("deprecation")
 final class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private static final long serialVersionUID = 2L;
 

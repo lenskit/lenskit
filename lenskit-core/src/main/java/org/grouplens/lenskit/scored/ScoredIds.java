@@ -46,6 +46,7 @@ import java.util.Iterator;
  * @deprecated Scored IDs are going away in LensKit 3.0.
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 public final class ScoredIds {
     private ScoredIds() {}
 

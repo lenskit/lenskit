@@ -42,6 +42,7 @@ import java.util.Collection;
  * @since 1.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@SuppressWarnings("deprecation")
 class VectorEntryScoredId extends AbstractScoredId {
 
     private final SparseVector vector;
