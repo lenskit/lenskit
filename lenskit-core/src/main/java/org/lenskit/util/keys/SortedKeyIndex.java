@@ -304,7 +304,7 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
      * Get a view of the index as a set.
      * @return The set of keys.
      */
-    public LongSortedSet keySet() {
+    public LongSortedArraySet keySet() {
         return new LongSortedArraySet(this);
     }
 

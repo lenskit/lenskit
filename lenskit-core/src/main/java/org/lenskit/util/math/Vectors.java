@@ -178,6 +178,37 @@ public final class Vectors {
     }
 
     /**
+     * Add a vector to another (scaled) vector and a scalar.  The result is \\(x_i + s_y y_i + o\\).
+     *
+     * @param x The source vector.
+     * @param y The addition vector.  {@link Long2DoubleFunction#defaultReturnValue()} is assumed for missing values.
+     * @param sy The scale by which elements of {@code y} are multipled.
+     * @param o The offset to add.
+     * @return A vector with the same keys as {@code x}, transformed by the specified linear formula.
+     */
+    public static Long2DoubleMap combine(Long2DoubleMap x, Long2DoubleFunction y, double sy, double o) {
+        SortedKeyIndex idx = SortedKeyIndex.fromCollection(x.keySet());
+        final int n = idx.size();
+        double[] values = new double[n];
+
+        if (x instanceof Long2DoubleSortedArrayMap) {
+            // TODO make this fast for two sorted maps
+            Long2DoubleSortedArrayMap sx = (Long2DoubleSortedArrayMap) x;
+            assert idx == sx.keySet().getIndex();
+            for (int i = 0; i < n; i++) {
+                values[i] = sx.getValueByIndex(i) + y.get(idx.getKey(i)) * sy + o;
+            }
+        } else {
+            for (int i = 0; i < n; i++) {
+                long k = idx.getKey(i);
+                values[i] = x.get(k) + y.get(k) * sy + o;
+            }
+        }
+
+        return Long2DoubleSortedArrayMap.wrap(idx, values);
+    }
+
+    /**
      * Add a scalar to each element of a vector.
      * @param vec The vector to rescale.
      * @param val The value to add.

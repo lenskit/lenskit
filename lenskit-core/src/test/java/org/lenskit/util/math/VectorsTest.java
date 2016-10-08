@@ -21,6 +21,7 @@
 package org.lenskit.util.math;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.junit.Test;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -154,5 +155,31 @@ public class VectorsTest {
         assertThat(result.keySet(), containsInAnyOrder(42L, 22L));
         assertThat(result, hasEntry(42L, -5.0));
         assertThat(result, hasEntry(22L, 2.0));
+    }
+
+    @Test
+    public void testCombine() {
+        Long2DoubleMap x = new Long2DoubleOpenHashMap();
+        x.put(4L, 3.5);
+        x.put(5L, 4.0);
+        Long2DoubleMap y = Long2DoubleMaps.singleton(4L, 0.5);
+
+        Long2DoubleMap res = Vectors.combine(x, y, 2, 1);
+        assertThat(res.get(4L), closeTo(5.5, 1e-6));
+        assertThat(res.get(5L), closeTo(5.0, 1e-6));
+        assertThat(res.get(1L), equalTo(0.0));
+    }
+
+    @Test
+    public void testCombineSorted() {
+        Long2DoubleMap x = new Long2DoubleOpenHashMap();
+        x.put(4L, 3.5);
+        x.put(5L, 4.0);
+        Long2DoubleMap y = Long2DoubleMaps.singleton(4L, 0.5);
+
+        Long2DoubleMap res = Vectors.combine(Long2DoubleSortedArrayMap.create(x), y, 2, 1);
+        assertThat(res.get(4L), closeTo(5.5, 1e-6));
+        assertThat(res.get(5L), closeTo(5.0, 1e-6));
+        assertThat(res.get(1L), equalTo(0.0));
     }
 }

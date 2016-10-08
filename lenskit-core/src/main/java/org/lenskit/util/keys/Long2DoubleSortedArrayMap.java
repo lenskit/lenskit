@@ -175,7 +175,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
     }
 
     @Override
-    public LongSortedSet keySet() {
+    public LongSortedArraySet keySet() {
         return keys.keySet();
     }
 
