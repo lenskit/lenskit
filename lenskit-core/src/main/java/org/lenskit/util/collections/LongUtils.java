@@ -177,6 +177,23 @@ public final class LongUtils {
     }
 
     /**
+     * Get a Fastutil {@link LongSet} from a {@link java.util.Collection} of longs.
+     *
+     * @param longs The set of longs.
+     * @return {@code longs} as a fastutil {@link LongSet}. If {@code longs} is already
+     *         a LongSet, it is cast.
+     */
+    public static LongSet asLongSet(@Nullable final Collection<Long> longs) {
+        if (longs == null) {
+            return null;
+        } else if (longs instanceof Set) {
+            return asLongSet((Set<Long>) longs);
+        } else {
+            return SortedKeyIndex.fromCollection(longs).keySet();
+        }
+    }
+
+    /**
      * Compute the ranks for a list of longs.
      * @param results The list of longs.
      * @return The map of ranks; its default return value will be -1.

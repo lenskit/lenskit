@@ -22,6 +22,7 @@ package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
  * Interface for bias models that can be based on the user, item, or both.
