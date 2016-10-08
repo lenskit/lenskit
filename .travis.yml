@@ -34,11 +34,6 @@ notifications:
       - https://webhooks.gitter.im/e/12b880d9f4086ef2a62c
     on_success: always
     on_failure: always
-  slack:
-    rooms:
-    - secure: "Z6W3L4ugZAUVvnXkVHuFifOvSBMyv8CnW9pUvHIiKUVy5TPKUUJnMEI+70DzST15XaC7dRzFCmQkuz1HeBvFlIVojyt4Nx8P6K5q/NeoxsDZ0joJqrsERBc6rP8W3tOK15sa3G86kTqPPpjvfnygv4eRxjQaJDYpwuH1NN8+cfs="
-    - secure: "ldy/nkD8cNi3nNv8g+LEDmvsPKcKrHmuwctmCfc/kbmzmvmeG3DDa5RItSXnrmPGJhzbTEKKyrNIeA7U9awA7XYcZ7gSe7S5HogfCULrak2OYvLXVs69yQAP5ZuNF3c/AnuZz8rrE2UObMU22raZYrzrHM+LR7fUnurCaFq0S9w="
-    on_pull_requests: false
 env:
   global:
   - TERM=dumb
