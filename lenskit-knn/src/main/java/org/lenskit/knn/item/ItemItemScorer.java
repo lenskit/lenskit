@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
+import org.lenskit.transform.normalize.VectorTransformation;
 import org.lenskit.util.ScoredIdAccumulator;
 import org.lenskit.util.TopNScoredIdAccumulator;
 import org.lenskit.util.UnlimitedScoredIdAccumulator;
