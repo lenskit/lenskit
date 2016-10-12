@@ -171,7 +171,7 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
                                        .onResultOf(Entities.entityTypeNameFunction())
                                        .sortedCopy(storage.keySet())) {
             HashDescriptionWriter sw = Descriptions.sha1Writer();
-            sw.putField("entities", storage.get(etype));
+            sw.putList("entities", storage.get(etype));
             writer.putField(etype.getName(), sw.finish().toString());
         }
     }
