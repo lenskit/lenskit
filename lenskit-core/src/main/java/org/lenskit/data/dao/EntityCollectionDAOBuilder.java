@@ -23,6 +23,7 @@ package org.lenskit.data.dao;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.lenskit.data.entities.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
