@@ -33,30 +33,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if (JavaVersion.current().java7Compatible) {
-    apply plugin: 'license'
+apply plugin: 'com.github.hierynomus.license'
+license {
+    encoding 'UTF-8'
+    header rootProject.file('etc/header.txt')
+    useDefaultMappings false
+    mapping('java': 'SLASHSTAR_STYLE', 'groovy': 'SLASHSTAR_STYLE')
+}
 
-    license {
-        header rootProject.file('etc/header.txt')
-        useDefaultMappings false
-        mapping('java': 'SLASHSTAR_STYLE', 'groovy': 'SLASHSTAR_STYLE')
-    }
-
-    check.dependsOn licenseMain, licenseTest
-    // make license failures fail the build early
-    project.tasks.withType(JavaCompile) { task ->
-        switch (task.name) {
-            case 'compile':
-                task.mustRunAfter licenseMain;
-                break;
-            case 'compileTest':
-                task.mustRunAfter licenseTest;
-                break;
-        }
-    }
-} else {
-    // The license plugin is not compatible with Java 6, so turn it off
-    check.doFirst {
-        logger.warn 'License header checks disabled on Java 6'
+check.dependsOn 'licenseMain', 'licenseTest'
+// make license failures fail the build early
+project.tasks.withType(JavaCompile) { task ->
+    switch (task.name) {
+        case 'compile':
+            task.mustRunAfter 'licenseMain';
+            break;
+        case 'compileTest':
+            task.mustRunAfter 'licenseTest';
+            break;
     }
 }
