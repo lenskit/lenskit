@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -52,10 +52,10 @@ public final class LKFileUtils {
 
     /**
      * Query whether this filename represents a compressed file. It just looks at
-     * the name to see if it ends in “.gz”.
+     * the name to see if it ends in “.gz�?.
      *
      * @param file The file to query.
-     * @return {@code true} if the file name ends in “.gz”.
+     * @return {@code true} if the file name ends in “.gz�?.
      * @deprecated Use {@link CompressionMode} or commons-compress facilities instead.
      */
     @Deprecated

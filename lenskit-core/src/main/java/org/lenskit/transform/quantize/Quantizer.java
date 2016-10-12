@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -34,7 +34,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 public interface Quantizer {
     /**
      * Get the possible values into which this quantizer will map input values. These
-     * are the values corresponding to each “bin” into which the quantizer will put
+     * are the values corresponding to each “bin�? into which the quantizer will put
      * values.
      *
      * @return The values of the discrete bins.

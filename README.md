@@ -84,7 +84,7 @@ tests, use Gradle:
 
 LensKit is under the following copyright and license:
 
-Copyright 2010-2014 [LensKit Contributors](CONTRIBUTORS.md).  
+Copyright 2010-2016 [LensKit Contributors](CONTRIBUTORS.md).  
 Work on LensKit has been funded by the National Science Foundation under
 grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
 
@@ -107,7 +107,7 @@ Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 To ease reuse, the LensKit build system (all `.gradle` files and the contents
 of the `buildSrc` directory) are licensed under the 3-clause BSD license:
 
-Copyright 2010-2014 LensKit Contributors
+Copyright 2010-2016 LensKit Contributors
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
