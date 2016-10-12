@@ -31,14 +31,14 @@ import javax.inject.Inject;
 /**
  * Bias model that provides global, user, and item biases.  The global and item biases are precomputed and are *not*
  * refreshed based on user data added since the model build, but the user bias (mean rating from the rating DAO) is
- * recomputed live.
+ * recomputed live based on a {@link RatingVectorPDAO}.
  */
 public final class LiveUserItemBiasModel implements BiasModel{
     private final ItemBiasModel delegate;
     private final RatingVectorPDAO dao;
 
     /**
-     * Construct a new user bias model.
+     * Construct a new bias model.
      * @param base An item bias model to use as the base model.
      * @param dao The rating vector DAO to fetch user data.
      */

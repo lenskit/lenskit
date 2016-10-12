@@ -41,6 +41,10 @@ import java.util.List;
 public class BiasItemScorer extends AbstractItemScorer {
     private final BiasModel model;
 
+    /**
+     * Construct a new scorer.
+     * @param bias The bias model to use.
+     */
     @Inject
     public BiasItemScorer(BiasModel bias) {
         model = bias;

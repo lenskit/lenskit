@@ -34,6 +34,10 @@ import javax.inject.Inject;
 public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
     private final BiasModel model;
 
+    /**
+     * Construct a new normalizer.
+     * @param bias The bias model to subtract from item vector values.
+     */
     @Inject
     public BiasItemVectorNormalizer(BiasModel bias) {
         model = bias;
@@ -48,7 +52,7 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
         private final long item;
         private final double itemBias;
 
-        public Transform(long iid) {
+        Transform(long iid) {
             item = iid;
             itemBias = model.getIntercept() + model.getItemBias(item);
         }

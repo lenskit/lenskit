@@ -36,7 +36,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
- * Compute a bias model with users' average ratings.
+ * Compute a bias model that returns users' average ratings.  For a user \\(u\\), the global bias \\(b\\) plus the
+ * user bias \\(b_u\\) will equal the user's average rating.  Item biases are all zero.
  */
 public class UserAverageRatingBiasModelProvider implements Provider<UserBiasModel> {
     private final RatingVectorPDAO dao;

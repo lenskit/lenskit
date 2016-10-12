@@ -29,11 +29,15 @@ import org.lenskit.bias.BiasModel;
 import javax.inject.Inject;
 
 /**
- * Item vector normalizer that subtracts user-item biases.
+ * User vector normalizer that subtracts user-item biases.
  */
 public class BiasUserVectorNormalizer extends AbstractUserVectorNormalizer {
     private final BiasModel model;
 
+    /**
+     * Construct a new normalizer.
+     * @param bias The bias model to subtract from user vector values.
+     */
     @Inject
     public BiasUserVectorNormalizer(BiasModel bias) {
         model = bias;
@@ -48,7 +52,7 @@ public class BiasUserVectorNormalizer extends AbstractUserVectorNormalizer {
         private final long user;
         private final double userBias;
 
-        public Transform(long uid) {
+        Transform(long uid) {
             user = uid;
             userBias = model.getIntercept() + model.getUserBias(user);
         }

@@ -26,7 +26,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 /**
- * Compute a bias model with the global average rating.
+ * Compute a bias model that returns items' average ratings.  For an item \\(i\\), the global bias \\(b\\) plus the
+ * item bias \\(b_i\\) will equal the item's average rating.  User biases are all zero.
  */
 public class ItemAverageRatingBiasModelProvider implements Provider<ItemBiasModel> {
     private final RatingSummary summary;

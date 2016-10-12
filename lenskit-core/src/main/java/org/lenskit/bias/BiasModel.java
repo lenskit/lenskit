@@ -22,7 +22,6 @@ package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultImplementation;
 
 /**
  * Interface for bias models that can be based on the user, item, or both.
@@ -58,7 +57,7 @@ public interface BiasModel {
 
     /**
      * Get a set of item biases.
-     * @param items The itemms whose biases are to be returned.
+     * @param items The items whose biases are to be returned.
      * @return A mapping from item IDs to biases. It is not guaranteed to contain all item IDs in its key set, but its
      * {@link Long2DoubleMap#defaultReturnValue()} will be 0.
      */
