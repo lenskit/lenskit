@@ -26,8 +26,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
-import org.grouplens.lenskit.util.io.Descriptions;
-import org.grouplens.lenskit.util.io.HashDescriptionWriter;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
@@ -170,9 +168,7 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
         for (EntityType etype: Ordering.natural()
                                        .onResultOf(Entities.entityTypeNameFunction())
                                        .sortedCopy(storage.keySet())) {
-            HashDescriptionWriter sw = Descriptions.sha1Writer();
-            sw.putList("entities", storage.get(etype));
-            writer.putField(etype.getName(), sw.finish().toString());
+            writer.putField(etype.getName(), storage);
         }
     }
 }

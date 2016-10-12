@@ -22,7 +22,10 @@ package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.HashCode;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;
@@ -37,16 +40,18 @@ import java.util.Map;
  * A collection of entities of a single type.  This collection augments the `Collection` interface with logic for
  * different kinds of (possibly optimized) entity searches.
  */
-public class EntityCollection extends AbstractCollection<Entity> implements Serializable {
+public class EntityCollection extends AbstractCollection<Entity> implements Serializable, Describable {
     private static long serialVersionUID = 1L;
     private final EntityType type;
     private final KeyedObjectMap<Entity> store;
     private final Map<String, EntityIndex> indexes;
+    private final HashCode contentHash;
 
-    EntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes) {
+    EntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes, HashCode hash) {
         this.type = type;
         store = entities;
         indexes = idxes;
+        contentHash = hash;
     }
 
     /**
@@ -136,5 +141,11 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
     @Override
     public int size() {
         return store.size();
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("size", store.size());
+        writer.putField("contentHash", contentHash.toString());
     }
 }
