@@ -65,7 +65,7 @@ public class UserAverageRatingBiasModelProvider implements Provider<UserBiasMode
             }
         }
 
-        double mean = sum / n;
+        double mean = n > 0 ? sum / n : 0;
         return new UserBiasModel(mean, Vectors.addScalar(map, -mean));
     }
 }
