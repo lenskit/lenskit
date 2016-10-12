@@ -52,10 +52,10 @@ public final class LKFileUtils {
 
     /**
      * Query whether this filename represents a compressed file. It just looks at
-     * the name to see if it ends in “.gz�?.
+     * the name to see if it ends in “.gz”.
      *
      * @param file The file to query.
-     * @return {@code true} if the file name ends in “.gz�?.
+     * @return {@code true} if the file name ends in “.gz”.
      * @deprecated Use {@link CompressionMode} or commons-compress facilities instead.
      */
     @Deprecated

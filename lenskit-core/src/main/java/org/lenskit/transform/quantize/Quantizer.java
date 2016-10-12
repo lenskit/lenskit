@@ -34,7 +34,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 public interface Quantizer {
     /**
      * Get the possible values into which this quantizer will map input values. These
-     * are the values corresponding to each “bin�? into which the quantizer will put
+     * are the values corresponding to each “bin” into which the quantizer will put
      * values.
      *
      * @return The values of the discrete bins.
