@@ -168,7 +168,7 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
         for (EntityType etype: Ordering.natural()
                                        .onResultOf(Entities.entityTypeNameFunction())
                                        .sortedCopy(storage.keySet())) {
-            writer.putField(etype.getName(), storage);
+            writer.putField(etype.getName(), storage.get(etype));
         }
     }
 }
