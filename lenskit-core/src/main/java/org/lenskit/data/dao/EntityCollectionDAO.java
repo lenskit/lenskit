@@ -24,6 +24,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.grouplens.lenskit.util.io.Descriptions;
+import org.grouplens.lenskit.util.io.HashDescriptionWriter;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
@@ -34,7 +38,7 @@ import java.util.*;
 /**
  * A DAO backed by one or more collections of entities.
  */
-public class EntityCollectionDAO extends AbstractDataAccessObject {
+public class EntityCollectionDAO extends AbstractDataAccessObject implements Describable {
     private final Map<EntityType, EntityCollection> storage;
 
     EntityCollectionDAO(Map<EntityType, EntityCollection> data) {
@@ -159,5 +163,16 @@ public class EntityCollectionDAO extends AbstractDataAccessObject {
         }
         Collections.sort(list, ord);
         return ObjectStreams.wrap(list);
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        for (EntityType etype: Ordering.natural()
+                                       .onResultOf(Entities.entityTypeNameFunction())
+                                       .sortedCopy(storage.keySet())) {
+            HashDescriptionWriter sw = Descriptions.sha1Writer();
+            sw.putField("entities", storage.get(etype));
+            writer.putField(etype.getName(), sw.finish().toString());
+        }
     }
 }

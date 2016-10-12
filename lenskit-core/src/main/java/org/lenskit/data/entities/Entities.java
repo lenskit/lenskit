@@ -142,6 +142,20 @@ public final class Entities {
     }
 
     /**
+     * Function that returns entity types' names.
+     * @return A function that returns entity types' names.
+     */
+    public static Function<EntityType,String> entityTypeNameFunction() {
+        return new Function<EntityType, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable EntityType input) {
+                return input == null ? null : input.getName();
+            }
+        };
+    }
+
+    /**
      * Project an entity to a target view type.
      * @param e The entity to project.
      * @param viewClass The view type.
