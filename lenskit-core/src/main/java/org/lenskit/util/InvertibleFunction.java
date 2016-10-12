@@ -23,7 +23,7 @@ package org.lenskit.util;
 import com.google.common.base.Function;
 
 /**
- * A function for which a inverse is available.
+ * A function for which an inverse is available.
  *
  * @param <F> The domain type.
  * @param <T> The co-domain type.
