@@ -60,7 +60,8 @@ import java.io.*;
  * @see LenskitRecommenderEngineBuilder
  * @see LenskitRecommenderEngineLoader
  */
-public final class LenskitRecommenderEngine implements RecommenderEngine {
+public final class LenskitRecommenderEngine implements RecommenderEngine, Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
 
     private final DAGNode<Component, Dependency> graph;
