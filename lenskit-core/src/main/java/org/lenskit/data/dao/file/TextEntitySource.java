@@ -404,7 +404,7 @@ public class TextEntitySource implements EntitySource, Describable {
             String name = col.asText();
             TypedName<?> attr = entityDefaults != null ? entityDefaults.getAttributeDefaults(name) : null;
             if (attr == null) {
-                attr = TypedName.create(col.asText(), col.asText().equals("id") ? Long.class : String.class);
+                attr = TypedName.create(col.asText(), col.asText().equals("id") ? (Class) Long.class : String.class);
             }
             return attr;
         } else {
