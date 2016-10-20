@@ -45,13 +45,13 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
     private final EntityType type;
     private final KeyedObjectMap<Entity> store;
     private final Map<String, EntityIndex> indexes;
-    private final HashCode contentHash;
+    private final String contentHash;
 
     EntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes, HashCode hash) {
         this.type = type;
         store = entities;
         indexes = idxes;
-        contentHash = hash;
+        contentHash = hash.toString();
     }
 
     /**
@@ -146,6 +146,6 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
     @Override
     public void describeTo(DescriptionWriter writer) {
         writer.putField("size", store.size());
-        writer.putField("contentHash", contentHash.toString());
+        writer.putField("contentHash", contentHash);
     }
 }
