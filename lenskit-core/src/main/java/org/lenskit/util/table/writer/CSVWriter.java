@@ -21,7 +21,6 @@
 package org.lenskit.util.table.writer;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
@@ -117,14 +116,13 @@ public class CSVWriter extends AbstractTableWriter {
         Writer writer = LKFileUtils.openOutput(file, Charset.defaultCharset(), compression);
         try {
             return new CSVWriter(writer, layout);
-        } catch (Throwable th) {
+        } catch (IOException ex) {
             try {
                 writer.close();
-            } catch (Throwable ex2) {
-                th.addSuppressed(ex2);
+            } catch (IOException ex2) {
+                ex.addSuppressed(ex2);
             }
-            Throwables.propagateIfInstanceOf(th, IOException.class);
-            throw Throwables.propagate(th);
+            throw ex;
         }
     }
 

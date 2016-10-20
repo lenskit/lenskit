@@ -128,10 +128,13 @@ public final class LKFileUtils {
         try {
             OutputStream wrapped = effComp.wrapOutput(ostream);
             return new OutputStreamWriter(wrapped, charset);
-        } catch (Exception ex) {
-            Closeables.close(ostream, true);
-            Throwables.propagateIfPossible(ex, IOException.class);
-            throw Throwables.propagate(ex);
+        } catch (IOException ex) {
+            try {
+                ostream.close();
+            } catch (IOException ex2) {
+                ex.addSuppressed(ex2);
+            }
+            throw ex;
         }
     }
 
