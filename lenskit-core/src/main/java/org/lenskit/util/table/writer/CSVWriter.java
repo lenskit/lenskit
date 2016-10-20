@@ -117,14 +117,14 @@ public class CSVWriter extends AbstractTableWriter {
         Writer writer = LKFileUtils.openOutput(file, Charset.defaultCharset(), compression);
         try {
             return new CSVWriter(writer, layout);
-        } catch (Exception ex) {
+        } catch (Throwable th) {
             try {
                 writer.close();
             } catch (Throwable ex2) {
-                ex.addSuppressed(ex2);
+                th.addSuppressed(ex2);
             }
-            Throwables.propagateIfInstanceOf(ex, IOException.class);
-            throw Throwables.propagate(ex);
+            Throwables.propagateIfInstanceOf(th, IOException.class);
+            throw Throwables.propagate(th);
         }
     }
 
