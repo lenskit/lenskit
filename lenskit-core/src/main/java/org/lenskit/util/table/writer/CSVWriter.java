@@ -20,25 +20,22 @@
  */
 package org.lenskit.util.table.writer;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.io.Files;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.util.table.TableLayout;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.WillCloseWhenClosed;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.io.Closeables;
-import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
-
-import com.google.common.io.Files;
-import org.lenskit.util.table.TableLayout;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeCsv;
 
@@ -60,6 +57,7 @@ public class CSVWriter extends AbstractTableWriter {
      */
     public CSVWriter(@WillCloseWhenClosed @Nonnull Writer w, @Nullable TableLayout l) throws IOException {
         Preconditions.checkNotNull(w, "writer must not be null");
+
         layout = l;
         if (w instanceof BufferedWriter) {
             writer = (BufferedWriter) w;
@@ -120,7 +118,11 @@ public class CSVWriter extends AbstractTableWriter {
         try {
             return new CSVWriter(writer, layout);
         } catch (Exception ex) {
-            Closeables.close(writer, true);
+            try {
+                writer.close();
+            } catch (Throwable ex2) {
+                ex.addSuppressed(ex2);
+            }
             Throwables.propagateIfInstanceOf(ex, IOException.class);
             throw Throwables.propagate(ex);
         }
