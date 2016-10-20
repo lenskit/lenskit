@@ -131,7 +131,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
                 sum += r.getValue();
                 n += 1;
             }
-            final double mean = sum / n;
+            final double mean = n > 0 ? sum / n : 0;
             logger.debug("mean rating is {}", mean);
 
             // TODO Use vectorz vectors instead of raw arrays

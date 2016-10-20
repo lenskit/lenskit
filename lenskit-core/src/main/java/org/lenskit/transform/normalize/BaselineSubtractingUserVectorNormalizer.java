@@ -44,10 +44,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Shareable
-public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {
-    private static final long serialVersionUID = 3L;
-
+public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer {
     protected final ItemScorer baselineScorer;
 
     /**

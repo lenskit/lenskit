@@ -133,7 +133,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                 }
             }
 
-            if (count >= minNeighborCount) {
+            if (count >= minNeighborCount && weight > 0) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Total neighbor weight for item {} is {} from {} neighbors",
                                  item, weight, count);

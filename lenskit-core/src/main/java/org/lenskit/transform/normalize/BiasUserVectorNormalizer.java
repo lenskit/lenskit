@@ -99,7 +99,6 @@ public class BiasUserVectorNormalizer extends AbstractUserVectorNormalizer {
             return Vectors.combine(input, biases, 1.0, userBias);
         }
 
-        @Nullable
         @Override
         public Long2DoubleMap apply(Long2DoubleMap input) {
             Long2DoubleMap biases = model.getItemBiases(input.keySet());

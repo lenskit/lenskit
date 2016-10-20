@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -57,7 +58,7 @@ public class CSVWriter extends AbstractTableWriter {
      * @param l The table layout, or {@code null} if the table has no headers.
      * @throws IOException if there is an error writing the column headers.
      */
-    public CSVWriter(@Nonnull Writer w, @Nullable TableLayout l) throws IOException {
+    public CSVWriter(@WillCloseWhenClosed @Nonnull Writer w, @Nullable TableLayout l) throws IOException {
         Preconditions.checkNotNull(w, "writer must not be null");
         layout = l;
         if (w instanceof BufferedWriter) {

@@ -109,27 +109,28 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
             if (damping > 0) {
                 double sum = 0;
 
-                ObjectStream<Rating> ratings = dao.streamEvents(Rating.class);
                 int numRatings = 0;
-                for (Rating r : ratings) {
-                    if (r.hasValue()) {
+
+                try (ObjectStream<Rating> ratings = dao.streamEvents(Rating.class)) {
+                    for (Rating r : ratings) {
                         sum += r.getValue();
                         numRatings++;
                     }
                 }
-                ratings.close();
+
+                assert numRatings > 0;
+
                 final double mean = sum / numRatings;
 
-                ratings = dao.streamEvents(Rating.class);
-                sum = 0;
+                try (ObjectStream<Rating> ratings = dao.streamEvents(Rating.class)) {
+                    sum = 0;
 
-                for (Rating r : ratings) {
-                    if (r.hasValue()) {
+                    for (Rating r : ratings) {
                         double delta = mean - r.getValue();
                         sum += delta * delta;
                     }
                 }
-                ratings.close();
+
                 variance = sum / numRatings;
             }
 

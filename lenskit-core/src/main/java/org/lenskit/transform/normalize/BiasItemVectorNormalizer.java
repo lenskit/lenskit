@@ -20,6 +20,7 @@
  */
 package org.lenskit.transform.normalize;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -99,9 +100,8 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
             return Vectors.combine(input, biases, 1.0, itemBias);
         }
 
-        @Nullable
         @Override
-        public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
+        public Long2DoubleMap apply(Long2DoubleMap input) {
             Long2DoubleMap biases = model.getUserBiases(input.keySet());
             return Vectors.combine(input, biases, -1.0, -itemBias);
         }
