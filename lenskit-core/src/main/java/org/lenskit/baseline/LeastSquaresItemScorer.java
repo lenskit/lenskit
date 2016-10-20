@@ -131,6 +131,9 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
                 sum += r.getValue();
                 n += 1;
             }
+            if (n == 0) {
+                throw new IllegalArgumentException("cannot build least-squares scorer without ratings");
+            }
             final double mean = sum / n;
             logger.debug("mean rating is {}", mean);
 
