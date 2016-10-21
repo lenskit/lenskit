@@ -102,7 +102,7 @@ test {
         enabled = false
     }
     onlyIf {
-        travis.branch != 'coverity_scan'
+        travis.branch != 'coverity_scan' && (project.findProperty('tests.slow.skip') ?: 'false') != 'true'
     }
 }
 

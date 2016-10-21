@@ -89,6 +89,8 @@ sonarqube {
         property "sonar.sourceEncoding", "UTF-8"
         if (System.getenv("SONAR_TOKEN")) {
             property "sonar.login", System.getenv("SONAR_TOKEN")
+        } else if (project.hasProperty('sonar.login')) {
+            property "sonar.login", project.getProperty('sonar.login')
         }
         if (lintMode == 'preview') {
             logger.info 'configuring Sonar for preview mode'

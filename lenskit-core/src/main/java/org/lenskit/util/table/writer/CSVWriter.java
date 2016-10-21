@@ -21,6 +21,7 @@
 package org.lenskit.util.table.writer;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
@@ -55,7 +56,9 @@ public class CSVWriter extends AbstractTableWriter {
      * @throws IOException if there is an error writing the column headers.
      */
     public CSVWriter(@WillCloseWhenClosed @Nonnull Writer w, @Nullable TableLayout l) throws IOException {
-        Preconditions.checkNotNull(w, "writer must not be null");
+        if (w == null) {
+            throw new NullPointerException("writer must not be null");
+        }
 
         layout = l;
         if (w instanceof BufferedWriter) {
@@ -116,13 +119,14 @@ public class CSVWriter extends AbstractTableWriter {
         Writer writer = LKFileUtils.openOutput(file, Charset.defaultCharset(), compression);
         try {
             return new CSVWriter(writer, layout);
-        } catch (IOException ex) {
+        } catch (Throwable th) {
             try {
                 writer.close();
-            } catch (IOException ex2) {
-                ex.addSuppressed(ex2);
+            } catch (Throwable th2) {
+                th.addSuppressed(th2);
             }
-            throw ex;
+            Throwables.propagateIfInstanceOf(th, IOException.class);
+            throw Throwables.propagate(th);
         }
     }
 
