@@ -106,7 +106,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
         logger.debug("Predicting for {} items for user {} with {} events",
                      items.size(), user, history.size());
 
-        LongSortedSet itemSet = LongUtils.frozenSet(items);
+        LongSortedSet itemSet = LongUtils.packedSet(items);
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
                 findNeighbors(user, itemSet);
         Long2ObjectMap<SparseVector> normedUsers =
