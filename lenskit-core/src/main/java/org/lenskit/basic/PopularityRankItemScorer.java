@@ -43,7 +43,7 @@ public class PopularityRankItemScorer extends AbstractItemScorer {
     private final Long2IntMap ranks;
 
     @Inject
-    PopularityRankItemScorer(RatingSummary rs) {
+    public PopularityRankItemScorer(RatingSummary rs) {
         summary = rs;
         long[] items = rs.getItems().toLongArray();
         LongArrays.quickSort(items, new AbstractLongComparator() {
