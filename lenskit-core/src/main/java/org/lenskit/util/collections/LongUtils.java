@@ -62,15 +62,14 @@ public final class LongUtils {
      * Create a frozen long set.  If the underlying collection is already an immutable sorted set (specifically, a
      * {@link LongSortedArraySet}, it is used as-is. Otherwise, it is copied into a sorted array set.
      *
+     * This is equivalent to {@link #packedSet(Collection)}.
+     *
      * @param longs The collection.
      * @return The sorted array set.
+     * @see #packedSet(Collection)
      */
     public static LongSortedSet frozenSet(Collection<Long> longs) {
-        if (longs instanceof LongSortedArraySet) {
-            return (LongSortedSet) longs;
-        } else {
-            return packedSet(longs);
-        }
+        return packedSet(longs);
     }
 
     /**
@@ -79,7 +78,11 @@ public final class LongUtils {
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(Collection<Long> longs) {
-        return SortedKeyIndex.fromCollection(longs).keySet();
+        if (longs instanceof LongSortedArraySet) {
+            return (LongSortedSet) longs;
+        } else {
+            return SortedKeyIndex.fromCollection(longs).keySet();
+        }
     }
 
     /**

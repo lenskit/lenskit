@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
 import org.lenskit.util.keys.SortedKeyIndex;
 
+import java.util.Collections;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.lenskit.util.collections.LongUtils.*;
@@ -253,5 +255,12 @@ public class LongUtilsTest {
                                    packedSet(2L, 3L, 4L, 5L, 6L),
                                    3),
                    equalTo(false));
+    }
+
+    @Test
+    public void testFrozenMap() {
+        assertThat(frozenMap(Collections.<Long, Double>emptyMap()).size(), equalTo(0));
+        assertThat(frozenMap(Collections.singletonMap(42L, 3.9)),
+                   hasEntry(42L, 3.9));
     }
 }
