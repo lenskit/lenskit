@@ -30,6 +30,7 @@ import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +39,9 @@ import java.util.List;
  * Item scorer scores items based on their popularity rank.  1 is the most popular item, and 0 is an unknown item.
  */
 @Shareable
-public class PopularityRankItemScorer extends AbstractItemScorer {
+public class PopularityRankItemScorer extends AbstractItemScorer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final RatingSummary summary;
     private final Long2IntMap ranks;
 
