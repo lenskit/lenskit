@@ -52,7 +52,7 @@ class RecommendEvalTaskConfig extends EvalTaskConfig {
 
     @Override
     Map getJson() {
-        return super.getJson() + [listSize: listSize,
+        return super.getJson() + [list_size: listSize,
                                   candidates: candidates,
                                   exclude: exclude,
                                   label_prefix: labelPrefix]
