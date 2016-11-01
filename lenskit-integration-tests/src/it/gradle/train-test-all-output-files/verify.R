@@ -1,0 +1,5 @@
+message("reading recommendations")
+recs = read.csv(gzfile("recommendations.csv.gz"))
+message("read ", nrow(recs), " recommendations")
+recs.agg = aggregate(Item ~ Algorithm + Partition + User, recs, length)
+stopifnot(all(recs.agg$Item <= 10))
