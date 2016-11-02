@@ -41,6 +41,7 @@ import org.lenskit.inject.NodeProcessors;
 import org.lenskit.inject.RecommenderInstantiator;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.UncheckedInterruptException;
+import org.lenskit.util.monitor.StatusTracker;
 import org.lenskit.util.table.RowBuilder;
 import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
@@ -70,19 +71,22 @@ class ExperimentJob extends RecursiveAction {
     @Nullable
     private final ComponentCache cache;
     private final MergePool<Component, Dependency> mergePool;
+    private final StatusTracker tracker;
 
     ExperimentJob(TrainTestExperiment exp,
                   @Nonnull AlgorithmInstance algo,
                   @Nonnull DataSet ds,
                   LenskitConfiguration shared,
                   @Nullable ComponentCache cache,
-                  @Nullable MergePool<Component, Dependency> pool) {
+                  @Nullable MergePool<Component, Dependency> pool,
+                  StatusTracker st) {
         experiment = exp;
         algorithm = algo;
         dataSet = ds;
         sharedConfig = shared;
         this.cache = cache;
         mergePool = pool;
+        tracker = st;
     }
 
     @Override
@@ -187,14 +191,17 @@ class ExperimentJob extends RecursiveAction {
             throw ex;
         } catch (Throwable th) {
             logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
+            tracker.reportFailure(this, th);
             throw th;
         }
 
         try {
             globalOutput.writeRow(outputRow.buildList());
         } catch (IOException e) {
+            tracker.reportFailure(this, e);
             throw new EvaluationException("error writing output row", e);
         }
+        tracker.reportSuccess(this);
     }
 
     private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {

@@ -38,6 +38,7 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
+import org.lenskit.util.monitor.StatusTracker;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
@@ -451,11 +452,11 @@ public class TrainTestExperiment {
 
     /**
      * Create the tree of jobs to run in this experiment.
-     * @return The job tree, as a root fork-join task.
      */
     @Nonnull
     private void buildJobGraph() {
         allJobs = new ArrayList<>();
+        StatusTracker status = new StatusTracker(logger);
         ComponentCache cache = null;
         if (shareModelComponents) {
             cache = new ComponentCache(cacheDir, classLoader);
@@ -484,7 +485,8 @@ public class TrainTestExperiment {
                 pool = MergePool.create();
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
-                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool);
+                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, status);
+                status.addJob(job);
                 allJobs.add(job);
                 group.addTask(job);
             }
