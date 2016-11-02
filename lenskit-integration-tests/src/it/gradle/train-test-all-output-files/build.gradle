@@ -96,3 +96,5 @@ task check(overwrite: true, type: JavaExec) {
     main 'groovy.ui.GroovyMain'
     args 'verify.groovy'
 }
+
+apply from: 'renjin.gradle'
