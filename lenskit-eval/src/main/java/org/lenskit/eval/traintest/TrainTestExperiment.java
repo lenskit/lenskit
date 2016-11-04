@@ -38,7 +38,7 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
-import org.lenskit.util.monitor.StatusTracker;
+import org.lenskit.util.monitor.TrackedJob;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;
@@ -77,6 +77,12 @@ import java.util.concurrent.ForkJoinPool;
  */
 public class TrainTestExperiment {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestExperiment.class);
+    /**
+     * The job type code for train-test experiments
+     * @see TrackedJob#getType()
+     */
+    public static final String JOB_TYPE = "train-test";
+
     private Path outputFile;
     private Path userOutputFile;
     private Path cacheDir;
@@ -456,7 +462,8 @@ public class TrainTestExperiment {
     @Nonnull
     private void buildJobGraph() {
         allJobs = new ArrayList<>();
-        StatusTracker status = new StatusTracker(logger);
+        TrackedJob tracker = new TrackedJob(JOB_TYPE);
+        tracker.getEventBus().register(new StatusLogger(logger));
         ComponentCache cache = null;
         if (shareModelComponents) {
             cache = new ComponentCache(cacheDir, classLoader);
@@ -485,8 +492,8 @@ public class TrainTestExperiment {
                 pool = MergePool.create();
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
-                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, status);
-                status.addJob(job);
+                TrackedJob j = tracker.makeChild(ExperimentJob.JOB_TYPE, "evaluate " + ai + " on " + ds);
+                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j);
                 allJobs.add(job);
                 group.addTask(job);
             }
