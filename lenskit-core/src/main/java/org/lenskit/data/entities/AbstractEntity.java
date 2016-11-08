@@ -200,8 +200,10 @@ public abstract class AbstractEntity implements Entity, Describable {
     public int hashCode() {
         HashCodeBuilder hcb = new HashCodeBuilder();
         hcb.append(getType())
-           .append(getId())
-           .append(asMap());
+           .append(getId());
+        for (Attribute<?> av: getAttributes()) {
+            hcb.append(av.getName()).append(av.getValue());
+        }
         return hcb.toHashCode();
     }
 
