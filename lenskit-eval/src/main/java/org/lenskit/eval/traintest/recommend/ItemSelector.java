@@ -162,6 +162,10 @@ public abstract class ItemSelector {
         public LongSet getUnseenItems(TestUser user){
             return LongUtils.setDifference(allItems, user.getSeenItems());
         }
+
+        public LongSet randomUnseen(TestUser user, int n) {
+            return allItems.randomSubset(random, n, user.getSeenItems());
+        }
     }
 
     /**
