@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.entities.*;
 
@@ -211,6 +212,19 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     public void clearColumns() {
         columns = null;
         labeledColumns = null;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("delim", delimiter)
+                .append("header", headerLines)
+                .append("readHeader", readHeader)
+                .append("entityType", entityType)
+                .append("entityBuilder", entityBuilder)
+                .append("entityBuilderCtor", entityBuilderCtor)
+                .append("columns", columns != null ? columns.size() : labeledColumns.size())
+                .toString();
     }
 
     @Override
