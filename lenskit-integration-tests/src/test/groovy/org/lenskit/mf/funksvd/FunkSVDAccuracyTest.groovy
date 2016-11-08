@@ -24,6 +24,7 @@ import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
+import org.lenskit.bias.BiasDamping
 import org.lenskit.bias.BiasModel
 import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.config.ConfigHelpers
@@ -44,7 +45,7 @@ public class FunkSVDAccuracyTest extends CrossfoldTestSuite {
         ConfigHelpers.configure(config) {
             bind ItemScorer to FunkSVDItemScorer
             bind BiasModel to UserItemBiasModel
-            // TODO Re-add damping
+            set BiasDamping to 10
             set FeatureCount to 25
             set IterationCount to 125
         }
