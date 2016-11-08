@@ -77,9 +77,9 @@ public final class LongUtils {
      * @param longs A collection of longs.
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
-    public static LongSortedSet packedSet(Collection<Long> longs) {
+    public static LongSortedArraySet packedSet(Collection<Long> longs) {
         if (longs instanceof LongSortedArraySet) {
-            return (LongSortedSet) longs;
+            return (LongSortedArraySet) longs;
         } else {
             return SortedKeyIndex.fromCollection(longs).keySet();
         }

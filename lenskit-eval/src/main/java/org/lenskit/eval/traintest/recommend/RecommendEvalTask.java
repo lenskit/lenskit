@@ -40,6 +40,7 @@ import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongSortedArraySet;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -314,7 +315,7 @@ public class RecommendEvalTask implements EvalTask {
     public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
         Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
         TableWriter recTable = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
-        LongSet items = dataSet.getAllItems();
+        LongSortedArraySet items = LongUtils.packedSet(dataSet.getAllItems());
         ItemRecommender irec = rec.getItemRecommender();
         if (irec == null) {
             logger.warn("algorithm {} has no item recommender", algorithm);
@@ -377,11 +378,11 @@ public class RecommendEvalTask implements EvalTask {
         private final Recommender recommender;
         private final ItemRecommender itemRecommender;
         private final List<MetricContext<?>> predictMetricContexts;
-        private final LongSet allItems;
+        private final LongSortedArraySet allItems;
         private final boolean useDetails;
 
         public TopNConditionEvaluator(TableWriter tw, Recommender rec, ItemRecommender irec,
-                                      List<MetricContext<?>> mcs, LongSet items, boolean details) {
+                                      List<MetricContext<?>> mcs, LongSortedArraySet items, boolean details) {
             writer = tw;
             recommender = rec;
             itemRecommender = irec;
