@@ -20,15 +20,14 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.lenskit.inject.Shareable;
-import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.bias.BiasModel;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.RatingMatrix;
+import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -45,7 +44,7 @@ public final class FunkSVDUpdateRule implements Serializable {
 
     private final double learningRate;
     private final double trainingRegularization;
-    private final ItemScorer baseline;
+    private final BiasModel biasModel;
     private final StoppingCondition stoppingCondition;
     @Nullable
     private final PreferenceDomain domain;
@@ -60,12 +59,12 @@ public final class FunkSVDUpdateRule implements Serializable {
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
-                             @BaselineScorer ItemScorer bl,
+                             BiasModel bias,
                              @Nullable PreferenceDomain dom,
                              StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
-        baseline = bl;
+        biasModel = bias;
         domain = dom;
         stoppingCondition = stop;
     }
@@ -76,7 +75,7 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @return The estimator to use.
      */
     public TrainingEstimator makeEstimator(RatingMatrix snapshot) {
-        return new TrainingEstimator(snapshot, baseline, domain);
+        return new TrainingEstimator(snapshot, biasModel, domain);
     }
 
     public double getLearningRate() {

@@ -20,12 +20,11 @@
  */
 package org.lenskit.mf.funksvd;
 
+import org.lenskit.bias.BiasModel;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.mf.svd.BiasedMFItemScorer;
 import org.lenskit.mf.svd.DomainClampingKernel;
 import org.lenskit.mf.svd.DotProductKernel;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.baseline.BaselineScorer;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -45,7 +44,7 @@ public class FunkSVDItemScorer extends BiasedMFItemScorer {
      * @param dom      The preference domain.
      */
     @Inject
-    public FunkSVDItemScorer(FunkSVDModel model, @BaselineScorer ItemScorer baseline,
+    public FunkSVDItemScorer(FunkSVDModel model, BiasModel baseline,
                              @Nullable PreferenceDomain dom) {
         super(model,
               dom == null ? new DotProductKernel() : new DomainClampingKernel(dom),

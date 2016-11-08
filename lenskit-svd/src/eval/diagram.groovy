@@ -20,9 +20,10 @@
  */
 
 
-import org.lenskit.api.ItemScorer
-import org.lenskit.baseline.*
 import org.grouplens.lenskit.iterative.IterationCount
+import org.lenskit.api.ItemScorer
+import org.lenskit.bias.BiasModel
+import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.mf.funksvd.FeatureCount
 import org.lenskit.mf.funksvd.FunkSVDItemScorer
 
@@ -30,8 +31,7 @@ dumpGraph {
     output "${config.analysisDir}/funksvd.dot"
     algorithm {
         bind ItemScorer to FunkSVDItemScorer
-        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+        bind BiasModel to UserItemBiasModel
         set IterationCount to 125
         set FeatureCount to 25
     }

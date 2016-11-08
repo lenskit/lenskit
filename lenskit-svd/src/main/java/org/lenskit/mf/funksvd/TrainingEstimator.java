@@ -20,16 +20,13 @@
  */
 package org.lenskit.mf.funksvd;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.bias.BiasModel;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.api.ItemScorer;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;
-import org.lenskit.util.collections.LongUtils;
 
 import java.util.List;
 
@@ -47,26 +44,23 @@ public final class TrainingEstimator {
 
     /**
      * Initialize the training estimator.
-     *
-     * @param snap     The getEntry snapshot.
+     *  @param snap     The getEntry snapshot.
      * @param baseline The baseline predictor.
      * @param dom      The getEntry domain (for clamping).
      */
-    TrainingEstimator(RatingMatrix snap, ItemScorer baseline, PreferenceDomain dom) {
+    TrainingEstimator(RatingMatrix snap, BiasModel baseline, PreferenceDomain dom) {
         ratings = snap.getRatings();
         domain = dom;
         estimates = new double[ratings.size()];
 
         final LongCollection userIds = snap.getUserIds();
         LongIterator userIter = userIds.iterator();
-        while (userIter.hasNext()) {
-            long uid = userIter.nextLong();
-            Long2DoubleMap rvector = snap.getUserRatingVector(uid);
-            Long2DoubleFunction blpreds = LongUtils.asLong2DoubleFunction(baseline.score(uid, rvector.keySet()));
+        double global = baseline.getIntercept();
 
-            for (RatingMatrixEntry r : snap.getUserRatings(uid)) {
-                estimates[r.getIndex()] = blpreds.get(r.getItemId());
-            }
+        for (RatingMatrixEntry r: snap.getRatings()) {
+            double userBias = baseline.getUserBias(r.getUserId());
+            double itemBias = baseline.getItemBias(r.getItemId());
+            estimates[r.getIndex()] = global + userBias + itemBias;
         }
     }
 

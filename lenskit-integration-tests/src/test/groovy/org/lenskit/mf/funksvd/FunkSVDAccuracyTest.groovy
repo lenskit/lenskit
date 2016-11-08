@@ -18,22 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.funksvd;
+package org.lenskit.mf.funksvd
 
-import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.iterative.IterationCount;
+import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.CrossfoldTestSuite
-import org.lenskit.config.ConfigHelpers;
-import org.lenskit.util.table.Table
+import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
-import org.lenskit.baseline.BaselineScorer
-import org.lenskit.baseline.ItemMeanRatingItemScorer
-import org.lenskit.baseline.MeanDamping
-import org.lenskit.baseline.UserMeanBaseline
-import org.lenskit.baseline.UserMeanItemScorer;
+import org.lenskit.bias.BiasModel
+import org.lenskit.bias.UserItemBiasModel
+import org.lenskit.config.ConfigHelpers
+import org.lenskit.util.table.Table
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.closeTo
+import static org.junit.Assert.assertThat
 
 /**
  * Do major tests on the FunkSVD recommender.
@@ -46,11 +43,8 @@ public class FunkSVDAccuracyTest extends CrossfoldTestSuite {
     protected void configureAlgorithm(LenskitConfiguration config) {
         ConfigHelpers.configure(config) {
             bind ItemScorer to FunkSVDItemScorer
-            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
-            within (BaselineScorer, ItemScorer) {
-                set MeanDamping to 10
-            }
+            bind BiasModel to UserItemBiasModel
+            // TODO Re-add damping
             set FeatureCount to 25
             set IterationCount to 125
         }
