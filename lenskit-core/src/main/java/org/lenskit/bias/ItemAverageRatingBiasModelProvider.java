@@ -53,7 +53,7 @@ public class ItemAverageRatingBiasModelProvider implements Provider<ItemBiasMode
                 long item = iter.nextLong();
                 double off = summary.getItemOffset(item);
                 int count = summary.getItemRatingCount(item);
-                offsets.put(item, count * off + (count + damping));
+                offsets.put(item, count * off / (count + damping));
             }
         } else {
             offsets = summary.getItemOffets();
