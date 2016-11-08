@@ -98,7 +98,7 @@ public abstract class ResultAccumulator {
         private final int size;
 
         public TopN(int n) {
-            results = new PriorityQueue<>(n, Results.scoreOrder());
+            results = new PriorityQueue<>(n + 1, Results.scoreOrder());
             size = n;
         }
 
