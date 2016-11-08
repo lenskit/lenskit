@@ -31,7 +31,7 @@ import java.util.Set;
 @Immutable
 class BareEntity extends AbstractEntity {
     static final Set<String> ATTRIBUTE_NAMES = Collections.singleton("id");
-    static final Set<TypedName<?>> TYPED_ATTRIBUTE_NAMES = Collections.singleton(CommonAttributes.ENTITY_ID);
+    static final Set<TypedName<?>> TYPED_ATTRIBUTE_NAMES = Collections.<TypedName<?>>singleton(CommonAttributes.ENTITY_ID);
 
     BareEntity(EntityType t, long eid) {
         super(t, eid);

@@ -92,7 +92,7 @@ public class Crossfolder {
     }
 
     public Crossfolder(String n) {
-        name = n != null ? n : "crossfold";
+        name = n;
         rng = new Random();
     }
 
@@ -379,7 +379,7 @@ public class Crossfolder {
             // make the node describing this
             JsonNodeFactory fac = JsonNodeFactory.instance;
             ObjectNode node = fac.objectNode();
-            node.set("name", fac.textNode(name + ".items"));
+            node.set("name", fac.textNode(getName() + ".items"));
             node.set("type", fac.textNode("textfile"));
             node.set("format", fac.textNode("tsv"));
             node.set("file", fac.textNode(ITEM_FILE_NAME));
@@ -452,7 +452,7 @@ public class Crossfolder {
             Path trainFile = trainManifestFiles.get(i);
             ArrayNode trainList = nf.arrayNode();
             ObjectNode train = nf.objectNode();
-            train.set("name", nf.textNode(String.format("%s.%d.train", name, i)));
+            train.set("name", nf.textNode(String.format("%s.%d.train", getName(), i)));
             train.set("type", nf.textNode("textfile"));
             train.set("file", nf.textNode(outputDir.relativize(trainFiles.get(i)).toString()));
             train.set("format", nf.textNode("csv"));
@@ -480,7 +480,7 @@ public class Crossfolder {
 
             logger.debug("writing test manifest {}", i);
             ObjectNode test = nf.objectNode();
-            test.set("name", nf.textNode(String.format("%s.%d.test", name, i)));
+            test.set("name", nf.textNode(String.format("%s.%d.test", getName(), i)));
             test.set("type", nf.textNode("textfile"));
             test.set("file", nf.textNode(outputDir.relativize(testFiles.get(i)).toString()));
             test.set("format", nf.textNode("csv"));

@@ -127,17 +127,28 @@ public final class LongUtils {
     }
 
     /**
+     * Wrap or cast a long-to-double map into Fastutil.
+     * @param map The map.
+     * @return A function backed by {@code map}, or {@code map} if it is a Fastutil map.
+     */
+    public static Long2DoubleMap asLong2DoubleMap(final Map<Long,Double> map) {
+        if (map instanceof Long2DoubleMap) {
+            return (Long2DoubleMap) map;
+        } else {
+            return new Long2DoubleMapWrapper(map);
+        }
+    }
+
+    /**
      * Create a long-to-double function from a map, casting if appropriate. Useful to allow unboxed access to maps that
      * are really fastutil maps.
      * @param map The map.
      * @return A function backed by {@code map}, or {@code map} if it is a Fastutil map.
+     * @deprecated see {@link #asLong2DoubleMap(Map)}
      */
-    public static Long2DoubleFunction asLong2DoubleFunction(final Map<Long,Double> map) {
-        if (map instanceof Long2DoubleFunction) {
-            return (Long2DoubleFunction) map;
-        } else {
-            return new Long2DoubleFunctionWrapper(map);
-        }
+    @Deprecated
+    public static Long2DoubleMap asLong2DoubleFunction(final Map<Long,Double> map) {
+        return asLong2DoubleMap(map);
     }
 
     public static LongList asLongList(List<Long> longs) {

@@ -232,7 +232,6 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
             long key = iter.nextLong();
             while (keys.getKey(i) < key) {
                 i++;
-                assert i <= keys.getUpperBound();
             }
             nvs[j] = values[i];
             j++;

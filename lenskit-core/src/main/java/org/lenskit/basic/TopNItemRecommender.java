@@ -21,7 +21,9 @@
 package org.lenskit.basic;
 
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
@@ -91,13 +93,12 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             accum = new UnlimitedScoredIdAccumulator();
         }
 
-        Long2DoubleFunction map = LongUtils.asLong2DoubleFunction(scores);
+        Long2DoubleMap map = LongUtils.asLong2DoubleMap(scores);
 
-        LongIterator iter = LongIterators.asLongIterator(scores.keySet().iterator());
-        while (iter.hasNext()) {
-            long item = iter.nextLong();
-            accum.put(item, map.get(item));
+        for (Long2DoubleMap.Entry e: map.long2DoubleEntrySet()) {
+            accum.put(e.getLongKey(), e.getDoubleValue());
         }
+
         return accum.finishList();
     }
 
