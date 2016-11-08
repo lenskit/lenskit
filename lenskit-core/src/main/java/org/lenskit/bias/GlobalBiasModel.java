@@ -72,4 +72,14 @@ public class GlobalBiasModel implements BiasModel, Serializable {
     public Long2DoubleMap getItemBiases(LongSet items) {
         return Long2DoubleMaps.EMPTY_MAP;
     }
+
+    @Override
+    public Long2DoubleMap getUserBiases() {
+        return Long2DoubleMaps.EMPTY_MAP;
+    }
+
+    @Override
+    public Long2DoubleMap getItemBiases() {
+        return Long2DoubleMaps.EMPTY_MAP;
+    }
 }

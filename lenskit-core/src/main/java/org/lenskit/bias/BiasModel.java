@@ -49,6 +49,12 @@ public interface BiasModel {
     Long2DoubleMap getUserBiases(LongSet users);
 
     /**
+     * Get the map of all known user biases.
+     * @return The set of all user biases.
+     */
+    Long2DoubleMap getUserBiases();
+
+    /**
      * Get the item bias.
      * @param item The item ID.
      * @return The bias for the specified ite, or 0 if the item's bias is unknown.
@@ -62,4 +68,10 @@ public interface BiasModel {
      * {@link Long2DoubleMap#defaultReturnValue()} will be 0.
      */
     Long2DoubleMap getItemBiases(LongSet items);
+
+    /**
+     * Get the map of all known item biases.
+     * @return The set of all item biases.
+     */
+    Long2DoubleMap getItemBiases();
 }

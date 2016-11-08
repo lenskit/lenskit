@@ -20,6 +20,9 @@
  */
 package org.lenskit.bias;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.lenskit.data.ratings.RatingSummary;
 
 import javax.inject.Inject;
@@ -31,14 +34,31 @@ import javax.inject.Provider;
  */
 public class ItemAverageRatingBiasModelProvider implements Provider<ItemBiasModel> {
     private final RatingSummary summary;
+    private final double damping;
 
     @Inject
-    public ItemAverageRatingBiasModelProvider(RatingSummary rs) {
+    public ItemAverageRatingBiasModelProvider(RatingSummary rs, @BiasDamping double damp) {
         summary = rs;
+        damping = damp;
     }
 
     @Override
     public ItemBiasModel get() {
-        return new ItemBiasModel(summary.getGlobalMean(), summary.getItemOffets());
+        Long2DoubleMap offsets;
+
+        if (damping > 0) {
+            offsets = new Long2DoubleOpenHashMap();
+            LongIterator iter = summary.getItems().iterator();
+            while (iter.hasNext()) {
+                long item = iter.nextLong();
+                double off = summary.getItemOffset(item);
+                int count = summary.getItemRatingCount(item);
+                offsets.put(item, count * off + (count + damping));
+            }
+        } else {
+            offsets = summary.getItemOffets();
+        }
+
+        return new ItemBiasModel(summary.getGlobalMean(), offsets);
     }
 }
