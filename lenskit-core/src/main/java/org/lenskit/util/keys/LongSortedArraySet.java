@@ -20,13 +20,17 @@
  */
 package org.lenskit.util.keys;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.*;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
 /**
  * A sorted set of longs implemented using a sorted array.  It's much faster
@@ -147,5 +151,67 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
     @Override
     public boolean contains(long key) {
         return keys.containsKey(key);
+    }
+
+    /**
+     * Compute a random subset of this set.
+     * @param n The desired set size.
+     * @param exclude One or more sets of items to exclude.
+     * @return A random subset of this set, excluding any items in {@code exclude}.
+     */
+    public LongSortedSet randomSubset(Random rng, int n, LongSet... exclude) {
+        int nexcl = 0;
+        for (LongSet xs: exclude) {
+            nexcl += xs.size();
+        }
+
+        LongSet mergedExclude = null;
+
+        if (n + nexcl >= size()) {
+            // be careful
+            mergedExclude = new LongOpenHashSet();
+            for (LongSet xs: exclude) {
+                mergedExclude.addAll(xs);
+            }
+            nexcl = mergedExclude.size();
+        }
+        if (n + nexcl >= size()) {
+            assert mergedExclude != null;
+            return LongUtils.setDifference(this, mergedExclude);
+        }
+
+        // now we make the keys
+        // we do a selection thing
+        final int size = size();
+        long[] picked = new long[n];
+        // when we insert a key, we'll virtually move the current key to its place.
+        // this map will hold the translations
+        Int2IntMap remap = new Int2IntOpenHashMap();
+        remap.defaultReturnValue(-1);
+        for (int i = 0; i < n; i++) {
+            boolean good = false;
+            while (!good) {
+                int j = i + rng.nextInt(size - i);
+                // now we 'swap' the values - store j in picked, and use remap to pretend
+                // the current key has been moved to j
+                int nj = remap.get(j);
+                long k = keys.getKey(nj >= 0 ? nj : j);
+                if (mergedExclude != null) {
+                    good = !mergedExclude.contains(k);
+                } else {
+                    good = true;
+                    for (LongSet xs: exclude) {
+                        good &= !xs.contains(k);
+                    }
+                }
+                if (good) {
+                    picked[i] = k;
+                    int ni = remap.get(i);
+                    remap.put(j, ni >= 0 ? ni : i);
+                }
+            }
+        }
+
+        return SortedKeyIndex.create(picked).keySet();
     }
 }

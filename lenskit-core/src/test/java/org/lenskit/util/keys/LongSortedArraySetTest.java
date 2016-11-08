@@ -20,17 +20,14 @@
  */
 package org.lenskit.util.keys;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
-import it.unimi.dsi.fastutil.longs.LongIterators;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.Collections;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -185,6 +182,104 @@ public class LongSortedArraySetTest {
             fail("previousLong should fail");
         } catch (NoSuchElementException e) {
             /* expected */
+        }
+    }
+
+    @Test
+    public void testRandomSubsetEmpty() {
+        LongSortedArraySet empty = LongUtils.packedSet();
+        LongSortedSet sample = empty.randomSubset(new Random(), 10);
+        assertThat(sample, hasSize(0));
+    }
+
+    @Test
+    public void testRandomSubsetPickOnly() {
+        LongSortedArraySet singleton = LongUtils.packedSet(42);
+        LongSortedSet sample = singleton.randomSubset(new Random(), 1);
+        assertThat(sample, contains(42L));
+        sample = singleton.randomSubset(new Random(), 10);
+        assertThat(sample, contains(42L));
+    }
+
+    @Test
+    public void testRandomSubsetPickNone() {
+        LongSortedArraySet singleton = LongUtils.packedSet(42);
+        LongSortedSet sample = singleton.randomSubset(new Random(), 0);
+        assertThat(sample, hasSize(0));
+    }
+
+    @Test
+    public void testRandomSubsetPick() {
+        LongSortedArraySet singleton = LongUtils.packedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        Random rng = new Random();
+        for (int i = 0; i < 50; i++) {
+            LongSortedSet sample = singleton.randomSubset(rng, 5);
+            assertThat(sample, hasSize(5));
+            assertThat(sample, everyItem(allOf(greaterThan(0L), lessThan(11L))));
+        }
+    }
+
+    @Test
+    public void testRandomSubsetPickExclude() {
+        LongSortedArraySet singleton = LongUtils.packedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        Random rng = new Random();
+        for (int i = 0; i < 50; i++) {
+            LongSortedSet sample = singleton.randomSubset(rng, 5, LongSets.singleton(7L));
+            assertThat(sample, hasSize(5));
+            assertThat(sample, everyItem(allOf(greaterThan(0L), lessThan(11L))));
+            assertThat(sample, not(hasItem(7L)));
+        }
+    }
+
+    @Test
+    public void testRandomSubsetPickAll() {
+        LongSortedArraySet singleton = LongUtils.packedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        Random rng = new Random();
+        for (int i = 0; i < 50; i++) {
+            LongSortedSet sample = singleton.randomSubset(rng, 5, LongUtils.packedSet(1L, 3L, 5L, 7L, 9L));
+            assertThat(sample, hasSize(5));
+            assertThat(sample, containsInAnyOrder(2L, 4L, 6L, 8L, 10L));
+        }
+    }
+
+    @Test
+    public void testRandomSubsetPickAllMultiExclude() {
+        LongSortedArraySet singleton = LongUtils.packedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        for (int i = 0; i < 50; i++) {
+            LongSortedSet sample = singleton.randomSubset(new Random(), 5,
+                                                          LongUtils.packedSet(1L, 3L, 5L),
+                                                          LongUtils.packedSet(3L, 7L, 9L));
+            assertThat(sample, hasSize(5));
+            assertThat(sample, containsInAnyOrder(2L, 4L, 6L, 8L, 10L));
+        }
+    }
+
+    @Test
+    public void testRandomSubsetPickMultiExclude() {
+        LongSortedArraySet singleton = LongUtils.packedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        for (int i = 0; i < 50; i++) {
+            LongSortedSet sample = singleton.randomSubset(new Random(), 5,
+                                                          LongUtils.packedSet(1L),
+                                                          LongUtils.packedSet(3L));
+            assertThat(sample, hasSize(5));
+            assertThat(sample, everyItem(allOf(greaterThan(0L), lessThan(11L))));
+            assertThat(sample, not(anyOf(hasItem(1L), hasItem(3L))));
+        }
+    }
+
+    @Test
+    public void testRandomSubsetPickLimitMultiExclude() {
+        LongSortedArraySet singleton = LongUtils.packedSet(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        for (int i = 0; i < 50; i++) {
+            LongSortedSet sample = singleton.randomSubset(new Random(), 4,
+                                                          LongUtils.packedSet(1L, 3L, 5L),
+                                                          LongUtils.packedSet(3L, 7L, 9L));
+            assertThat(sample, hasSize(4));
+            assertThat(sample, anyOf(containsInAnyOrder(2L, 4L, 6L, 8L),
+                                     containsInAnyOrder(2L, 4L, 6L, 10L),
+                                     containsInAnyOrder(2L, 4L, 8L, 10L),
+                                     containsInAnyOrder(2L, 6L, 8L, 10L),
+                                     containsInAnyOrder(4L, 6L, 8L, 10L)));
         }
     }
 }

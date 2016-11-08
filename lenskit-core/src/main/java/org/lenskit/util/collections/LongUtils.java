@@ -90,7 +90,7 @@ public final class LongUtils {
      * @param longs An array of longs.  This array is copied, not wrapped.
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
-    public static LongSortedSet packedSet(long... longs) {
+    public static LongSortedArraySet packedSet(long... longs) {
         return SortedKeyIndex.create(longs).keySet();
     }
 
