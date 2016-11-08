@@ -97,7 +97,6 @@ public class CSVWriter extends AbstractTableWriter {
             }
         }
         writer.newLine();
-        writer.flush();
     }
 
     @Override
