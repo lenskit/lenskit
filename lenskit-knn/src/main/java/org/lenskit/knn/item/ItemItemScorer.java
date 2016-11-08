@@ -25,14 +25,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.lenskit.transform.normalize.UserVectorNormalizer;
-import org.lenskit.transform.normalize.VectorTransformation;
-import org.lenskit.util.ScoredIdAccumulator;
-import org.lenskit.util.TopNScoredIdAccumulator;
-import org.lenskit.util.UnlimitedScoredIdAccumulator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
@@ -40,6 +32,11 @@ import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.knn.item.model.ItemItemModel;
 import org.lenskit.results.Results;
+import org.lenskit.transform.normalize.UserVectorNormalizer;
+import org.lenskit.util.InvertibleFunction;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,12 +130,9 @@ public class ItemItemScorer extends AbstractItemScorer {
     private void scoreItems(long user, @Nonnull Collection<Long> items, ItemItemScoreAccumulator accum) {
         Long2DoubleMap ratings = rvDAO.userRatingVector(user);
 
-        SparseVector summary = ImmutableSparseVector.create(ratings);
-        logger.trace("user has {} ratings", summary.size());
-        VectorTransformation transform = normalizer.makeTransformation(user, summary);
-        MutableSparseVector normed = summary.mutableCopy();
-        transform.apply(normed);
-        Long2DoubleMap itemScores = normed.asMap();
+        logger.trace("user has {} ratings", ratings.size());
+        InvertibleFunction<Long2DoubleMap, Long2DoubleMap> transform = normalizer.makeTransformation(user, ratings);
+        Long2DoubleMap itemScores = transform.apply(ratings);
 
         LongIterator iter = LongIterators.asLongIterator(items.iterator());
         while (iter.hasNext()) {
@@ -150,29 +144,29 @@ public class ItemItemScorer extends AbstractItemScorer {
     }
 
     protected void scoreItem(Long2DoubleMap userData, long item, ItemItemScoreAccumulator accum) {
-        Long2DoubleMap allNeighbors = model.getNeighbors(item);
-        ScoredIdAccumulator acc;
+        // find the usable neighbors
+        Long2DoubleSortedArrayMap allNeighbors = Long2DoubleSortedArrayMap.create(model.getNeighbors(item));
+        Long2DoubleMap neighborhood = allNeighbors.subMap(userData.keySet());
+
         if (neighborhoodSize > 0) {
-            // FIXME Abstract accumulator selection logic
-            acc = new TopNScoredIdAccumulator(neighborhoodSize);
-        } else {
-            acc = new UnlimitedScoredIdAccumulator();
-        }
-
-        for (Long2DoubleMap.Entry nbr: allNeighbors.long2DoubleEntrySet()) {
-            if (userData.containsKey(nbr.getLongKey())) {
-                acc.put(nbr.getLongKey(), nbr.getDoubleValue());
+            if (logger.isTraceEnabled()) {
+                logger.trace("truncating {} neighbors to {}", neighborhood.size(), neighborhoodSize);
             }
+            ScoredIdAccumulator acc = new TopNScoredIdAccumulator(neighborhoodSize);
+            for (Long2DoubleMap.Entry e: neighborhood.long2DoubleEntrySet()) {
+                acc.put(e.getLongKey(), e.getDoubleValue());
+            }
+            neighborhood = acc.finishMap();
         }
 
-        Long2DoubleMap neighborhood = acc.finishMap();
         assert neighborhoodSize <= 0 || neighborhood.size() <= neighborhoodSize;
         if (neighborhood.size() < minNeighbors) {
             return;
         }
-        logger.trace("scoring item {} with {} of {} neighbors",
-                     item, neighborhood.size(), allNeighbors.size());
+        if (logger.isTraceEnabled()) {
+            logger.trace("scoring item {} with {} of {} neighbors",
+                         item, neighborhood.size(), allNeighbors.size());
+        }
         scorer.score(item, neighborhood, userData, accum);
-        // logger.trace("computed score {}", score);
     }
 }
