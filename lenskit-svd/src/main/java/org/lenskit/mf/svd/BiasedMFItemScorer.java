@@ -20,12 +20,15 @@
  */
 package org.lenskit.mf.svd;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
+import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.results.Results;
