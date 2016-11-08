@@ -185,7 +185,7 @@ public abstract class ItemSelector {
 
         @SuppressWarnings("unchecked")
         @Override
-        public LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
+        public synchronized LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
             script.setup(universe, recommender, user);
             Set<Long> set = (Set<Long>) script.run();
             return LongUtils.asLongSet(set);
