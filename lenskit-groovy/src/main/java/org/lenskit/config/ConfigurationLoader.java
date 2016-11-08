@@ -90,7 +90,7 @@ public class ConfigurationLoader {
      * @throws RecommenderConfigurationException
      */
     public LenskitConfigScript loadScript(GroovyCodeSource source, URI base) throws RecommenderConfigurationException {
-        logger.info("loading script from {}", source.getName());
+        logger.debug("loading script from {}", source.getName());
         LenskitConfigScript script;
         try {
             script = (LenskitConfigScript) shell.parse(source);
