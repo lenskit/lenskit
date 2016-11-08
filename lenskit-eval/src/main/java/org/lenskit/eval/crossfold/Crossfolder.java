@@ -374,6 +374,8 @@ public class Crossfolder {
                 }
             }
 
+            logger.info("wrote {} item IDs", items.size());
+
             // make the node describing this
             JsonNodeFactory fac = JsonNodeFactory.instance;
             ObjectNode node = fac.objectNode();
