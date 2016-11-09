@@ -47,11 +47,11 @@ import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
 import org.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.lenskit.util.table.writer.TableWriter;
+import org.lenskit.util.table.writer.TableWriters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -342,7 +342,7 @@ public class TrainTestExperiment {
      * Get the per-user output table.
      * @return The per-user output table.
      */
-    @Nullable
+    @Nonnull
     TableWriter getUserOutput() {
         Preconditions.checkState(resultBuilder != null, "Experiment has not been started");
         return userOutput;
@@ -422,9 +422,11 @@ public class TrainTestExperiment {
             globalOutput = resultBuilder;
         }
 
+        TableLayout ul = makeUserResultLayout(eol);
         if (userOutputFile != null) {
-            TableLayout ul = makeUserResultLayout(eol);
             userOutput = resultCloser.register(CSVWriter.open(userOutputFile.toFile(), ul, CompressionMode.AUTO));
+        } else {
+            userOutput = TableWriters.noop(ul);
         }
         outputLayout = eol;
     }
