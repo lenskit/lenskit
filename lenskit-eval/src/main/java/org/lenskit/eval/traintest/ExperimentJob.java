@@ -110,7 +110,6 @@ class ExperimentJob extends RecursiveAction {
 
             RowBuilder userRow = userOutput != null ? userOutput.getLayout().newRowBuilder() : null;
 
-
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
             for (EvalTask task : experiment.getTasks()) {
@@ -169,6 +168,7 @@ class ExperimentJob extends RecursiveAction {
                     assert userOutput != null;
                     try {
                         userOutput.writeRow(userRow.buildList());
+                        userOutput.flush();
                     } catch (IOException e) {
                         throw new EvaluationException("error writing user row", e);
                     }
@@ -197,6 +197,7 @@ class ExperimentJob extends RecursiveAction {
 
         try {
             globalOutput.writeRow(outputRow.buildList());
+            globalOutput.flush();
         } catch (IOException e) {
             tracker.reportFailure(this, e);
             throw new EvaluationException("error writing output row", e);
