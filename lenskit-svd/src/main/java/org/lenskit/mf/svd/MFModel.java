@@ -189,7 +189,7 @@ public class MFModel implements Serializable {
         if (uidx < 0) {
             return null;
         } else {
-            return Vectors.matrixRow(itemMatrix, uidx);
+            return Vectors.matrixRow(userMatrix, uidx);
         }
     }
 

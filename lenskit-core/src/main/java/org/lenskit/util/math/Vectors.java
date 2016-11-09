@@ -282,7 +282,7 @@ public final class Vectors {
      */
     public static RealVector matrixRow(RealMatrix mat, int row) {
         if (row < 0 || row >= mat.getRowDimension()) {
-            throw new OutOfRangeException(row, 0, mat.getColumnDimension());
+            throw new OutOfRangeException(row, 0, mat.getRowDimension());
         }
         return new RowView(mat, row);
     }
