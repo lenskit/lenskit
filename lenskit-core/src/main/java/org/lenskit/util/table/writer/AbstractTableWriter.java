@@ -53,10 +53,4 @@ public abstract class AbstractTableWriter implements TableWriter {
             throw new IllegalArgumentException(msg);
         }
     }
-
-    /**
-     * No-op close implementaiton.
-     */
-    @Override
-    public void close() throws IOException {}
 }
