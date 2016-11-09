@@ -85,9 +85,12 @@ public class DataSet {
         testData = test;
         group = grp;
         if (attrs == null) {
-            attributes = Collections.emptyMap();
+            attributes = Collections.singletonMap("DataSet", name);
         } else {
-            attributes = ImmutableMap.copyOf(attrs);
+            attributes = ImmutableMap.<String,Object>builder()
+                                     .put("DataSet", name)
+                                     .putAll(attrs)
+                                     .build();
         }
     }
 
