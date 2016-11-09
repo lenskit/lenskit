@@ -20,6 +20,8 @@
  */
 package org.lenskit.util.table.writer;
 
+import org.lenskit.util.table.TableLayout;
+
 import javax.annotation.WillNotClose;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +34,14 @@ import java.util.List;
  */
 public final class TableWriters {
     private TableWriters() {
+    }
+
+    /**
+     * Create a table writer that does nothing.
+     * @return A table writer that discards all rows.
+     */
+    public static TableWriter noop(TableLayout layout) {
+        return new DevNullTableWriter(layout);
     }
 
     /**
