@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.math.Scalars;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Comparator;
@@ -44,6 +45,7 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
 @Immutable
 public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     private static final long serialVersionUID = 1L;
+
 
     private final SortedKeyIndex keys;
     private final double[] values;
@@ -250,25 +252,47 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         SortedKeyIndex oks = toKeep.getIndex();
         int tn = size();
         int on = oks.size();
-        int tlb = keys.getLowerBound();
-        int olb = oks.getLowerBound();
-        int ti = 0, oi = 0, ni = 0;
         long[] nks = new long[Math.min(tn, on)];
         double[] nvs = new double[Math.min(tn, on)];
+        int tlb = keys.getLowerBound();
+        int olb = oks.getLowerBound();
+        int ni = 0;
 
-        while (ti < tn && oi < on) {
-            long tk = keys.getKey(ti + tlb);
-            long ok = oks.getKey(oi + olb);
-            if (tk == ok) {
-                nks[ni] = tk;
-                nvs[ni] = values[ti + tlb];
-                ni++;
-                ti++;
-                oi++;
-            } else if (tk < ok) {
-                ti++;
-            } else  {
-                oi++;
+        if (on * Scalars.log2(tn) < tn) {
+            for (int oi = 0; oi < on; oi++) {
+                long k = oks.getKey(oi + olb);
+                int ti = keys.tryGetIndex(k);
+                if (ti >= 0) {
+                    nks[ni] = k;
+                    nvs[ni] = values[ti];
+                    ni++;
+                }
+            }
+        } else {
+            int ti = 0, oi = 0;
+            int lti = -1, loi = -1;
+            long tk = 0, ok = 0;
+
+            while (ti < tn && oi < on) {
+                if (ti != lti) {
+                    tk = keys.getKey(tlb + ti);
+                    lti = ti;
+                }
+                if (oi != loi) {
+                    ok = keys.getKey(olb + oi);
+                    loi = oi;
+                }
+                if (tk == ok) {
+                    nks[ni] = tk;
+                    nvs[ni] = values[ti + tlb];
+                    ni++;
+                    ti++;
+                    oi++;
+                } else if (tk < ok) {
+                    ti++;
+                } else {
+                    oi++;
+                }
             }
         }
 

@@ -26,6 +26,7 @@ public final class Scalars {
      * the value of that is used; otherwise, {@link Double#MIN_NORMAL}.
      */
     public static final double DEFAULT_EPSILON;
+    private static final double LOG2_ADJ = 1.0 / Math.log(2);
 
     private Scalars() {}
 
@@ -55,5 +56,9 @@ public final class Scalars {
      */
     public static boolean isZero(double val, double epsilon) {
         return Math.abs(val) < epsilon;
+    }
+
+    public static double log2(double x) {
+        return Math.log(x) * LOG2_ADJ;
     }
 }
