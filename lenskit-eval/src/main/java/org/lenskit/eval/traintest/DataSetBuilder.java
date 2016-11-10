@@ -47,7 +47,7 @@ public class DataSetBuilder implements Builder<DataSet> {
     }
 
     public DataSetBuilder(String name) {
-        this.name = name;
+        setName(name);
     }
 
     /**
@@ -57,6 +57,7 @@ public class DataSetBuilder implements Builder<DataSet> {
      */
     public DataSetBuilder setName(String n) {
         name = n;
+        attributes.put("DataSet", n);
         return this;
     }
 
@@ -104,9 +105,6 @@ public class DataSetBuilder implements Builder<DataSet> {
 
     @Override
     public DataSet build() {
-        if (attributes.isEmpty()) {
-            attributes.put("DataSet", getName());
-        }
         Preconditions.checkNotNull(trainingData, "train data is Null");
         return new DataSet(getName(), trainingData, queryData, testData, isoGroup, attributes);
     }
