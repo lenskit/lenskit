@@ -85,7 +85,7 @@ public class DataSet {
         testData = test;
         group = grp;
         if (attrs == null) {
-            attributes = Collections.singletonMap("DataSet", name);
+            attributes = Collections.<String,Object>singletonMap("DataSet", name);
         } else {
             attributes = ImmutableMap.<String,Object>builder()
                                      .put("DataSet", name)
