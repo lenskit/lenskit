@@ -128,7 +128,7 @@ public class ItemItemScorer extends AbstractItemScorer {
      * @param accum The accumulator.
      */
     private void scoreItems(long user, @Nonnull Collection<Long> items, ItemItemScoreAccumulator accum) {
-        Long2DoubleMap ratings = rvDAO.userRatingVector(user);
+        Long2DoubleMap ratings = Long2DoubleSortedArrayMap.create(rvDAO.userRatingVector(user));
 
         logger.trace("user has {} ratings", ratings.size());
         InvertibleFunction<Long2DoubleMap, Long2DoubleMap> transform = normalizer.makeTransformation(user, ratings);
