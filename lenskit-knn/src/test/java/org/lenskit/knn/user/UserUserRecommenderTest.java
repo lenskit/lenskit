@@ -22,8 +22,8 @@ package org.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
+import org.lenskit.similarity.PearsonCorrelation;
+import org.lenskit.similarity.VectorSimilarity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

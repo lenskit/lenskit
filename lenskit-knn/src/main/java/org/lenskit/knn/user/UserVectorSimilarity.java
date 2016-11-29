@@ -22,7 +22,7 @@ package org.lenskit.knn.user;
 
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
+import org.lenskit.similarity.VectorSimilarity;
 
 import javax.inject.Inject;
 import java.io.Serializable;

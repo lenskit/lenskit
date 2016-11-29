@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors.similarity;
+package org.lenskit.similarity;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lenskit.transform.quantize.Quantizer;

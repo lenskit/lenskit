@@ -46,7 +46,7 @@ public interface UserSimilarity {
      * Query whether this similarity is sparse.
      *
      * @return {@code true} if the similarity function is sparse.
-     * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSparse()
+     * @see org.lenskit.similarity.VectorSimilarity#isSparse()
      */
     boolean isSparse();
 
@@ -57,7 +57,7 @@ public interface UserSimilarity {
      * 151</a> for updates on this issue.
      *
      * @return {@code true} if the similarity function is symmetric.
-     * @see org.grouplens.lenskit.vectors.similarity.VectorSimilarity#isSymmetric()
+     * @see org.lenskit.similarity.VectorSimilarity#isSymmetric()
      */
     boolean isSymmetric();
 }

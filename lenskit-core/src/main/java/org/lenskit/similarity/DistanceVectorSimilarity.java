@@ -18,69 +18,64 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors.similarity;
+package org.lenskit.similarity;
 
-import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.inject.Shareable;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Scalars;
 
 import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
- * Cosine similarity for vectors.
+ * Distance similarity for vectors.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
+public class DistanceVectorSimilarity implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final double dampingFactor;
 
     /**
-     * Construct an undamped cosine similarity function.
-     */
-    public CosineVectorSimilarity() {
-        this(0.0);
-    }
-
-    /**
-     * Construct a new cosine similarity function.
-     *
-     * @param damping The Bayesian damping term (added to denominator), to bias the
-     *                similarity towards 0 for low-cooccurance vectors.
+     * Construct a new distance similarity function.
+     * It computes similarity as (1-|v1-v2|_2). after normalizing vectors to be unit vectors
+     * Similarity is in range [-1,1];
      */
     @Inject
-    public CosineVectorSimilarity(@SimilarityDamping double damping) {
-        Preconditions.checkArgument(damping >= 0, "negative damping not allowed");
-        dampingFactor = damping;
+    public DistanceVectorSimilarity() {
     }
 
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
-        final double dot = vec1.dot(vec2);
-        final double denom = vec1.norm() * vec2.norm() + dampingFactor;
-        if (Scalars.isZero(denom)) {
-            return 0;
-        } else {
-            return dot / denom;
+        final double distance;
+        // One of the vector is empty
+        if (Scalars.isZero(vec1.norm()) || Scalars.isZero(vec2.norm())){
+            return Double.NaN;
         }
+
+        LongSet ts = LongUtils.setUnion(vec1.keySet(),vec2.keySet());
+
+        MutableSparseVector v1 = MutableSparseVector.create(ts);
+        v1.fill(0);
+        v1.set(vec1);
+        v1.multiply(1.0 / v1.norm());
+        v1.addScaled(vec2, -1.0 / vec2.norm());
+
+        distance = v1.norm();
+        return 1-distance;
     }
 
     @Override
     public boolean isSparse() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isSymmetric() {
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("cosine[d=%s]", dampingFactor);
     }
 }

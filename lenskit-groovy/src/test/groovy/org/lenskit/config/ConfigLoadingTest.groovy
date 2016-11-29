@@ -20,9 +20,9 @@
  */
 package org.lenskit.config
 
-import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
-import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
+import org.lenskit.similarity.PearsonCorrelation
+import org.lenskit.similarity.SignificanceWeightedVectorSimilarity
+import org.lenskit.similarity.VectorSimilarity
 import org.junit.Test
 import org.lenskit.LenskitConfiguration
 import org.lenskit.LenskitRecommenderEngine
