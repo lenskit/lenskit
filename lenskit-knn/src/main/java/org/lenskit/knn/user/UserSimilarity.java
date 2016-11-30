@@ -20,6 +20,7 @@
  */
 package org.lenskit.knn.user;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -39,8 +40,21 @@ public interface UserSimilarity {
      * @param u2 The second user ID.
      * @param v2 The second user vector.
      * @return The similarity between the two users, in the range [0,1].
+     * @deprecated Use {@link #similarity(long, Long2DoubleMap, long, Long2DoubleMap)}
      */
+    @Deprecated
     double similarity(long u1, SparseVector v1, long u2, SparseVector v2);
+
+    /**
+     * Compute the similarity between two users.
+     *
+     * @param u1 The first user ID.
+     * @param v1 The first user vector.
+     * @param u2 The second user ID.
+     * @param v2 The second user vector.
+     * @return The similarity between the two users, in the range [0,1].
+     */
+    double similarity(long u1, Long2DoubleMap v1, long u2, Long2DoubleMap v2);
 
     /**
      * Query whether this similarity is sparse.
