@@ -23,10 +23,12 @@ package org.lenskit.similarity;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
-import org.lenskit.inject.Shareable;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Scalars;
 
 import javax.inject.Inject;
@@ -98,6 +100,13 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
         return pearson.similarity(rank(vec1), rank(vec2));
+    }
+
+    @Override
+    public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
+        // FIXME Implement directly
+        return similarity(ImmutableSparseVector.create(vec1),
+                          ImmutableSparseVector.create(vec2));
     }
 
     @Override

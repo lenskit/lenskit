@@ -20,8 +20,10 @@
  */
 package org.lenskit.similarity;
 
-import org.lenskit.inject.Shareable;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Shareable;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -73,6 +75,14 @@ public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, S
     public double similarity(SparseVector vec1, SparseVector vec2) {
         double s = delegate.similarity(vec1, vec2);
         int n = vec1.countCommonKeys(vec2);
+        s *= n;
+        return s / max(n, threshold);
+    }
+
+    @Override
+    public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
+        double s = delegate.similarity(vec1, vec2);
+        int n = LongUtils.intersectSize(vec1.keySet(), vec2.keySet());
         s *= n;
         return s / max(n, threshold);
     }

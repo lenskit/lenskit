@@ -20,11 +20,12 @@
  */
 package org.lenskit.similarity;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.transform.quantize.Quantizer;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -76,6 +77,21 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
         for (Pair<VectorEntry,VectorEntry> e: SparseVector.fastIntersect(vec1, vec2)) {
             accum.count(quantizer.index(e.getLeft().getValue()),
                         quantizer.index(e.getRight().getValue()));
+        }
+
+        return accum.getMutualInformation();
+    }
+
+    @Override
+    public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
+        MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
+
+        for (Long2DoubleMap.Entry e: vec1.long2DoubleEntrySet()) {
+            long k = e.getLongKey();
+            if (vec2.containsKey(k)) {
+                accum.count(quantizer.index(e.getDoubleValue()),
+                            quantizer.index(vec2.get(k)));
+            }
         }
 
         return accum.getMutualInformation();
