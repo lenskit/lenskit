@@ -20,6 +20,7 @@
  */
 package org.lenskit.util.monitor;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.eventbus.EventBus;
 
 import javax.annotation.Nonnull;
@@ -39,6 +40,7 @@ public class TrackedJob {
     @Nullable
     private final String description;
     private final UUID uuid;
+    private final Stopwatch timer;
     private volatile int expectedSteps = -1;
     private volatile int stepsFinished = 0;
     private volatile int reportingInterval = 1;
@@ -65,6 +67,7 @@ public class TrackedJob {
         this.type = type;
         this.description = desc;
         uuid = UUID.randomUUID();
+        timer = Stopwatch.createUnstarted();
     }
 
     private TrackedJob(TrackedJob parent, String type, String description) {
@@ -73,6 +76,7 @@ public class TrackedJob {
         this.description = description;
         this.eventBus = parent.getEventBus();
         this.uuid = UUID.randomUUID();
+        timer = Stopwatch.createUnstarted();
     }
 
     @Nonnull
@@ -236,7 +240,15 @@ public class TrackedJob {
                 parent.childrenRunning -= 1;
             }
         }
+        timer.stop();
         eventBus.post(new JobEvent.Finished(this));
+    }
+
+    /**
+     * Get the timer for this job.
+     */
+    public Stopwatch getTimer() {
+        return timer;
     }
 
     @Override

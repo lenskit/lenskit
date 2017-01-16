@@ -77,11 +77,11 @@ public class StatusLogger {
 
         if (job.getType().equals(ExperimentJob.JOB_TYPE)) {
             assert parent != null;
-            logger.info("finished eval job {} of {}: {}",
+            logger.info("finished eval job {} of {}: {} ({})",
                         parent.getChildrenFinished(),
-                        parent.getChildCount(), job.getDescription());
+                        parent.getChildCount(), job.getDescription(), job.getTimer());
         } else if (parent != null && parent.getType().equals(ExperimentJob.JOB_TYPE)) {
-            logger.info("finished task: {}", job);
+            logger.info("finished task {} in {}", job, job.getTimer());
         } else {
             logger.debug("job finished: {}", job);
         }
