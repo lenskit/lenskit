@@ -21,10 +21,11 @@
 package org.lenskit.mf.svd;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.util.keys.KeyIndex;
+import org.lenskit.util.math.Vectors;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -188,7 +189,7 @@ public class MFModel implements Serializable {
         if (uidx < 0) {
             return null;
         } else {
-            return userMatrix.getRowVector(uidx);
+            return Vectors.matrixRow(userMatrix, uidx);
         }
     }
 
@@ -198,7 +199,7 @@ public class MFModel implements Serializable {
         if (iidx < 0) {
             return null;
         } else {
-            return itemMatrix.getRowVector(iidx);
+            return Vectors.matrixRow(itemMatrix, iidx);
         }
     }
 

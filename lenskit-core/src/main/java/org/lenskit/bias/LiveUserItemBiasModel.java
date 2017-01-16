@@ -21,6 +21,7 @@
 package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -32,6 +33,8 @@ import javax.inject.Inject;
  * Bias model that provides global, user, and item biases.  The global and item biases are precomputed and are *not*
  * refreshed based on user data added since the model build, but the user bias (mean rating from the rating DAO) is
  * recomputed live based on a {@link RatingVectorPDAO}.
+ *
+ * **Note:** The {@link #getUserBiases()} method will always return an empty map.
  */
 public final class LiveUserItemBiasModel implements BiasModel{
     private final ItemBiasModel delegate;
@@ -89,5 +92,19 @@ public final class LiveUserItemBiasModel implements BiasModel{
     @Override
     public Long2DoubleMap getItemBiases(LongSet items) {
         return delegate.getItemBiases(items);
+    }
+
+    /**
+     * Return an empty map.  **This may make this bias model unsuitable in some applications.**
+     * @return An empty map.
+     */
+    @Override
+    public Long2DoubleMap getUserBiases() {
+        return Long2DoubleMaps.EMPTY_MAP;
+    }
+
+    @Override
+    public Long2DoubleMap getItemBiases() {
+        return delegate.getItemBiases();
     }
 }

@@ -53,10 +53,10 @@ public class SimpleCachingItemScorer extends AbstractItemScorer {
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
         if(cachedId == user && cachedScores != null) {
-            Set<Long> cachedItems = cachedScores.keySet();
-            if(!cachedItems.containsAll(items)) {
+            LongSet cachedItems = LongUtils.asLongSet(cachedScores.keySet());
+            if (!cachedItems.containsAll(LongUtils.asLongCollection(items))) {
                 LongSet reqItems = LongUtils.packedSet(items);
-                LongSortedSet diffItems = LongUtils.setDifference(reqItems, LongUtils.asLongSet(cachedItems));
+                LongSortedSet diffItems = LongUtils.setDifference(reqItems, cachedItems);
                 ResultMap newCache = scorer.scoreWithDetails(user, diffItems);
                 cachedScores = Results.newResultMap(Iterables.concat(cachedScores, newCache));
             }

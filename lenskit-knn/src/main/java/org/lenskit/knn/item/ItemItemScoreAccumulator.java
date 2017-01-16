@@ -23,8 +23,8 @@ package org.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.lenskit.transform.normalize.VectorTransformation;
+import org.lenskit.results.Results;
+import org.lenskit.util.InvertibleFunction;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public abstract class ItemItemScoreAccumulator {
      * Apply the reverse of a transform to the results.
      * @param transform The transform to apply.
      */
-    public abstract void applyReversedTransform(VectorTransformation transform);
+    public abstract void applyReversedTransform(InvertibleFunction<Long2DoubleMap, Long2DoubleMap> transform);
 
     /**
      * Construct an accumulator that will store items and scores in a map.
@@ -83,10 +83,9 @@ public abstract class ItemItemScoreAccumulator {
         }
 
         @Override
-        public void applyReversedTransform(VectorTransformation transform) {
-            MutableSparseVector vec = MutableSparseVector.create(receiver);
-            transform.unapply(vec);
-            receiver.putAll(vec.asMap());
+        public void applyReversedTransform(InvertibleFunction<Long2DoubleMap, Long2DoubleMap> transform) {
+            // TODO Make this in-place
+            receiver.putAll(transform.unapply(receiver));
         }
     }
 
@@ -108,16 +107,13 @@ public abstract class ItemItemScoreAccumulator {
         }
 
         @Override
-        public void applyReversedTransform(VectorTransformation transform) {
-            MutableSparseVector vec = MutableSparseVector.create(itemIds);
-            for (ItemItemResult res: receiver) {
-                vec.set(res.getId(), res.getScore());
-            }
-            transform.unapply(vec);
+        public void applyReversedTransform(InvertibleFunction<Long2DoubleMap, Long2DoubleMap> transform) {
+            Long2DoubleMap scores = transform.unapply(Results.newResultMap(receiver).scoreMap());
+
             int n = receiver.size();
             for (int i = 0; i < n; i++) {
                 ItemItemResult res = receiver.get(i);
-                receiver.set(i, res.rescore(vec.get(res.getId())));
+                receiver.set(i, res.rescore(scores.get(res.getId())));
             }
         }
     }

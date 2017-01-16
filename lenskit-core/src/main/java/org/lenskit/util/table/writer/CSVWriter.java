@@ -72,7 +72,12 @@ public class CSVWriter extends AbstractTableWriter {
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void flush() throws IOException {
+        writer.flush();
+    }
+
+    @Override
+    public synchronized void close() throws IOException {
         if (writer != null) {
             writer.close();
             writer = null;
@@ -97,7 +102,6 @@ public class CSVWriter extends AbstractTableWriter {
             }
         }
         writer.newLine();
-        writer.flush();
     }
 
     @Override

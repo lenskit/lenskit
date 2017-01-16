@@ -23,6 +23,7 @@ package org.lenskit.util.table;
 import org.apache.commons.lang3.builder.Builder;
 import org.lenskit.util.table.writer.AbstractTableWriter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,8 @@ public class TableBuilder extends AbstractTableWriter implements Builder<Table> 
     @Override
     public void close() {}
 
+    @Override
+    public void flush() throws IOException {}
 
     @Override
     public void writeRow(List<?> row) {

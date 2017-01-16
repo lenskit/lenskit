@@ -116,7 +116,7 @@ public final class Results {
      * @return The result list.
      */
     @Nonnull
-    public static ResultMap newResultMap(@Nonnull Iterable<? extends Result> results) {
+    public static BasicResultMap newResultMap(@Nonnull Iterable<? extends Result> results) {
         return new BasicResultMap(results);
     }
 
@@ -128,7 +128,7 @@ public final class Results {
      */
     @SafeVarargs
     @Nonnull
-    public static <R extends Result> ResultMap newResultMap(R... results) {
+    public static <R extends Result> BasicResultMap newResultMap(R... results) {
         return new BasicResultMap(Arrays.asList(results));
     }
 

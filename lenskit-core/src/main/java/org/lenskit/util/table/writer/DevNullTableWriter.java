@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2014 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -18,21 +18,45 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.util.table.writer;
 
+import org.lenskit.util.table.TableLayout;
 
-import org.grouplens.lenskit.iterative.IterationCount
-import org.lenskit.api.ItemScorer
-import org.lenskit.bias.BiasModel
-import org.lenskit.bias.UserItemBiasModel
-import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.funksvd.FunkSVDItemScorer
+import java.io.IOException;
+import java.util.List;
 
-dumpGraph {
-    output "${config.analysisDir}/funksvd.dot"
-    algorithm {
-        bind ItemScorer to FunkSVDItemScorer
-        bind BiasModel to UserItemBiasModel
-        set IterationCount to 125
-        set FeatureCount to 25
+/**
+ * Table writer that discards all data.
+ */
+public class DevNullTableWriter implements TableWriter {
+    private final TableLayout layout;
+
+    public DevNullTableWriter(TableLayout tl) {
+        layout = tl;
+    }
+
+    @Override
+    public TableLayout getLayout() {
+        return layout;
+    }
+
+    @Override
+    public void writeRow(Object... row) throws IOException {
+        /* do nothing */
+    }
+
+    @Override
+    public void writeRow(List<?> row) throws IOException {
+        /* do nothing */
+    }
+
+    @Override
+    public void flush() throws IOException {
+        /* do nothing */
+    }
+
+    @Override
+    public void close() throws IOException {
+        /* do nothing */
     }
 }

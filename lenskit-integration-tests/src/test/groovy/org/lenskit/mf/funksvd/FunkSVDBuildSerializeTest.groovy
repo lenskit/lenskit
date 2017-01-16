@@ -29,6 +29,8 @@ import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
 import org.lenskit.api.RecommenderBuildException
 import org.lenskit.baseline.*
+import org.lenskit.bias.BiasModel
+import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.dao.ItemDAO
 
@@ -41,8 +43,7 @@ import static org.junit.Assert.assertThat
 public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
     def config = ConfigHelpers.load {
         bind ItemScorer to FunkSVDItemScorer
-        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+        bind BiasModel to UserItemBiasModel
         set FeatureCount to 10
         set IterationCount to 10
         within (BaselineScorer, ItemScorer) {

@@ -27,6 +27,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.lenskit.api.Recommender;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongSortedArraySet;
 
 import java.util.Random;
 import java.util.Set;
@@ -110,12 +111,12 @@ public abstract class ItemSelector {
      */
     public abstract static class ItemSelectScript extends Script {
         private final Random random = new Random();
-        private LongSet allItems;
+        private LongSortedArraySet allItems;
         private TestUser testUser;
         private Recommender recommender;
 
         void setup(LongSet universe, Recommender rec, TestUser user) {
-            allItems = universe;
+            allItems = LongUtils.packedSet(universe);
             testUser = user;
             recommender = rec;
         }
@@ -132,7 +133,7 @@ public abstract class ItemSelector {
          * Get the set of all items.
          * @return The set of all items.
          */
-        public LongSet getAllItems() {
+        public LongSortedArraySet getAllItems() {
             return allItems;
         }
 
@@ -161,6 +162,10 @@ public abstract class ItemSelector {
         public LongSet getUnseenItems(TestUser user){
             return LongUtils.setDifference(allItems, user.getSeenItems());
         }
+
+        public LongSet randomUnseen(TestUser user, int n) {
+            return allItems.randomSubset(random, n, user.getSeenItems());
+        }
     }
 
     /**
@@ -185,7 +190,7 @@ public abstract class ItemSelector {
 
         @SuppressWarnings("unchecked")
         @Override
-        public LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
+        public synchronized LongSet selectItems(LongSet universe, Recommender recommender, TestUser user) {
             script.setup(universe, recommender, user);
             Set<Long> set = (Set<Long>) script.run();
             return LongUtils.asLongSet(set);

@@ -21,6 +21,7 @@
 package org.lenskit.mf.svd;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.apache.commons.math3.linear.RealVector;
@@ -29,8 +30,10 @@ import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.bias.BiasModel;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.math.Vectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,20 +51,20 @@ import java.util.List;
 public class BiasedMFItemScorer extends AbstractItemScorer {
     private final MFModel model;
     private final BiasedMFKernel kernel;
-    private final ItemScorer baseline;
+    private final BiasModel biasModel;
 
     /**
      * Create a new biased MF item scorer.
      * @param mod The model (factorized matrix)
      * @param kern The kernel function to compute scores.
-     * @param bl The baseline scorer (used to compute biases).
+     * @param bias The bias model to use.
      */
     @Inject
     public BiasedMFItemScorer(MFModel mod, BiasedMFKernel kern,
-                              @BaselineScorer ItemScorer bl) {
+                              BiasModel bias) {
         model = mod;
         kernel = kern;
-        baseline = bl;
+        biasModel = bias;
     }
 
     /**
@@ -84,7 +87,8 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        Long2DoubleFunction base = LongUtils.asLong2DoubleFunction(baseline.score(user, items));
+        Long2DoubleMap baselines = biasModel.getItemBiases(LongUtils.packedSet(items));
+        baselines = Vectors.addScalar(baselines, biasModel.getIntercept() + biasModel.getUserBias(user));
 
         RealVector uvec = getUserPreferenceVector(user);
         if (uvec == null) {
@@ -97,7 +101,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
             long item = iter.nextLong();
             RealVector ivec = model.getItemVector(item);
             if (ivec != null) {
-                double score = kernel.apply(base.get(item), uvec, ivec);
+                double score = kernel.apply(baselines.get(item), uvec, ivec);
                 results.add(Results.create(item, score));
             }
         }

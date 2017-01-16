@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2014 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -18,21 +18,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.bias;
 
+import org.grouplens.grapht.annotation.DefaultDouble;
+import org.lenskit.inject.Parameter;
 
-import org.grouplens.lenskit.iterative.IterationCount
-import org.lenskit.api.ItemScorer
-import org.lenskit.bias.BiasModel
-import org.lenskit.bias.UserItemBiasModel
-import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.funksvd.FunkSVDItemScorer
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
-dumpGraph {
-    output "${config.analysisDir}/funksvd.dot"
-    algorithm {
-        bind ItemScorer to FunkSVDItemScorer
-        bind BiasModel to UserItemBiasModel
-        set IterationCount to 125
-        set FeatureCount to 25
-    }
+/**
+ * Damping parameter for bias models.
+ *
+ * <p>
+ * The smoothing enabled by this parameter is based on <a
+ * href="http://sifter.org/~simon/journal/20061211.html">FunkSVD</a>. The idea
+ * is to bias item or user means towards the global mean based on how many items
+ * or users are involved. So, if the global mean is \\(\mu\\) and smoothing \\(\gamma\\),
+ * the mean of some values is \\[\frac{\gamma\mu + \sum r}{\gamma + n}\\]
+ */
+@Documented
+@DefaultDouble(0.0)
+@Parameter(Double.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BiasDamping {
 }

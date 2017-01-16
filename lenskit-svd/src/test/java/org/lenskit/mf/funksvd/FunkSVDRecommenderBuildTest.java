@@ -32,12 +32,10 @@ import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.baseline.BaselineScorer;
-import org.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.lenskit.baseline.UserMeanBaseline;
-import org.lenskit.baseline.UserMeanItemScorer;
 import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemRecommender;
+import org.lenskit.bias.BiasModel;
+import org.lenskit.bias.UserItemBiasModel;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.PackedRatingMatrix;
@@ -72,10 +70,7 @@ public class FunkSVDRecommenderBuildTest {
               .to(PackedRatingMatrix.class);
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
-        config.bind(BaselineScorer.class, ItemScorer.class)
-              .to(UserMeanItemScorer.class);
-        config.bind(UserMeanBaseline.class, ItemScorer.class)
-              .to(ItemMeanRatingItemScorer.class);
+        config.bind(BiasModel.class).to(UserItemBiasModel.class);
         config.bind(StoppingCondition.class)
               .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)

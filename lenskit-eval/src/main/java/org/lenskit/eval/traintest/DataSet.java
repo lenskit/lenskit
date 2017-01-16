@@ -28,11 +28,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,6 +57,7 @@ public class DataSet {
     private final StaticDataSource queryData;
     @Nonnull
     private final StaticDataSource testData;
+    private volatile transient LongSortedSet allItems;
     @Nonnull
     private final UUID group;
     private final Map<String, Object> attributes;
@@ -150,7 +153,15 @@ public class DataSet {
     }
 
     public LongSet getAllItems() {
-        return trainData.get().getEntityIds(CommonTypes.ITEM);
+        if (allItems == null) {
+            synchronized (this) {
+                if (allItems == null) {
+                    allItems = LongUtils.packedSet(trainData.get().getEntityIds(CommonTypes.ITEM));
+                }
+            }
+        }
+
+        return allItems;
     }
 
     /**

@@ -23,6 +23,7 @@ package org.lenskit.eval.traintest;
 import org.junit.Test;
 import org.lenskit.data.dao.file.StaticDataSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.java.quickcheck.generator.CombinedGenerators.uniqueValues;
@@ -44,8 +45,12 @@ public class DataSetBuilderTest {
                 bld.setAttribute(str, nonEmptyStrings().next());
             }
             DataSet ds = bld.build();
-            assertThat(ds.getAttributes().size(), equalTo(strings.size()));
-            assertThat(ds.getAttributes().keySet(), contains(strings.toArray()));
+            assertThat(ds.getAttributes().size(), equalTo(strings.size() + 1));
+            List<String> stringArray = new ArrayList<>();
+            stringArray.add("DataSet");
+            stringArray.addAll(strings);
+            String[] strs = stringArray.toArray(new String[stringArray.size()]);
+            assertThat(ds.getAttributes().keySet(), contains(strs));
         }
     }
 }

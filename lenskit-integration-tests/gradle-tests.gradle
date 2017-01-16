@@ -58,6 +58,7 @@ file('src/it/gradle').eachDir { testDir ->
     task("test$tname", type: GradleBuild, group: 'test') {
         description "Run the ${testDir.name} test."
         dependsOn makeTestRepo, fetchData
+        mustRunAfter test
         mustRunAfter ':lenskit-gradle:check'
         // inputs.dir rootProject.file('build/test-repo')
         inputs.dir testDir

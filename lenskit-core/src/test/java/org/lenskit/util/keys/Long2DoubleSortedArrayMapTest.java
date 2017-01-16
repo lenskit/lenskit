@@ -20,10 +20,7 @@
  */
 package org.lenskit.util.keys;
 
-import it.unimi.dsi.fastutil.longs.AbstractLong2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
@@ -140,6 +137,25 @@ public class Long2DoubleSortedArrayMapTest {
         assertThat(map.size(), equalTo(5));
 
         Long2DoubleSortedMap sub = map.subMap(LongUtils.packedSet(2L, 4L));
+        assertThat(sub.size(), equalTo(2));
+        assertThat(sub.containsKey(2L), equalTo(true));
+        assertThat(sub.containsKey(1L), equalTo(false));
+        assertThat(sub.containsKey(5L), equalTo(false));
+        assertThat(sub.containsKey(4L), equalTo(true));
+        assertThat(sub.containsKey(3L), equalTo(false));
+        assertThat(sub.keySet(), contains(2L, 4L));
+        assertThat(sub, hasEntry(2L, 2.4));
+        assertThat(sub, hasEntry(4L, 4.3));
+    }
+
+    @Test
+    public void testSubMapUnpacked() {
+        SortedKeyIndex idx = SortedKeyIndex.create(1, 2, 3, 4, 5);
+        double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
+        Long2DoubleSortedArrayMap map = new Long2DoubleSortedArrayMap(idx, values);
+        assertThat(map.size(), equalTo(5));
+
+        Long2DoubleSortedMap sub = map.subMap(new LongOpenHashSet(LongUtils.packedSet(2L, 10L, 4L)));
         assertThat(sub.size(), equalTo(2));
         assertThat(sub.containsKey(2L), equalTo(true));
         assertThat(sub.containsKey(1L), equalTo(false));

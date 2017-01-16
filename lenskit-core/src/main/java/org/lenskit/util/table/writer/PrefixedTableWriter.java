@@ -90,4 +90,19 @@ class PrefixedTableWriter extends AbstractTableWriter {
             rowData.removeElements(fixedColumns, rowData.size());
         }
     }
+
+    @Override
+    public void flush() throws IOException {
+        baseWriter.flush();
+    }
+
+    /**
+     * No-op close implementation. Closing a prefixed writer does *not* close the
+     * underlying writer.  It does, however, flush it.
+     * @throws IOException if there is an error flushing the writer.
+     */
+    @Override
+    public void close() throws IOException {
+        baseWriter.flush();
+    }
 }

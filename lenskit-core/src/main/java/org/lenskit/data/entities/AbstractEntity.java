@@ -200,8 +200,10 @@ public abstract class AbstractEntity implements Entity, Describable {
     public int hashCode() {
         HashCodeBuilder hcb = new HashCodeBuilder();
         hcb.append(getType())
-           .append(getId())
-           .append(asMap());
+           .append(getId());
+        for (Attribute<?> av: getAttributes()) {
+            hcb.append(av.getName()).append(av.getValue());
+        }
         return hcb.toHashCode();
     }
 
@@ -277,7 +279,7 @@ public abstract class AbstractEntity implements Entity, Describable {
     private class EntrySet extends AbstractSet<Map.Entry<String,Object>> {
         @Override
         public Iterator<Map.Entry<String, Object>> iterator() {
-            return new EntryIter(getAttributeNames().iterator());
+            return new EntryIter(getTypedAttributeNames().iterator());
         }
 
         @Override
@@ -287,9 +289,9 @@ public abstract class AbstractEntity implements Entity, Describable {
     }
 
     private class EntryIter implements Iterator<Map.Entry<String,Object>> {
-        private final Iterator<String> baseIter;
+        private final Iterator<TypedName<?>> baseIter;
 
-        public EntryIter(Iterator<String> keyIter) {
+        public EntryIter(Iterator<TypedName<?>> keyIter) {
             baseIter = keyIter;
         }
 
@@ -300,8 +302,8 @@ public abstract class AbstractEntity implements Entity, Describable {
 
         @Override
         public Map.Entry<String, Object> next() {
-            String attr = baseIter.next();
-            return ImmutablePair.of(attr, get(attr));
+            TypedName<?> attr = baseIter.next();
+            return ImmutablePair.of(attr.getName(), get(attr));
         }
 
         @Override

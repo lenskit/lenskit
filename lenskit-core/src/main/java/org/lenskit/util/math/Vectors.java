@@ -25,6 +25,9 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
@@ -269,6 +272,19 @@ public final class Vectors {
         }
 
         return Long2DoubleSortedArrayMap.wrap(idx, values);
+    }
+
+    /**
+     * Create a flyweight row view of a matrix.
+     * @param mat The matrix.
+     * @param row The row number.
+     * @return A vector that is a read-only flyweight view of the matrix row.
+     */
+    public static RealVector matrixRow(RealMatrix mat, int row) {
+        if (row < 0 || row >= mat.getRowDimension()) {
+            throw new OutOfRangeException(row, 0, mat.getRowDimension());
+        }
+        return new RowView(mat, row);
     }
 
     private static class DftAdaptingL2DFunction implements Long2DoubleFunction {

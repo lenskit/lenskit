@@ -21,11 +21,9 @@
 package org.lenskit.basic;
 
 
-import com.google.common.collect.Ordering;
-import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.util.ScoredIdAccumulator;
-import org.lenskit.util.TopNScoredIdAccumulator;
-import org.lenskit.util.UnlimitedScoredIdAccumulator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
@@ -34,7 +32,10 @@ import org.lenskit.data.dao.ItemDAO;
 import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.history.UserHistory;
-import org.lenskit.results.Results;
+import org.lenskit.results.ResultAccumulator;
+import org.lenskit.util.ScoredIdAccumulator;
+import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.UnlimitedScoredIdAccumulator;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,13 +93,12 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             accum = new UnlimitedScoredIdAccumulator();
         }
 
-        Long2DoubleFunction map = LongUtils.asLong2DoubleFunction(scores);
+        Long2DoubleMap map = LongUtils.asLong2DoubleMap(scores);
 
-        LongIterator iter = LongIterators.asLongIterator(scores.keySet().iterator());
-        while (iter.hasNext()) {
-            long item = iter.nextLong();
-            accum.put(item, map.get(item));
+        for (Long2DoubleMap.Entry e: map.long2DoubleEntrySet()) {
+            accum.put(e.getLongKey(), e.getDoubleValue());
         }
+
         return accum.finishList();
     }
 
@@ -135,14 +135,11 @@ public class TopNItemRecommender extends AbstractItemRecommender {
 
     @Nonnull
     private ResultList getTopNResults(int n, Iterable<Result> scores) {
-        Ordering<Result> ord = Results.scoreOrder();
-        List<Result> topN;
-        if (n < 0) {
-            topN = ord.reverse().immutableSortedCopy(scores);
-        } else {
-            topN = ord.greatestOf(scores, n);
+        ResultAccumulator accum = ResultAccumulator.create(n);
+        for (Result r: scores) {
+            accum.add(r);
         }
-        return Results.newResultList(topN);
+        return accum.finish();
     }
 
     /**

@@ -20,14 +20,12 @@
  */
 package org.lenskit.bias;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.results.Results;
-import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -58,13 +56,12 @@ public class BiasItemScorer extends AbstractItemScorer {
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        Long2DoubleMap scores = model.getItemBiases(LongUtils.asLongSet(items));
         List<Result> results = new ArrayList<>();
         double base = model.getIntercept() + model.getUserBias(user);
         LongIterator iter = LongIterators.asLongIterator(items.iterator());
         while (iter.hasNext()) {
             long item = iter.nextLong();
-            results.add(Results.create(item, base + scores.get(item)));
+            results.add(Results.create(item, base + model.getItemBias(item)));
         }
         return Results.newResultMap(results);
     }

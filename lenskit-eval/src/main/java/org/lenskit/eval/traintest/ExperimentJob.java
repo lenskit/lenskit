@@ -124,11 +124,9 @@ class ExperimentJob extends RecursiveAction {
             buildTimer.stop();
             train.finish();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
-
             logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
-            RowBuilder userRow = userOutput != null ? userOutput.getLayout().newRowBuilder() : null;
-
+            RowBuilder userRow = userOutput.getLayout().newRowBuilder();
 
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
@@ -162,10 +160,7 @@ class ExperimentJob extends RecursiveAction {
                     throw new EvaluationException("eval job interrupted");
                 }
                 long uid = user.getId();
-                if (userRow != null) {
-                    userRow.add("User", uid);
-                }
-
+                userRow.add("User", uid);
 
                 List<Rating> userTrainHistory = trainData.query(Rating.class)
                                                          .withAttribute(CommonAttributes.USER_ID, uid)
@@ -179,21 +174,18 @@ class ExperimentJob extends RecursiveAction {
 
                 for (ConditionEvaluator eval : accumulators) {
                     Map<String, Object> ures = eval.measureUser(testUser);
-                    if (userRow != null) {
-                        userRow.addAll(ures);
-                    }
+                    userRow.addAll(ures);
                 }
                 userTimer.stop();
-                if (userRow != null) {
-                    userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-                    assert userOutput != null;
-                    try {
-                        userOutput.writeRow(userRow.buildList());
-                    } catch (IOException e) {
-                        throw new EvaluationException("error writing user row", e);
-                    }
-                    userRow.clear();
+
+                userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+                try {
+                    userOutput.writeRow(userRow.buildList());
+                    userOutput.flush();
+                } catch (IOException e) {
+                    throw new EvaluationException("error writing user row", e);
                 }
+                userRow.clear();
 
                 test.finishStep();
                 progress.advance();
@@ -220,6 +212,7 @@ class ExperimentJob extends RecursiveAction {
 
         try {
             globalOutput.writeRow(outputRow.buildList());
+            globalOutput.flush();
         } catch (IOException e) {
             throw new EvaluationException("error writing output row", e);
         }

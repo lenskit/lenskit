@@ -22,7 +22,6 @@ package org.lenskit.bias;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.IdBox;
@@ -35,20 +34,22 @@ import javax.inject.Provider;
  * Compute a bias model with users' average ratings.
  */
 public class UserItemAverageRatingBiasModelProvider implements Provider<UserItemBiasModel> {
-    private final RatingSummary summary;
+    private final ItemBiasModel itemBiases;
     private final RatingVectorPDAO dao;
+    private final double damping;
+
 
     @Inject
-    public UserItemAverageRatingBiasModelProvider(RatingSummary rs, @Transient RatingVectorPDAO dao) {
-        summary = rs;
+    public UserItemAverageRatingBiasModelProvider(ItemBiasModel ib, @Transient RatingVectorPDAO dao, @BiasDamping double damp) {
+        itemBiases = ib;
         this.dao = dao;
+        damping = damp;
     }
 
     @Override
     public UserItemBiasModel get() {
-        double intercept = summary.getGlobalMean();
-
-        Long2DoubleMap itemOff = summary.getItemOffets();
+        double intercept = itemBiases.getIntercept();
+        Long2DoubleMap itemOff = itemBiases.getItemBiases();
 
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
         try (ObjectStream<IdBox<Long2DoubleMap>> stream = dao.streamUsers()) {
@@ -58,10 +59,11 @@ public class UserItemAverageRatingBiasModelProvider implements Provider<UserItem
                 double usum = 0;
 
                 for (Long2DoubleMap.Entry e: uvec.long2DoubleEntrySet()) {
-                    usum += e.getDoubleValue() - intercept - itemOff.get(e.getLongKey());
+                    double off = itemOff.get(e.getLongKey());
+                    usum += e.getDoubleValue() - intercept - off;
                 }
 
-                map.put(user.getId(), usum / uvec.size());
+                map.put(user.getId(), usum / (uvec.size() + damping));
             }
         }
 

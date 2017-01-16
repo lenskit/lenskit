@@ -110,7 +110,7 @@ public class EntityCollectionBuilder {
         }
 
         store.add(e);
-        hasher.putString(e.toString(), Charsets.UTF_8);
+        hasher.putInt(e.hashCode());
         for (EntityIndexBuilder ib: indexBuilders.values()) {
             ib.add(e);
         }

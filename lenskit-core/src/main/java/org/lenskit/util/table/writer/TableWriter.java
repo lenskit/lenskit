@@ -71,6 +71,12 @@ public interface TableWriter extends Closeable {
     void writeRow(List<?> row) throws IOException;
 
     /**
+     * Flush the writer, causing all currently-written rows to be flushed to output.
+     * @throws IOException if an error occurs while flushing output.
+     */
+    void flush() throws IOException;
+
+    /**
      * Finish the table.  Depending on how it was constructed, some underlying
      * resource may be closed.
      */
