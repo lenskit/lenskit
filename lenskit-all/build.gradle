@@ -38,6 +38,7 @@ apply from: "$rootDir/gradle/maven.gradle"
 dependencies {
     compile project(':lenskit-core')
     compile project(':lenskit-eval')
+    compile project(':lenskit-solver')
     for (algo in ['knn', 'svd', 'predict', 'slopeone']) {
         compile project(":lenskit-$algo")
     }

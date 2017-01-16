@@ -1,4 +1,5 @@
 target
+.idea
 /classes
 .project
 .classpath

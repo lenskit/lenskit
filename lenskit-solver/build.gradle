@@ -38,12 +38,10 @@ apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
-    compile project(':lenskit-knn')
-    compile project(':lenskit-solver')
     compile group:'org.apache.commons', name:'commons-math3', version:'3.5'
 }
 
 meta {
-    name 'LensKit SVD CF'
-    description 'Matrix factorization collaborative filtering for LensKit'
+    name 'LensKit Solver'
+    description 'General optimization problem solver.'
 }
