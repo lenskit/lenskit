@@ -182,15 +182,15 @@ public class TrackedJob {
     /**
      * Mark a step as finished.
      */
-    public void stepFinished() {
-        stepsFinished(1);
+    public void finishStep() {
+        finishSteps(1);
     }
 
     /**
      * Mark steps as finished.
      * @param n The number of additional steps that have been finished.
      */
-    public void stepsFinished(int n) {
+    public void finishSteps(int n) {
         boolean fire = false;
         int riv = reportingInterval;
         synchronized (this) {
