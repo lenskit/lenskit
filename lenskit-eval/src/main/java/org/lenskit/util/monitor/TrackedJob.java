@@ -41,6 +41,8 @@ public class TrackedJob {
     private final String description;
     private final UUID uuid;
     private final Stopwatch timer;
+    private @Nullable Throwable exception;
+
     private volatile int expectedSteps = -1;
     private volatile int stepsFinished = 0;
     private volatile int reportingInterval = 1;
@@ -218,6 +220,7 @@ public class TrackedJob {
                 parent.childrenRunning += 1;
             }
         }
+        timer.start();
         eventBus.post(new JobEvent.Started(this));
     }
 
@@ -234,14 +237,32 @@ public class TrackedJob {
      * Record the job as being finished.
      */
     public void finish() {
+        timer.stop();
         if (parent != null) {
             synchronized (parent) {
                 parent.childrenFinished += 1;
                 parent.childrenRunning -= 1;
             }
         }
-        timer.stop();
         eventBus.post(new JobEvent.Finished(this));
+    }
+
+    /**
+     * Record the job as being failed.
+     * @param th The error that is causing the job to fail.
+     */
+    public void fail(@Nullable Throwable th) {
+        timer.stop();
+        exception = th;
+        eventBus.post(new JobEvent.Failed(this, exception));
+    }
+
+    /**
+     * Get the exception with which this job failed.
+     * @return The exception for this job, if there is one.
+     */
+    public @Nullable Throwable getException() {
+        return exception;
     }
 
     /**

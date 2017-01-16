@@ -195,7 +195,7 @@ class ExperimentJob extends RecursiveAction {
                     userRow.clear();
                 }
 
-                test.stepFinished();
+                test.finishStep();
                 progress.advance();
             }
 
@@ -210,9 +210,11 @@ class ExperimentJob extends RecursiveAction {
             }
         } catch (UncheckedInterruptException ex) {
             logger.info("evaluation interrupted");
+            tracker.fail(ex);
             throw ex;
         } catch (Throwable th) {
             logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
+            tracker.fail(th);
             throw th;
         }
 

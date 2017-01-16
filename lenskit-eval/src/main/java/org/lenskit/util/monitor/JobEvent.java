@@ -75,6 +75,40 @@ public class JobEvent {
     }
 
     /**
+     * Event fired when a job has failed.
+     */
+    public static class Failed extends JobEvent {
+        private final TrackedJob job;
+        private final Throwable exception;
+
+        Failed(TrackedJob job, Throwable th) {
+            this.job = job;
+            this.exception = th;
+        }
+
+        /**
+         * Get the job in this event.
+         * @return The job.
+         */
+        public TrackedJob getJob() {
+            return job;
+        }
+
+        /**
+         * Get the exception associated with this failure, if any.
+         * @return The exception.
+         */
+        public Throwable getException() {
+            return exception;
+        }
+
+        @Override
+        public String toString() {
+            return "Failed{" + job + ", " + exception +  '}';
+        }
+    }
+
+    /**
      * Event fired when a job has a status update.
      */
     public static class ProgressUpdate extends JobEvent {

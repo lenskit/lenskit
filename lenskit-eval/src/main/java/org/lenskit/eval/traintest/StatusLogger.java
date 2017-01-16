@@ -86,4 +86,9 @@ public class StatusLogger {
             logger.debug("job finished: {}", job);
         }
     }
+
+    @Subscribe
+    public void jobFailed(JobEvent.Failed jf) {
+        logger.error("job {} failed: {}", jf.getJob().getDescription(), jf.getException());
+    }
 }
