@@ -20,9 +20,6 @@
  */
 package org.lenskit.config
 
-import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
-import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
 import org.junit.Test
 import org.lenskit.LenskitConfiguration
 import org.lenskit.LenskitRecommenderEngine
@@ -31,8 +28,12 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.basic.ConstantItemScorer
 import org.lenskit.basic.SimpleRatingPredictor
 import org.lenskit.basic.TopNItemRecommender
+import org.lenskit.bias.BiasModel
+import org.lenskit.bias.GlobalBiasModel
 import org.lenskit.data.dao.DataAccessObject
 import org.lenskit.data.dao.file.StaticDataSource
+import org.lenskit.transform.normalize.BiasUserVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -83,8 +84,9 @@ class ConfigLoadingTest {
     @Test
     void testLoadNewRoot() {
         LenskitConfiguration config = ConfigHelpers.load {
-            root VectorSimilarity
-            bind VectorSimilarity to PearsonCorrelation
+            root UserVectorNormalizer
+            bind UserVectorNormalizer to BiasUserVectorNormalizer
+            bind BiasModel to GlobalBiasModel
         }
         def engine = LenskitRecommenderEngine.build(config, dao)
         def rec = engine.createRecommender(dao)
@@ -92,8 +94,8 @@ class ConfigLoadingTest {
             assertThat(rec.getItemScorer(), nullValue());
             assertThat(rec.getItemRecommender(), nullValue())
             assertThat(rec.getItemBasedItemRecommender(), nullValue());
-            assertThat(rec.get(VectorSimilarity),
-                       instanceOf(PearsonCorrelation))
+            assertThat(rec.get(UserVectorNormalizer),
+                       instanceOf(BiasUserVectorNormalizer))
         } finally {
             rec.close()
         }
@@ -102,10 +104,10 @@ class ConfigLoadingTest {
     @Test
     void testLoadWithinBlock() {
         LenskitConfiguration config = ConfigHelpers.load {
-            root VectorSimilarity
-            bind VectorSimilarity to SignificanceWeightedVectorSimilarity
-            within(VectorSimilarity) {
-                bind VectorSimilarity to PearsonCorrelation
+            root UserVectorNormalizer
+            bind UserVectorNormalizer to BiasUserVectorNormalizer
+            within (UserVectorNormalizer) {
+                bind BiasModel to GlobalBiasModel
             }
         }
         def engine = LenskitRecommenderEngine.build(config, dao)
@@ -114,10 +116,10 @@ class ConfigLoadingTest {
             assertThat(rec.getItemScorer(), nullValue());
             assertThat(rec.getItemRecommender(), nullValue())
             assertThat(rec.getItemBasedItemRecommender(), nullValue());
-            def sim = rec.get(VectorSimilarity)
+            def sim = rec.get(UserVectorNormalizer)
             assertThat(sim,
-                       instanceOf(SignificanceWeightedVectorSimilarity))
-            assertThat(sim.delegate, instanceOf(PearsonCorrelation))
+                       instanceOf(BiasUserVectorNormalizer))
+            assertThat(sim.model, instanceOf(GlobalBiasModel))
         } finally {
             rec.close()
         }

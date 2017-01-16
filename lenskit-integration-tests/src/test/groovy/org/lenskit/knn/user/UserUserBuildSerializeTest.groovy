@@ -25,8 +25,8 @@ import org.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.lenskit.transform.normalize.UserVectorNormalizer
 import org.lenskit.transform.normalize.VectorNormalizer
-import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
+import org.lenskit.similarity.CosineVectorSimilarity
+import org.lenskit.similarity.VectorSimilarity
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine

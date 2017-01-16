@@ -18,31 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors.similarity;
+package org.lenskit.similarity;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
-
-import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.grapht.annotation.DefaultDouble;
 import org.lenskit.inject.Parameter;
 
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
 /**
- * The weight threshold for significance weighting.  If the vectors in question
- * have fewer than <i>n</i> keys in common, then the similarity is decreased.
- *
- * @see org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
- * @see SignificanceWeightedVectorSimilarity
+ * Damping parameter for similarity functions.  Several similarity functions add this value to
+ * their denominator.  It serves to bias similarities towards 0, typically as the number of common
+ * items used to compute the similarity decreases.
  */
 @Documented
-@DefaultInteger(0)
-@Parameter(Integer.class)
+@DefaultDouble(0.0)
+@Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SigWeightThreshold {
+public @interface SimilarityDamping {
 }
