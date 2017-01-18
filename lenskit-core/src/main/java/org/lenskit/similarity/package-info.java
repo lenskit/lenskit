@@ -18,24 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors.similarity;
-
-import org.grouplens.grapht.annotation.DefaultDouble;
-import org.lenskit.inject.Parameter;
-
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
-
 /**
- * Damping parameter for similarity functions.  Several similarity functions add this value to
- * their denominator.  It serves to bias similarities towards 0, typically as the number of common
- * items used to compute the similarity decreases.
+ * Similarity functions over vectors.
  */
-@Documented
-@DefaultDouble(0.0)
-@Parameter(Double.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface SimilarityDamping {
-}
+package org.lenskit.similarity;

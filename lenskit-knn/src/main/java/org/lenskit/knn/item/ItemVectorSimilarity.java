@@ -20,9 +20,10 @@
  */
 package org.lenskit.knn.item;
 
-import org.lenskit.inject.Shareable;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
+import org.lenskit.inject.Shareable;
+import org.lenskit.similarity.VectorSimilarity;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -45,6 +46,11 @@ public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
 
     @Override
     public double similarity(long i1, SparseVector v1, long i2, SparseVector v2) {
+        return delegate.similarity(v1, v2);
+    }
+
+    @Override
+    public double similarity(long i1, Long2DoubleMap v1, long i2, Long2DoubleMap v2) {
         return delegate.similarity(v1, v2);
     }
 

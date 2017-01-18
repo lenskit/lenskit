@@ -262,6 +262,28 @@ public final class LongUtils {
     }
 
     /**
+     * Compute the size of the intersection of two sets.
+     * @param a The first set.
+     * @param b The second set.
+     * @return The size of the intersection of the two sets.
+     */
+    public static int intersectSize(LongSet a, LongSet b) {
+        if (a instanceof LongSortedSet && b instanceof LongSortedSet) {
+            return intersectSize((LongSortedSet) a, (LongSortedSet) b);
+        } else {
+            int n = 0;
+            LongIterator iter = a.iterator();
+            while (iter.hasNext()) {
+                long x = iter.nextLong();
+                if (b.contains(x)) {
+                    n += 1;
+                }
+            }
+            return n;
+        }
+    }
+
+    /**
      * Check if two sets have at least a given number of common items.
      * @param a The first set.
      * @param b The second set.

@@ -18,9 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors.similarity;
+package org.lenskit.similarity;
 
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -37,8 +38,19 @@ public interface VectorSimilarity {
      * @param vec1 The left vector to compare.
      * @param vec2 The right vector to compare.
      * @return The similarity, in the range [-1,1].
+     * @deprecated Use {@link #similarity(SparseVector, SparseVector)}
      */
+    @Deprecated
     double similarity(SparseVector vec1, SparseVector vec2);
+
+    /**
+     * Compute the similarity between two vectors.
+     *
+     * @param vec1 The left vector to compare.
+     * @param vec2 The right vector to compare.
+     * @return The similarity, in the range [-1,1].
+     */
+    double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2);
 
     /**
      * Query whether this similarity function is sparse (returns 0 for vectors with

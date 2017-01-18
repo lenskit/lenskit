@@ -18,13 +18,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors.similarity;
+package org.lenskit.similarity;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lenskit.inject.Shareable;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.inject.Shareable;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -112,6 +114,13 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
         } else {
             return dot / (sqrt(var1 * var2) + shrinkage);
         }
+    }
+
+    @Override
+    public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
+        // FIXME Implement directly
+        return similarity(ImmutableSparseVector.create(vec1),
+                          ImmutableSparseVector.create(vec2));
     }
 
     @Override

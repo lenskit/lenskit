@@ -41,7 +41,7 @@ import org.lenskit.inject.NodeProcessors;
 import org.lenskit.inject.RecommenderInstantiator;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.UncheckedInterruptException;
-import org.lenskit.util.monitor.StatusTracker;
+import org.lenskit.util.monitor.TrackedJob;
 import org.lenskit.util.table.RowBuilder;
 import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
@@ -62,6 +62,14 @@ import java.util.concurrent.TimeUnit;
  */
 class ExperimentJob extends RecursiveAction {
     private static final Logger logger = LoggerFactory.getLogger(ExperimentJob.class);
+    /**
+     * The job type code for experiment jobs.
+     * @see TrackedJob#getType()
+     */
+    public static final String JOB_TYPE = "tt-job";
+    public static final String SETUP_JOB_TYPE = "tt-setup";
+    public static final String TRAIN_JOB_TYPE = "tt-train";
+    public static final String TEST_JOB_TYPE = "tt-test";
 
     private final TrainTestExperiment experiment;
     private final AlgorithmInstance algorithm;
@@ -71,7 +79,7 @@ class ExperimentJob extends RecursiveAction {
     @Nullable
     private final ComponentCache cache;
     private final MergePool<Component, Dependency> mergePool;
-    private final StatusTracker tracker;
+    private final TrackedJob tracker;
 
     ExperimentJob(TrainTestExperiment exp,
                   @Nonnull AlgorithmInstance algo,
@@ -79,18 +87,25 @@ class ExperimentJob extends RecursiveAction {
                   LenskitConfiguration shared,
                   @Nullable ComponentCache cache,
                   @Nullable MergePool<Component, Dependency> pool,
-                  StatusTracker st) {
+                  TrackedJob tj) {
         experiment = exp;
         algorithm = algo;
         dataSet = ds;
         sharedConfig = shared;
         this.cache = cache;
         mergePool = pool;
-        tracker = st;
+        tracker = tj;
     }
 
     @Override
     protected void compute() {
+        tracker.start();
+
+        TrackedJob setup = tracker.makeChild(SETUP_JOB_TYPE);
+        TrackedJob train = tracker.makeChild(TRAIN_JOB_TYPE);
+        TrackedJob test = tracker.makeChild(TEST_JOB_TYPE);
+
+        setup.start();
         ExperimentOutputLayout layout = experiment.getOutputLayout();
         TableWriter globalOutput = layout.prefixTable(experiment.getGlobalOutput(),
                                                       dataSet, algorithm);
@@ -100,10 +115,14 @@ class ExperimentJob extends RecursiveAction {
 
         logger.debug("fetching training data");
         DataAccessObject trainData = dataSet.getTrainingData().get();
+        setup.finish();
+
+        train.start();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
         try (LenskitRecommender rec = buildRecommender(trainData)) {
             buildTimer.stop();
+            train.finish();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
             logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
@@ -129,6 +148,7 @@ class ExperimentJob extends RecursiveAction {
             pctFormat.setMaximumFractionDigits(2);
             pctFormat.setMinimumFractionDigits(2);
             final int nusers = testData.query(CommonTypes.USER).count();
+            test.start(nusers);
             logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
             ProgressLogger progress = ProgressLogger.create(logger)
                                                     .setCount(nusers)
@@ -167,9 +187,11 @@ class ExperimentJob extends RecursiveAction {
                 }
                 userRow.clear();
 
+                test.finishStep();
                 progress.advance();
             }
 
+            test.finish();
             progress.finish();
             testTimer.stop();
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
@@ -180,10 +202,11 @@ class ExperimentJob extends RecursiveAction {
             }
         } catch (UncheckedInterruptException ex) {
             logger.info("evaluation interrupted");
+            tracker.fail(ex);
             throw ex;
         } catch (Throwable th) {
             logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
-            tracker.reportFailure(this, th);
+            tracker.fail(th);
             throw th;
         }
 
@@ -191,10 +214,9 @@ class ExperimentJob extends RecursiveAction {
             globalOutput.writeRow(outputRow.buildList());
             globalOutput.flush();
         } catch (IOException e) {
-            tracker.reportFailure(this, e);
             throw new EvaluationException("error writing output row", e);
         }
-        tracker.reportSuccess(this);
+        tracker.finish();
     }
 
     private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
