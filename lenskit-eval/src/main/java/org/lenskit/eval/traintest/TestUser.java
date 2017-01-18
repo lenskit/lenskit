@@ -67,6 +67,10 @@ public class TestUser {
         return new TestUserBuilder();
     }
 
+    public Entity getUser() {
+        return user;
+    }
+
     /**
      * Get the ID of this user.
      *
