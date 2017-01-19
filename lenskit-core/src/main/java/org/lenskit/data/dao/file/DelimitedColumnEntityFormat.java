@@ -28,10 +28,9 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.entities.*;
+import org.lenskit.util.reflect.InstanceFactory;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     private boolean readHeader;
     private EntityType entityType = EntityType.forName("rating");
     private Class<? extends EntityBuilder> entityBuilder = BasicEntityBuilder.class;
-    private Constructor<? extends EntityBuilder> entityBuilderCtor;
+    private InstanceFactory<EntityBuilder> builderFactory;
     private List<TypedName<?>> columns;
     private Map<String,TypedName<?>> labeledColumns;
 
@@ -123,6 +122,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      */
     public void setEntityBuilder(Class<? extends EntityBuilder> builder) {
         entityBuilder = builder;
+        builderFactory = null;
     }
 
     /**
@@ -138,18 +138,10 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * @return A new entity builder.
      */
     public EntityBuilder newEntityBuilder() {
-        if (entityBuilderCtor == null || !entityBuilderCtor.getDeclaringClass().equals(entityBuilder)) {
-            try {
-                entityBuilderCtor = entityBuilder.getConstructor(EntityType.class);
-            } catch (NoSuchMethodException e) {
-                throw new IllegalArgumentException("cannot find suitable constructor for " + entityBuilder);
-            }
+        if (builderFactory == null) {
+            builderFactory = InstanceFactory.fromConstructor(entityBuilder, entityType);
         }
-        try {
-            return entityBuilderCtor.newInstance(entityType);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException("could not instantiate entity builder", e);
-        }
+        return builderFactory.newInstance();
     }
 
     /**
@@ -222,7 +214,6 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
                 .append("readHeader", readHeader)
                 .append("entityType", entityType)
                 .append("entityBuilder", entityBuilder)
-                .append("entityBuilderCtor", entityBuilderCtor)
                 .append("columns", columns != null ? columns.size() : labeledColumns.size())
                 .toString();
     }
