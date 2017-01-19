@@ -20,26 +20,30 @@
  */
 package org.lenskit.data.dao.file;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static org.lenskit.data.dao.file.TextEntitySource.parseAttribute;
 
 /**
  * Delimited text column entity format.
  */
 public class DelimitedColumnEntityFormat implements EntityFormat {
+    private static final Logger logger = LoggerFactory.getLogger(DelimitedColumnEntityFormat.class);
     private String delimiter = "\t";
     private int headerLines;
     private boolean readHeader;
@@ -250,6 +254,82 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         }
 
         return json;
+    }
+
+    public static DelimitedColumnEntityFormat fromJSON(String name, ClassLoader loader, JsonNode json) {
+        String fmt = json.path("format").asText("delimited").toLowerCase();
+        String delim;
+        switch (fmt) {
+            case "csv":
+                delim = ",";
+                break;
+            case "tsv":
+            case "delimited":
+                delim = "\t";
+                break;
+            default:
+                throw new IllegalArgumentException("unsupported data format " + fmt);
+        }
+        JsonNode delimNode = json.path("delimiter");
+        if (delimNode.isValueNode()) {
+            delim = delimNode.asText();
+        }
+
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setDelimiter(delim);
+        logger.debug("{}: using delimiter {}", name, delim);
+        JsonNode header = json.path("header");
+        boolean canUseColumnMap = false;
+        if (header.isBoolean() && header.asBoolean()) {
+            logger.debug("{}: reading header", name);
+            format.setHeader(true);
+            canUseColumnMap = true;
+        } else if (header.isNumber()) {
+            format.setHeaderLines(header.asInt());
+            logger.debug("{}: skipping {} header lines", format.getHeaderLines());
+        }
+
+        String eTypeName = json.path("entity_type").asText("rating").toLowerCase();
+        EntityType etype = EntityType.forName(eTypeName);
+        logger.debug("{}: reading entities of type {}", name, etype);
+        EntityDefaults entityDefaults = EntityDefaults.lookup(etype);
+        format.setEntityType(etype);
+        format.setEntityBuilder(entityDefaults != null ? entityDefaults.getDefaultBuilder() : BasicEntityBuilder.class);
+
+        JsonNode columns = json.path("columns");
+        if (columns.isMissingNode() || columns.isNull()) {
+            List<TypedName<?>> defColumns = entityDefaults != null ? entityDefaults.getDefaultColumns() : null;
+            if (defColumns == null) {
+                throw new IllegalArgumentException("no columns specified and no default columns available");
+            }
+
+            for (TypedName<?> attr: entityDefaults.getDefaultColumns()) {
+                format.addColumn(attr);
+            }
+        } else if (columns.isObject()) {
+            if (!canUseColumnMap) {
+                throw new IllegalArgumentException("cannot use column map without file header");
+            }
+            Iterator<Map.Entry<String, JsonNode>> colIter = columns.fields();
+            while (colIter.hasNext()) {
+                Map.Entry<String, JsonNode> col = colIter.next();
+                format.addColumn(col.getKey(), parseAttribute(entityDefaults, col.getValue()));
+            }
+        } else if (columns.isArray()) {
+            for (JsonNode col: columns) {
+                format.addColumn(parseAttribute(entityDefaults, col));
+            }
+        } else {
+            throw new IllegalArgumentException("invalid format for columns");
+        }
+
+        Class<? extends EntityBuilder> eb = TextEntitySource.parseEntityBuilder(loader, json);
+        if (eb != null) {
+            format.setEntityBuilder(eb);
+        }
+        logger.debug("{}: using entity builder {}", format.getEntityBuilder());
+
+        return format;
     }
 
     @Override

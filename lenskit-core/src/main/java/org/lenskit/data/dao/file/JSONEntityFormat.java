@@ -22,8 +22,10 @@ package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
@@ -97,7 +99,39 @@ public class JSONEntityFormat implements EntityFormat {
 
     @Override
     public ObjectNode toJSON() {
-        return null;
+        JsonNodeFactory nf = JsonNodeFactory.instance;
+
+        ObjectNode json = nf.objectNode();
+        json.put("format", "json");
+        json.put("entity_type", entityType.getName());
+
+        return json;
+    }
+
+    public static JSONEntityFormat fromJSON(String name, ClassLoader loader, JsonNode json) {
+        JSONEntityFormat format = new JSONEntityFormat();
+
+        String eTypeName = json.path("entity_type").asText().toLowerCase();
+        EntityType etype = EntityType.forName(eTypeName);
+        logger.debug("{}: reading entities of type {}", name, etype);
+        EntityDefaults entityDefaults = EntityDefaults.lookup(etype);
+        format.setEntityType(etype);
+        format.setEntityBuilder(entityDefaults != null ? entityDefaults.getDefaultBuilder() : BasicEntityBuilder.class);
+
+        Class<? extends EntityBuilder> eb = TextEntitySource.parseEntityBuilder(loader, json);
+        if (eb != null) {
+            format.setEntityBuilder(eb);
+        }
+
+        return format;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("type", entityType)
+                .append("builder", entityBuilder)
+                .toString();
     }
 
     private class JSONLP extends LineEntityParser {
