@@ -20,21 +20,24 @@
  */
 package org.lenskit.cli.commands;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.ItemNameDAO;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemRecommender;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.dao.ItemNameDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +75,13 @@ public class Recommend implements Command {
         try (LenskitRecommender rec = engine.createRecommender()) {
             ItemRecommender irec = rec.getItemRecommender();
             ItemNameDAO indao = rec.get(ItemNameDAO.class);
+            RecOutput output;
+            if (ctx.options.getBoolean("json")) {
+                output = new JSONOutput(indao);
+            } else {
+                output = new HumanOutput(indao);
+            }
+
             if (irec == null) {
                 logger.error("recommender has no item recommender");
                 throw new UnsupportedOperationException("no item recommender");
@@ -79,18 +89,12 @@ public class Recommend implements Command {
 
             logger.info("recommending for {} users", users.size());
             Stopwatch timer = Stopwatch.createStarted();
+            output.begin();
             for (long user : users) {
                 ResultList recs = irec.recommendWithDetails(user, n, null, null);
-                System.out.format("recommendations for user %d:%n", user);
-                for (Result item : recs) {
-                    System.out.format("  %d", item.getId());
-                    if (indao != null) {
-                        System.out.format(" (%s)", indao.getItemName(item.getId()));
-                    }
-                    System.out.format(": %.3f", item.getScore());
-                    System.out.println();
-                }
+                output.writeUser(user, recs);
             }
+            output.end();
             timer.stop();
             logger.info("recommended for {} users in {}", users.size(), timer);
         }
@@ -101,6 +105,9 @@ public class Recommend implements Command {
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
         RecommenderLoader.configureArguments(parser);
+        parser.addArgument("--json")
+              .action(Arguments.storeTrue())
+              .help("output in JSON instead of human-readable format");
         parser.addArgument("-n", "--num-recs")
               .type(Integer.class)
               .setDefault(10)
@@ -124,6 +131,83 @@ public class Recommend implements Command {
             environment = new ScriptEnvironment(opts);
             input = new InputData(environment, opts);
             loader = new RecommenderLoader(input, environment, opts);
+        }
+    }
+
+    private static interface RecOutput {
+        void begin() throws IOException;
+        void writeUser(long user, ResultList recs) throws IOException;
+        void end() throws IOException;
+    }
+
+    private class HumanOutput implements RecOutput {
+        private final ItemNameDAO nameDAO;
+
+        HumanOutput(ItemNameDAO ind) {
+            nameDAO = ind;
+        }
+
+        @Override
+        public void begin() {
+        }
+
+        @Override
+        public void writeUser(long user, ResultList recs) {
+            System.out.format("recommendations for user %d:%n", user);
+            for (Result item : recs) {
+                System.out.format("  %d", item.getId());
+                if (nameDAO != null) {
+                    System.out.format(" (%s)", nameDAO.getItemName(item.getId()));
+                }
+                System.out.format(": %.3f", item.getScore());
+                System.out.println();
+            }
+        }
+
+        @Override
+        public void end() {
+
+        }
+    }
+
+    private class JSONOutput implements RecOutput {
+        private final ItemNameDAO nameDAO;
+        private JsonGenerator generator;
+
+        JSONOutput(ItemNameDAO ind) throws IOException {
+            nameDAO = ind;
+            JsonFactory jfac = new JsonFactory();
+            generator = jfac.createGenerator(System.out)
+                            .useDefaultPrettyPrinter();
+        }
+
+        @Override
+        public void begin() throws IOException {
+            generator.writeStartArray();
+        }
+
+        @Override
+        public void writeUser(long user, ResultList recs) throws IOException {
+            generator.writeStartObject();
+            generator.writeNumberField("user", user);
+            generator.writeArrayFieldStart("recommendations");
+            for (Result r: recs) {
+                generator.writeStartObject();
+                generator.writeNumberField("item", r.getId());
+                generator.writeNumberField("score", r.getScore());
+                if (nameDAO != null) {
+                    generator.writeStringField("name", nameDAO.getItemName(r.getId()));
+                }
+                generator.writeEndObject();
+            }
+            generator.writeEndArray();
+            generator.writeEndObject();
+        }
+
+        @Override
+        public void end() throws IOException {
+            generator.writeEndArray();
+            generator.close();
         }
     }
 }
