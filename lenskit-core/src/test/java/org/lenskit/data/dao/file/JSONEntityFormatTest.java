@@ -28,6 +28,8 @@ import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingBuilder;
 
+import java.util.Collections;
+
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -37,7 +39,7 @@ public class JSONEntityFormatTest {
         JSONEntityFormat fmt = new JSONEntityFormat();
         fmt.setEntityType(CommonTypes.USER);
 
-        LineEntityParser lep = fmt.makeParser(Lists.newArrayList());
+        LineEntityParser lep = fmt.makeParser(Collections.EMPTY_LIST);
         Entity res = lep.parse("{\"$id\": 203810}");
         assertThat(res, notNullValue());
         assertThat(res.getId(), equalTo(203810L));
@@ -51,7 +53,7 @@ public class JSONEntityFormatTest {
         fmt.setEntityType(CommonTypes.RATING);
         fmt.setEntityBuilder(RatingBuilder.class);
 
-        LineEntityParser lep = fmt.makeParser(Lists.newArrayList());
+        LineEntityParser lep = fmt.makeParser(Collections.EMPTY_LIST);
         Entity res = lep.parse("{\"$id\": 203810, \"user\": 42, \"item\": 20, \"rating\": 3.5}");
         assertThat(res, notNullValue());
         assertThat(res, instanceOf(Rating.class));

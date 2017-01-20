@@ -32,7 +32,7 @@ import static org.junit.Assert.assertThat;
 public class InstanceFactoryTest {
     @Test
     public void testConstructListNoArgs() {
-        InstanceFactory<List> fac = InstanceFactory.fromConstructor(ArrayList.class);
+        InstanceFactory<List> fac = InstanceFactory.<List>fromConstructor(ArrayList.class);
         assertThat(fac, notNullValue());
         List<?> list = fac.newInstance();
         assertThat(list, hasSize(0));
