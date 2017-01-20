@@ -279,7 +279,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
                     lti = ti;
                 }
                 if (oi != loi) {
-                    ok = keys.getKey(olb + oi);
+                    ok = oks.getKey(olb + oi);
                     loi = oi;
                 }
                 if (tk == ok) {
