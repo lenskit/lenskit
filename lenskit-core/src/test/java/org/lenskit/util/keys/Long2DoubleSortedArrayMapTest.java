@@ -30,7 +30,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someMaps;
 import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someSets;
+import static net.java.quickcheck.generator.CombinedGenerators.sets;
 import static net.java.quickcheck.generator.PrimitiveGenerators.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -165,6 +167,20 @@ public class Long2DoubleSortedArrayMapTest {
         assertThat(sub.keySet(), contains(2L, 4L));
         assertThat(sub, hasEntry(2L, 2.4));
         assertThat(sub, hasEntry(4L, 4.3));
+    }
+
+    @Test
+    public void testRandomMaps() {
+        for (Map<Long,Double> map: someMaps(longs(), doubles())) {
+            Long2DoubleSortedArrayMap vec = Long2DoubleSortedArrayMap.create(map);
+            Set<Long> picked = sets(map.keySet()).next();
+            Set<Long> extra = sets(longs()).next();
+            LongSortedSet wanted = LongUtils.setUnion(LongUtils.asLongSet(picked), LongUtils.asLongSet(extra));
+            Long2DoubleSortedMap sv = vec.subMap(wanted);
+            assertThat(sv.keySet(), everyItem(isIn(wanted)));
+            assertThat(sv.keySet(), containsInAnyOrder(picked.toArray()));
+            assertThat(sv.entrySet(), everyItem(isIn(map.entrySet())));
+        }
     }
 
     @Test
