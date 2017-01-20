@@ -295,87 +295,19 @@ public class TextEntitySource implements EntitySource, Describable {
         logger.info("loading text file source {} to read from {}", name, source.getURL());
 
         String fmt = object.path("format").asText("delimited").toLowerCase();
-        String delim;
+        EntityFormat format;
         switch (fmt) {
-        case "csv":
-            delim = ",";
-            break;
-        case "tsv":
-        case "delimited":
-            delim = "\t";
-            break;
-        default:
-            throw new IllegalArgumentException("unsupported data format " + fmt);
+            case "csv":
+            case "tsv":
+            case "delimited":
+                format = DelimitedColumnEntityFormat.fromJSON(name, loader, object);
+                break;
+            case "json":
+                format = JSONEntityFormat.fromJSON(name, loader, object);
+                break;
+            default:
+                throw new IllegalArgumentException("unknown entity format " + fmt);
         }
-        JsonNode delimNode = object.path("delimiter");
-        if (delimNode.isValueNode()) {
-            delim = delimNode.asText();
-        }
-
-        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
-        format.setDelimiter(delim);
-        logger.debug("{}: using delimiter {}", name, delim);
-        JsonNode header = object.path("header");
-        boolean canUseColumnMap = false;
-        if (header.isBoolean() && header.asBoolean()) {
-            logger.debug("{}: reading header", name);
-            format.setHeader(true);
-            canUseColumnMap = true;
-        } else if (header.isNumber()) {
-            format.setHeaderLines(header.asInt());
-            logger.debug("{}: skipping {} header lines", format.getHeaderLines());
-        }
-
-        String eTypeName = object.path("entity_type").asText("rating").toLowerCase();
-        EntityType etype = EntityType.forName(eTypeName);
-        logger.debug("{}: reading entities of type {}", name, etype);
-        EntityDefaults entityDefaults = EntityDefaults.lookup(etype);
-        format.setEntityType(etype);
-        format.setEntityBuilder(entityDefaults != null ? entityDefaults.getDefaultBuilder() : BasicEntityBuilder.class);
-
-        JsonNode columns = object.path("columns");
-        if (columns.isMissingNode() || columns.isNull()) {
-            List<TypedName<?>> defColumns = entityDefaults != null ? entityDefaults.getDefaultColumns() : null;
-            if (defColumns == null) {
-                throw new IllegalArgumentException("no columns specified and no default columns available");
-            }
-
-            for (TypedName<?> attr: entityDefaults.getDefaultColumns()) {
-                format.addColumn(attr);
-            }
-        } else if (columns.isObject()) {
-            if (!canUseColumnMap) {
-                throw new IllegalArgumentException("cannot use column map without file header");
-            }
-            Iterator<Map.Entry<String, JsonNode>> colIter = columns.fields();
-            while (colIter.hasNext()) {
-                Map.Entry<String, JsonNode> col = colIter.next();
-                format.addColumn(col.getKey(), parseAttribute(entityDefaults, col.getValue()));
-            }
-        } else if (columns.isArray()) {
-            for (JsonNode col: columns) {
-                format.addColumn(parseAttribute(entityDefaults, col));
-            }
-        } else {
-            throw new IllegalArgumentException("invalid format for columns");
-        }
-
-        JsonNode ebNode = object.path("builder");
-        if (ebNode.isTextual()) {
-            String ebName = ebNode.asText();
-            if (ebName.equals("basic")) {
-                format.setEntityBuilder(BasicEntityBuilder.class);
-            } else {
-                Class bld;
-                try {
-                    bld = ClassUtils.getClass(loader, ebName);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalArgumentException("cannot load class " + ebName, e);
-                }
-                format.setEntityBuilder(bld);
-            }
-        }
-        logger.debug("{}: using entity builder {}", format.getEntityBuilder());
 
         JsonNode metaNode = object.get("metadata");
         if (metaNode != null) {
@@ -391,7 +323,29 @@ public class TextEntitySource implements EntitySource, Describable {
         return source;
     }
 
-    private static TypedName<?> parseAttribute(EntityDefaults entityDefaults, JsonNode col) {
+    static Class<? extends EntityBuilder> parseEntityBuilder(ClassLoader loader, JsonNode json) {
+        JsonNode ebNode = json.path("builder");
+        if (ebNode.isTextual()) {
+            String ebName = ebNode.asText();
+            if (ebName.equals("basic")) {
+                return BasicEntityBuilder.class;
+            } else {
+                Class<?> bld;
+                try {
+                    bld = ClassUtils.getClass(loader, ebName);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalArgumentException("cannot load class " + ebName, e);
+                }
+                return bld.asSubclass(EntityBuilder.class);
+            }
+        } else if (ebNode.isMissingNode() || ebNode.isNull()) {
+            return null;
+        } else {
+            throw new IllegalArgumentException("invalid entity builder: " + ebNode);
+        }
+    }
+
+    static TypedName<?> parseAttribute(EntityDefaults entityDefaults, JsonNode col) {
         if (col.isNull() || col.isMissingNode()) {
             return null;
         } else if (col.isObject()) {

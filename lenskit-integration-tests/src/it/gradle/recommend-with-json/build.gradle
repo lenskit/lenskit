@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hamcrest:hamcrest-library:1.3'
+        classpath "org.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+
+import groovy.json.JsonSlurper
+import org.lenskit.gradle.*
+import static org.hamcrest.MatcherAssert.*
+import static org.hamcrest.Matchers.*
+
+apply plugin: 'java'
+apply from: 'common.gradle'
+apply from: 'renjin.gradle'
+apply plugin: 'lenskit'
+
+dependencies {
+    testCompile "org.lenskit:lenskit-all:$project.lenskitVersion"
+    analyze 'org.renjin.cran:rjson:0.2.15-renjin-14'
+}
+
+task copyData(type: Copy) {
+    from mlDataDir
+    into 'ml100k'
+    include 'u.data'
+    include 'movies.csv'
+    rename(/u.data/, 'ratings.tsv')
+}
+
+task makeJson(type: JavaExec) {
+    inputs.files copyData
+    classpath configurations.analyze
+    main 'org.lenskit.util.test.RunScript'
+    args file('jsonify.R')
+}
+
+task recommend(type: JavaExec) {
+    dependsOn copyData, makeJson
+    classpath configurations.runtime
+    main 'org.lenskit.cli.Main'
+    args 'recommend', '--data-source', 'ml100k.yaml', '-c', 'popular.groovy', '--json', '100'
+    doFirst {
+        standardOutput = new ByteArrayOutputStream()
+    }
+    doLast {
+        def bos = standardOutput as ByteArrayOutputStream
+        def text = bos.toString("UTF-8")
+        def slurp = new JsonSlurper()
+        def output = slurp.parseText(text)
+        assertThat(output, hasSize(1))
+        def result = output[0];
+        assertThat(result.user, equalTo(100))
+        assertThat(result.recommendations, hasSize(10))
+        assertThat(result.recommendations[0].item, equalTo(50))
+        assertThat(result.recommendations[0].name, equalTo("Star Wars (1977)"))
+    }
+}
+
+check {
+    dependsOn recommend
+}
