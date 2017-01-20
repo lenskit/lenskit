@@ -1,0 +1,8 @@
+ratings:
+  file: ml100k/ratings.tsv
+  format: tsv
+  entity_type: rating
+items:
+  file: movies.json
+  format: json
+  entity_type: item
