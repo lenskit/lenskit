@@ -17,8 +17,8 @@ with LensKit we recommend checking out the [Getting Started][] guide.
 
 [web site]: http://lenskit.org
 [wiki]: http://github.com/lenskit/lenskit/wiki/
-[Getting Started]: http://github.com/lenskit/lenskit/wiki/GettingStarted
-[mailing list]: https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit
+[Getting Started]: http://lenskit.org/documentation/basics/getting-started/
+[mailing list]: https://groups.google.com/forum/#!forum/lenskit-recsys
 
 LensKit is made available under the GNU Lesser General Public License
 (LGPL), version 2.1 or later.
@@ -38,12 +38,10 @@ also be checked out and used in most Java IDEs.
 ## Working with the Code
 
 To work with the LensKit code, import the Gradle project into your IDE.
-IntelliJ IDEA includes support for Gradle projects, and this support works well
-for LensKit in version 13 and later.  Gradle plugins are available for other
-IDEs such as Eclipse.
+Most modern Java IDEs include support for Gradle, including IntelliJ IDEA (used
+by most LensKit developers), Eclipse, and NetBeans.
 
-No particular setup is needed for IntelliJ, which is what most of the LensKit
-developers use.
+No other particular setup is needed.
 
 ## Modules
 
@@ -51,23 +49,23 @@ LensKit is comprised of several modules.  The top-level `lenskit`
 module serves as a container to build them and provide common settings
 and dependencies.  The other modules are as follows:
 
-* `lenskit-api` -- the common, public recommender API exposed by LensKit, independent
+- `lenskit-api` -- the common, public recommender API exposed by LensKit, independent
   of its actual implementations.
-* `lenskit-test` -- infrastructure and helper code for testing.
-* `lenskit-data-structures` -- common data structures used by LensKit.
-  These are split from `-core` so the API can depend on them.
-* `lenskit-core` -- the core support code and configuration facilities for
+- `lenskit-test` -- infrastructure and helper code for testing.
+- `lenskit-core` -- the core support code and configuration facilities for
   the rest of LensKit. It is the entry point for most of what you want to do with
   LensKit, providing support for configuring and building recommenders.
-* `lenskit-knn` -- k-NN recommenders (user-user and item-item collaborative
+- `lenskit-knn` -- k-NN recommenders (user-user and item-item collaborative
   filtering).
-* `lenskit-svd` -- the FunkSVD recommender (and eventually real SVD recommenders).
-* `lenskit-slopeone` -- Slope-One recommenders.
-* `lenskit-eval` -- the evaluation framework and APIs, along with a command line
+- `lenskit-svd` -- the FunkSVD recommender (and eventually real SVD recommenders).
+- `lenskit-slopeone` -- Slope-One recommenders.
+- `lenskit-eval` -- the evaluation framework and APIs, along with a command line
   evaluation runner.
-* `lenskit-all` -- a metapackage you can depend on to pull in the rest of the LensKit packages.
-* `lenskit-cli` -- the LensKit command line interface.
-* `lenskit-integration-tests` -- additional integration tests for LensKit.
+- `lenskit-groovy` -- support for reading LensKit configurations from Groovy files.
+- `lenskit-all` -- a metapackage you can depend on to pull in the rest of the LensKit packages.
+- `lenskit-cli` -- the LensKit command line interface.
+- `lenskit-gradle` -- the Gradle plugin to script the LensKit evaluator
+- `lenskit-integration-tests` -- additional integration tests for LensKit.
 
 ## Running the Tests
 
@@ -141,7 +139,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   
 We welcome contribution to LensKit.  If you are looking for something
 to work on, we recommend perusing the open tickets on GitHub
-or asking on the [mailing list](https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit).
+or asking on the [mailing list][].
 
 We prefer to receive code submissions as GitHub pull requests.  To
 do this:
