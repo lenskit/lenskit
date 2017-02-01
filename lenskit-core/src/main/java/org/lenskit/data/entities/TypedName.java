@@ -26,6 +26,7 @@ import com.google.common.collect.Interners;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.util.ClassProxy;
+import org.grouplens.lenskit.util.TypeUtils;
 import org.joda.convert.StringConvert;
 import org.joda.convert.StringConverter;
 
@@ -154,35 +155,10 @@ public final class TypedName<T> implements Serializable {
      */
     public static TypedName<?> create(String name, String typeName) {
         Class<?> type;
-        switch (typeName) {
-        case "string":
-        case "String":
-            type = String.class;
-            break;
-        case "int":
-        case "Integer":
-            type = Integer.class;
-            break;
-        case "long":
-        case "Long":
-            type = Long.class;
-            break;
-        case "double":
-        case "real":
-        case "Double":
-            type = Double.class;
-            break;
-        default:
-            try {
-                type = ClassUtils.getClass(typeName);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("Cannot load type name ", e);
-            }
-        }
+        type = TypeUtils.resolveTypeName(typeName);
 
         return create(name, type);
     }
-
 
     private void readObject(ObjectInputStream in) throws IOException {
         throw new InvalidObjectException("typed names must use serialization proxy");

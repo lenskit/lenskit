@@ -22,11 +22,11 @@ package org.grouplens.lenskit.util;
 
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.io.File;
+import java.util.*;
 
+import static org.grouplens.lenskit.util.TypeUtils.resolveTypeName;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 /**
@@ -44,5 +44,27 @@ public class TypeUtilsTest {
         //assertTrue(closure.contains(Object.class));
         assertFalse(closure.contains(List.class));
         assertFalse(closure.contains(null));
+    }
+
+    @Test
+    public void testResolveStringType() {
+        assertThat(resolveTypeName("string"), equalTo(String.class));
+        assertThat(resolveTypeName("String"), equalTo(String.class));
+    }
+
+    @Test
+    public void testResolveNumericTypes() {
+        assertThat(resolveTypeName("double"), equalTo(Double.class));
+        assertThat(resolveTypeName("Double"), equalTo(Double.class));
+        assertThat(resolveTypeName("long"), equalTo(Long.class));
+        assertThat(resolveTypeName("Long"), equalTo(Long.class));
+        assertThat(resolveTypeName("int"), equalTo(Integer.class));
+        assertThat(resolveTypeName("Integer"), equalTo(Integer.class));
+        assertThat(resolveTypeName("real"), equalTo(Double.class));
+    }
+
+    @Test
+    public void testResolveClassType() {
+        assertThat(resolveTypeName("java.io.File"), equalTo(File.class));
     }
 }

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Predicate;
+import org.apache.commons.lang3.ClassUtils;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -101,5 +102,34 @@ public class TypeUtils {
                 return parent.isAssignableFrom(input);
             }
         };
+    }
+
+    /**
+     * Resolve a type name into a type.
+     * @param type The type name to resolve.
+     * @return The type.
+     */
+    public static Class<?> resolveTypeName(String type) {
+        switch (type) {
+        case "string":
+        case "String":
+            return String.class;
+        case "int":
+        case "Integer":
+            return Integer.class;
+        case "long":
+        case "Long":
+            return Long.class;
+        case "double":
+        case "real":
+        case "Double":
+            return Double.class;
+        default:
+            try {
+                return ClassUtils.getClass(type);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalArgumentException("Cannot load type name ", e);
+            }
+        }
     }
 }
