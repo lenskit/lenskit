@@ -23,9 +23,9 @@ package org.lenskit.data.entities;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.grouplens.grapht.util.ClassProxy;
 import org.grouplens.lenskit.util.TypeUtils;
 import org.joda.convert.StringConvert;
 import org.joda.convert.StringConverter;
@@ -47,12 +47,12 @@ public final class TypedName<T> implements Serializable {
     private static final Interner<TypedName<?>> FIELD_CACHE = Interners.newStrongInterner();
 
     private final String name;
-    private final Class<T> type;
+    private final TypeToken<T> type;
     private transient volatile int hashCode;
     private transient volatile StringConverter<T> converter;
 
 
-    private TypedName(String n, Class<T> t) {
+    private TypedName(String n, TypeToken<T> t) {
         name = n;
         type = t;
     }
@@ -73,8 +73,19 @@ public final class TypedName<T> implements Serializable {
      * @return The type.
      */
     @Nonnull
-    public Class<T> getType() {
+    public TypeToken<T> getType() {
         return type;
+    }
+
+    /**
+     * Get the raw type (class). This will never be a primitive type class; primitive classes are
+     * always normalized to their wrapper classes (e.g. `long.class` becomes `Long.class`).
+     *
+     * @return The type.
+     */
+    @Nonnull
+    public Class<? super T> getRawType() {
+        return type.getRawType();
     }
 
     /**
@@ -82,11 +93,12 @@ public final class TypedName<T> implements Serializable {
      * @return The attribute value.
      */
     public T parseString(String value) {
-        StringConverter<T> cvt = converter;
+        // FIXME Handle list types
+        StringConverter cvt = converter;
         if (cvt == null) {
-            converter = cvt = StringConvert.INSTANCE.findConverter(type);
+            converter = cvt = StringConvert.INSTANCE.findConverter(type.getRawType());
         }
-        return cvt.convertFromString(type, value);
+        return (T) cvt.convertFromString(type.getRawType(), value);
     }
 
 
@@ -119,10 +131,10 @@ public final class TypedName<T> implements Serializable {
     @Override
     public String toString() {
         String tname;
-        if (ClassUtils.isPrimitiveWrapper(type)) {
-            tname = ClassUtils.wrapperToPrimitive(type).getName();
+        if (ClassUtils.isPrimitiveWrapper(type.getRawType())) {
+            tname = ClassUtils.wrapperToPrimitive(type.getRawType()).getName();
         } else {
-            tname = type.getCanonicalName();
+            tname = type.toString();
         }
         return "TypedName[" + name + ": " + tname + "]";
     }
@@ -141,6 +153,25 @@ public final class TypedName<T> implements Serializable {
         Preconditions.checkNotNull(type, "type");
         if (type.isPrimitive()) {
             type = (Class<T>) ClassUtils.primitiveToWrapper(type);
+        }
+        TypedName<T> attribute = new TypedName<>(name.intern(), TypeToken.of(type));
+        return (TypedName<T>) FIELD_CACHE.intern(attribute);
+    }
+
+    /**
+     * Create a typed name object.
+     *
+     * @param name The name.
+     * @param type The type.
+     * @return An object encapsulating the specified name and type.
+     */
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public static <T> TypedName<T> create(String name, TypeToken<T> type) {
+        Preconditions.checkNotNull(name, "name");
+        Preconditions.checkNotNull(type, "type");
+        if (type.isPrimitive()) {
+            type = TypeToken.of((Class<T>) ClassUtils.primitiveToWrapper(type.getRawType()));
         }
         TypedName<T> attribute = new TypedName<>(name.intern(), type);
         return (TypedName<T>) FIELD_CACHE.intern(attribute);
@@ -169,26 +200,22 @@ public final class TypedName<T> implements Serializable {
     }
 
     private Object writeReplace() {
-        return new SerialProxy(name, ClassProxy.of(type));
+        return new SerialProxy(name, type);
     }
 
     private static class SerialProxy implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
 
         private String name;
-        private ClassProxy type;
+        private TypeToken type;
 
-        public SerialProxy(String n, ClassProxy t) {
+        public SerialProxy(String n, TypeToken t) {
             name = n;
             type = t;
         }
 
         private Object readResolve() throws ObjectStreamException {
-            try {
-                return create(name, type.resolve());
-            } catch (ClassNotFoundException e) {
-                throw new InvalidObjectException("Cannot resolve type " + type.getClassName());
-            }
+            return create(name, type);
         }
     }
 }

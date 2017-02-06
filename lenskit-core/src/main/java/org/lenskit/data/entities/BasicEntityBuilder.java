@@ -45,7 +45,7 @@ public class BasicEntityBuilder extends EntityBuilder {
     public <T> EntityBuilder setAttribute(TypedName<T> name, T val) {
         Preconditions.checkNotNull(name, "attribute");
         Preconditions.checkNotNull(val, "value");
-        Preconditions.checkArgument(name.getType().isInstance(val),
+        Preconditions.checkArgument(name.getRawType().isInstance(val),
                                     "value %s not of type %s", val, name.getType());
         if (name == CommonAttributes.ENTITY_ID) {
             return setId(((Long) val).longValue());

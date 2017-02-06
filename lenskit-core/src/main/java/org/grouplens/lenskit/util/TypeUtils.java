@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Predicate;
+import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
 
 import javax.annotation.Nullable;
@@ -130,6 +131,22 @@ public class TypeUtils {
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("Cannot load type name ", e);
             }
+        }
+    }
+
+    public static <T> String makeTypeName(TypeToken<T> type) {
+        // FIXME Handle list types
+        Class<?> raw = type.getRawType();
+        if (raw.equals(String.class)) {
+            return "string";
+        } else if (raw.equals(Double.class)) {
+            return "double";
+        } else if (raw.equals(Integer.class)) {
+            return "int";
+        } else if (raw.equals(Long.class)) {
+            return "long";
+        } else {
+            return raw.getName();
         }
     }
 }

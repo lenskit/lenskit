@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
+import org.grouplens.lenskit.util.TypeUtils;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
@@ -240,14 +240,14 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             for (TypedName<?> col: columns) {
                 ObjectNode colObj = cols.addObject();
                 colObj.put("name", col.getName());
-                colObj.put("type", col.getType().getName());
+                colObj.put("type", TypeUtils.makeTypeName(col.getType()));
             }
         } else if (labeledColumns != null) {
             ObjectNode cols = json.putObject("columns");
             for (Map.Entry<String,TypedName<?>> colE: labeledColumns.entrySet()) {
                 ObjectNode colNode = cols.putObject(colE.getKey());
                 colNode.put("name", colE.getValue().getName());
-                colNode.put("type", colE.getValue().getType().getName());
+                colNode.put("type", TypeUtils.makeTypeName(colE.getValue().getType()));
             }
         } else {
             throw new IllegalStateException("no labels specified");

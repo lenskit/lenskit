@@ -71,20 +71,18 @@ class BasicEntity extends AbstractEntity {
         return attributes.containsKey(name.getName());
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T> T maybeGet(TypedName<T> name) {
         Attribute<?> attr = attributes.get(name.getName());
         if (attr == null) {
             return null;
-        } else {
-            Class<T> type = name.getType();
+        } else if (attr.getTypedName().equals(name)) {
             Object value = attr.getValue();
-            if (type.isInstance(value)) {
-                return type.cast(value);
-            } else {
-                return null;
-            }
+            return (T) name.getRawType().cast(value);
+        } else {
+            return null;
         }
     }
 

@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ public class TypedNameTest {
     public void testBasicField() {
         TypedName<String> attribute = TypedName.create("foo", String.class);
         assertThat(attribute.getName(), equalTo("foo"));
-        assertThat(attribute.getType(), equalTo(String.class));
+        assertThat(attribute.getType(), equalTo(TypeToken.of(String.class)));
         // check equality to random other object
         assertThat(attribute, not(equalTo((Object) "foo")));
 
