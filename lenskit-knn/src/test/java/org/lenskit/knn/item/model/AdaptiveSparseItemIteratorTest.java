@@ -21,6 +21,7 @@
 package org.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
@@ -41,7 +42,7 @@ public class AdaptiveSparseItemIteratorTest {
         userItems.put(39, LongUtils.packedSet(2, 7, 9, 13));
         userItems.put(12, universe.subSet(2, 97));
         context = new ItemItemBuildContext(SortedKeyIndex.fromCollection(universe),
-                                           null, userItems);
+                                           new SparseVector[universe.size()], userItems);
     }
 
     @Test
