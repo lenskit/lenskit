@@ -50,24 +50,34 @@ public class TypeUtilsTest {
 
     @Test
     public void testResolveStringType() {
-        assertThat(resolveTypeName("string"), equalTo(String.class));
-        assertThat(resolveTypeName("String"), equalTo(String.class));
+        assertThat(resolveTypeName("string"),
+                   equalTo(TypeToken.of(String.class)));
+        assertThat(resolveTypeName("String"),
+                   equalTo(TypeToken.of(String.class)));
     }
 
     @Test
     public void testResolveNumericTypes() {
-        assertThat(resolveTypeName("double"), equalTo(Double.class));
-        assertThat(resolveTypeName("Double"), equalTo(Double.class));
-        assertThat(resolveTypeName("long"), equalTo(Long.class));
-        assertThat(resolveTypeName("Long"), equalTo(Long.class));
-        assertThat(resolveTypeName("int"), equalTo(Integer.class));
-        assertThat(resolveTypeName("Integer"), equalTo(Integer.class));
-        assertThat(resolveTypeName("real"), equalTo(Double.class));
+        assertThat(resolveTypeName("double"),
+                   equalTo(TypeToken.of(Double.class)));
+        assertThat(resolveTypeName("Double"),
+                   equalTo(TypeToken.of(Double.class)));
+        assertThat(resolveTypeName("long"),
+                   equalTo(TypeToken.of(Long.class)));
+        assertThat(resolveTypeName("Long"),
+                   equalTo(TypeToken.of(Long.class)));
+        assertThat(resolveTypeName("int"),
+                   equalTo(TypeToken.of(Integer.class)));
+        assertThat(resolveTypeName("Integer"),
+                   equalTo(TypeToken.of(Integer.class)));
+        assertThat(resolveTypeName("real"),
+                   equalTo(TypeToken.of(Double.class)));
     }
 
     @Test
     public void testResolveClassType() {
-        assertThat(resolveTypeName("java.io.File"), equalTo(File.class));
+        assertThat(resolveTypeName("java.io.File"),
+                   equalTo(TypeToken.of(File.class)));
     }
 
     @Test

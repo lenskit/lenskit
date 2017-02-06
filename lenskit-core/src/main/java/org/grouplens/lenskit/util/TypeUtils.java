@@ -110,24 +110,24 @@ public class TypeUtils {
      * @param type The type name to resolve.
      * @return The type.
      */
-    public static Class<?> resolveTypeName(String type) {
+    public static TypeToken<?> resolveTypeName(String type) {
         switch (type) {
         case "string":
         case "String":
-            return String.class;
+            return TypeToken.of(String.class);
         case "int":
         case "Integer":
-            return Integer.class;
+            return TypeToken.of(Integer.class);
         case "long":
         case "Long":
-            return Long.class;
+            return TypeToken.of(Long.class);
         case "double":
         case "real":
         case "Double":
-            return Double.class;
+            return TypeToken.of(Double.class);
         default:
             try {
-                return ClassUtils.getClass(type);
+                return TypeToken.of(ClassUtils.getClass(type));
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException("Cannot load type name ", e);
             }

@@ -185,10 +185,7 @@ public final class TypedName<T> implements Serializable {
      * @throws IllegalArgumentException if `typeName` is not a valid type name.
      */
     public static TypedName<?> create(String name, String typeName) {
-        Class<?> type;
-        type = TypeUtils.resolveTypeName(typeName);
-
-        return create(name, type);
+        return create(name, TypeUtils.resolveTypeName(typeName));
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
