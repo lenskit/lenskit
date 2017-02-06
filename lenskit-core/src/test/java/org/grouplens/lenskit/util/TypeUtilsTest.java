@@ -20,11 +20,13 @@
  */
 package org.grouplens.lenskit.util;
 
+import com.google.common.reflect.TypeToken;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.*;
 
+import static org.grouplens.lenskit.util.TypeUtils.makeTypeName;
 import static org.grouplens.lenskit.util.TypeUtils.resolveTypeName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -66,5 +68,19 @@ public class TypeUtilsTest {
     @Test
     public void testResolveClassType() {
         assertThat(resolveTypeName("java.io.File"), equalTo(File.class));
+    }
+
+    @Test
+    public void testStringifyBasicTypes() {
+        assertThat(makeTypeName(TypeToken.of(String.class)),
+                   equalTo("string"));
+        assertThat(makeTypeName(TypeToken.of(Long.class)),
+                   equalTo("long"));
+        assertThat(makeTypeName(TypeToken.of(File.class)),
+                   equalTo("java.io.File"));
+        assertThat(makeTypeName(TypeToken.of(Integer.class)),
+                   equalTo("int"));
+        assertThat(makeTypeName(TypeToken.of(Double.class)),
+                   equalTo("double"));
     }
 }
