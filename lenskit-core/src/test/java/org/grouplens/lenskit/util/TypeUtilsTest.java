@@ -26,8 +26,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.*;
 
-import static org.grouplens.lenskit.util.TypeUtils.makeTypeName;
-import static org.grouplens.lenskit.util.TypeUtils.resolveTypeName;
+import static org.grouplens.lenskit.util.TypeUtils.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -92,5 +91,35 @@ public class TypeUtilsTest {
                    equalTo("int"));
         assertThat(makeTypeName(TypeToken.of(Double.class)),
                    equalTo("double"));
+    }
+
+    @Test
+    public void testParseListType() {
+        TypeToken<List<String>> strList = new TypeToken<List<String>>() {};
+        assertThat(resolveTypeName("string[]"),
+                   equalTo(strList));
+        assertThat(resolveTypeName("int[]"),
+                   equalTo(new TypeToken<List<Integer>>(){}));
+        assertThat(resolveTypeName("int[][]"),
+                   equalTo(new TypeToken<List<List<Integer>>>(){}));
+    }
+
+    @Test
+    public void testStringifyListType() {
+        TypeToken<List<String>> strList = new TypeToken<List<String>>() {};
+        assertThat(makeTypeName(strList), equalTo("string[]"));
+        assertThat(makeTypeName(new TypeToken<List<List<Double>>>() {}),
+                   equalTo("double[][]"));
+    }
+
+    @Test
+    public void testExtractListElement() {
+        TypeToken<List<String>> strList = new TypeToken<List<String>>() {};
+        assertThat(listElementType(strList),
+                   equalTo(TypeToken.of(String.class)));
+
+        TypeToken<List<List<File>>> nestedList = new TypeToken<List<List<File>>>() {};
+        assertThat(listElementType(nestedList),
+                   equalTo(makeListType(TypeToken.of(File.class))));
     }
 }
