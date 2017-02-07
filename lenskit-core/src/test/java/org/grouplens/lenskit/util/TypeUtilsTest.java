@@ -56,33 +56,33 @@ public class TypeUtilsTest {
     @Test
     public void testResolveStringType() {
         assertThat(resolveTypeName("string"),
-                   equalTo(TypeToken.of(String.class)));
+                   equalTo((TypeToken) TypeToken.of(String.class)));
         assertThat(resolveTypeName("String"),
-                   equalTo(TypeToken.of(String.class)));
+                   equalTo((TypeToken) TypeToken.of(String.class)));
     }
 
     @Test
     public void testResolveNumericTypes() {
         assertThat(resolveTypeName("double"),
-                   equalTo(TypeToken.of(Double.class)));
+                   equalTo((TypeToken) TypeToken.of(Double.class)));
         assertThat(resolveTypeName("Double"),
-                   equalTo(TypeToken.of(Double.class)));
+                   equalTo((TypeToken) TypeToken.of(Double.class)));
         assertThat(resolveTypeName("long"),
-                   equalTo(TypeToken.of(Long.class)));
+                   equalTo((TypeToken) TypeToken.of(Long.class)));
         assertThat(resolveTypeName("Long"),
-                   equalTo(TypeToken.of(Long.class)));
+                   equalTo((TypeToken) TypeToken.of(Long.class)));
         assertThat(resolveTypeName("int"),
-                   equalTo(TypeToken.of(Integer.class)));
+                   equalTo((TypeToken) TypeToken.of(Integer.class)));
         assertThat(resolveTypeName("Integer"),
-                   equalTo(TypeToken.of(Integer.class)));
+                   equalTo((TypeToken) TypeToken.of(Integer.class)));
         assertThat(resolveTypeName("real"),
-                   equalTo(TypeToken.of(Double.class)));
+                   equalTo((TypeToken) TypeToken.of(Double.class)));
     }
 
     @Test
     public void testResolveClassType() {
         assertThat(resolveTypeName("java.io.File"),
-                   equalTo(TypeToken.of(File.class)));
+                   equalTo((TypeToken) TypeToken.of(File.class)));
     }
 
     @Test
@@ -103,11 +103,11 @@ public class TypeUtilsTest {
     public void testParseListType() {
         TypeToken<List<String>> strList = new TypeToken<List<String>>() {};
         assertThat(resolveTypeName("string[]"),
-                   equalTo(strList));
+                   equalTo((TypeToken) strList));
         assertThat(resolveTypeName("int[]"),
-                   equalTo(new TypeToken<List<Integer>>(){}));
+                   equalTo((TypeToken) new TypeToken<List<Integer>>(){}));
         assertThat(resolveTypeName("int[][]"),
-                   equalTo(new TypeToken<List<List<Integer>>>(){}));
+                   equalTo((TypeToken) new TypeToken<List<List<Integer>>>(){}));
     }
 
     @Test

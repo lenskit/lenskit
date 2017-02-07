@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.reflect.TypeToken;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.TypeUtils;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.Rating;
@@ -97,7 +98,7 @@ public class JSONEntityFormatTest {
         assertThat(res, notNullValue());
         assertThat(res.getId(), equalTo(204L));
         assertThat(res.get(CommonAttributes.NAME), equalTo("hamster"));
-        assertThat(res.get("extra"), equalTo("wumpus"));
+        assertThat(res.get("extra"), (Matcher) equalTo("wumpus"));
     }
 
     @Test
@@ -109,9 +110,9 @@ public class JSONEntityFormatTest {
         JsonNode json = reader.readTree("{\"entity_type\": \"item\", \"attributes\": {\"id\": \"long\", \"title\": {\"name\": \"name\", \"type\": \"string\"}, \"tags\": \"string[]\"}}");
         JSONEntityFormat fmt = JSONEntityFormat.fromJSON(null, ClassLoaders.inferDefault(), json);
         assertThat(fmt.getEntityType(), equalTo(CommonTypes.ITEM));
-        assertThat(fmt.getAttributes(), hasEntry("id", CommonAttributes.ENTITY_ID));
-        assertThat(fmt.getAttributes(), hasEntry("title", CommonAttributes.NAME));
-        assertThat(fmt.getAttributes(), hasEntry("tags", tlName));
+        assertThat(fmt.getAttributes(), hasEntry("id", (TypedName) CommonAttributes.ENTITY_ID));
+        assertThat(fmt.getAttributes(), hasEntry("title", (TypedName) CommonAttributes.NAME));
+        assertThat(fmt.getAttributes(), hasEntry("tags", (TypedName) tlName));
         assertThat(fmt.getAttributes().size(), equalTo(3));
 
         LineEntityParser lep = fmt.makeParser(Collections.EMPTY_LIST);
