@@ -23,17 +23,17 @@ package org.lenskit.data.dao.file;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.reflect.TypeToken;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.grouplens.lenskit.util.TypeUtils;
 import org.junit.Test;
-import org.lenskit.data.entities.CommonAttributes;
-import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingBuilder;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -101,20 +101,24 @@ public class JSONEntityFormatTest {
     }
 
     @Test
-    public void testConfigureReaderFields() throws IOException {
+    public void testConfigureReaderCompoundField() throws IOException {
+        TypeToken<List<String>> sl = TypeUtils.makeListType(TypeToken.of(String.class));
+        TypedName<List<String>> tlName = TypedName.create("tags", sl);
+
         ObjectReader reader = new ObjectMapper().reader();
-        JsonNode json = reader.readTree("{\"entity_type\": \"item\", \"attributes\": {\"id\": \"long\", \"title\": {\"name\": \"name\", \"type\": \"string\"}}}");
+        JsonNode json = reader.readTree("{\"entity_type\": \"item\", \"attributes\": {\"id\": \"long\", \"title\": {\"name\": \"name\", \"type\": \"string\"}, \"tags\": \"string[]\"}}");
         JSONEntityFormat fmt = JSONEntityFormat.fromJSON(null, ClassLoaders.inferDefault(), json);
         assertThat(fmt.getEntityType(), equalTo(CommonTypes.ITEM));
         assertThat(fmt.getAttributes(), hasEntry("id", CommonAttributes.ENTITY_ID));
         assertThat(fmt.getAttributes(), hasEntry("title", CommonAttributes.NAME));
-        assertThat(fmt.getAttributes().size(), equalTo(2));
+        assertThat(fmt.getAttributes(), hasEntry("tags", tlName));
+        assertThat(fmt.getAttributes().size(), equalTo(3));
 
         LineEntityParser lep = fmt.makeParser(Collections.EMPTY_LIST);
-        Entity res = lep.parse("{\"id\": 204, \"title\": \"hamster\", \"extra\": \"wumpus\"}");
+        Entity res = lep.parse("{\"id\": 204, \"title\": \"hamster\", \"tags\": [\"foo\", \"bar\"]}");
         assertThat(res, notNullValue());
         assertThat(res.getId(), equalTo(204L));
         assertThat(res.get(CommonAttributes.NAME), equalTo("hamster"));
-        assertThat(res.hasAttribute("extra"), equalTo(false));
+        assertThat(res.get(tlName), contains("foo", "bar"));
     }
 }
