@@ -57,11 +57,12 @@ class BareEntity extends AbstractEntity {
         return name == CommonAttributes.ENTITY_ID;
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T> T maybeGet(TypedName<T> name) {
         return name == CommonAttributes.ENTITY_ID
-                ? name.getType().cast(getId())
+                ? (T) name.getRawType().cast(getId())
                 : null;
     }
 

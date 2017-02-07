@@ -21,6 +21,7 @@
 package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
+import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -43,7 +44,7 @@ public final class Attribute<T> {
     private Attribute(@Nonnull TypedName<T> name, @Nonnull T val) {
         Preconditions.checkNotNull(name, "name");
         Preconditions.checkNotNull(val, "value");
-        Preconditions.checkArgument(name.getType().isInstance(val), "value-type mismatch");
+        Preconditions.checkArgument(name.getRawType().isInstance(val), "value-type mismatch");
         this.name = name;
         value = val;
     }
@@ -83,7 +84,7 @@ public final class Attribute<T> {
      * @return The attribute's type.
      */
     @Nonnull
-    public Class<T> getType() {
+    public TypeToken<T> getType() {
         return name.getType();
     }
 

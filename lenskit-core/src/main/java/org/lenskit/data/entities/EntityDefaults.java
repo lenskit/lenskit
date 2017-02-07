@@ -25,6 +25,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
 import org.grouplens.grapht.util.ClassLoaders;
 
@@ -37,6 +38,7 @@ import java.util.*;
  * Descriptor for the default characteristics of an entity type.
  */
 public class EntityDefaults {
+    private static final TypeToken<Long> LONG_TYPE = TypeToken.of(Long.class);
     private final EntityType entityType;
     private final Map<String, TypedName<?>> attributes;
     private final List<TypedName<?>> defaultColumns;
@@ -166,7 +168,7 @@ public class EntityDefaults {
         for (Map.Entry<String,String> d: bean.getDerivations().entrySet()) {
             EntityType et = EntityType.forName(d.getKey());
             TypedName<?> attr = attrs.get(d.getValue());
-            if (!attr.getType().equals(Long.class)) {
+            if (!attr.getType().equals(LONG_TYPE)) {
                 throw new RuntimeException("derived entity derives from non-Long column");
             }
             derivs.add(EntityDerivation.create(et, type, (TypedName<Long>) attr));

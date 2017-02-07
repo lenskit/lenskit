@@ -26,15 +26,14 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.grouplens.lenskit.util.TypeUtils;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Entity format that decodes JSON objects.
@@ -44,6 +43,7 @@ public class JSONEntityFormat implements EntityFormat {
     private EntityType entityType;
     private Class<? extends EntityBuilder> entityBuilder = BasicEntityBuilder.class;
     private InstanceFactory<EntityBuilder> builderFactory;
+    private Map<String,TypedName<?>> attributes = new LinkedHashMap<>();
 
     /**
      * Set the entity type.
@@ -97,6 +97,32 @@ public class JSONEntityFormat implements EntityFormat {
         return builderFactory.newInstance();
     }
 
+    /**
+     * Get the attributes expected.
+     * @return The expected attributes.
+     */
+    public Map<String,TypedName<?>> getAttributes() {
+        return Collections.unmodifiableMap(attributes);
+    }
+
+    /**
+     * Add an attribute to the list of expected attributes.  It will be parsed from the JSON object field of the same
+     * name.
+     * @param attr The attribute to add.
+     */
+    public void addAttribute(TypedName<?> attr) {
+        addAttribute(attr.getName(), attr);
+    }
+
+    /**
+     * Add an attribute to the list of expected attributes, with a JSON field name.
+     * @param name The name of the field as it will appear in JSON.
+     * @param attr The attribute to add.
+     */
+    public void addAttribute(String name, TypedName<?> attr) {
+        attributes.put(name, attr);
+    }
+
     @Override
     public ObjectNode toJSON() {
         JsonNodeFactory nf = JsonNodeFactory.instance;
@@ -104,6 +130,15 @@ public class JSONEntityFormat implements EntityFormat {
         ObjectNode json = nf.objectNode();
         json.put("format", "json");
         json.put("entity_type", entityType.getName());
+
+        if (!attributes.isEmpty()) {
+            ObjectNode attrNode = json.putObject("attributes");
+            for (Map.Entry<String,TypedName<?>> attr: attributes.entrySet()) {
+                ObjectNode an = attrNode.putObject(attr.getKey());
+                an.put("name", attr.getValue().getName());
+                an.put("type", TypeUtils.makeTypeName(attr.getValue().getType()));
+            }
+        }
 
         return json;
     }
@@ -117,6 +152,26 @@ public class JSONEntityFormat implements EntityFormat {
         EntityDefaults entityDefaults = EntityDefaults.lookup(etype);
         format.setEntityType(etype);
         format.setEntityBuilder(entityDefaults != null ? entityDefaults.getDefaultBuilder() : BasicEntityBuilder.class);
+
+        JsonNode attrNode = json.path("attributes");
+        if (attrNode.isObject()) {
+            Iterator<Map.Entry<String, JsonNode>> fieldIter = attrNode.fields();
+            while (fieldIter.hasNext()) {
+                Map.Entry<String, JsonNode> fieldSpec = fieldIter.next();
+                String fname = fieldSpec.getKey();
+                JsonNode fnode = fieldSpec.getValue();
+                if (fnode.isTextual()) {
+                    format.addAttribute(TypedName.create(fname, fnode.asText()));
+                } else if (fnode.isObject()) {
+                    format.addAttribute(fname, TypedName.create(fnode.get("name").asText(),
+                                                                fnode.get("type").asText()));
+                } else {
+                    throw new IllegalArgumentException("unexpected structure for field " + fname);
+                }
+            }
+        } else if (!attrNode.isMissingNode() && !attrNode.isNull()) {
+            throw new IllegalArgumentException("unexpected structure for fields configuration");
+        }
 
         Class<? extends EntityBuilder> eb = TextEntitySource.parseEntityBuilder(loader, json);
         if (eb != null) {
@@ -137,11 +192,13 @@ public class JSONEntityFormat implements EntityFormat {
     private class JSONLP extends LineEntityParser {
         private final ObjectMapper mapper;
         int lineNo = 0;
+        boolean warned = false;
 
         JSONLP() {
             mapper = new ObjectMapper();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Entity parse(String line) {
             lineNo += 1;
@@ -159,7 +216,10 @@ public class JSONEntityFormat implements EntityFormat {
                 if (idNode != null) {
                     eb.setId(node.get("$id").asLong());
                 } else {
-                    logger.debug("line " + lineNo + ": using -(row number) as id");
+                    if (!warned) {
+                        logger.debug("line {}: using -(row number) as id", lineNo);
+                        warned = true;
+                    }
                     eb.setId(-lineNo);
                 }
                 Iterator<Map.Entry<String,JsonNode>> fields = node.fields();
@@ -169,16 +229,25 @@ public class JSONEntityFormat implements EntityFormat {
                     if (name.startsWith("$")) {
                         continue;
                     }
+                    TypedName attr = attributes.get(name);
+                    if (attr == null && !attributes.isEmpty()) {
+                        // unknown attribute, skip it
+                        continue;
+                    }
+
                     JsonNode fn = field.getValue();
-                    if (fn.isIntegralNumber()) {
-                        eb.setAttribute(TypedName.create(name, Long.class), fn.asLong());
-                    } else if (fn.isFloatingPointNumber()) {
-                        eb.setAttribute(TypedName.create(name, Double.class), fn.asDouble());
-                    } else if (fn.isTextual()) {
-                        eb.setAttribute(TypedName.create(name, String.class), fn.asText());
-                    } else if (fn.isContainerNode()) {
-                        // FIXME Be more flexible about resulting types
-                        eb.setAttribute(TypedName.create(name, JsonNode.class), fn);
+                    if (attr != null) {
+                        eb.setAttribute(attr, mapper.convertValue(fn, attr.getJacksonType()));
+                    } else {
+                        if (fn.isIntegralNumber()) {
+                            eb.setAttribute(TypedName.create(name, Long.class), fn.asLong());
+                        } else if (fn.isFloatingPointNumber()) {
+                            eb.setAttribute(TypedName.create(name, Double.class), fn.asDouble());
+                        } else if (fn.isTextual()) {
+                            eb.setAttribute(TypedName.create(name, String.class), fn.asText());
+                        } else {
+                            eb.setAttribute(TypedName.create(name, JsonNode.class), fn);
+                        }
                     }
                 }
                 return eb.build();
