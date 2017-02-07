@@ -198,6 +198,7 @@ public class JSONEntityFormat implements EntityFormat {
             mapper = new ObjectMapper();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Entity parse(String line) {
             lineNo += 1;
@@ -228,7 +229,7 @@ public class JSONEntityFormat implements EntityFormat {
                     if (name.startsWith("$")) {
                         continue;
                     }
-                    TypedName<?> attr = attributes.get(name);
+                    TypedName attr = attributes.get(name);
                     if (attr == null && !attributes.isEmpty()) {
                         // unknown attribute, skip it
                         continue;
