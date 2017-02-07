@@ -20,6 +20,8 @@
  */
 package org.lenskit.data.entities;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
@@ -27,6 +29,7 @@ import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.util.TypeUtils;
+import org.joda.convert.FromStringConverter;
 import org.joda.convert.StringConvert;
 import org.joda.convert.StringConverter;
 
@@ -49,8 +52,8 @@ public final class TypedName<T> implements Serializable {
     private final String name;
     private final TypeToken<T> type;
     private transient volatile int hashCode;
-    private transient volatile StringConverter<T> converter;
-
+    private transient volatile FromStringConverter converter;
+    private transient volatile JavaType javaType;
 
     private TypedName(String n, TypeToken<T> t) {
         name = n;
@@ -89,18 +92,28 @@ public final class TypedName<T> implements Serializable {
     }
 
     /**
+     * Get a Jackson {@link JavaType} for this typed name.
+     * @return The Jackson java type.
+     */
+    public JavaType getJacksonType() {
+        JavaType jt = javaType;
+        if (jt == null) {
+            javaType = jt = TypeFactory.defaultInstance().constructType(type.getType());
+        }
+        return jt;
+    }
+
+    /**
      * Parse a string containing this attribute's value.
      * @return The attribute value.
      */
     public T parseString(String value) {
-        // FIXME Handle list types
-        StringConverter cvt = converter;
+        FromStringConverter cvt = converter;
         if (cvt == null) {
-            converter = cvt = StringConvert.INSTANCE.findConverter(type.getRawType());
+            converter = cvt = TypeUtils.lookupFromStringConverter(type);
         }
         return (T) cvt.convertFromString(type.getRawType(), value);
     }
-
 
     @Override
     public int hashCode() {

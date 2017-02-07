@@ -25,6 +25,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.List;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.matchesPattern;
 import static org.hamcrest.Matchers.*;
@@ -92,5 +93,13 @@ public class TypedNameTest {
     public void testParseLong() {
         assertThat(TypedName.create("foo", Long.class).parseString("3209"),
                    equalTo(3209L));
+    }
+
+    @Test
+    public void testParseStringList() {
+        TypeToken<List<String>> ltt = new TypeToken<List<String>>() {};
+        TypedName<List<String>> name = TypedName.create("tags", ltt);
+        assertThat(name.parseString("foo,bar"),
+                   contains("foo", "bar"));
     }
 }

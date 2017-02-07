@@ -21,13 +21,19 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.reflect.TypeToken;
+import org.joda.convert.FromStringConverter;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 
 import static org.grouplens.lenskit.util.TypeUtils.*;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 
 /**
@@ -122,4 +128,32 @@ public class TypeUtilsTest {
         assertThat(listElementType(nestedList),
                    equalTo(makeListType(TypeToken.of(File.class))));
     }
+
+    @Test
+    public void testBasicFromString() {
+        TypeToken<Integer> intType = TypeToken.of(Integer.class);
+        FromStringConverter<Integer> cvt = TypeUtils.lookupFromStringConverter(intType);
+        assertThat(cvt, notNullValue());
+        assertThat(cvt.convertFromString((Class) intType.getRawType(), "1348"),
+                   equalTo(1348));
+    }
+
+    @Test
+    public void testStringListFromString() {
+        TypeToken<List<String>> tok = new TypeToken<List<String>>() {};
+        FromStringConverter<List<String>> cvt = TypeUtils.lookupFromStringConverter(tok);
+        assertThat(cvt, notNullValue());
+        List<String> result = cvt.convertFromString((Class) List.class, "foo,bar,\"hamster,salad\"");
+        assertThat(result, contains("foo", "bar", "hamster,salad"));
+    }
+
+    @Test
+    public void testIntListFromString() {
+        TypeToken<List<Integer>> tok = new TypeToken<List<Integer>>() {};
+        FromStringConverter<List<Integer>> cvt = TypeUtils.lookupFromStringConverter(tok);
+        assertThat(cvt, notNullValue());
+        List<Integer> result = cvt.convertFromString((Class) List.class, "39,42");
+        assertThat(result, contains(39, 42));
+    }
 }
+

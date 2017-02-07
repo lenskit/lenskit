@@ -25,14 +25,14 @@ import com.google.common.base.Predicate;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.text.StrTokenizer;
+import org.joda.convert.FromStringConverter;
+import org.joda.convert.StringConvert;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Various type utilities used in LensKit.
@@ -197,6 +197,49 @@ public class TypeUtils {
             return "long";
         } else {
             return raw.getName();
+        }
+    }
+
+    /**
+     * Look up a converter to convert strings to the specified type.  List types are converted from comma-separated
+     * values.
+     *
+     * @param type The type.
+     * @param <T> The type.
+     * @return A converter to parse objects of type {@code type} from strings.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> FromStringConverter<T> lookupFromStringConverter(TypeToken<T> type) {
+        Class<? super T> rt = type.getRawType();
+        if (rt.equals(List.class)) {
+            TypeToken elt = listElementType((TypeToken) type);
+            FromStringConverter inner = lookupFromStringConverter(elt);
+            return new ListParser(elt.getRawType(), inner);
+        } else {
+            return (FromStringConverter) StringConvert.INSTANCE.findConverter(rt);
+        }
+    }
+
+    private static class ListParser<T> implements FromStringConverter<List<T>> {
+        private final Class<T> elementType;
+        private final FromStringConverter<T> elementConverter;
+
+        public ListParser(Class<T> et, FromStringConverter<T> ec) {
+            elementType = et;
+            elementConverter = ec;
+        }
+
+        @Override
+        public List<T> convertFromString(Class<? extends List<T>> cls, String str) {
+            assert cls != null && cls.isAssignableFrom(List.class);
+            List<T> list = new ArrayList<>();
+            StrTokenizer tok = StrTokenizer.getCSVInstance(str);
+            while (tok.hasNext()) {
+                String next = tok.next();
+                list.add(elementConverter.convertFromString(elementType, next));
+            }
+
+            return list;
         }
     }
 }
