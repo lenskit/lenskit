@@ -28,24 +28,16 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.function.Add;
 import org.apache.commons.math3.analysis.function.Multiply;
 import org.apache.commons.math3.analysis.function.Subtract;
-import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
-import org.lenskit.baseline.MeanDamping;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
 import org.lenskit.inject.Shareable;
-import org.lenskit.inject.Transient;
-import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.math.Scalars;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.io.Serializable;
 
 /**
@@ -57,86 +49,11 @@ import java.io.Serializable;
  * and variance are independent of actual preferences, and attempts to describe
  * the preference of a rating by the distance of the rating from the mean,
  * relative to the user's normal rating variance.
- * <p>
- * The smoothing factor helps to smooth out results for users with fewer ratings
- * by re-weighting the user's rating variance. The 'smoothing number' is a
- * number of 'default' ratings to give the user, weighting the user's variance
- * towards the average community variance. Accordingly, set smoothing = 0 (or
- * use default constructor) for no smoothing. The 'global variance' parameter
- * only pertains to smoothing, and is unnecessary otherwise.
- * <p>
- * If the reference vector has a standard deviation of 0 (as determined by {@link Scalars#isZero(double)}),
- * and there is no smoothing, then no scaling is done (it is treated as if the standard deviation is 1). This
- * is to keep the behavior well-defined in all cases.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(MeanVarianceNormalizer.Builder.class)
 @Shareable
 public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
     private static final Logger logger = LoggerFactory.getLogger(MeanVarianceNormalizer.class);
-
-    /**
-     * A Builder for UserVarianceNormalizers that computes the variance from a
-     * RatingBuildContext.
-     *
-     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
-     */
-    public static class Builder implements Provider<MeanVarianceNormalizer> {
-        private final double damping;
-        private final EventDAO dao;
-
-        /**
-         * Create a new mean-variance normalizer builder.
-         *
-         * @param dao The DAO from which to get the global mean.
-         * @param d   A Bayesian damping term.  The normalizer pretends each user has an
-         *            additional <var>d</var> ratings that are equal to the global mean.
-         */
-        @Inject
-        public Builder(@Transient EventDAO dao,
-                       @MeanDamping double d) {
-            Preconditions.checkArgument(d >= 0, "damping cannot be negative");
-            this.dao = dao;
-            damping = d;
-        }
-
-        @Override
-        public MeanVarianceNormalizer get() {
-            double variance = 0;
-
-            if (damping > 0) {
-                double sum = 0;
-
-                int numRatings = 0;
-
-                try (ObjectStream<Rating> ratings = dao.streamEvents(Rating.class)) {
-                    for (Rating r : ratings) {
-                        sum += r.getValue();
-                        numRatings++;
-                    }
-                }
-
-                if (numRatings > 0) {
-                    final double mean = sum / numRatings;
-
-                    try (ObjectStream<Rating> ratings = dao.streamEvents(Rating.class)) {
-                        sum = 0;
-
-                        for (Rating r : ratings) {
-                            double delta = mean - r.getValue();
-                            sum += delta * delta;
-                        }
-                    }
-
-                    variance = sum / numRatings;
-                }
-            }
-
-            return new MeanVarianceNormalizer(damping, variance);
-        }
-    }
 
     private final double damping;
     private final double globalVariance;
