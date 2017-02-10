@@ -152,19 +152,21 @@ public class Graph implements Command {
         logger.debug("setting up script engine");
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine engine = sem.getEngineByMimeType("text/javascript");
-        engine.put("dotSrc", dotSrc);
-        engine.put("outFile", outFile);
         try (InputStream istr = Graph.class.getResourceAsStream("/META-INF/resources/webjars/viz.js/1.5.1/viz.js");
              Reader rdr = new InputStreamReader(istr)) {
             logger.debug("loading Viz.js");
+            engine.put(ScriptEngine.FILENAME, "viz.js");
             engine.eval(rdr);
         } catch (ScriptException e) {
             logger.error("error loading Viz.js", e);
             throw new RuntimeException(e);
         }
+        engine.put("dotSrc", dotSrc);
+        engine.put("outFile", outFile);
         try (InputStream istr = Graph.class.getResourceAsStream("render-graph.js");
              Reader rdr = new InputStreamReader(istr)) {
             logger.info("rendering graph to {}", outFile);
+            engine.put(ScriptEngine.FILENAME, "render-graph.js");
             engine.eval(rdr);
         } catch (ScriptException e) {
             logger.error("error evaluating render script", e);
