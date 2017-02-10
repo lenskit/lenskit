@@ -40,11 +40,9 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * A neighborhood finder that has a snapshot of the rating data for efficiency.  This is built by
- * backing a {@link LiveNeighborFinder} with a {@link org.lenskit.data.packed.BinaryRatingDAO}.
+ * A neighborhood finder that has a snapshot of the rating data for efficiency.
  *
  * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
 public class SnapshotNeighborFinder implements NeighborFinder {

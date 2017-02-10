@@ -20,13 +20,10 @@
  */
 package org.lenskit.data.output;
 
-import org.lenskit.data.packed.BinaryFormatFlag;
-import org.lenskit.data.packed.BinaryRatingPacker;
 import org.lenskit.util.table.writer.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
