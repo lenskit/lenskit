@@ -37,7 +37,10 @@ import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
-import org.lenskit.data.dao.ItemNameDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,12 +77,12 @@ public class Recommend implements Command {
 
         try (LenskitRecommender rec = engine.createRecommender()) {
             ItemRecommender irec = rec.getItemRecommender();
-            ItemNameDAO indao = rec.get(ItemNameDAO.class);
+            DataAccessObject dao = rec.get(DataAccessObject.class);
             RecOutput output;
             if (ctx.options.getBoolean("json")) {
-                output = new JSONOutput(indao);
+                output = new JSONOutput(dao);
             } else {
-                output = new HumanOutput(indao);
+                output = new HumanOutput(dao);
             }
 
             if (irec == null) {
@@ -141,10 +144,10 @@ public class Recommend implements Command {
     }
 
     private class HumanOutput implements RecOutput {
-        private final ItemNameDAO nameDAO;
+        private final DataAccessObject dao;
 
-        HumanOutput(ItemNameDAO ind) {
-            nameDAO = ind;
+        HumanOutput(DataAccessObject dao) {
+            this.dao = dao;
         }
 
         @Override
@@ -154,12 +157,14 @@ public class Recommend implements Command {
         @Override
         public void writeUser(long user, ResultList recs) {
             System.out.format("recommendations for user %d:%n", user);
-            for (Result item : recs) {
-                System.out.format("  %d", item.getId());
-                if (nameDAO != null) {
-                    System.out.format(" (%s)", nameDAO.getItemName(item.getId()));
+            for (Result res : recs) {
+                System.out.format("  %d", res.getId());
+                Entity item = dao.lookupEntity(CommonTypes.ITEM, res.getId());
+                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+                if (name != null) {
+                    System.out.format(" (%s)", name);
                 }
-                System.out.format(": %.3f", item.getScore());
+                System.out.format(": %.3f", res.getScore());
                 System.out.println();
             }
         }
@@ -171,11 +176,11 @@ public class Recommend implements Command {
     }
 
     private class JSONOutput implements RecOutput {
-        private final ItemNameDAO nameDAO;
+        private final DataAccessObject dao;
         private JsonGenerator generator;
 
-        JSONOutput(ItemNameDAO ind) throws IOException {
-            nameDAO = ind;
+        JSONOutput(DataAccessObject dao) throws IOException {
+            this.dao = dao;
             JsonFactory jfac = new JsonFactory();
             generator = jfac.createGenerator(System.out)
                             .useDefaultPrettyPrinter();
@@ -195,8 +200,10 @@ public class Recommend implements Command {
                 generator.writeStartObject();
                 generator.writeNumberField("item", r.getId());
                 generator.writeNumberField("score", r.getScore());
-                if (nameDAO != null) {
-                    generator.writeStringField("name", nameDAO.getItemName(r.getId()));
+                Entity item = dao.lookupEntity(CommonTypes.ITEM, r.getId());
+                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+                if (name != null) {
+                    generator.writeStringField("name", name);
                 }
                 generator.writeEndObject();
             }
