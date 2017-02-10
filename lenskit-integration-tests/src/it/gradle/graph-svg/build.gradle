@@ -4,6 +4,9 @@ apply plugin: 'java'
 apply from: 'common.gradle'
 
 task renderGraph(type: JavaExec) {
+    onlyIf {
+        JavaVersion.current().isJava8Compatible()
+    }
     dependsOn classes
     classpath configurations.runtime
     inputs.file 'predictor.groovy'
@@ -21,6 +24,10 @@ task renderGraph(type: JavaExec) {
 }
 
 check {
+    onlyIf {
+        JavaVersion.current().isJava8Compatible()
+    }
+
     dependsOn renderGraph
     doLast {
         def outFile = file("$buildDir/predictor.svg")
