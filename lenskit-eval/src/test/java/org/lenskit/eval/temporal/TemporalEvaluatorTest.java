@@ -28,6 +28,8 @@ import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.baseline.UserMeanBaseline;
 import org.lenskit.baseline.UserMeanItemScorer;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.packed.BinaryFormatFlag;
 import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.data.packed.BinaryRatingPacker;
@@ -51,7 +53,7 @@ import static org.junit.Assert.*;
 public class TemporalEvaluatorTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    public BinaryRatingDAO dao;
+    public DataAccessObject dao;
     public File predictOutputFile;
     public TemporalEvaluator tempEval = new TemporalEvaluator();
 
@@ -98,18 +100,14 @@ public class TemporalEvaluatorTest {
 
         ratings = bld.build();
 
-        File file = folder.newFile("ratings.bin");
-        try (BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)) {
-            packer.writeRatings(ratings);
-        }
-        dao = BinaryRatingDAO.open(file);
+        dao = StaticDataSource.fromList(ratings).get();
 
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(ItemScorer.class).to(UserMeanItemScorer.class);
         config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
 
         tempEval.setRebuildPeriod(1L);
-        tempEval.setDataSource(file);
+        tempEval.setDataSource(dao);
         tempEval.setAlgorithm("UserMeanBaseline", config);
         tempEval.setOutputFile(predictOutputFile);
     }
