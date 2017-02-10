@@ -113,11 +113,10 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     }
 
     /**
-     * It is used to generate rating list from UserEventDAO.
+     * Extract a user vector from a data source.
      *
      * @param uid The user ID.
-     * @param dao The UserEventDAO.
-     *
+     * @param dao The DAO.
      * @return The VectorEntry list of rating.
      */
     private SparseVector makeUserVector(long uid, DataAccessObject dao) {
