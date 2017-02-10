@@ -77,7 +77,7 @@ public class Recommend implements Command {
 
         try (LenskitRecommender rec = engine.createRecommender()) {
             ItemRecommender irec = rec.getItemRecommender();
-            DataAccessObject dao = rec.get(DataAccessObject.class);
+            DataAccessObject dao = rec.getDataAccessObject();
             RecOutput output;
             if (ctx.options.getBoolean("json")) {
                 output = new JSONOutput(dao);

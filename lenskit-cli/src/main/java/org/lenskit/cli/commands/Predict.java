@@ -24,15 +24,18 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.ItemNameDAO;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.RatingPredictor;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +74,7 @@ public class Predict implements Command {
 
         try (LenskitRecommender rec = engine.createRecommender()) {
             RatingPredictor pred = rec.getRatingPredictor();
-            ItemNameDAO names = rec.get(ItemNameDAO.class);
+            DataAccessObject dao = rec.getDataAccessObject();
             if (pred == null) {
                 logger.error("recommender has no rating predictor");
                 throw new UnsupportedOperationException("no rating predictor");
@@ -83,8 +86,10 @@ public class Predict implements Command {
             System.out.format("predictions for user %d:%n", user);
             for (Map.Entry<Long, Double> e : preds.entrySet()) {
                 System.out.format("  %d", e.getKey());
-                if (names != null) {
-                    System.out.format(" (%s)", names.getItemName(e.getKey()));
+                Entity item = dao.lookupEntity(CommonTypes.ITEM, e.getKey());
+                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+                if (name != null) {
+                    System.out.format(" (%s)", name);
                 }
                 System.out.format(": %.3f", e.getValue());
                 System.out.println();
