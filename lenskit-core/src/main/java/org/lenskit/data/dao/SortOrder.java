@@ -24,12 +24,6 @@
 package org.lenskit.data.dao;
 
 
-import org.lenskit.data.events.Event;
-import org.lenskit.data.events.Events;
-
-import javax.annotation.Nullable;
-import java.util.Comparator;
-
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public (but may add orders)
@@ -48,48 +42,23 @@ public enum SortOrder {
      */
     @Deprecated
     ANY {
-        @Nullable
-        @Override
-        public Comparator<Event> getEventComparator() {
-            return null;
-        }
     },
     /**
      * Sort by timestamp.
      */
     @Deprecated
     TIMESTAMP {
-        @Override
-        public Comparator<Event> getEventComparator() {
-            return Events.TIMESTAMP_COMPARATOR;
-        }
     },
     /**
      * Sort by user, then by timestamp.
      */
     @Deprecated
     USER {
-        @Override
-        public Comparator<Event> getEventComparator() {
-            return Events.USER_TIME_COMPARATOR;
-        }
     },
     /**
      * Sort by item, then by timestamp.
      */
     @Deprecated
     ITEM {
-        public Comparator<Event> getEventComparator() {
-            return Events.ITEM_TIME_COMPARATOR;
-        }
-    };
-
-    /**
-     * Get the event comparator for a sort order.
-     * @return An appropriate comparator, or {@code null} if the order is unsorted.
-     */
-    @Nullable
-    public Comparator<Event> getEventComparator() {
-        throw new UnsupportedOperationException();
-    };
+    };;
 }

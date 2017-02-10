@@ -20,8 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.lenskit.data.events.Event;
-import org.lenskit.data.events.Events;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,14 +33,14 @@ import java.util.Random;
 public enum SortOrder {
     RANDOM {
         @Override
-        public void apply(List<? extends Event> list, Random rng) {
+        public void apply(List<? extends Rating> list, Random rng) {
             Collections.shuffle(list, rng);
         }
     },
     TIMESTAMP {
         @Override
-        public void apply(List<? extends Event> list, Random rng) {
-            Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
+        public void apply(List<? extends Rating> list, Random rng) {
+            Collections.sort(list, Ratings.TIMESTAMP_COMPARATOR);
         }
     };
 
@@ -50,7 +50,7 @@ public enum SortOrder {
      * @param list The list to order.
      * @param rng  The random number generator to use, if necessary.
      */
-    public abstract void apply(List<? extends Event> list, Random rng);
+    public abstract void apply(List<? extends Rating> list, Random rng);
 
     public static SortOrder fromString(String str) {
         switch (str.toLowerCase()) {
