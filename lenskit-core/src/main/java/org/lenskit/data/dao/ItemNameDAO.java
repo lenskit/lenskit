@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
  * </p>
  */
 @Deprecated
-@DefaultImplementation(value = BridgeItemNameDAO.class, skipIfUnusable = true)
 public interface ItemNameDAO {
     /**
      * Get the name for an item.

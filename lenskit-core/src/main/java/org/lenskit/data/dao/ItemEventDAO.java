@@ -36,7 +36,6 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @deprecated Use new {@link DataAccessObject}.
  */
-@DefaultProvider(BridgeItemEventDAO.DynamicProvider.class)
 @Deprecated
 public interface ItemEventDAO {
     /**

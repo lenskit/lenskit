@@ -31,7 +31,6 @@ import org.lenskit.data.events.Event;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @deprecated Use new {@link DataAccessObject}.
  */
-@DefaultImplementation(value = BridgeEventDAO.class, skipIfUnusable = true)
 @Deprecated
 public interface EventDAO {
     /**

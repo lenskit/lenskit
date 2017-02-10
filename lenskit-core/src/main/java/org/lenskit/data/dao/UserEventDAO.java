@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
  * @since 1.3
  * @deprecated Use {@link DataAccessObject}.
  */
-@DefaultProvider(BridgeUserEventDAO.DynamicProvider.class)
 @Deprecated
 public interface UserEventDAO {
     /**

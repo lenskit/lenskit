@@ -31,7 +31,6 @@ import org.grouplens.grapht.annotation.DefaultProvider;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @deprecated Use new {@link DataAccessObject}.
  */
-@DefaultProvider(BridgeItemDAO.DynamicProvider.class)
 @Deprecated
 public interface ItemDAO {
     /**
