@@ -25,8 +25,10 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.vectors.*;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import java.util.Map;
 
@@ -40,11 +42,10 @@ public class SlopeOneModelDataAccumulator {
      * a {@code SlopeOneItemScorer}.
      *
      * @param damping   A damping term for deviation calculations.
-     * @param dao       The DataAccessObject interfacing with the data for the model
+     * @param items     The set of known item IDs.
      */
-    public SlopeOneModelDataAccumulator(double damping, ItemDAO dao) {
+    public SlopeOneModelDataAccumulator(double damping, LongSet items) {
         this.damping = damping;
-        LongSet items = dao.getItemIds();
 
         workMatrix = new Long2ObjectOpenHashMap<>(items.size());
         LongIterator iter = items.iterator();
