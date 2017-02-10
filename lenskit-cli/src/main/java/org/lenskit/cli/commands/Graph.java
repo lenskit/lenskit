@@ -27,14 +27,14 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.EventDAO;
 import org.lenskit.*;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.graph.GraphDumper;
 import org.lenskit.inject.RecommenderGraphBuilder;
-import org.lenskit.cli.Command;
-import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,7 @@ public class Graph implements Command {
 
     private LenskitConfiguration makeDataConfig(Context ctx) {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).toProvider(new DAOProvider());
+        config.bind(DataAccessObject.class).toProvider(new DAOProvider());
         String dspec = ctx.options.getString("domain");
         if (dspec != null) {
             PreferenceDomain domain = PreferenceDomain.fromString(dspec);
@@ -151,9 +151,9 @@ public class Graph implements Command {
               .help("load algorithm configuration from file CONFIG");
     }
 
-    private static class DAOProvider implements Provider<EventDAO> {
+    private static class DAOProvider implements Provider<DataAccessObject> {
         @Override
-        public EventDAO get() {
+        public DataAccessObject get() {
             return null;
         }
 
