@@ -69,10 +69,6 @@ public class Simulate implements Command {
               .setDefault(86400L)
               .metavar("SECONDS")
               .help("Rebuild Period for next build");
-        parser.addArgument("--spec-file")
-              .type(File.class)
-              .metavar("SPEC")
-              .help("load from spec file SPEC");
         parser.addArgument("config")
               .type(File.class)
               .metavar("CONFIG")
