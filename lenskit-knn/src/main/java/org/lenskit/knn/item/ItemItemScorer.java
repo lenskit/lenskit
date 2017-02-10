@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
@@ -53,8 +52,6 @@ import java.util.Map;
  */
 public class ItemItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
-    public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
-            Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
     private final RatingVectorPDAO rvDAO;
