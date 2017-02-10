@@ -26,9 +26,7 @@ import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.PrecomputedItemScorer;
-import org.lenskit.data.dao.BridgeUserEventDAO;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.transform.quantize.Quantizer;
@@ -43,7 +41,6 @@ import static org.junit.Assert.assertThat;
 
 public class OrdRecRatingPredictorTest {
     private DataAccessObject dao;
-    private UserEventDAO userDAO;
     private Quantizer qtz;
 
     @SuppressWarnings("deprecation")
@@ -65,7 +62,6 @@ public class OrdRecRatingPredictorTest {
         StaticDataSource src = new StaticDataSource();
         src.addSource(rs);
         dao = src.get();
-        userDAO = new BridgeUserEventDAO(dao);
         qtz = new ValueArrayQuantizer(new double[]{1.0, 2.0, 3.0});
     }
 
@@ -92,7 +88,7 @@ public class OrdRecRatingPredictorTest {
                 .addScore(42, 12, 8.2)
                 .build();
 
-        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
+        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, dao, qtz);
         ResultMap preds = ordrec.predictWithDetails(42, LongUtils.packedSet(10, 11, 12));
         assertThat(preds.getScore(10), equalTo(1.0));
         assertThat(preds.getScore(11), equalTo(2.0));
@@ -122,7 +118,7 @@ public class OrdRecRatingPredictorTest {
                 .addScore(42, 12, 3.1)
                 .build();
 
-        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
+        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, dao, qtz);
         ResultMap preds = ordrec.predictWithDetails(42, LongUtils.packedSet(10, 11, 12));
         assertThat(preds.getScore(10), equalTo(1.0));
         assertThat(preds.getScore(11), equalTo(2.0));
@@ -153,7 +149,7 @@ public class OrdRecRatingPredictorTest {
                 .build();
 
 
-        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
+        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, dao, qtz);
         ResultMap preds = ordrec.predictWithDetails(42, LongUtils.packedSet(10, 11, 12));
         assertThat(preds.getScore(10), equalTo(1.0));
         assertThat(preds.getScore(11), equalTo(2.0));
