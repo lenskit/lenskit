@@ -26,7 +26,6 @@ import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityBuilder;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
-import org.lenskit.data.events.EventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
+public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Cloneable {
     private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
     private static final AtomicLong idGenerator = new AtomicLong();
     private static volatile boolean hasWarned;
@@ -119,7 +118,6 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @param uid The user ID.
      * @return The builder (for chaining).
      */
-    @Override
     public RatingBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
@@ -139,7 +137,6 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @param iid The item ID.
      * @return The builder (for chaining).
      */
-    @Override
     public RatingBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
@@ -203,7 +200,6 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @param ts The timestamp.
      * @return The builder (for chaining).
      */
-    @Override
     public RatingBuilder setTimestamp(long ts) {
         timestamp = ts;
         return this;
