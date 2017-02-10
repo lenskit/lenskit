@@ -10,7 +10,8 @@ task renderGraph(type: JavaExec) {
 
     main 'org.lenskit.cli.Main'
     args 'graph'
-    args '-o', "$buildDir/predictor.dot"
+    args '-t', 'svg'
+    args '-o', "$buildDir/predictor.svg"
     args 'predictor.groovy'
 
     doFirst {
@@ -21,8 +22,12 @@ task renderGraph(type: JavaExec) {
 check {
     dependsOn renderGraph
     doLast {
-        if (!file("$buildDir/predictor.dot").exists()) {
-            throw new NoSuchFileException("not found: $buildDir/predictor.dot")
+        def outFile = file("$buildDir/predictor.svg")
+        if (!outFile.exists()) {
+            throw new NoSuchFileException("not found: $outFile")
+        }
+        if (outFile.length() < 1024) {
+            throw new RuntimeException("file $outFile unreasonably short")
         }
     }
 }
