@@ -24,7 +24,8 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.api.ItemBasedItemScorer;
 import org.lenskit.api.ResultList;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 
@@ -39,19 +40,19 @@ import java.util.Set;
  * @since 1.1
  */
 public class TopNItemBasedItemRecommender extends AbstractItemBasedItemRecommender {
-    protected final ItemDAO itemDAO;
+    protected final DataAccessObject dao;
     protected final ItemBasedItemScorer scorer;
 
     @Inject
-    public TopNItemBasedItemRecommender(ItemDAO idao, ItemBasedItemScorer scorer) {
-        itemDAO = idao;
+    public TopNItemBasedItemRecommender(DataAccessObject data, ItemBasedItemScorer scorer) {
+        dao = data;
         this.scorer = scorer;
     }
 
     @Override
     public ResultList recommendRelatedItemsWithDetails(Set<Long> basket, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
         if (candidates == null) {
-            candidates = itemDAO.getItemIds();
+            candidates = dao.getEntityIds(CommonTypes.ITEM);
         }
         if (exclude == null) {
             exclude = getDefaultExcludes(LongUtils.asLongSet(basket));
