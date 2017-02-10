@@ -6,5 +6,5 @@ var svg = Viz(dotSrc, {
 });
 
 var writer = new java.io.FileWriter(outFile);
-writer.write(svg);
+writer.write(svg.toString());
 writer.close();
