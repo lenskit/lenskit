@@ -20,17 +20,17 @@
  */
 package org.lenskit.predict.ordrec;
 
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.PrefetchingUserEventDAO;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.ratings.Rating;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.PrecomputedItemScorer;
+import org.lenskit.data.dao.BridgeUserEventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.transform.quantize.Quantizer;
 import org.lenskit.transform.quantize.ValueArrayQuantizer;
 import org.lenskit.util.collections.LongUtils;
@@ -39,10 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class OrdRecRatingPredictorTest {
-    private EventDAO dao;
+    private DataAccessObject dao;
     private UserEventDAO userDAO;
     private Quantizer qtz;
 
@@ -62,10 +62,11 @@ public class OrdRecRatingPredictorTest {
         rs.add(Rating.create(42, 8, 3));
         rs.add(Rating.create(42, 9, 1));
 
-        dao = new EventCollectionDAO(rs);
-        userDAO = new PrefetchingUserEventDAO(dao);
+        StaticDataSource src = new StaticDataSource();
+        src.addSource(rs);
+        dao = src.get();
+        userDAO = new BridgeUserEventDAO(dao);
         qtz = new ValueArrayQuantizer(new double[]{1.0, 2.0, 3.0});
-
     }
 
     /**

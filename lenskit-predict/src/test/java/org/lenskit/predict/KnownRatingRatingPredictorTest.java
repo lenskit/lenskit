@@ -20,17 +20,17 @@
  */
 package org.lenskit.predict;
 
-import org.junit.Ignore;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.PrefetchingUserEventDAO;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.RatingBuilder;
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.BridgeUserEventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.ArrayList;
@@ -39,12 +39,13 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 public class KnownRatingRatingPredictorTest {
 
-    private EventDAO dao;
+    private DataAccessObject dao;
     private UserEventDAO userDAO;
     private List<Rating> rs = new ArrayList<>();
 
@@ -62,8 +63,10 @@ public class KnownRatingRatingPredictorTest {
         rs.add(Rating.create(15, 8, 4));
         rs.add(Rating.create(15, 9, 5));
 
-        dao = new EventCollectionDAO(rs);
-        userDAO = new PrefetchingUserEventDAO(dao);
+        StaticDataSource src = new StaticDataSource();
+        src.addSource(rs);
+        dao = src.get();
+        userDAO = new BridgeUserEventDAO(dao);
     }
 
     /**
@@ -117,8 +120,8 @@ public class KnownRatingRatingPredictorTest {
         rs.add(rb.setItemId(390).setRating(4.5).setTimestamp(20).build());
         rs.add(rb.setItemId(840).clearRating().setTimestamp(30).build());
 
-        dao = new EventCollectionDAO(rs);
-        userDAO = new PrefetchingUserEventDAO(dao);
+        dao = StaticDataSource.fromList(rs).get();
+        userDAO = new BridgeUserEventDAO(dao);
 
         KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
         Map<Long,Double> results = pred.predict(420, LongUtils.packedSet(840, 390));
