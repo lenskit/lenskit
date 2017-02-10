@@ -24,9 +24,7 @@ import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAO;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
-import org.lenskit.data.dao.EventCollectionDAO;
 import org.lenskit.data.entities.EntityFactory;
-import org.lenskit.util.keys.KeyedObjectMap;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.Matchers.*;
