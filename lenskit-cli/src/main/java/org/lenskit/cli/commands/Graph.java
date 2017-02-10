@@ -154,6 +154,14 @@ public class Graph implements Command {
         ScriptEngine engine = sem.getEngineByMimeType("text/javascript");
         engine.put("dotSrc", dotSrc);
         engine.put("outFile", outFile);
+        try (InputStream istr = Graph.class.getResourceAsStream("/META-INF/resources/webjars/viz.js/1.5.1/viz.js");
+             Reader rdr = new InputStreamReader(istr)) {
+            logger.debug("loading Viz.js");
+            engine.eval(rdr);
+        } catch (ScriptException e) {
+            logger.error("error loading Viz.js", e);
+            throw new RuntimeException(e);
+        }
         try (InputStream istr = Graph.class.getResourceAsStream("render-graph.js");
              Reader rdr = new InputStreamReader(istr)) {
             logger.info("rendering graph to {}", outFile);

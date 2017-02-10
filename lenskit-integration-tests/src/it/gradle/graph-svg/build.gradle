@@ -9,6 +9,7 @@ task renderGraph(type: JavaExec) {
     inputs.file 'predictor.groovy'
 
     main 'org.lenskit.cli.Main'
+    args '--log-level', 'debug'
     args 'graph'
     args '-t', 'svg'
     args '-o', "$buildDir/predictor.svg"
