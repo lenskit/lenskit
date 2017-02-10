@@ -28,6 +28,7 @@ import org.lenskit.api.*;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.StaticInjector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
@@ -66,6 +67,7 @@ public class LenskitRecommender implements Recommender {
      * @param cls The component class to get.
      * @return The instance of the specified component.
      */
+    @Nullable
     public <T> T get(Class<T> cls) {
         try {
             return injector.tryGetInstance(cls);
@@ -85,6 +87,7 @@ public class LenskitRecommender implements Recommender {
      * @param cls The component class to get.
      * @return The instance of the specified component.
      */
+    @Nullable
     public <T> T get(Class<? extends Annotation> qual, Class<T> cls) {
         try {
             return injector.tryGetInstance(qual, cls);
@@ -104,6 +107,7 @@ public class LenskitRecommender implements Recommender {
      * @param cls The component class to get.
      * @return The instance of the specified component.
      */
+    @Nullable
     public <T> T get(Annotation qual, Class<T> cls) {
         try {
             return injector.getInstance(qual, cls);
@@ -137,6 +141,19 @@ public class LenskitRecommender implements Recommender {
     @Override
     public ItemBasedItemRecommender getItemBasedItemRecommender() {
         return get(ItemBasedItemRecommender.class);
+    }
+
+    /**
+     * Get the data access object from this recommender.
+     * @return The data access object.
+     */
+    @Nonnull
+    public DataAccessObject getDataAccessObject() {
+        DataAccessObject dao =  get(DataAccessObject.class);
+        if (dao == null) {
+            throw new IllegalStateException("recommender has no DAO");
+        }
+        return dao;
     }
 
     @Override
