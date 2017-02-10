@@ -1,0 +1,28 @@
+import java.nio.file.NoSuchFileException
+
+apply plugin: 'java'
+apply from: 'common.gradle'
+
+task renderGraph(type: JavaExec) {
+    dependsOn classes
+    classpath configurations.runtime
+    inputs.file 'predictor.groovy'
+
+    main 'org.lenskit.cli.Main'
+    args 'graph'
+    args '-o', "$buildDir/predictor.dot"
+    args 'predictor.groovy'
+
+    doFirst {
+        mkdir buildDir
+    }
+}
+
+check {
+    dependsOn renderGraph
+    doLast {
+        if (!file("$buildDir/predictor.dot").exists()) {
+            throw new NoSuchFileException("not found: $buildDir/predictor.dot")
+        }
+    }
+}

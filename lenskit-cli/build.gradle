@@ -48,6 +48,7 @@ dependencies {
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
     runtime group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.12'
+    runtime group: 'org.webjars.npm', name: 'viz.js', version: '1.5.1'
 }
 
 meta {

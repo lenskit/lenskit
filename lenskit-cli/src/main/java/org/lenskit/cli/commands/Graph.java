@@ -39,8 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
-import java.io.File;
-import java.io.IOException;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -124,8 +126,52 @@ public class Graph implements Command {
             graph = makeNewGraph(ctx);
         }
         File output = ctx.getOutputFile();
-        logger.info("writing graph to {}", output);
-        GraphDumper.renderGraph(graph, output);
+        switch (ctx.getOutputType()) {
+            case dot:
+                writeDotFile(graph, output);
+                break;
+            case svg:
+                writeSvgFile(graph, output);
+                break;
+        }
+    }
+
+    public void writeDotFile(DAGNode<Component,Dependency> graph, File outFile) throws IOException {
+        try (Writer writer = new FileWriter(outFile)) {
+            logger.info("writing graph to {}", outFile);
+            GraphDumper.renderGraph(graph, writer);
+        }
+    }
+
+    public void writeSvgFile(DAGNode<Component,Dependency> graph, File outFile) throws IOException {
+        StringWriter sw = new StringWriter();
+        logger.info("writing graph to memory");
+        GraphDumper.renderGraph(graph, sw);
+        String dotSrc = sw.toString();
+
+        logger.debug("setting up script engine");
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine engine = sem.getEngineByMimeType("text/javascript");
+        try (InputStream istr = Graph.class.getResourceAsStream("/META-INF/resources/webjars/viz.js/1.5.1/viz.js");
+             Reader rdr = new InputStreamReader(istr)) {
+            logger.debug("loading Viz.js");
+            engine.put(ScriptEngine.FILENAME, "viz.js");
+            engine.eval(rdr);
+        } catch (ScriptException e) {
+            logger.error("error loading Viz.js", e);
+            throw new RuntimeException(e);
+        }
+        engine.put("dotSrc", dotSrc);
+        engine.put("outFile", outFile);
+        try (InputStream istr = Graph.class.getResourceAsStream("render-graph.js");
+             Reader rdr = new InputStreamReader(istr)) {
+            logger.info("rendering graph to {}", outFile);
+            engine.put(ScriptEngine.FILENAME, "render-graph.js");
+            engine.eval(rdr);
+        } catch (ScriptException e) {
+            logger.error("error evaluating render script", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void configureArguments(ArgumentParser parser) {
@@ -137,6 +183,11 @@ public class Graph implements Command {
               .metavar("FILE")
               .setDefault(new File("recommender.dot"))
               .help("write recommender diagram to FILE");
+        parser.addArgument("-t", "--output-type")
+              .type(OutputType.class)
+              .metavar("TYPE")
+              .setDefault(OutputType.dot)
+              .help("specify output format");
         parser.addArgument("--domain")
               .metavar("DOMAIN")
               .help("specify preference domain");
@@ -179,5 +230,13 @@ public class Graph implements Command {
         public File getOutputFile() {
             return options.get("output_file");
         }
+
+        public OutputType getOutputType() {
+            return options.get("output_type");
+        }
+    }
+
+    private static enum OutputType {
+        dot, svg
     }
 }
