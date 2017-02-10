@@ -21,8 +21,6 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.test.ML100KTestSuite
-import org.lenskit.transform.normalize.BiasUserVectorNormalizer
-import org.lenskit.transform.normalize.UserVectorNormalizer
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine
@@ -34,8 +32,9 @@ import org.lenskit.bias.BiasItemScorer
 import org.lenskit.bias.BiasModel
 import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.config.ConfigHelpers
-import org.lenskit.data.dao.ItemDAO
 import org.lenskit.knn.item.model.ItemItemModel
+import org.lenskit.transform.normalize.BiasUserVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.hamcrest.Matchers.notNullValue
@@ -52,7 +51,6 @@ public class ItemItemBuildSerializeTest extends ML100KTestSuite {
         bind (BaselineScorer, ItemScorer) to BiasItemScorer
         bind BiasModel to UserItemBiasModel
         bind UserVectorNormalizer to BiasUserVectorNormalizer
-        root ItemDAO
     }
 
 
