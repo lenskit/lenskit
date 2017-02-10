@@ -26,8 +26,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.lenskit.data.dao.BridgeEventDAO
-import org.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.DataAccessObject
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.entities.CommonAttributes
 import org.lenskit.data.entities.CommonTypes
@@ -50,7 +49,7 @@ class CrossfolderTest {
     public TemporaryFolder tmp = new TemporaryFolder()
 
     private List<Rating> ratings
-    private EventDAO sourceDAO
+    private DataAccessObject sourceDAO
     private Crossfolder cf
 
     @Before
@@ -65,7 +64,7 @@ class CrossfolderTest {
         }
         def data = new StaticDataSource("test")
         data.addSource(ratings, [domain: [minimum: 1, maximum: 5]])
-        sourceDAO = new BridgeEventDAO(data.get());
+        sourceDAO = data.get()
         cf = new Crossfolder()
         cf.source = data
         cf.setOutputDir(tmp.root)
