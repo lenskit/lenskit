@@ -27,8 +27,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertThat;
 public class MeanVarianceNormalizerTest {
     private final static double MIN_DOUBLE_PRECISION = 0.00001;
 
-    private EventDAO dao;
+    private DataAccessObject dao;
     private ImmutableSparseVector userRatings;
     private ImmutableSparseVector uniformUserRatings;
 
@@ -75,7 +75,7 @@ public class MeanVarianceNormalizerTest {
         addRating(ratings, 1, 4, 3);
         addRating(ratings, 1, 5, 3);
         addRating(ratings, 1, 6, 3);
-        dao = EventCollectionDAO.create(ratings);
+        dao = StaticDataSource.fromList(ratings).get();
     }
 
     @Test
