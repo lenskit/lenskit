@@ -82,28 +82,4 @@ public final class History {
         return new BasicUserHistory<>(id, list);
     }
 
-    /**
-     * Create an event collection for a particular item.
-     * @param id The item ID.
-     * @param events The events.
-     * @param <E> The root type of the events in the history.
-     * @return A history object.
-     */
-    @SuppressWarnings("deprecation")
-    @Nonnull
-    public static <E extends Event> ItemEventCollection<E> forItem(long id, Iterable<? extends E> events) {
-        return new BasicItemEventList<>(id, events);
-    }
-
-    /**
-     * Create an empty history for a particular item.
-     * @param id The item ID.
-     * @param <E> The type of event in the history.
-     * @return An empty history for the item.
-     */
-    @Nonnull
-    public static <E extends Event> ItemEventCollection<E> forItem(long id) {
-        List<E> list = ImmutableList.of();
-        return new BasicItemEventList<>(id, list);
-    }
 }
