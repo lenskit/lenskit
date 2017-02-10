@@ -25,9 +25,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.BridgeUserEventDAO;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingBuilder;
@@ -46,7 +44,6 @@ import static org.junit.Assert.assertThat;
 public class KnownRatingRatingPredictorTest {
 
     private DataAccessObject dao;
-    private UserEventDAO userDAO;
     private List<Rating> rs = new ArrayList<>();
 
     @SuppressWarnings("deprecation")
@@ -66,7 +63,6 @@ public class KnownRatingRatingPredictorTest {
         StaticDataSource src = new StaticDataSource();
         src.addSource(rs);
         dao = src.get();
-        userDAO = new BridgeUserEventDAO(dao);
     }
 
     /**
@@ -74,7 +70,7 @@ public class KnownRatingRatingPredictorTest {
      */
     @Test
     public void testPredictForMissingUser() {
-        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(dao);
         Map<Long,Double> results = pred.predict(5, LongUtils.packedSet(1L, 2L));
         assertThat(results.size(), equalTo(0));
     }
@@ -85,7 +81,7 @@ public class KnownRatingRatingPredictorTest {
      */
     @Test
     public void testPredictForRatingByGivenUser() {
-        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(dao);
         Map<Long,Double> results = pred.predict(14, LongUtils.packedSet(1, 3, 5));
         assertThat(results.size(), equalTo(3));
         assertThat(results.get(1L), equalTo(5.0));
@@ -99,7 +95,7 @@ public class KnownRatingRatingPredictorTest {
      */
     @Test
     public void  testPredictForOnlyRatedItems() {
-        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(dao);
         Map<Long,Double> results = pred.predict(15, LongUtils.packedSet(5, 7, 1));
         assertThat(results.get(5L), equalTo(1.0));
         assertThat(results.get(7L), equalTo(3.0));
@@ -121,9 +117,8 @@ public class KnownRatingRatingPredictorTest {
         rs.add(rb.setItemId(840).clearRating().setTimestamp(30).build());
 
         dao = StaticDataSource.fromList(rs).get();
-        userDAO = new BridgeUserEventDAO(dao);
 
-        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(dao);
         Map<Long,Double> results = pred.predict(420, LongUtils.packedSet(840, 390));
         assertThat(results, hasEntry(390L, 4.5));
         assertThat(results.keySet(),

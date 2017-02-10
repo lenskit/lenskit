@@ -20,20 +20,20 @@
  */
 package org.lenskit.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.ratings.Rating;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractRatingPredictor;
 import org.lenskit.basic.FallbackItemScorer;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -48,32 +48,27 @@ import java.util.List;
  * @since 2.2
  */
 public class KnownRatingRatingPredictor extends AbstractRatingPredictor {
-    private final UserEventDAO dao;
+    private final DataAccessObject dao;
 
     @Inject
-    public KnownRatingRatingPredictor(UserEventDAO uedao) {
-        this.dao = uedao;
+    public KnownRatingRatingPredictor(DataAccessObject d) {
+        dao = d;
     }
 
     @Nonnull
     @Override
     public ResultMap predictWithDetails(long user, @Nonnull Collection<Long> items) {
-        List<Rating> ratings = dao.getEventsForUser(user, Rating.class);
-        if (ratings == null) {
-            return Results.newResultMap();
-        }
+        List<Rating> ratings = dao.query(Rating.class)
+                                  .withAttribute(CommonAttributes.USER_ID, user)
+                                  .get();
         LongSortedSet wantedItems = LongUtils.packedSet(items);
-        Long2ObjectMap<Result> results = new Long2ObjectOpenHashMap<>();
+        List<Result> results = new ArrayList<>();
         for (Rating r: ratings) {
             long item = r.getItemId();
             if (wantedItems.contains(r.getItemId())) {
-                if (r.hasValue()) {
-                    results.put(item, Results.create(item, r.getValue()));
-                } else {
-                    results.remove(item);
-                }
+                results.add(Results.create(item, r.getValue()));
             }
         }
-        return Results.newResultMap(results.values());
+        return Results.newResultMap(results);
     }
 }
