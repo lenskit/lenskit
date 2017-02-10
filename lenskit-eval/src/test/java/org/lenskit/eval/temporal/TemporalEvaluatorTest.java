@@ -21,7 +21,10 @@
 package org.lenskit.eval.temporal;
 
 import com.google.common.collect.ImmutableList;
-import org.junit.Ignore;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RecommenderBuildException;
@@ -30,26 +33,18 @@ import org.lenskit.baseline.UserMeanBaseline;
 import org.lenskit.baseline.UserMeanItemScorer;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
-import org.lenskit.data.packed.BinaryFormatFlag;
-import org.lenskit.data.packed.BinaryRatingDAO;
-import org.lenskit.data.packed.BinaryRatingPacker;
 import org.lenskit.data.ratings.Rating;
-import org.junit.rules.TemporaryFolder;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
-/**
- * @author <a href="http://www.lenskit.org">Lenskit Research</a>
- */
-@Ignore("temporal evaluator non-functional until DAO upgrades")
 public class TemporalEvaluatorTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();

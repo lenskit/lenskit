@@ -35,10 +35,10 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -51,10 +51,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.sqrt;
@@ -224,13 +221,13 @@ public class TemporalEvaluator {
 
         //Start try block -- will try to write output on file
         try (TableWriter tableWriter = openOutput();
-             SequenceWriter extWriter = openExtendedOutput();
-             ObjectStream<Rating> ratings = dataSource.query(Rating.class)
-                                                      .orderBy(CommonAttributes.TIMESTAMP)
-                                                      .stream()) {
+             SequenceWriter extWriter = openExtendedOutput()) {
+            // FIXME Don't keep this whole list in (second) memory.
+            List<Rating> ratings = dataSource.query(Rating.class)
+                                             .orderBy(CommonAttributes.TIMESTAMP)
+                                             .get();
 
-            // FIXME Make the temporal evaluator work again
-            DataAccessObject limitedDao = null;
+            DataAccessObject limitedDao = StaticDataSource.fromList(Collections.<Entity>emptyList()).get();
             long limitTimestamp = 0;
 
             //Initialize local variables, will use to calculate RMSE
@@ -242,7 +239,10 @@ public class TemporalEvaluator {
             int ratingsSinceLastBuild = 0;
 
             //Loop through ratings
-            for (Rating r: ratings) {
+            ListIterator<Rating> riter = ratings.listIterator();
+            while (riter.hasNext()) {
+                int ridx = riter.nextIndex();
+                Rating r = riter.next();
                 Map<String,Object> json = new HashMap<>();
                 json.put("userId", r.getUserId());
                 json.put("itemId", r.getItemId());
@@ -250,7 +250,7 @@ public class TemporalEvaluator {
                 json.put("rating", r.getValue());
 
                 if (recommender == null || (r.getTimestamp() > 0 && limitTimestamp < r.getTimestamp())) {
-                    limitedDao = null; // TODO re-limit DAO
+                    limitedDao = StaticDataSource.fromList(ratings.subList(0, ridx)).get();
 
                     //rebuild recommender system if its older then rebuild period set or null
                     if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
