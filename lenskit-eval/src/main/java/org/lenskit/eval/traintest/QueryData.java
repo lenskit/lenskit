@@ -26,8 +26,7 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * Qualifier to access query data available.  When applied to {@link org.lenskit.data.dao.UserDAO},
- * the list of test users will be injected.  That is the only currently-supported use.
+ * Qualifier to access query data available.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
