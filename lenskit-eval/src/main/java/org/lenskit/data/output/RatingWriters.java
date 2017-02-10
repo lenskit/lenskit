@@ -56,24 +56,4 @@ public final class RatingWriters {
         writer.setIncludeTimestamps(ts);
         return writer;
     }
-
-    /**
-     * Write ratings to a packed file.
-     * @param file The file to write to.
-     * @return The rating writer.
-     * @throws IOException if there is an error opening the file.
-     */
-    public static RatingWriter packed(File file, BinaryFormatFlag... flags) throws IOException {
-        return new PackedRatingWriter(BinaryRatingPacker.open(file, flags));
-    }
-
-    /**
-     * Write ratings to a packed file.
-     * @param file The file to write to.
-     * @return The rating writer.
-     * @throws IOException if there is an error opening the file.
-     */
-    public static RatingWriter packed(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
-        return new PackedRatingWriter(BinaryRatingPacker.open(file, flags));
-    }
 }
