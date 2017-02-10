@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.history;
+package org.lenskit.data.ratings;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
@@ -48,24 +48,6 @@ public class UserVectorTest {
                 Rating.create(5, 7, 3.5),
                 Rating.create(5, 3, 1.5),
                 Rating.create(5, 8, 2)
-        );
-        Long2DoubleMap v = Ratings.userRatingVector(ratings);
-        assertEquals(3, v.size());
-        assertEquals(7, Vectors.sum(v), EPSILON);
-
-        long[] keys = {3, 7, 8};
-        double[] values = {1.5, 3.5, 2};
-        Long2DoubleSortedArrayMap sv = Long2DoubleSortedArrayMap.wrap(SortedKeyIndex.create(keys), values);
-        assertEquals(sv, v);
-    }
-
-    @Test
-    public void testUserRatingVectorDedup() {
-        Collection<Rating> ratings = Lists.newArrayList(
-                Rating.create(5, 7, 3.5, 7),
-                Rating.create(5, 3, 1.5, 3),
-                Rating.create(5, 8, 2, 5),
-                Rating.create(5, 3, 4, 2)
         );
         Long2DoubleMap v = Ratings.userRatingVector(ratings);
         assertEquals(3, v.size());
