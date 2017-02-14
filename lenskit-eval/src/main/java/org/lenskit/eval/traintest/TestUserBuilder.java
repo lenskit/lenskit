@@ -23,6 +23,7 @@ package org.lenskit.eval.traintest;
 import com.google.common.collect.ImmutableList;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entities;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ import java.util.List;
  */
 public class TestUserBuilder {
     private long userId;
-    private List<Rating> trainEvents = new ArrayList<>();
-    private List<Rating> testEvents = new ArrayList<>();
+    private List<Entity> trainEvents = new ArrayList<>();
+    private List<Entity> testEvents = new ArrayList<>();
 
     /**
      * Construct a new test user builder.
@@ -70,12 +71,12 @@ public class TestUserBuilder {
         return this;
     }
 
-    public TestUserBuilder setTrainHistory(List<Rating> train) {
+    public TestUserBuilder setTrainHistory(List<Entity> train) {
         trainEvents = new ArrayList<>(train);
         return this;
     }
 
-    public TestUserBuilder setTestHistory(List<Rating> test) {
+    public TestUserBuilder setTestHistory(List<Entity> test) {
         testEvents = new ArrayList<>(test);
         return this;
     }

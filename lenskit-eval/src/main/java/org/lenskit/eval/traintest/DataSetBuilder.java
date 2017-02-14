@@ -23,9 +23,11 @@ package org.lenskit.eval.traintest;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.entities.EntityType;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,6 +43,9 @@ public class DataSetBuilder implements Builder<DataSet> {
     private Map<String, Object> attributes = new LinkedHashMap<>();
     private StaticDataSource queryData;
     private UUID isoGroup = new UUID(0, 0);
+    // TODO Create entity type list
+    // TODO singleton list Lists.new ArrayList(CommonTypes.Ratings)
+    private List<EntityType> entityTypes;
 
     public DataSetBuilder() {
         this(null);
@@ -76,6 +81,12 @@ public class DataSetBuilder implements Builder<DataSet> {
         return this;
     }
 
+    // TODO set entity types
+    public DataSetBuilder setEntityTypes(List<EntityType> typeList) {
+        entityTypes = typeList;
+        return this;
+    }
+
     /**
      * Set the group ID for this data set.  The default is the all-0 UUID.
      * @param group The group ID, or `null` to reset to the default group.
@@ -106,6 +117,7 @@ public class DataSetBuilder implements Builder<DataSet> {
     @Override
     public DataSet build() {
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new DataSet(getName(), trainingData, queryData, testData, isoGroup, attributes);
+        // TODO pass entity types to constructor
+        return new DataSet(getName(), trainingData, queryData, testData, isoGroup, attributes, entityTypes);
     }
 }

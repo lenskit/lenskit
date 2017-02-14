@@ -22,6 +22,7 @@ package org.lenskit.eval.traintest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -32,7 +33,10 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.util.collections.LongUtils;
 
@@ -61,6 +65,8 @@ public class DataSet {
     @Nonnull
     private final UUID group;
     private final Map<String, Object> attributes;
+    @Nonnull
+    private final List<EntityType> entityTypes;
 
     /**
      * Create a new data set.
@@ -76,7 +82,8 @@ public class DataSet {
                    @Nullable StaticDataSource query,
                    @Nonnull StaticDataSource test,
                    @Nonnull UUID grp,
-                   Map<String, Object> attrs) {
+                   Map<String, Object> attrs,
+                   @Nonnull List<EntityType> entityTypes) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
@@ -89,6 +96,7 @@ public class DataSet {
         } else {
             attributes = ImmutableMap.copyOf(attrs);
         }
+        this.entityTypes = entityTypes;
     }
 
     /**
@@ -288,7 +296,27 @@ public class DataSet {
     private static DataSet loadDataSet(JsonNode json, URI base, String name, int part) throws IOException {
         Preconditions.checkArgument(json.has("train"), "%s: no train data specified", name);
         Preconditions.checkArgument(json.has("test"), "%s: no test data specified", name);
+
+        // TODO Parse entity types
+        List<EntityType> entityList = new ArrayList();
+
+        if (json.has("entity_types")) {
+            if (json.get("entity_types").isArray()) {
+                List<JsonNode> nodeList = json.findValues("entity_types");
+                for(JsonNode node: nodeList) {
+                    entityList.add(EntityType.forName(node.asText()));
+                }
+            } else if (json.get("entity_types").isTextual()) {
+                JsonNode node = json.get("entity_types");
+                entityList.add(EntityType.forName(node.asText()));
+            }
+        } else {
+            entityList.add(CommonTypes.RATING);
+        }
+
         DataSetBuilder dsb = newBuilder(name);
+        // TODO Modify dsb
+        dsb.setEntityTypes(entityList);
         if (part >= 0) {
             dsb.setAttribute("Partition", part);
         }
