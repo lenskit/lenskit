@@ -23,6 +23,7 @@ package org.lenskit.results;
 import com.google.common.base.Preconditions;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
+import org.lenskit.api.ResultMap;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -38,11 +39,11 @@ import java.util.PriorityQueue;
 public abstract class ResultAccumulator {
     /**
      * Create a new result accumulator.
-     * @param n The number of results desired; -1 for unlimited.
+     * @param n The number of results desired; <= 0 for unlimited.
      * @return A result accumulator.
      */
     public static ResultAccumulator create(int n) {
-        if (n < 0) {
+        if (n <= 0) {
             return new Unlimited();
         } else {
             return new TopN(n);
@@ -75,6 +76,8 @@ public abstract class ResultAccumulator {
      */
     public abstract ResultList finish();
 
+    public abstract ResultMap finishMap();
+
     private static class Unlimited extends ResultAccumulator {
         List<Result> results = new ArrayList<>();
 
@@ -90,6 +93,11 @@ public abstract class ResultAccumulator {
             ResultList rv = new BasicResultList(results);
             results.clear();
             return rv;
+        }
+
+        @Override
+        public ResultMap finishMap() {
+            return Results.newResultMap(results);
         }
     }
 
@@ -121,6 +129,11 @@ public abstract class ResultAccumulator {
             // also, pq is empty
             Collections.reverse(list);
             return new BasicResultList(list);
+        }
+
+        @Override
+        public ResultMap finishMap() {
+            return Results.newResultMap(finish());
         }
     }
 }
