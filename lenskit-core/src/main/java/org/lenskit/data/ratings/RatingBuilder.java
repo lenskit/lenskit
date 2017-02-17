@@ -42,8 +42,6 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Clo
     private static final AtomicLong idGenerator = new AtomicLong();
     private static volatile boolean hasWarned;
 
-    private boolean hasId;
-    private long id;
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -81,7 +79,8 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Clo
 
     @Override
     public RatingBuilder reset() {
-        hasId = hasUserId = hasItemId = hasRating = false;
+        super.reset();
+        hasUserId = hasItemId = hasRating = false;
         timestamp = -1;
         return this;
     }
@@ -100,9 +99,7 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Clo
      * @return The builder (for chaining).
      */
     public RatingBuilder setId(long id) {
-        this.id = id;
-        hasId = true;
-        return this;
+        return (RatingBuilder) super.setId(id);
     }
 
     /**
@@ -236,7 +233,7 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Clo
             hasRating = false;
             break;
         case "id":
-            hasId = false;
+            idSet = false;
             break;
         case "timestamp":
             timestamp = -1;
@@ -252,7 +249,7 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Clo
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
         Preconditions.checkState(hasRating, "no rating set");
-        if (!hasId) {
+        if (!idSet) {
             if (!hasWarned) {
                 logger.warn("creating rating without ID");
                 hasWarned = true;
