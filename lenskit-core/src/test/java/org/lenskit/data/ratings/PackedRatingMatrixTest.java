@@ -79,8 +79,9 @@ public class PackedRatingMatrixTest {
 
         StaticDataSource source = StaticDataSource.fromList(rs);
         DataAccessObject dao = source.get();
+        RatingVectorPDAO pdao = new StandardRatingVectorPDAO(dao);
 
-        snap = new PackedRatingMatrixProvider(dao, new Random()).get();
+        snap = new PackedRatingMatrixProvider(pdao, new Random()).get();
         ratingList = rs;
     }
 
@@ -139,21 +140,8 @@ public class PackedRatingMatrixTest {
     public void testItemIndex() {
         KeyIndex ind = snap.itemIndex();
         assertEquals(5, ind.size());
-        assertTrue(ind.getKeyList().contains(7));
-        assertTrue(ind.getKeyList().contains(8));
-        assertTrue(ind.getKeyList().contains(9));
-        assertTrue(ind.getKeyList().contains(10));
-        assertTrue(ind.getKeyList().contains(11));
-        assertEquals(0, ind.getIndex(7));
-        assertEquals(1, ind.getIndex(8));
-        assertEquals(2, ind.getIndex(9));
-        assertEquals(3, ind.getIndex(10));
-        assertEquals(4, ind.getIndex(11));
-        assertEquals(7, ind.getKey(0));
-        assertEquals(8, ind.getKey(1));
-        assertEquals(9, ind.getKey(2));
-        assertEquals(10, ind.getKey(3));
-        assertEquals(11, ind.getKey(4));
+        assertThat(ind.getKeyList(),
+                   containsInAnyOrder(7L, 8L, 9L, 10L, 11L));
     }
 
     @Test

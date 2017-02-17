@@ -62,7 +62,9 @@ public class EntityCountRatingVectorPDAO implements RatingVectorPDAO {
     /**
      * Construct a rating vector source.
      * @param dao The data access object.
-     * @param type
+     * @param type An entity type.  Entities of this type should have {@link CommonAttributes#USER_ID} and
+     *             {@link CommonAttributes#ITEM_ID} attributes, and a rating vector will count the number
+     *             of times an item ID appears for a given user ID.
      */
     @Inject
     public EntityCountRatingVectorPDAO(DataAccessObject dao, @CountedType EntityType type) {

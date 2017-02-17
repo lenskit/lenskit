@@ -20,12 +20,9 @@
  */
 package org.lenskit.data.ratings;
 
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.lenskit.data.dao.DataAccessObject;
+import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.inject.Transient;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +37,11 @@ import java.util.Random;
 public class PackedRatingMatrixProvider implements Provider<PackedRatingMatrix> {
     private static final Logger logger = LoggerFactory.getLogger(PackedRatingMatrixProvider.class);
 
-    private final DataAccessObject dao;
+    private final RatingVectorPDAO dao;
     private Random random;
 
     @Inject
-    public PackedRatingMatrixProvider(@Transient DataAccessObject dao, Random random) {
+    public PackedRatingMatrixProvider(@Transient RatingVectorPDAO dao, Random random) {
         this.dao = dao;
         this.random = random;
     }
@@ -62,25 +59,21 @@ public class PackedRatingMatrixProvider implements Provider<PackedRatingMatrix> 
 
         // Since we iterate in timestamp order, we can just overwrite
         // old data for a user-item pair with new data.
-        try (ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
-            for (Rating r : ratings) {
-                final long user = r.getUserId();
-                final long item = r.getItemId();
+        try (ObjectStream<IdBox<Long2DoubleMap>> ratings = dao.streamUsers()) {
+            for (IdBox<Long2DoubleMap> user: ratings) {
+                final long uid = user.getId();
 
-                // get the item -> index map for this user
-                Long2IntMap imap = uiIndexes.get(user);
-                if (imap == null) {
-                    imap = new Long2IntOpenHashMap();
-                    imap.defaultReturnValue(-1);
-                    uiIndexes.put(user, imap);
+                // create an item->index map for this user
+                Long2IntMap imap = new Long2IntOpenHashMap();
+                imap.defaultReturnValue(-1);
+                uiIndexes.put(uid, imap);
+
+                for (Long2DoubleMap.Entry r: user.getValue().long2DoubleEntrySet()) {
+                    // add the rating
+                    long iid = r.getLongKey();
+                    int idx = bld.add(uid, iid, r.getDoubleValue());
+                    imap.put(iid, idx);
                 }
-
-                // we should never have seen this item before
-                assert imap.get(item) < 0;
-
-                // add the rating
-                int idx = bld.add(r);
-                imap.put(item, idx);
             }
 
             logger.debug("Packed {} ratings", bld.size());
