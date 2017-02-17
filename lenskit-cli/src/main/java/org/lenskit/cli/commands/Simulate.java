@@ -112,7 +112,7 @@ public class Simulate implements Command {
                                                                environment.getClassLoader());
         if (algos.size() != 1) {
             logger.error("expected 1 algorithm, found {}", algos.size());
-            System.exit(2);
+            throw new IllegalArgumentException("too many algorithms");
         } else {
             eval.setAlgorithm(algos.get(0));
         }
