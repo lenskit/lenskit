@@ -22,9 +22,9 @@ package org.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.lenskit.util.ScoredIdAccumulator;
-import org.lenskit.util.TopNScoredIdAccumulator;
-import org.lenskit.util.UnlimitedScoredIdAccumulator;
+import org.lenskit.util.collections.Long2DoubleAccumulator;
+import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
+import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
@@ -84,7 +84,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
         LongSortedSet allItems = buildContext.getItems();
 
-        Long2ObjectMap<ScoredIdAccumulator> rows = makeAccumulators(allItems);
+        Long2ObjectMap<Long2DoubleAccumulator> rows = makeAccumulators(allItems);
 
         final int nitems = allItems.size();
         LongIterator outer = allItems.iterator();
@@ -116,7 +116,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
             LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
                                                                       itemSimilarity.isSymmetric());
 
-            ScoredIdAccumulator row = rows.get(itemId1);
+            Long2DoubleAccumulator row = rows.get(itemId1);
             INNER: while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
@@ -147,25 +147,25 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         return new SimilarityMatrixModel(finishRows(rows));
     }
 
-    private Long2ObjectMap<ScoredIdAccumulator> makeAccumulators(LongSet items) {
-        Long2ObjectMap<ScoredIdAccumulator> rows = new Long2ObjectOpenHashMap<>(items.size());
+    private Long2ObjectMap<Long2DoubleAccumulator> makeAccumulators(LongSet items) {
+        Long2ObjectMap<Long2DoubleAccumulator> rows = new Long2ObjectOpenHashMap<>(items.size());
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
             long item = iter.nextLong();
-            ScoredIdAccumulator accum;
+            Long2DoubleAccumulator accum;
             if (modelSize == 0) {
-                accum = new UnlimitedScoredIdAccumulator();
+                accum = new UnlimitedLong2DoubleAccumulator();
             } else {
-                accum = new TopNScoredIdAccumulator(modelSize);
+                accum = new TopNLong2DoubleAccumulator(modelSize);
             }
             rows.put(item, accum);
         }
         return rows;
     }
 
-    private Long2ObjectMap<Long2DoubleMap> finishRows(Long2ObjectMap<ScoredIdAccumulator> rows) {
+    private Long2ObjectMap<Long2DoubleMap> finishRows(Long2ObjectMap<Long2DoubleAccumulator> rows) {
         Long2ObjectMap<Long2DoubleMap> results = new Long2ObjectOpenHashMap<>(rows.size());
-        for (Long2ObjectMap.Entry<ScoredIdAccumulator> e: rows.long2ObjectEntrySet()) {
+        for (Long2ObjectMap.Entry<Long2DoubleAccumulator> e: rows.long2ObjectEntrySet()) {
             results.put(e.getLongKey(), e.getValue().finishMap());
         }
         return results;

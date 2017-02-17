@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util;
+package org.lenskit.util.collections;
 
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -33,7 +33,7 @@ import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
  */
-public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
+public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator {
     private final int count;
     private DoubleArrayList scores;
     private CompactableLongArrayList items;
@@ -50,7 +50,7 @@ public final class TopNScoredIdAccumulator implements ScoredIdAccumulator {
      *
      * @param n The number of IDs to retain.
      */
-    public TopNScoredIdAccumulator(int n) {
+    public TopNLong2DoubleAccumulator(int n) {
         this.count = n;
 
         slot = 0;

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util;
+package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -28,7 +28,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 /**
  * Accumulate a sorted list of scored IDs.
  */
-public interface ScoredIdAccumulator {
+public interface Long2DoubleAccumulator {
     /**
      * Query whether the accumulator is empty.
      *

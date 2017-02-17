@@ -22,7 +22,7 @@ package org.grouplens.lenskit.transform.truncate;
 
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -58,7 +58,7 @@ public class TopNTruncator implements VectorTruncator, Serializable {
             threshold.truncate(v);
         }
 
-        TopNScoredIdAccumulator accumulator = new TopNScoredIdAccumulator(n);
+        TopNLong2DoubleAccumulator accumulator = new TopNLong2DoubleAccumulator(n);
         for (VectorEntry e : v.view(VectorEntry.State.SET)) {
             accumulator.put(e.getKey(), e.getValue());
         }

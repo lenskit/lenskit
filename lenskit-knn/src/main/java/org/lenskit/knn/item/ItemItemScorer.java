@@ -33,8 +33,8 @@ import org.lenskit.knn.item.model.ItemItemModel;
 import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
-import org.lenskit.util.ScoredIdAccumulator;
-import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.collections.Long2DoubleAccumulator;
+import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +149,7 @@ public class ItemItemScorer extends AbstractItemScorer {
             if (logger.isTraceEnabled()) {
                 logger.trace("truncating {} neighbors to {}", neighborhood.size(), neighborhoodSize);
             }
-            ScoredIdAccumulator acc = new TopNScoredIdAccumulator(neighborhoodSize);
+            Long2DoubleAccumulator acc = new TopNLong2DoubleAccumulator(neighborhoodSize);
             for (Long2DoubleMap.Entry e: neighborhood.long2DoubleEntrySet()) {
                 acc.put(e.getLongKey(), e.getDoubleValue());
             }

@@ -18,11 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util;
+package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.collections.Long2DoubleAccumulator;
+import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
 
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
@@ -31,12 +33,12 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class UnlimitedScoredIdAccumulatorTest {
-    ScoredIdAccumulator accum;
+public class UnlimitedLong2DoubleAccumulatorTest {
+    Long2DoubleAccumulator accum;
 
     @Before
     public void createAccumulator() {
-        accum = new UnlimitedScoredIdAccumulator();
+        accum = new UnlimitedLong2DoubleAccumulator();
     }
 
     @Test

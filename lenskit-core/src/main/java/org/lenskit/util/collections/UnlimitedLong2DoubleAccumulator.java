@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util;
+package org.lenskit.util.collections;
 
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
@@ -27,10 +27,10 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 /**
  * Scored item accumulator with no upper bound.
  */
-public final class UnlimitedScoredIdAccumulator implements ScoredIdAccumulator {
+public final class UnlimitedLong2DoubleAccumulator implements Long2DoubleAccumulator {
     private Long2DoubleMap entries;
 
-    public UnlimitedScoredIdAccumulator() {}
+    public UnlimitedLong2DoubleAccumulator() {}
 
     @Override
     public boolean isEmpty() {
