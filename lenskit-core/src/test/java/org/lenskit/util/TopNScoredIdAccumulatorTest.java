@@ -22,14 +22,12 @@ package org.lenskit.util;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class TopNScoredIdAccumulatorTest {
     ScoredIdAccumulator accum;
@@ -41,40 +39,8 @@ public class TopNScoredIdAccumulatorTest {
 
     @Test
     public void testEmpty() {
-        List<ScoredId> out = accum.finish();
+        LongList out = accum.finishList();
         assertTrue(out.isEmpty());
-    }
-
-    @Test
-    public void testAccum() {
-        accum.put(5, 4.2);
-        accum.put(3, 2.9);
-        accum.put(2, 9.8);
-        List<ScoredId> out = accum.finish();
-        assertThat(out, hasSize(3));
-        assertThat(out.get(0).getId(), equalTo(2L));
-        assertThat(out.get(0).getScore(), equalTo(9.8));
-        assertThat(out.get(1).getId(), equalTo(5L));
-        assertThat(out.get(1).getScore(), equalTo(4.2));
-        assertThat(out.get(2).getId(), equalTo(3L));
-        assertThat(out.get(2).getScore(), equalTo(2.9));
-    }
-
-    @Test
-    public void testAccumLimit() {
-        accum.put(7, 1.0);
-        accum.put(5, 4.2);
-        accum.put(3, 2.9);
-        accum.put(2, 9.8);
-        accum.put(8, 2.1);
-        List<ScoredId> out = accum.finish();
-        assertThat(out, hasSize(3));
-        assertThat(out.get(0).getId(), equalTo(2L));
-        assertThat(out.get(0).getScore(), equalTo(9.8));
-        assertThat(out.get(1).getId(), equalTo(5L));
-        assertThat(out.get(1).getScore(), equalTo(4.2));
-        assertThat(out.get(2).getId(), equalTo(3L));
-        assertThat(out.get(2).getScore(), equalTo(2.9));
     }
 
     @Test

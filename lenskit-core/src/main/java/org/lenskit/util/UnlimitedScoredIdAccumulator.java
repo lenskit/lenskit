@@ -20,99 +20,82 @@
  */
 package org.lenskit.util;
 
+import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdListBuilder;
-import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Scored item accumulator with no upper bound.
  */
 public final class UnlimitedScoredIdAccumulator implements ScoredIdAccumulator {
-    private ScoredIdListBuilder scores;
+    private Long2DoubleMap entries;
 
     public UnlimitedScoredIdAccumulator() {}
 
     @Override
     public boolean isEmpty() {
-        return scores == null || scores.size() == 0;
+        return entries == null || entries.size() == 0;
     }
 
     @Override
     public int size() {
-        return scores == null ? 0 : scores.size();
+        return entries == null ? 0 : entries.size();
     }
 
     @Override
     public void put(long item, double score) {
-        if (scores == null) {
-            scores = ScoredIds.newListBuilder();
+        if (entries == null) {
+            entries = new Long2DoubleOpenHashMap();
         }
-        scores.add(item, score);
-    }
-
-    @Override
-    public List<ScoredId> finish() {
-        if (scores == null) {
-            return Collections.emptyList();
-        }
-        List<ScoredId> list = scores.sort(ScoredIds.scoreOrder().reverse()).finish();
-        scores = null;
-        return list;
+        entries.put(item, score);
     }
 
     @Override
     public MutableSparseVector finishVector() {
-        if (scores == null) {
+        if (entries == null) {
             return MutableSparseVector.create();
         }
 
-        MutableSparseVector vec = scores.buildVector().mutableCopy();
-        scores.clear();
-        scores = null;
+        MutableSparseVector vec = MutableSparseVector.create(entries);
+        entries = null;
         return vec;
     }
 
     @Override
     public Long2DoubleMap finishMap() {
-        if (scores == null) {
+        if (entries == null) {
             return Long2DoubleMaps.EMPTY_MAP;
         }
-        // FIXME Make this efficient
-        Long2DoubleMap set = new Long2DoubleOpenHashMap(scores.size());
-        for (ScoredId id: finish()) {
-            set.put(id.getId(), id.getScore());
-        }
-        return set;
+        Long2DoubleMap map = entries;
+        entries = null;
+        return map;
     }
 
     @Override
     public LongSet finishSet() {
-        if (scores == null) {
+        if (entries == null) {
             return LongSets.EMPTY_SET;
         }
 
-        LongSet set = new LongOpenHashSet(scores.size());
-        for (ScoredId id: finish()) {
-            set.add(id.getId());
-        }
+        LongSet set = new LongOpenHashSet(entries.keySet());
+        entries = null;
         return set;
     }
 
     @Override
     public LongList finishList() {
-        if (scores == null) {
+        if (entries == null) {
             return LongLists.EMPTY_LIST;
         }
 
-        LongList list = new LongArrayList(scores.size());
-        for (ScoredId id: finish()) {
-            list.add(id.getId());
-        }
-        return list;
+        long[] longs = entries.keySet().toLongArray();
+        LongArrays.quickSort(longs, new AbstractLongComparator() {
+            @Override
+            public int compare(long k1, long k2) {
+                return Doubles.compare(entries.get(k2), entries.get(k1));
+            }
+        });
+        entries = null;
+        return new LongArrayList(longs);
     }
 }
