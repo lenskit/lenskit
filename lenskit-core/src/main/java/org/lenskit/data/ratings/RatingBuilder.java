@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Cloneable {
+public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
     private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
     private static final AtomicLong idGenerator = new AtomicLong();
     private static volatile boolean hasWarned;
@@ -257,14 +257,5 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating>, Clo
             id = idGenerator.incrementAndGet();
         }
         return new Rating(id, userId, itemId, rating, timestamp);
-    }
-
-    @Override
-    public RatingBuilder clone() {
-        try {
-            return (RatingBuilder) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
     }
 }
