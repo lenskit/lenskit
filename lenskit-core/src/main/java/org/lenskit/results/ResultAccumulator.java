@@ -39,11 +39,11 @@ import java.util.PriorityQueue;
 public abstract class ResultAccumulator {
     /**
      * Create a new result accumulator.
-     * @param n The number of results desired; <= 0 for unlimited.
+     * @param n The number of results desired; negative for unlimited.
      * @return A result accumulator.
      */
     public static ResultAccumulator create(int n) {
-        if (n <= 0) {
+        if (n < 0) {
             return new Unlimited();
         } else {
             return new TopN(n);
