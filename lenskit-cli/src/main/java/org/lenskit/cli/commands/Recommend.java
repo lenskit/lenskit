@@ -70,7 +70,7 @@ public class Recommend implements Command {
     @Override
     public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
-        LenskitRecommenderEngine engine = null;
+        LenskitRecommenderEngine engine;
         try {
             engine = ctx.loader.loadEngine();
         } catch (IOException e) {
@@ -80,7 +80,7 @@ public class Recommend implements Command {
         List<Long> users = ctx.options.get("users");
         final int n = ctx.options.getInt("num_recs");
 
-        try (LenskitRecommender rec = engine.createRecommender()) {
+        try (LenskitRecommender rec = engine.createRecommender(ctx.input.getDAO())) {
             ItemRecommender irec = rec.getItemRecommender();
             DataAccessObject dao = rec.getDataAccessObject();
             RecOutput output;
@@ -136,7 +136,7 @@ public class Recommend implements Command {
         private final ScriptEnvironment environment;
         private final RecommenderLoader loader;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
             input = new InputData(environment, opts);
@@ -144,7 +144,7 @@ public class Recommend implements Command {
         }
     }
 
-    private static interface RecOutput {
+    private interface RecOutput {
         void begin() throws IOException;
         void writeUser(long user, ResultList recs) throws IOException;
         void end() throws IOException;

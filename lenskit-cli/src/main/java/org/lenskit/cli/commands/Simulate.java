@@ -24,7 +24,6 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
@@ -132,27 +131,27 @@ public class Simulate implements Command {
     private static class Context {
         private final Namespace options;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
         }
 
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
 
-        public File getExtendedOutputFile() {
+        File getExtendedOutputFile() {
             return options.get("extended_output");
         }
 
-        public File getConfigFile() {
+        File getConfigFile() {
             return options.get("config");
         }
 
-        public long getRebuildPeriod() {
+        long getRebuildPeriod() {
             return options.get("rebuild_period");
         }
 
-        public int getListSize() {
+        int getListSize() {
             return options.get("list_size");
         }
     }

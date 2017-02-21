@@ -24,12 +24,11 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.LenskitRecommenderEngineBuilder;
 import org.lenskit.ModelDisposition;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
@@ -37,7 +36,10 @@ import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -72,7 +74,7 @@ public class TrainModel implements Command {
         builder.addConfiguration(dataConfig, ModelDisposition.EXCLUDED);
 
         Stopwatch timer = Stopwatch.createStarted();
-        LenskitRecommenderEngine engine = builder.build();
+        LenskitRecommenderEngine engine = builder.build(ctx.input.getDAO());
         timer.stop();
         logger.info("built model in {}", timer);
         File output = ctx.getOutputFile();
@@ -108,17 +110,17 @@ public class TrainModel implements Command {
         private final ScriptEnvironment environment;
         private final InputData input;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
             input = new InputData(environment, opts);
         }
 
-        public List<File> getConfigFiles() {
+        List<File> getConfigFiles() {
             return options.get("config");
         }
 
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
     }

@@ -27,7 +27,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.RatingPredictor;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
@@ -68,7 +67,7 @@ public class Predict implements Command {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
-        LenskitRecommenderEngine engine = null;
+        LenskitRecommenderEngine engine;
         try {
             engine = ctx.loader.loadEngine();
         } catch (IOException e) {
@@ -78,7 +77,7 @@ public class Predict implements Command {
         long user = ctx.options.getLong("user");
         List<Long> items = ctx.options.get("items");
 
-        try (LenskitRecommender rec = engine.createRecommender()) {
+        try (LenskitRecommender rec = engine.createRecommender(ctx.input.getDAO())) {
             RatingPredictor pred = rec.getRatingPredictor();
             DataAccessObject dao = rec.getDataAccessObject();
             if (pred == null) {
@@ -127,7 +126,7 @@ public class Predict implements Command {
         private final ScriptEnvironment environment;
         private final RecommenderLoader loader;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
             input = new InputData(environment, opts);

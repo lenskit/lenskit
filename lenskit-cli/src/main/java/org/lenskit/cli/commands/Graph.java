@@ -80,8 +80,8 @@ public class Graph implements Command {
      * Load a configuration graph from a recommender model.
      * @param file The model file.
      * @return The recommender graph.
-     * @throws IOException
-     * @throws RecommenderConfigurationException
+     * @throws IOException if there is an error loading the model.
+     * @throws RecommenderConfigurationException if the model fails to configure.
      */
     private DAGNode<Component, Dependency> loadModel(Context ctx, File file) throws IOException, RecommenderConfigurationException {
         logger.info("loading model from {}", file);
@@ -98,8 +98,8 @@ public class Graph implements Command {
     /**
      * Build a configured recommender graph from the specified configurations.
      * @return The configuration graph.
-     * @throws IOException
-     * @throws RecommenderConfigurationException
+     * @throws IOException if there is an error loading the configurations
+     * @throws RecommenderConfigurationException if there is an error building the configurations
      */
     private DAGNode<Component,Dependency> makeNewGraph(Context ctx) throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
@@ -148,14 +148,14 @@ public class Graph implements Command {
         }
     }
 
-    public void writeDotFile(DAGNode<Component,Dependency> graph, File outFile) throws IOException {
+    private void writeDotFile(DAGNode<Component, Dependency> graph, File outFile) throws IOException {
         try (Writer writer = new FileWriter(outFile)) {
             logger.info("writing graph to {}", outFile);
             GraphDumper.renderGraph(graph, writer);
         }
     }
 
-    public void writeSvgFile(DAGNode<Component,Dependency> graph, File outFile) throws IOException, LenskitCommandException {
+    private void writeSvgFile(DAGNode<Component, Dependency> graph, File outFile) throws IOException, LenskitCommandException {
         StringWriter sw = new StringWriter();
         logger.info("writing graph to memory");
         GraphDumper.renderGraph(graph, sw);
@@ -230,25 +230,25 @@ public class Graph implements Command {
         private final Namespace options;
         private final ScriptEnvironment environment;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
         }
 
-        public List<File> getConfigFiles() {
+        List<File> getConfigFiles() {
             return options.get("config");
         }
 
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
 
-        public OutputType getOutputType() {
+        OutputType getOutputType() {
             return options.get("output_type");
         }
     }
 
-    private static enum OutputType {
+    private enum OutputType {
         dot, svg
     }
 }
