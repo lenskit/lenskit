@@ -44,6 +44,7 @@ import org.lenskit.data.entities.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
@@ -83,12 +84,6 @@ public class Recommend implements Command {
         try (LenskitRecommender rec = engine.createRecommender(ctx.input.getDAO())) {
             ItemRecommender irec = rec.getItemRecommender();
             DataAccessObject dao = rec.getDataAccessObject();
-            RecOutput output;
-            if (ctx.options.getBoolean("json")) {
-                output = new JSONOutput(dao);
-            } else {
-                output = new HumanOutput(dao);
-            }
 
             if (irec == null) {
                 logger.error("recommender has no item recommender");
@@ -97,16 +92,24 @@ public class Recommend implements Command {
 
             logger.info("recommending for {} users", users.size());
             Stopwatch timer = Stopwatch.createStarted();
-            output.begin();
-            for (long user : users) {
-                ResultList recs = irec.recommendWithDetails(user, n, null, null);
-                output.writeUser(user, recs);
+            try (RecOutput output = openOutput(ctx, dao)) {
+                for (long user : users) {
+                    ResultList recs = irec.recommendWithDetails(user, n, null, null);
+                    output.writeUser(user, recs);
+                }
             }
-            output.end();
             timer.stop();
             logger.info("recommended for {} users in {}", users.size(), timer);
         } catch (IOException e) {
             throw new LenskitCommandException("I/O error writing output", e);
+        }
+    }
+
+    private RecOutput openOutput(Context ctx, DataAccessObject dao) throws IOException {
+        if (ctx.options.getBoolean("json")) {
+            return new JSONOutput(dao);
+        } else {
+            return new HumanOutput(dao);
         }
     }
 
@@ -144,10 +147,8 @@ public class Recommend implements Command {
         }
     }
 
-    private interface RecOutput {
-        void begin() throws IOException;
+    private interface RecOutput extends Closeable {
         void writeUser(long user, ResultList recs) throws IOException;
-        void end() throws IOException;
     }
 
     private class HumanOutput implements RecOutput {
@@ -155,10 +156,6 @@ public class Recommend implements Command {
 
         HumanOutput(DataAccessObject dao) {
             this.dao = dao;
-        }
-
-        @Override
-        public void begin() {
         }
 
         @Override
@@ -177,7 +174,7 @@ public class Recommend implements Command {
         }
 
         @Override
-        public void end() {
+        public void close() {
 
         }
     }
@@ -191,10 +188,6 @@ public class Recommend implements Command {
             JsonFactory jfac = new JsonFactory();
             generator = jfac.createGenerator(System.out)
                             .useDefaultPrettyPrinter();
-        }
-
-        @Override
-        public void begin() throws IOException {
             generator.writeStartArray();
         }
 
@@ -219,9 +212,12 @@ public class Recommend implements Command {
         }
 
         @Override
-        public void end() throws IOException {
-            generator.writeEndArray();
-            generator.close();
+        public void close() throws IOException {
+            try {
+                generator.writeEndArray();
+            } finally {
+                generator.close();
+            }
         }
     }
 }
