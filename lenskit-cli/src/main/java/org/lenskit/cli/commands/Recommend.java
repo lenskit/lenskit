@@ -30,10 +30,10 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
@@ -68,9 +68,14 @@ public class Recommend implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
-        LenskitRecommenderEngine engine = ctx.loader.loadEngine();
+        LenskitRecommenderEngine engine = null;
+        try {
+            engine = ctx.loader.loadEngine();
+        } catch (IOException e) {
+            throw new LenskitCommandException("could not load engine", e);
+        }
 
         List<Long> users = ctx.options.get("users");
         final int n = ctx.options.getInt("num_recs");
@@ -100,6 +105,8 @@ public class Recommend implements Command {
             output.end();
             timer.stop();
             logger.info("recommended for {} users in {}", users.size(), timer);
+        } catch (IOException e) {
+            throw new LenskitCommandException("I/O error writing output", e);
         }
     }
 

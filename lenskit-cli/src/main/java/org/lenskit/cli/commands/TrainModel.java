@@ -31,15 +31,13 @@ import org.lenskit.LenskitRecommenderEngineBuilder;
 import org.lenskit.ModelDisposition;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -60,12 +58,16 @@ public class TrainModel implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
         LenskitConfiguration dataConfig = ctx.input.getConfiguration();
         LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-        for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
-            builder.addConfiguration(config);
+        try {
+            for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
+                builder.addConfiguration(config);
+            }
+        } catch (IOException e) {
+            throw new LenskitCommandException("error loading LensKit configuration", e);
         }
         builder.addConfiguration(dataConfig, ModelDisposition.EXCLUDED);
 
@@ -80,6 +82,8 @@ public class TrainModel implements Command {
         try (OutputStream raw = new FileOutputStream(output);
              OutputStream stream = comp.wrapOutput(raw)) {
             engine.write(stream);
+        } catch (IOException e) {
+            throw new LenskitCommandException("could not write output file", e);
         }
     }
 

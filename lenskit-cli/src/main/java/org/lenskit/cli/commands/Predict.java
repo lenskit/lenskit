@@ -29,6 +29,7 @@ import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
@@ -65,9 +66,14 @@ public class Predict implements Command {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
-        LenskitRecommenderEngine engine = ctx.loader.loadEngine();
+        LenskitRecommenderEngine engine = null;
+        try {
+            engine = ctx.loader.loadEngine();
+        } catch (IOException e) {
+            throw new LenskitCommandException("error loading engine", e);
+        }
 
         long user = ctx.options.getLong("user");
         List<Long> items = ctx.options.get("items");

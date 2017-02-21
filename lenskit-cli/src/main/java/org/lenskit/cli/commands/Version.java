@@ -42,7 +42,7 @@ public class Version implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws Exception {
+    public void execute(Namespace opts) {
         String version = LenskitInfo.lenskitVersion();
         System.out.format("LensKit version %s%n", version);
         if (version.endsWith("-SNAPSHOT")) {
