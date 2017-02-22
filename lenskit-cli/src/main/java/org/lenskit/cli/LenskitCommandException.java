@@ -25,6 +25,7 @@ package org.lenskit.cli;
  */
 public class LenskitCommandException extends Exception {
     public LenskitCommandException() {
+        super();
     }
 
     public LenskitCommandException(String message) {
