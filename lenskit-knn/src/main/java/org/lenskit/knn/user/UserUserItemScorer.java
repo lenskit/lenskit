@@ -84,7 +84,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
      *
      * @param neighborhoods The neighborhoods to search.
      */
-    protected Long2ObjectMap<Long2DoubleMap> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
+    protected Long2ObjectMap<Long2DoubleMap> normalizeNeighborRatings(Collection<List<Neighbor>> neighborhoods) {
         Long2ObjectMap<Long2DoubleMap> normedVectors =
                 new Long2ObjectOpenHashMap<>();
         for (Neighbor n : Iterables.<Neighbor>concat(neighborhoods)) {
@@ -104,7 +104,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                      items.size(), user, history.size());
 
         LongSortedSet itemSet = LongUtils.packedSet(items);
-        Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
+        Long2ObjectMap<List<Neighbor>> neighborhoods =
                 findNeighbors(user, itemSet);
         Long2ObjectMap<Long2DoubleMap> normedUsers =
                 normalizeNeighborRatings(neighborhoods.values());
@@ -168,7 +168,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
      * @param items The items for which neighborhoods are requested.
      * @return A mapping of item IDs to neighborhoods.
      */
-    protected Long2ObjectMap<? extends Collection<Neighbor>>
+    protected Long2ObjectMap<List<Neighbor>>
     findNeighbors(long user, @Nonnull LongSet items) {
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
