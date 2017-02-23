@@ -32,18 +32,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 @DefaultImplementation(UserVectorSimilarity.class)
 public interface UserSimilarity {
-    /**
-     * Compute the similarity between two users.
-     *
-     * @param u1 The first user ID.
-     * @param v1 The first user vector.
-     * @param u2 The second user ID.
-     * @param v2 The second user vector.
-     * @return The similarity between the two users, in the range [0,1].
-     * @deprecated Use {@link #similarity(long, Long2DoubleMap, long, Long2DoubleMap)}
-     */
-    @Deprecated
-    double similarity(long u1, SparseVector v1, long u2, SparseVector v2);
 
     /**
      * Compute the similarity between two users.
