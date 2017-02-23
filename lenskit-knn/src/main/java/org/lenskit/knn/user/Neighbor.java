@@ -20,6 +20,7 @@
  */
 package org.lenskit.knn.user;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import java.util.Comparator;
@@ -31,17 +32,16 @@ import java.util.Comparator;
  */
 public class Neighbor {
     public final long user;
-    public final SparseVector vector;
+    public final Long2DoubleMap vector;
     public final double similarity;
 
     /**
      * Construct a new neighbor.
-     *
-     * @param u   The neighbor's ID.
+     *  @param u   The neighbor's ID.
      * @param v   The neighbor's unnormalized rating vector.
      * @param sim The neighbor's similarity to the query user.
      */
-    public Neighbor(long u, SparseVector v, double sim) {
+    public Neighbor(long u, Long2DoubleMap v, double sim) {
         user = u;
         vector = v;
         similarity = sim;
