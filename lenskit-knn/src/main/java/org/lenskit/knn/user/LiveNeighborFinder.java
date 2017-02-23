@@ -81,8 +81,8 @@ public class LiveNeighborFinder implements NeighborFinder {
             return Collections.emptyList();
         }
 
-        Long2DoubleMap nratings = normalizer.makeTransformation(user, ratings)
-                                            .apply(ratings);
+        final Long2DoubleMap nratings = normalizer.makeTransformation(user, ratings)
+                                                  .apply(ratings);
         final LongSet candidates = findCandidateNeighbors(user, nratings.keySet(), items);
         logger.debug("found {} candidate neighbors for {}", candidates.size(), user);
         return new Iterable<Neighbor>() {
