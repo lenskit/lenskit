@@ -68,8 +68,8 @@ public class SnapshotNeighborFinder implements NeighborFinder {
             return Collections.emptyList();
         }
 
-        Long2DoubleMap normed = normalizer.makeTransformation(user, urs)
-                                          .apply(urs);
+        final Long2DoubleMap normed = normalizer.makeTransformation(user, urs)
+                                                .apply(urs);
         assert normed != null;
 
         LongCollection qset = items;
