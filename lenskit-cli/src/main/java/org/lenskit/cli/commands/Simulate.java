@@ -24,8 +24,8 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.lenskit.eval.temporal.TemporalEvaluator;
@@ -87,7 +87,7 @@ public class Simulate implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
 
         Context ctx = new Context(opts);
         ScriptEnvironment environment = new ScriptEnvironment(opts);
@@ -119,7 +119,11 @@ public class Simulate implements Command {
 
         Stopwatch timer = Stopwatch.createStarted();
         logger.info("beginning temporal evaluator");
-        eval.execute();
+        try {
+            eval.execute();
+        } catch (IOException e) {
+            throw new LenskitCommandException(e);
+        }
         timer.stop();
         logger.info("evaluator executed  in {}", timer);
     }
@@ -127,27 +131,27 @@ public class Simulate implements Command {
     private static class Context {
         private final Namespace options;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
         }
 
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
 
-        public File getExtendedOutputFile() {
+        File getExtendedOutputFile() {
             return options.get("extended_output");
         }
 
-        public File getConfigFile() {
+        File getConfigFile() {
             return options.get("config");
         }
 
-        public long getRebuildPeriod() {
+        long getRebuildPeriod() {
             return options.get("rebuild_period");
         }
 
-        public int getListSize() {
+        int getListSize() {
             return options.get("list_size");
         }
     }

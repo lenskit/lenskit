@@ -28,10 +28,10 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemBasedItemRecommender;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
@@ -68,16 +68,21 @@ public class GlobalRecommend implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         ScriptEnvironment env = new ScriptEnvironment(opts);
         InputData input = new InputData(env, opts);
         RecommenderLoader loader = new RecommenderLoader(input, env, opts);
-        LenskitRecommenderEngine engine = loader.loadEngine();
+        LenskitRecommenderEngine engine;
+        try {
+            engine = loader.loadEngine();
+        } catch (IOException e) {
+            throw new LenskitCommandException("failed to load recommender", e);
+        }
 
         List<Long> items = opts.get("items");
         final int n = opts.getInt("num_recs");
 
-        try (LenskitRecommender rec = engine.createRecommender()) {
+        try (LenskitRecommender rec = engine.createRecommender(input.getDAO())) {
             ItemBasedItemRecommender irec = rec.getItemBasedItemRecommender();
             DataAccessObject dao = rec.getDataAccessObject();
             if (irec == null) {

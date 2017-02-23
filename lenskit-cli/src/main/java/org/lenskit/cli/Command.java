@@ -60,5 +60,5 @@ public interface Command {
      * @param options The command-line options.
      * @throws Exception if an error occurs in the command.
      */
-    void execute(Namespace options) throws Exception;
+    void execute(Namespace options) throws LenskitCommandException;
 }

@@ -18,39 +18,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.cli.commands;
-
-import com.google.auto.service.AutoService;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.LenskitInfo;
-import org.lenskit.cli.Command;
+package org.lenskit.cli;
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Exception thrown when a LensKit command fails.
  */
-@AutoService(Command.class)
-public class Version implements Command {
-    @Override
-    public String getName() {
-        return "version";
+public class LenskitCommandException extends Exception {
+    public LenskitCommandException() {
+        super();
     }
 
-    @Override
-    public String getHelp() {
-        return "show the LensKit version";
+    public LenskitCommandException(String message) {
+        super(message);
     }
 
-    @Override
-    public void execute(Namespace opts) {
-        String version = LenskitInfo.lenskitVersion();
-        System.out.format("LensKit version %s%n", version);
-        if (version.endsWith("-SNAPSHOT")) {
-            System.out.format("Git revision %s%n", LenskitInfo.getHeadRevision());
-        }
+    public LenskitCommandException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public void configureArguments(ArgumentParser parser) {
-        parser.description("Prints the LensKit version.");
+    public LenskitCommandException(Throwable cause) {
+        super(cause);
+    }
+
+    public LenskitCommandException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }
