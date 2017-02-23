@@ -34,6 +34,7 @@ import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.collections.SortedListAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.Map;
 
 import static java.lang.Math.abs;
 
@@ -172,32 +173,27 @@ public class UserUserItemScorer extends AbstractItemScorer {
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
 
-        Long2ObjectMap<PriorityQueue<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
+        Long2ObjectMap<SortedListAccumulator<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
         for (LongIterator iter = items.iterator(); iter.hasNext();) {
             long item = iter.nextLong();
-            heaps.put(item, new PriorityQueue<>(neighborhoodSize + 1,
-                                                Neighbor.SIMILARITY_COMPARATOR));
+            heaps.put(item, SortedListAccumulator.decreasing(neighborhoodSize,
+                                                             Neighbor.SIMILARITY_COMPARATOR));
         }
 
-        int neighborsUsed = 0;
         for (Neighbor nbr: neighborFinder.getCandidateNeighbors(user, items)) {
             // TODO consider optimizing
             for (Long2DoubleMap.Entry e: nbr.vector.long2DoubleEntrySet()) {
                 final long item = e.getLongKey();
-                PriorityQueue<Neighbor> heap = heaps.get(item);
+                SortedListAccumulator<Neighbor> heap = heaps.get(item);
                 if (heap != null) {
                     heap.add(nbr);
-                    if (heap.size() > neighborhoodSize) {
-                        assert heap.size() == neighborhoodSize + 1;
-                        heap.remove();
-                    } else {
-                        neighborsUsed += 1;
-                    }
                 }
             }
         }
-        logger.debug("using {} neighbors across {} items",
-                     neighborsUsed, items.size());
-        return heaps;
+        Long2ObjectMap<List<Neighbor>> neighbors = new Long2ObjectOpenHashMap<>();
+        for (Map.Entry<Long,SortedListAccumulator<Neighbor>> me: heaps.entrySet()) {
+            neighbors.put(me.getKey(), me.getValue().finish());
+        }
+        return neighbors;
     }
 }
