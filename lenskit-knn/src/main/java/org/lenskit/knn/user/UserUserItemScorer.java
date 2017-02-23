@@ -86,7 +86,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
     protected Long2ObjectMap<Long2DoubleMap> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
         Long2ObjectMap<Long2DoubleMap> normedVectors =
                 new Long2ObjectOpenHashMap<>();
-        for (Neighbor n : Iterables.concat(neighborhoods)) {
+        for (Neighbor n : Iterables.<Neighbor>concat(neighborhoods)) {
             if (!normedVectors.containsKey(n.user)) {
                 normedVectors.put(n.user, normalizer.makeTransformation(n.user, n.vector).apply(n.vector));
             }
