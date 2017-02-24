@@ -21,14 +21,11 @@
 package org.lenskit.knn.user;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
-import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
@@ -45,8 +42,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.abs;
-
 /**
  * Score items with user-user collaborative filtering.
  *
@@ -58,41 +53,19 @@ public class UserUserItemScorer extends AbstractItemScorer {
     private final RatingVectorPDAO dao;
     protected final NeighborFinder neighborFinder;
     protected final UserVectorNormalizer normalizer;
+    private final UserNeighborhoodScorer neighborhoodScorer;
     private final int neighborhoodSize;
-    private final int minNeighborCount;
-    private final Threshold userThreshold;
 
     @Inject
     public UserUserItemScorer(RatingVectorPDAO rvd, NeighborFinder nf,
                               UserVectorNormalizer norm,
-                              @NeighborhoodSize int nnbrs,
-                              @MinNeighbors int minNbrs,
-                              @UserSimilarityThreshold Threshold thresh) {
+                              UserNeighborhoodScorer scorer,
+                              @NeighborhoodSize int nnbrs) {
         this.dao = rvd;
         neighborFinder = nf;
         normalizer = norm;
+        neighborhoodScorer = scorer;
         neighborhoodSize = nnbrs;
-        minNeighborCount = minNbrs;
-        userThreshold = thresh;
-    }
-
-    /**
-     * Normalize all neighbor rating vectors, taking care to normalize each one
-     * only once.
-     *
-     * FIXME: MDE does not like this method.
-     *
-     * @param neighborhoods The neighborhoods to search.
-     */
-    protected Long2ObjectMap<Long2DoubleMap> normalizeNeighborRatings(Collection<List<Neighbor>> neighborhoods) {
-        Long2ObjectMap<Long2DoubleMap> normedVectors =
-                new Long2ObjectOpenHashMap<>();
-        for (Neighbor n : Iterables.<Neighbor>concat(neighborhoods)) {
-            if (!normedVectors.containsKey(n.user)) {
-                normedVectors.put(n.user, normalizer.makeTransformation(n.user, n.vector).apply(n.vector));
-            }
-        }
-        return normedVectors;
     }
 
     @Nonnull
@@ -106,54 +79,42 @@ public class UserUserItemScorer extends AbstractItemScorer {
         LongSortedSet itemSet = LongUtils.packedSet(items);
         Long2ObjectMap<List<Neighbor>> neighborhoods =
                 findNeighbors(user, itemSet);
-        Long2ObjectMap<Long2DoubleMap> normedUsers =
-                normalizeNeighborRatings(neighborhoods.values());
 
         // Make the normalizing transform to reverse
         InvertibleFunction<Long2DoubleMap, Long2DoubleMap> xform = normalizer.makeTransformation(user, history);
 
         // And prepare results
-        List<ResultBuilder> resultBuilders = new ArrayList<>();
+        List<UserUserResult> rawResults = new ArrayList<>();
         LongIterator iter = itemSet.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
             double sum = 0;
             double weight = 0;
             int count = 0;
-            Collection<Neighbor> nbrs = neighborhoods.get(item);
-            if (nbrs != null) {
-                for (Neighbor n : nbrs) {
-                    weight += abs(n.similarity);
-                    sum += n.similarity * normedUsers.get(n.user).get(item);
-                    count += 1;
-                }
-            }
+            List<Neighbor> nbrs = neighborhoods.get(item);
+            UserUserResult score = neighborhoodScorer.score(item, nbrs);
 
-            if (count >= minNeighborCount && weight > 0) {
+            if (score != null) {
                 if (logger.isTraceEnabled()) {
-                    logger.trace("Total neighbor weight for item {} is {} from {} neighbors",
-                                 item, weight, count);
+                    logger.trace("result {}", score);
                 }
-                resultBuilders.add(UserUserResult.newBuilder()
-                                                 .setItemId(item)
-                                                 .setRawScore(sum / weight)
-                                                 .setNeighborhoodSize(count)
-                                                 .setTotalWeight(weight));
+                rawResults.add(score);
             }
         }
 
         // de-normalize the results
-        Long2DoubleMap itemScores = new Long2DoubleOpenHashMap(resultBuilders.size());
-        for (ResultBuilder rb: resultBuilders) {
-            itemScores.put(rb.getItemId(), rb.getRawScore());
+        Long2DoubleMap itemScores = new Long2DoubleOpenHashMap(rawResults.size());
+        for (UserUserResult r: rawResults) {
+            itemScores.put(r.getId(), r.getScore());
         }
         itemScores = xform.unapply(itemScores);
 
         // and finish up
-        List<Result> results = new ArrayList<>(resultBuilders.size());
-        for (ResultBuilder rb: resultBuilders) {
-            results.add(rb.setScore(itemScores.get(rb.getItemId()))
-                          .build());
+        List<Result> results = new ArrayList<>(rawResults.size());
+        for (UserUserResult r: rawResults) {
+            results.add(r.copyBuilder()
+                         .setScore(itemScores.get(r.getId()))
+                         .build());
         }
 
         return Results.newResultMap(results);

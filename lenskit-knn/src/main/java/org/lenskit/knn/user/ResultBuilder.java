@@ -25,7 +25,6 @@ package org.lenskit.knn.user;
  */
 class ResultBuilder {
     private long itemId;
-    private double rawScore;
     private double score;
     private int neighborhoodSize;
     private double totalWeight;
@@ -36,15 +35,6 @@ class ResultBuilder {
 
     public ResultBuilder setItemId(long itemId) {
         this.itemId = itemId;
-        return this;
-    }
-
-    public double getRawScore() {
-        return rawScore;
-    }
-
-    public ResultBuilder setRawScore(double rawScore) {
-        this.rawScore = rawScore;
         return this;
     }
 

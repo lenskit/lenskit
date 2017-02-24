@@ -24,6 +24,7 @@ import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.knn.SimilarityNormalizer;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,19 +46,19 @@ public class SnapshotNeighborFinder implements NeighborFinder {
     private final UserSnapshot snapshot;
     private final UserSimilarity similarity;
     private final RatingVectorPDAO rvDAO;
-    private final UserVectorNormalizer normalizer;
+    private final UserVectorNormalizer similarityNormalizer;
     private final Threshold threshold;
 
     @Inject
     public SnapshotNeighborFinder(UserSnapshot snap,
                                   UserSimilarity sim,
                                   RatingVectorPDAO rvd,
-                                  UserVectorNormalizer norm,
+                                  @SimilarityNormalizer UserVectorNormalizer simNorm,
                                   @UserSimilarityThreshold Threshold thresh) {
         snapshot = snap;
         similarity = sim;
         rvDAO = rvd;
-        normalizer = norm;
+        similarityNormalizer = simNorm;
         threshold = thresh;
     }
 
@@ -68,8 +69,8 @@ public class SnapshotNeighborFinder implements NeighborFinder {
             return Collections.emptyList();
         }
 
-        final Long2DoubleMap normed = normalizer.makeTransformation(user, urs)
-                                                .apply(urs);
+        final Long2DoubleMap normed = similarityNormalizer.makeTransformation(user, urs)
+                                                          .apply(urs);
         assert normed != null;
 
         LongCollection qset = items;
