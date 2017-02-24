@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.closeTo
 import static org.junit.Assert.assertThat
 
 /**
- * Do major tests on the item-item recommender.
+ * Do major tests on the user-user recommender with implicit feedback.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -71,11 +71,11 @@ public class UserUserImplicitAccuracyTest extends CrossfoldTestSuite {
     protected void checkResults(Table table) {
         if (runList == null) {
             assertThat(table.column("MAP").average(),
-                    closeTo(0.0278d, 0.002d))
+                    closeTo(0.278d, 0.015d))
             assertThat(table.column("MRR").average(),
-                    closeTo(0.676, 0.02d))
+                    closeTo(0.676d, 0.02d))
             assertThat(table.column("TopN.nDCG").average(),
-                    closeTo(0.56, 0.015d))
+                    closeTo(0.56d, 0.015d))
         } else {
             runList << table
         }
