@@ -26,6 +26,7 @@ import org.lenskit.knn.MinNeighbors;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -33,7 +34,9 @@ import java.util.List;
  */
 @Immutable
 @Shareable
-public class WeightedAverageUserNeighborhoodScorer implements UserNeighborhoodScorer {
+public class WeightedAverageUserNeighborhoodScorer implements UserNeighborhoodScorer, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final int minimumNeighbors;
 
     /**
