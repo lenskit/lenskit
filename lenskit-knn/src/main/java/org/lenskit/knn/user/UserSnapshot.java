@@ -24,8 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Shareable;
 import org.lenskit.inject.Transient;
@@ -52,8 +50,8 @@ import java.util.List;
 public class UserSnapshot implements Serializable {
     private static final long serialVersionUID = 1L;
     private final SortedKeyIndex users;
-    private final List<ImmutableSparseVector> vectors;
-    private final List<ImmutableSparseVector> normedVectors;
+    private final List<Long2DoubleMap> vectors;
+    private final List<Long2DoubleMap> normedVectors;
     private final Long2ObjectMap<LongSortedSet> itemUserSets;
 
     /**
@@ -62,7 +60,7 @@ public class UserSnapshot implements Serializable {
      * @param vs The list of raw user vectors.
      * @param nvs The list of normalized user vectors.
      */
-    UserSnapshot(SortedKeyIndex us, List<ImmutableSparseVector> vs, List<ImmutableSparseVector> nvs,
+    UserSnapshot(SortedKeyIndex us, List<Long2DoubleMap> vs, List<Long2DoubleMap> nvs,
                  Long2ObjectMap<LongSortedSet> iuSets) {
         Preconditions.checkArgument(vs.size() == us.size(),
                                     "incorrectly sized vector list");
@@ -74,13 +72,13 @@ public class UserSnapshot implements Serializable {
         itemUserSets = iuSets;
     }
 
-    public ImmutableSparseVector getUserVector(long user) {
+    public Long2DoubleMap getUserVector(long user) {
         int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return vectors.get(idx);
     }
 
-    public ImmutableSparseVector getNormalizedUserVector(long user) {
+    public Long2DoubleMap getNormalizedUserVector(long user) {
         int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return normedVectors.get(idx);
@@ -104,29 +102,27 @@ public class UserSnapshot implements Serializable {
 
         @Override
         public UserSnapshot get() {
-            Long2ObjectMap<MutableSparseVector> vectors = new Long2ObjectOpenHashMap<>();
+            Long2ObjectMap<Long2DoubleMap> vectors = new Long2ObjectOpenHashMap<>();
             try (ObjectStream<IdBox<Long2DoubleMap>> users = rvDAO.streamUsers()) {
                 for (IdBox<Long2DoubleMap> user : users) {
-                    MutableSparseVector uvec = MutableSparseVector.create(user.getValue());
+                    Long2DoubleMap uvec = LongUtils.frozenMap(user.getValue());
                     vectors.put(user.getId(), uvec);
                 }
             }
 
             Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<>();
             SortedKeyIndex domain = SortedKeyIndex.fromCollection(vectors.keySet());
-            ImmutableList.Builder<ImmutableSparseVector> vecs = ImmutableList.builder();
-            ImmutableList.Builder<ImmutableSparseVector> nvecs = ImmutableList.builder();
+            ImmutableList.Builder<Long2DoubleMap> rawVectors = ImmutableList.builder();
+            ImmutableList.Builder<Long2DoubleMap> normedVectors = ImmutableList.builder();
             for (LongIterator uiter = domain.keyIterator(); uiter.hasNext();) {
                 final long user = uiter.nextLong();
-                MutableSparseVector vec = vectors.get(user);
-                // save user's original vector
-                ImmutableSparseVector userVector = vec.immutable();
-                vecs.add(userVector);
+                Long2DoubleMap rawV = vectors.get(user);
+                rawVectors.add(rawV);
                 // normalize user vector
-                normalizer.normalize(user, userVector, vec);
-                // and save normalized vector
-                nvecs.add(vec.immutable());
-                for (LongIterator iiter = userVector.keySet().iterator(); iiter.hasNext();) {
+                Long2DoubleMap normV = normalizer.makeTransformation(user, rawV).apply(rawV);
+                assert normV != null;
+                normedVectors.add(normV);
+                for (LongIterator iiter = rawV.keySet().iterator(); iiter.hasNext();) {
                     final long item = iiter.nextLong();
                     LongList itemUsers = itemUserLists.get(item);
                     if (itemUsers == null) {
@@ -141,7 +137,7 @@ public class UserSnapshot implements Serializable {
             for (Long2ObjectMap.Entry<LongList> entry: itemUserLists.long2ObjectEntrySet()) {
                 itemUserSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
             }
-            return new UserSnapshot(domain, vecs.build(), nvecs.build(), itemUserSets);
+            return new UserSnapshot(domain, rawVectors.build(), normedVectors.build(), itemUserSets);
         }
     }
 }

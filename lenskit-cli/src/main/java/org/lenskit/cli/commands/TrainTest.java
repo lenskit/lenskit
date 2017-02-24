@@ -26,12 +26,15 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.grapht.util.ClassLoaderContext;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.eval.traintest.EvaluationException;
 import org.lenskit.eval.traintest.TrainTestExperiment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
 @AutoService(Command.class)
 public class TrainTest implements Command {
@@ -62,7 +65,7 @@ public class TrainTest implements Command {
     }
 
     @Override
-    public void execute(Namespace options) throws Exception {
+    public void execute(Namespace options) throws LenskitCommandException {
         ScriptEnvironment env = new ScriptEnvironment(options);
         File specFile = getSpecFile(options);
         logger.info("loading train-test configuration from {}", specFile);
@@ -73,6 +76,10 @@ public class TrainTest implements Command {
         try {
             TrainTestExperiment experiment = TrainTestExperiment.load(specFile.toPath());
             experiment.execute();
+        } catch (IOException e) {
+            throw new LenskitCommandException("could not load spec file");
+        } catch (EvaluationException e) {
+            throw new LenskitCommandException("error running LensKit experiment", e);
         } finally {
             ctx.pop();
         }

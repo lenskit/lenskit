@@ -21,14 +21,8 @@
 package org.lenskit.knn.user;
 
 import com.google.common.collect.AbstractIterator;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.slf4j.Logger;
@@ -69,17 +63,18 @@ public class SnapshotNeighborFinder implements NeighborFinder {
 
     @Override
     public Iterable<Neighbor> getCandidateNeighbors(final long user, LongSet items) {
-        SparseVector urs = MutableSparseVector.create(rvDAO.userRatingVector(user));
+        Long2DoubleMap urs = rvDAO.userRatingVector(user);
         if (urs.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final ImmutableSparseVector vector = normalizer.normalize(user, urs, null)
-                                                 .freeze();
+        final Long2DoubleMap normed = normalizer.makeTransformation(user, urs)
+                                                .apply(urs);
+        assert normed != null;
 
         LongCollection qset = items;
-        if (vector.size() < qset.size()) {
-            qset = vector.keySet();
+        if (normed.size() < qset.size()) {
+            qset = normed.keySet();
         }
         final LongSet candidates = new LongOpenHashSet();
         for (LongIterator iter = qset.iterator(); iter.hasNext();) {
@@ -94,7 +89,7 @@ public class SnapshotNeighborFinder implements NeighborFinder {
         return new Iterable<Neighbor>() {
             @Override
             public Iterator<Neighbor> iterator() {
-                return new NeighborIterator(user, vector, candidates);
+                return new NeighborIterator(user, normed, candidates);
             }
         };
     }
@@ -112,19 +107,20 @@ public class SnapshotNeighborFinder implements NeighborFinder {
 
     private class NeighborIterator extends AbstractIterator<Neighbor> {
         private final long user;
-        private final SparseVector userVector;
+        private final Long2DoubleMap userVector;
         private final LongIterator neighborIter;
 
-        public NeighborIterator(long uid, SparseVector uvec, LongSet nbrs) {
+        NeighborIterator(long uid, Long2DoubleMap uvec, LongSet nbrs) {
             user = uid;
             userVector = uvec;
             neighborIter = nbrs.iterator();
         }
+
         @Override
         protected Neighbor computeNext() {
             while (neighborIter.hasNext()) {
                 final long neighbor = neighborIter.nextLong();
-                SparseVector vector = snapshot.getNormalizedUserVector(neighbor);
+                Long2DoubleMap vector = snapshot.getNormalizedUserVector(neighbor);
                 double sim = similarity.similarity(user, userVector, neighbor, vector);
                 if (acceptSimilarity(sim)) {
                     return new Neighbor(neighbor, snapshot.getUserVector(neighbor), sim);

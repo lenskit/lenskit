@@ -24,13 +24,13 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.LenskitRecommenderEngineBuilder;
 import org.lenskit.ModelDisposition;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
@@ -60,17 +60,21 @@ public class TrainModel implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
         LenskitConfiguration dataConfig = ctx.input.getConfiguration();
         LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-        for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
-            builder.addConfiguration(config);
+        try {
+            for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
+                builder.addConfiguration(config);
+            }
+        } catch (IOException e) {
+            throw new LenskitCommandException("error loading LensKit configuration", e);
         }
         builder.addConfiguration(dataConfig, ModelDisposition.EXCLUDED);
 
         Stopwatch timer = Stopwatch.createStarted();
-        LenskitRecommenderEngine engine = builder.build();
+        LenskitRecommenderEngine engine = builder.build(ctx.input.getDAO());
         timer.stop();
         logger.info("built model in {}", timer);
         File output = ctx.getOutputFile();
@@ -80,6 +84,8 @@ public class TrainModel implements Command {
         try (OutputStream raw = new FileOutputStream(output);
              OutputStream stream = comp.wrapOutput(raw)) {
             engine.write(stream);
+        } catch (IOException e) {
+            throw new LenskitCommandException("could not write output file", e);
         }
     }
 
@@ -104,17 +110,17 @@ public class TrainModel implements Command {
         private final ScriptEnvironment environment;
         private final InputData input;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
             input = new InputData(environment, opts);
         }
 
-        public List<File> getConfigFiles() {
+        List<File> getConfigFiles() {
             return options.get("config");
         }
 
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
     }

@@ -71,7 +71,6 @@ public class RecommenderLoader {
     }
 
     public LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
-        LenskitConfiguration roots = new LenskitConfiguration();
         File modelFile = options.get("model_file");
         if (modelFile == null) {
             logger.info("creating fresh recommender");
@@ -79,10 +78,8 @@ public class RecommenderLoader {
             for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 builder.addConfiguration(config);
             }
-            builder.addConfiguration(input.getConfiguration());
-            builder.addConfiguration(roots);
             Stopwatch timer = Stopwatch.createStarted();
-            LenskitRecommenderEngine engine = builder.build();
+            LenskitRecommenderEngine engine = builder.build(input.getDAO());
             timer.stop();
             logger.info("built recommender in {}", timer);
             return engine;
@@ -93,8 +90,6 @@ public class RecommenderLoader {
             for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 loader.addConfiguration(config);
             }
-            loader.addConfiguration(input.getConfiguration());
-            loader.addConfiguration(roots);
             Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine;
             InputStream input = new FileInputStream(modelFile);
