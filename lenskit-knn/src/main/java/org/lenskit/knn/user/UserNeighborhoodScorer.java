@@ -20,40 +20,22 @@
  */
 package org.lenskit.knn.user;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
-import java.util.Comparator;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
- * Representation of a single neighboring user.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Score an item using a neighborhood of users.
  */
-public class Neighbor {
-    public final long user;
-    public final Long2DoubleMap vector;
-    public final double similarity;
-
+@DefaultImplementation(WeightedAverageUserNeighborhoodScorer.class)
+public interface UserNeighborhoodScorer {
     /**
-     * Construct a new neighbor.
-     * @param u   The neighbor's ID.
-     * @param v   The neighbor's normalized rating vector.
-     * @param sim The neighbor's similarity to the query user.
+     * Compute the score for an item given a list of neighbors.
+     * @param item The item to score.
+     * @param neighbors The list of neighbors.
+     * @return The result, or {@code null}.
      */
-    public Neighbor(long u, Long2DoubleMap v, double sim) {
-        user = u;
-        vector = v;
-        similarity = sim;
-    }
-
-    /**
-     * Comparator to order neighbors by similarity.
-     */
-    public static final Comparator<Neighbor> SIMILARITY_COMPARATOR = new Comparator<Neighbor>() {
-        @Override
-        public int compare(Neighbor n1, Neighbor n2) {
-            return Double.compare(n1.similarity, n2.similarity);
-        }
-    };
+    @Nullable
+    UserUserResult score(long item, List<Neighbor> neighbors);
 }

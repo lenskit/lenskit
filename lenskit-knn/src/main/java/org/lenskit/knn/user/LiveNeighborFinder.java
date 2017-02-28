@@ -28,6 +28,8 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.knn.ScoreNormalizer;
+import org.lenskit.knn.SimilarityNormalizer;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.collections.LongUtils;
@@ -48,7 +50,8 @@ public class LiveNeighborFinder implements NeighborFinder {
     private final UserSimilarity similarity;
     private final RatingVectorPDAO rvDAO;
     private final DataAccessObject dao;
-    private final UserVectorNormalizer normalizer;
+    private final UserVectorNormalizer scoreNormalizer;
+    private final UserVectorNormalizer similarityNormalizer;
     private final Threshold threshold;
 
     /**
@@ -57,16 +60,19 @@ public class LiveNeighborFinder implements NeighborFinder {
      * @param rvd    The user rating vector dAO.
      * @param dao    The data access object.
      * @param sim    The similarity function to use.
-     * @param norm   The normalizer for user rating/preference vectors.
+     * @param scoreNorm The normalizer for normalizing user rating vectors.
+     * @param simNorm   The normalizer for computing similarity between user rating/preference vectors.
      * @param thresh The threshold for user similarities.
      */
     @Inject
     public LiveNeighborFinder(RatingVectorPDAO rvd, DataAccessObject dao,
                               UserSimilarity sim,
-                              UserVectorNormalizer norm,
+                              @ScoreNormalizer UserVectorNormalizer scoreNorm,
+                              @SimilarityNormalizer UserVectorNormalizer simNorm,
                               @UserSimilarityThreshold Threshold thresh) {
         similarity = sim;
-        normalizer = norm;
+        scoreNormalizer = scoreNorm;
+        similarityNormalizer = simNorm;
         rvDAO = rvd;
         this.dao = dao;
         threshold = thresh;
@@ -81,8 +87,8 @@ public class LiveNeighborFinder implements NeighborFinder {
             return Collections.emptyList();
         }
 
-        final Long2DoubleMap nratings = normalizer.makeTransformation(user, ratings)
-                                                  .apply(ratings);
+        final Long2DoubleMap nratings = similarityNormalizer.makeTransformation(user, ratings)
+                                                            .apply(ratings);
         final LongSet candidates = findCandidateNeighbors(user, nratings.keySet(), items);
         logger.debug("found {} candidate neighbors for {}", candidates.size(), user);
         return new Iterable<Neighbor>() {
@@ -156,12 +162,18 @@ public class LiveNeighborFinder implements NeighborFinder {
                 Long2DoubleMap rawRatings = getUserRatingVector(neighbor);
                 if (rawRatings != null) {
                     rawRatings = LongUtils.frozenMap(rawRatings);
-                    InvertibleFunction<Long2DoubleMap, Long2DoubleMap> xform = normalizer.makeTransformation(neighbor, rawRatings);
+                    InvertibleFunction<Long2DoubleMap, Long2DoubleMap> xform = similarityNormalizer.makeTransformation(neighbor, rawRatings);
                     Long2DoubleMap nbrRatings = xform.apply(rawRatings);
                     final double sim = similarity.similarity(user, userVector, neighbor, nbrRatings);
                     if (acceptSimilarity(sim)) {
                         // we have found a neighbor
-                        return new Neighbor(neighbor, rawRatings, sim);
+                        Long2DoubleMap ratings;
+                        if (scoreNormalizer.equals(similarityNormalizer)) {
+                            ratings = nbrRatings;
+                        } else {
+                            ratings = scoreNormalizer.makeTransformation(neighbor, rawRatings).apply(rawRatings);
+                        }
+                        return new Neighbor(neighbor, ratings, sim);
                     }
                 }
             }

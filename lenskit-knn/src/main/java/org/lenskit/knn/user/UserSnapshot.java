@@ -27,6 +27,8 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Shareable;
 import org.lenskit.inject.Transient;
+import org.lenskit.knn.ScoreNormalizer;
+import org.lenskit.knn.SimilarityNormalizer;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
@@ -72,12 +74,22 @@ public class UserSnapshot implements Serializable {
         itemUserSets = iuSets;
     }
 
+    /**
+     * Get a user vector normalized for score computations.
+     * @param user The user ID.
+     * @return The normalized user rating vector (with {@link ScoreNormalizer}).
+     */
     public Long2DoubleMap getUserVector(long user) {
         int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return vectors.get(idx);
     }
 
+    /**
+     * Get a user vector normalized for similarity computations.
+     *
+     * @return The normalized user rating vector (with {@link SimilarityNormalizer}).
+     */
     public Long2DoubleMap getNormalizedUserVector(long user) {
         int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
@@ -90,14 +102,17 @@ public class UserSnapshot implements Serializable {
 
     public static class Builder implements Provider<UserSnapshot> {
         private final RatingVectorPDAO rvDAO;
-        private final UserVectorNormalizer normalizer;
+        private final UserVectorNormalizer scoreNormalizer;
+        private final UserVectorNormalizer similarityNormalizer;
 
 
         @Inject
         public Builder(@Transient RatingVectorPDAO rvd,
-                       @Transient UserVectorNormalizer norm) {
+                       @Transient @ScoreNormalizer UserVectorNormalizer scoreNorm,
+                       @Transient @SimilarityNormalizer UserVectorNormalizer simNorm) {
             rvDAO = rvd;
-            normalizer = norm;
+            scoreNormalizer = scoreNorm;
+            similarityNormalizer = simNorm;
         }
 
         @Override
@@ -112,14 +127,16 @@ public class UserSnapshot implements Serializable {
 
             Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<>();
             SortedKeyIndex domain = SortedKeyIndex.fromCollection(vectors.keySet());
-            ImmutableList.Builder<Long2DoubleMap> rawVectors = ImmutableList.builder();
+            ImmutableList.Builder<Long2DoubleMap> scoreVectors = ImmutableList.builder();
             ImmutableList.Builder<Long2DoubleMap> normedVectors = ImmutableList.builder();
             for (LongIterator uiter = domain.keyIterator(); uiter.hasNext();) {
                 final long user = uiter.nextLong();
                 Long2DoubleMap rawV = vectors.get(user);
-                rawVectors.add(rawV);
+                Long2DoubleMap scoreV = scoreNormalizer.makeTransformation(user, rawV).apply(rawV);
+                assert scoreV != null;
+                scoreVectors.add(scoreV);
                 // normalize user vector
-                Long2DoubleMap normV = normalizer.makeTransformation(user, rawV).apply(rawV);
+                Long2DoubleMap normV = similarityNormalizer.makeTransformation(user, rawV).apply(rawV);
                 assert normV != null;
                 normedVectors.add(normV);
                 for (LongIterator iiter = rawV.keySet().iterator(); iiter.hasNext();) {
@@ -137,7 +154,7 @@ public class UserSnapshot implements Serializable {
             for (Long2ObjectMap.Entry<LongList> entry: itemUserLists.long2ObjectEntrySet()) {
                 itemUserSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
             }
-            return new UserSnapshot(domain, rawVectors.build(), normedVectors.build(), itemUserSets);
+            return new UserSnapshot(domain, scoreVectors.build(), normedVectors.build(), itemUserSets);
         }
     }
 }

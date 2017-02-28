@@ -25,7 +25,7 @@ import org.lenskit.results.AbstractResult;
 /**
  * Result for user-user CF.
  */
-public class UserUserResult extends AbstractResult {
+public final class UserUserResult extends AbstractResult {
     private final int neighborhoodSize;
     private final double neighborWeight;
 
@@ -53,6 +53,14 @@ public class UserUserResult extends AbstractResult {
      */
     public double getTotalNeighborWeight() {
         return neighborWeight;
+    }
+
+    public ResultBuilder copyBuilder() {
+        return newBuilder()
+                .setItemId(getId())
+                .setNeighborhoodSize(getNeighborhoodSize())
+                .setTotalWeight(getTotalNeighborWeight())
+                .setScore(getScore());
     }
 
     @Override
