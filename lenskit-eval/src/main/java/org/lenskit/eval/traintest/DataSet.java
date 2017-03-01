@@ -28,6 +28,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.lenskit.LenskitConfiguration;
@@ -98,6 +99,8 @@ public class DataSet {
         }
         this.entityTypes = entityTypes;
     }
+
+
 
     /**
      * Get the data set name.
@@ -170,6 +173,15 @@ public class DataSet {
         }
 
         return allItems;
+    }
+
+    /**
+     * Get the entity types registered with this builder so far.
+     * @return The entity types registered so far.
+     */
+    @Nullable
+    public List<EntityType> getEntityTypes() {
+        return entityTypes;
     }
 
     /**
@@ -294,16 +306,18 @@ public class DataSet {
      * @return The data source.
      */
     private static DataSet loadDataSet(JsonNode json, URI base, String name, int part) throws IOException {
+        System.out.println(json);
         Preconditions.checkArgument(json.has("train"), "%s: no train data specified", name);
         Preconditions.checkArgument(json.has("test"), "%s: no test data specified", name);
 
-        // TODO Parse entity types
         List<EntityType> entityList = new ArrayList();
 
         if (json.has("entity_types")) {
             if (json.get("entity_types").isArray()) {
-                List<JsonNode> nodeList = json.findValues("entity_types");
-                for(JsonNode node: nodeList) {
+                JsonNode arrayNode = json.withArray("entity_types");
+                Iterator<JsonNode> nodeList = arrayNode.iterator();
+                while(nodeList.hasNext()) {
+                    JsonNode node = nodeList.next();
                     entityList.add(EntityType.forName(node.asText()));
                 }
             } else if (json.get("entity_types").isTextual()) {
@@ -315,7 +329,7 @@ public class DataSet {
         }
 
         DataSetBuilder dsb = newBuilder(name);
-        // TODO Modify dsb
+
         dsb.setEntityTypes(entityList);
         if (part >= 0) {
             dsb.setAttribute("Partition", part);

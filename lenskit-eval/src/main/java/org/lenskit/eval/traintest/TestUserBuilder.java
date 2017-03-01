@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.collect.ImmutableList;
+import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
@@ -49,10 +50,10 @@ public class TestUserBuilder {
         return this;
     }
 
-    public TestUserBuilder addTestEntity(Rating... events) {
-        for (Rating e: events) {
-            if (e.getUserId() != userId) {
-                throw new IllegalArgumentException("invalid user ID: " + e.getUserId());
+    public TestUserBuilder addTestEntity(Entity... events) {
+        for (Entity e: events) {
+            if (e.get(CommonAttributes.USER_ID) != userId) {
+                throw new IllegalArgumentException("invalid user ID: " + e.get(CommonAttributes.USER_ID));
             }
             testEvents.add(e);
         }
@@ -64,8 +65,8 @@ public class TestUserBuilder {
         return this;
     }
 
-    public TestUserBuilder addTrainEntity(Rating... events) {
-        for (Rating e: events) {
+    public TestUserBuilder addTrainEntity(Entity... events) {
+        for (Entity e: events) {
             trainEvents.add(e);
         }
         return this;

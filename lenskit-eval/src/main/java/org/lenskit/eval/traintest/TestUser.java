@@ -20,8 +20,12 @@
  */
 package org.lenskit.eval.traintest;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.sun.xml.internal.ws.binding.FeatureListUtil;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -41,7 +45,6 @@ import java.util.List;
  */
 public class TestUser {
     private final Entity user;
-    // TODO Replace Rating histories with Entity
     private final List<Entity> trainHistory;
     private final List<Entity> testHistory;
     private transient volatile LongSet trainItems;
@@ -98,12 +101,10 @@ public class TestUser {
 
         LongSet items = trainItems;
         if (items == null) {
-            // TODO  find attributes with item_id if present add it to the list
-            // TODO find attributes
             items = new LongOpenHashSet();
             for (Entity e : trainHistory) {
                 if(e.hasAttribute(CommonAttributes.ITEM_ID)) {
-                    items.add(e.getId());
+                    items.add(e.get(CommonAttributes.ITEM_ID));
                 }
             }
             trainItems = items;
@@ -123,11 +124,10 @@ public class TestUser {
     public LongSet getTestItems() {
         LongSet items = testItems;
         if (items == null) {
-            // TODO  find attributes with item_id if present add it to the list
             items = new LongOpenHashSet();
             for (Entity e : testHistory) {
                 if(e.hasAttribute(CommonAttributes.ITEM_ID)) {
-                    items.add(e.getId());
+                    items.add(e.get(CommonAttributes.ITEM_ID));
                 }
             }
             testItems = items;
@@ -154,12 +154,12 @@ public class TestUser {
      *
      * @return The user's ratings for the test items.
      */
-
-    // TODO use rating vectors here
-    // TODO reformat
     public Long2DoubleMap getTestRatings() {
         if (testRatings == null) {
-            testRatings = Ratings.userRatingVector(FluentIterable.from(trainHistory).filter(Entities.typePredicate(CommonTypes.RATING)).transform(Entities.projection(Rating.class)).toList());
+            Predicate<Entity> predicate = Entities.typePredicate(CommonTypes.RATING);
+            Function targetViewClass = Entities.projection(Rating.class);
+            ImmutableList list = FluentIterable.from(trainHistory).filter(predicate).transform(targetViewClass).toList();
+            testRatings = Ratings.userRatingVector(list);
         }
         return testRatings;
     }

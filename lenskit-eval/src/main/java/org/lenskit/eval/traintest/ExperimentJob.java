@@ -34,6 +34,7 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.inject.GraphtUtils;
@@ -154,42 +155,47 @@ class ExperimentJob extends RecursiveAction {
                                                     .setCount(nusers)
                                                     .setLabel("testing users")
                                                     .start();
-            // TODO Support something other than ratings
-            for (Entity user: testData.query(CommonTypes.USER).get()) {
-                if (Thread.interrupted()) {
-                    throw new EvaluationException("eval job interrupted");
+
+            List<EntityType> entityTypes = dataSet.getEntityTypes();
+
+            for (EntityType entityType: entityTypes) {
+                for (Entity user: testData.query(CommonTypes.USER).get()) {
+                    if (Thread.interrupted()) {
+                        throw new EvaluationException("eval job interrupted");
+                    }
+                    long uid = user.getId();
+                    userRow.add("User", uid);
+
+                    List<Entity> userTrainHistory = trainData.query(entityType)
+                            .withAttribute(CommonAttributes.USER_ID, uid)
+                            .get();
+                    List<Entity> userTestHistory = testData.query(entityType)
+                            .withAttribute(CommonAttributes.USER_ID, uid)
+                            .get();
+                    TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
+
+                    Stopwatch userTimer = Stopwatch.createStarted();
+
+                    for (ConditionEvaluator eval : accumulators) {
+                        Map<String, Object> ures = eval.measureUser(testUser);
+                        userRow.addAll(ures);
+                    }
+                    userTimer.stop();
+
+                    userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+                    try {
+                        userOutput.writeRow(userRow.buildList());
+                        userOutput.flush();
+                    } catch (IOException e) {
+                        throw new EvaluationException("error writing user row", e);
+                    }
+                    userRow.clear();
+
+                    test.finishStep();
+                    progress.advance();
                 }
-                long uid = user.getId();
-                userRow.add("User", uid);
-
-                List<Rating> userTrainHistory = trainData.query(Rating.class)
-                                                         .withAttribute(CommonAttributes.USER_ID, uid)
-                                                         .get();
-                List<Rating> userTestHistory = testData.query(Rating.class)
-                                                       .withAttribute(CommonAttributes.USER_ID, uid)
-                                                       .get();
-                TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
-
-                Stopwatch userTimer = Stopwatch.createStarted();
-
-                for (ConditionEvaluator eval : accumulators) {
-                    Map<String, Object> ures = eval.measureUser(testUser);
-                    userRow.addAll(ures);
-                }
-                userTimer.stop();
-
-                userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-                try {
-                    userOutput.writeRow(userRow.buildList());
-                    userOutput.flush();
-                } catch (IOException e) {
-                    throw new EvaluationException("error writing user row", e);
-                }
-                userRow.clear();
-
-                test.finishStep();
-                progress.advance();
             }
+
 
             test.finish();
             progress.finish();
