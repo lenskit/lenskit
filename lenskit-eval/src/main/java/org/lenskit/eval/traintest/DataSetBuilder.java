@@ -21,14 +21,11 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import org.apache.commons.lang3.builder.Builder;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.ratings.Rating;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -45,8 +42,7 @@ public class DataSetBuilder implements Builder<DataSet> {
     private Map<String, Object> attributes = new LinkedHashMap<>();
     private StaticDataSource queryData;
     private UUID isoGroup = new UUID(0, 0);
-    private List<EntityType> entityTypes;
-    private List<EntityType> ratingsList = Lists.newArrayList(CommonTypes.RATING);
+    private List<EntityType> entityTypes = Lists.newArrayList(CommonTypes.RATING);
 
     public DataSetBuilder() {
         this(null);

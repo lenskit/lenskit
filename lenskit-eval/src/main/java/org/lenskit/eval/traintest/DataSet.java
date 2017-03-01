@@ -97,7 +97,7 @@ public class DataSet {
         } else {
             attributes = ImmutableMap.copyOf(attrs);
         }
-        this.entityTypes = entityTypes;
+        this.entityTypes = ImmutableList.copyOf(entityTypes);
     }
 
 
@@ -179,7 +179,7 @@ public class DataSet {
      * Get the entity types registered with this builder so far.
      * @return The entity types registered so far.
      */
-    @Nullable
+    @Nonnull
     public List<EntityType> getEntityTypes() {
         return entityTypes;
     }
@@ -306,26 +306,24 @@ public class DataSet {
      * @return The data source.
      */
     private static DataSet loadDataSet(JsonNode json, URI base, String name, int part) throws IOException {
-        System.out.println(json);
         Preconditions.checkArgument(json.has("train"), "%s: no train data specified", name);
         Preconditions.checkArgument(json.has("test"), "%s: no test data specified", name);
 
         List<EntityType> entityList = new ArrayList();
 
-        if (json.has("entity_types")) {
-            if (json.get("entity_types").isArray()) {
-                JsonNode arrayNode = json.withArray("entity_types");
-                Iterator<JsonNode> nodeList = arrayNode.iterator();
-                while(nodeList.hasNext()) {
-                    JsonNode node = nodeList.next();
-                    entityList.add(EntityType.forName(node.asText()));
-                }
-            } else if (json.get("entity_types").isTextual()) {
-                JsonNode node = json.get("entity_types");
+        JsonNode etNode = json.path("entity_types");
+        if (etNode.isArray()) {
+            Iterator<JsonNode> nodeList = etNode.iterator();
+            while(nodeList.hasNext()) {
+                JsonNode node = nodeList.next();
                 entityList.add(EntityType.forName(node.asText()));
             }
-        } else {
+        } else if (etNode.isTextual()) {
+            entityList.add(EntityType.forName(etNode.asText()));
+        } else if (etNode.isMissingNode() || etNode.isNull()) {
             entityList.add(CommonTypes.RATING);
+        } else {
+            throw new IllegalArgumentException("unexpected format for entity_types");
         }
 
         DataSetBuilder dsb = newBuilder(name);

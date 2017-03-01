@@ -158,42 +158,46 @@ class ExperimentJob extends RecursiveAction {
 
             List<EntityType> entityTypes = dataSet.getEntityTypes();
 
-            for (EntityType entityType: entityTypes) {
-                for (Entity user: testData.query(CommonTypes.USER).get()) {
-                    if (Thread.interrupted()) {
-                        throw new EvaluationException("eval job interrupted");
-                    }
-                    long uid = user.getId();
-                    userRow.add("User", uid);
-
-                    List<Entity> userTrainHistory = trainData.query(entityType)
-                            .withAttribute(CommonAttributes.USER_ID, uid)
-                            .get();
-                    List<Entity> userTestHistory = testData.query(entityType)
-                            .withAttribute(CommonAttributes.USER_ID, uid)
-                            .get();
-                    TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
-
-                    Stopwatch userTimer = Stopwatch.createStarted();
-
-                    for (ConditionEvaluator eval : accumulators) {
-                        Map<String, Object> ures = eval.measureUser(testUser);
-                        userRow.addAll(ures);
-                    }
-                    userTimer.stop();
-
-                    userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-                    try {
-                        userOutput.writeRow(userRow.buildList());
-                        userOutput.flush();
-                    } catch (IOException e) {
-                        throw new EvaluationException("error writing user row", e);
-                    }
-                    userRow.clear();
-
-                    test.finishStep();
-                    progress.advance();
+            for (Entity user: testData.query(CommonTypes.USER).get()) {
+                if (Thread.interrupted()) {
+                    throw new EvaluationException("eval job interrupted");
                 }
+                long uid = user.getId();
+                userRow.add("User", uid);
+
+                List<Entity> userTrainHistory = null;
+                List<Entity> userTestHistory = null;
+
+                for (EntityType entityType: entityTypes) {
+                    userTrainHistory = trainData.query(entityType)
+                            .withAttribute(CommonAttributes.USER_ID, uid)
+                            .get();
+                    userTestHistory = testData.query(entityType)
+                            .withAttribute(CommonAttributes.USER_ID, uid)
+                            .get();
+                }
+
+                TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
+
+                Stopwatch userTimer = Stopwatch.createStarted();
+
+                for (ConditionEvaluator eval : accumulators) {
+                    Map<String, Object> ures = eval.measureUser(testUser);
+                    userRow.addAll(ures);
+                }
+                userTimer.stop();
+
+                userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+                try {
+                    userOutput.writeRow(userRow.buildList());
+                    userOutput.flush();
+                } catch (IOException e) {
+                    throw new EvaluationException("error writing user row", e);
+                }
+                userRow.clear();
+
+                test.finishStep();
+                progress.advance();
             }
 
 

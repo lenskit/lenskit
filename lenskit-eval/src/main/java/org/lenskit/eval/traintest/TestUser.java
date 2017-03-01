@@ -25,7 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.sun.xml.internal.ws.binding.FeatureListUtil;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -157,8 +156,8 @@ public class TestUser {
     public Long2DoubleMap getTestRatings() {
         if (testRatings == null) {
             Predicate<Entity> predicate = Entities.typePredicate(CommonTypes.RATING);
-            Function targetViewClass = Entities.projection(Rating.class);
-            ImmutableList list = FluentIterable.from(trainHistory).filter(predicate).transform(targetViewClass).toList();
+            Function<Entity, Rating> targetViewClass = Entities.projection(Rating.class);
+            ImmutableList<Rating> list = FluentIterable.from(trainHistory).filter(predicate).transform(targetViewClass).toList();
             testRatings = Ratings.userRatingVector(list);
         }
         return testRatings;

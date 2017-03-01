@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.junit.Test;
-import org.lenskit.data.dao.EntityCollectionDAO;
-import org.lenskit.data.dao.EntityCollectionDAOBuilder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,9 +22,7 @@ public class DataSetTest {
 
     @Test
     public void testEntityTypeArray() throws IOException {
-        JsonNode node = reader.readTree("{\"file\": \"items.json\",\n" +
-                "\"name\": \"movie\", \n" +
-//                "\"base_uri\": \" \", \n" +
+        JsonNode node = reader.readTree("{\"name\": \"movie\", \n" +
                 "\"train\": {\"file\": \"train-ratings.csv\"},\n" +
                 "\"test\": {\"file\": \"test-ratings.csv\"},\n" +
                 "\"entity_types\": [\"user\", \"item\"]\n" +
@@ -41,9 +37,7 @@ public class DataSetTest {
 
     @Test
     public void testEntityTypeString() throws IOException {
-        JsonNode node = reader.readTree("{\"file\": \"items.json\",\n" +
-                "\"name\": \"movie\", \n" +
-//                "\"base_uri\": \" \", \n" +
+        JsonNode node = reader.readTree("{\"name\": \"movie\", \n" +
                 "\"datasets\": [{\n" +
                 "\"train\": {\"file\": \"train-ratings.csv\"},\n" +
                 "\"test\": {\"file\": \"test-ratings.csv\"},\n" +
@@ -60,9 +54,7 @@ public class DataSetTest {
 
     @Test
     public void testEntityTypeNone() throws IOException {
-        JsonNode node = reader.readTree("{\"file\": \"items.json\",\n" +
-                "\"name\": \"movie\", \n" +
-//                "\"base_uri\": \" \", \n" +
+        JsonNode node = reader.readTree("{\"name\": \"movie\", \n" +
                 "\"datasets\": [{\n" +
                 "\"train\": {\"file\": \"train-ratings.csv\"},\n" +
                 "\"test\": {\"file\": \"test-ratings.csv\"}\n" +
