@@ -23,7 +23,7 @@ package org.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.ratings.RatingSummary;
+import org.lenskit.data.ratings.InteractionStatistics;
 import org.lenskit.inject.Shareable;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
@@ -40,19 +40,19 @@ import java.util.List;
  */
 @Shareable
 public class PopularityRankItemScorer extends AbstractItemScorer implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    private final RatingSummary summary;
+    private final InteractionStatistics statistics;
     private final Long2IntMap ranks;
 
     @Inject
-    public PopularityRankItemScorer(RatingSummary rs) {
-        summary = rs;
-        long[] items = rs.getItems().toLongArray();
+    public PopularityRankItemScorer(final InteractionStatistics stats) {
+        statistics = stats;
+        long[] items = stats.getKnownItems().toLongArray();
         LongArrays.quickSort(items, new AbstractLongComparator() {
             @Override
             public int compare(long l1, long l2) {
-                return Integer.compare(summary.getItemRatingCount(l2), summary.getItemRatingCount(l1));
+                return Integer.compare(stats.getInteractionCount(l2), stats.getInteractionCount(l1));
             }
         });
         ranks = LongUtils.itemRanks(LongArrayList.wrap(items));

@@ -27,18 +27,18 @@ import org.lenskit.api.ItemScorer;
 import org.lenskit.api.ResultMap;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.InteractionStatistics;
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class PopularityRankItemScorerTest {
     private DataAccessObject dao;
-    RatingSummary summary;
+    InteractionStatistics statistics;
     ItemScorer recommender;
 
     @Before
@@ -48,8 +48,8 @@ public class PopularityRankItemScorerTest {
                                                 Rating.create(42, 2, 2.5));
         StaticDataSource source = StaticDataSource.fromList(ratings);
         dao = source.get();
-        summary = RatingSummary.create(dao);
-        recommender = new PopularityRankItemScorer(summary);
+        statistics = InteractionStatistics.create(dao);
+        recommender = new PopularityRankItemScorer(statistics);
     }
 
     @Test
