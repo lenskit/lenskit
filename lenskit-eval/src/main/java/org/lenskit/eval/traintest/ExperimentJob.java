@@ -52,6 +52,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -165,16 +166,22 @@ class ExperimentJob extends RecursiveAction {
                 long uid = user.getId();
                 userRow.add("User", uid);
 
-                List<Entity> userTrainHistory = null;
-                List<Entity> userTestHistory = null;
+                List<Entity> userTrainHistory = new ArrayList<>();
+                List<Entity> userTestHistory = new ArrayList<>();
 
                 for (EntityType entityType: entityTypes) {
-                    userTrainHistory = trainData.query(entityType)
+                    List<Entity> trainHistory = trainData.query(entityType)
                             .withAttribute(CommonAttributes.USER_ID, uid)
                             .get();
-                    userTestHistory = testData.query(entityType)
+
+                    userTrainHistory.addAll(trainHistory);
+
+                    List<Entity> testHistory = testData.query(entityType)
                             .withAttribute(CommonAttributes.USER_ID, uid)
                             .get();
+
+                    userTrainHistory.addAll(testHistory);
+
                 }
 
                 TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);

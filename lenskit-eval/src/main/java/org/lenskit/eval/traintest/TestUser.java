@@ -157,7 +157,7 @@ public class TestUser {
         if (testRatings == null) {
             Predicate<Entity> predicate = Entities.typePredicate(CommonTypes.RATING);
             Function<Entity, Rating> targetViewClass = Entities.projection(Rating.class);
-            ImmutableList<Rating> list = FluentIterable.from(trainHistory).filter(predicate).transform(targetViewClass).toList();
+            ImmutableList<Rating> list = FluentIterable.from(testHistory).filter(predicate).transform(targetViewClass).toList();
             testRatings = Ratings.userRatingVector(list);
         }
         return testRatings;

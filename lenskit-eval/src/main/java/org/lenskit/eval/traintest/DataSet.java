@@ -309,7 +309,7 @@ public class DataSet {
         Preconditions.checkArgument(json.has("train"), "%s: no train data specified", name);
         Preconditions.checkArgument(json.has("test"), "%s: no test data specified", name);
 
-        List<EntityType> entityList = new ArrayList();
+        List<EntityType> entityList = new ArrayList<>();
 
         JsonNode etNode = json.path("entity_types");
         if (etNode.isArray()) {
