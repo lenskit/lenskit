@@ -21,6 +21,7 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.test.ML100KTestSuite
+import org.lenskit.data.ratings.InteractionEntityType
 import org.lenskit.transform.normalize.UnitVectorNormalizer
 import org.lenskit.transform.normalize.UserVectorNormalizer
 import org.lenskit.transform.normalize.VectorNormalizer
@@ -53,7 +54,7 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
                 bind VectorNormalizer to UnitVectorNormalizer
             }
             bind RatingVectorPDAO to EntityCountRatingVectorPDAO
-            set EntityCountRatingVectorPDAO.CountedType to LIKE
+            set InteractionEntityType to LIKE
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         }

@@ -27,7 +27,6 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
-import org.lenskit.inject.Parameter;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
@@ -36,8 +35,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
 import java.util.List;
 
 /**
@@ -50,22 +47,12 @@ public class EntityCountRatingVectorPDAO implements RatingVectorPDAO {
     private volatile IdBox<Long2DoubleMap> cachedValue;
 
     /**
-     * Qualifier for the type of entities that are counted to compute user preferences.
-     */
-    @Qualifier
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.PARAMETER, ElementType.FIELD})
-    @Parameter(EntityType.class)
-    @Documented
-    public static @interface CountedType {}
-
-    /**
      * Construct a rating vector source.
      * @param dao The data access object.
      * @param type
      */
     @Inject
-    public EntityCountRatingVectorPDAO(DataAccessObject dao, @CountedType EntityType type) {
+    public EntityCountRatingVectorPDAO(DataAccessObject dao, @InteractionEntityType EntityType type) {
         this.dao = dao;
         this.type = type;
     }
