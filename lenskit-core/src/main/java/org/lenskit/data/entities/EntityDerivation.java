@@ -20,6 +20,8 @@
  */
 package org.lenskit.data.entities;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Collection;
@@ -74,5 +76,23 @@ public class EntityDerivation {
      */
     public TypedName<Long> getAttribute() {
         return attribute;
+    }
+
+    /**
+     * Parse an entity derivation from a JSON node.
+     * @param node The JSON node.
+     * @return The entity derivation.
+     */
+    public static EntityDerivation fromJSON(JsonNode node) {
+        JsonNode src = node.get("source_type");
+        Preconditions.checkArgument(src != null, "missing source_type");
+        JsonNode tgt = node.get("entity_type");
+        Preconditions.checkArgument(tgt != null, "missing entity_type");
+        JsonNode attr = node.get("source_attribute");
+        Preconditions.checkArgument(attr != null, "missing source_attribute");
+
+        return create(EntityType.forName(tgt.asText()),
+                      EntityType.forName(src.asText()),
+                      TypedName.create(attr.asText(), Long.class));
     }
 }

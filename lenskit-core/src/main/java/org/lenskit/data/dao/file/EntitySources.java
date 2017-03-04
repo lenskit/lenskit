@@ -21,6 +21,7 @@
 package org.lenskit.data.dao.file;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.lenskit.data.entities.EntityDerivation;
 
 import java.net.URI;
 
@@ -39,6 +40,10 @@ public class EntitySources {
     }
 
     static EntitySource fromJSON(String name, JsonNode object, URI base) {
+        return fromJSON(name, object, base, null);
+    }
+
+    static EntitySource fromJSON(String name, JsonNode object, URI base, ParseHandler handler) {
         if (name == null) {
             name = object.path("name").asText("<unnamed>");
         }
@@ -46,13 +51,39 @@ public class EntitySources {
         EntitySource source;
         String type = object.path("type").asText("textfile").toLowerCase();
         switch (type) {
-        case "textfile":
-            source = TextEntitySource.fromJSON(name, object, base);
-            break;
-        default:
-            throw new IllegalArgumentException("invalid data source type: " + type);
+            case "derived":
+                if (handler == null) {
+                    throw new IllegalArgumentException("cannot parse derivation without handler");
+                }
+                handler.handleEntityDerivation(EntityDerivation.fromJSON(object));
+                return null;
+            case "textfile":
+                source = TextEntitySource.fromJSON(name, object, base);
+                break;
+            default:
+                throw new IllegalArgumentException("invalid data source type: " + type);
         }
 
+        if (handler != null) {
+            handler.handleEntitySource(source);
+        }
         return source;
+    }
+
+    /**
+     * Handler for parsing entity sources.
+     */
+    interface ParseHandler {
+        /**
+         * An entity source has been parsed.
+         * @param source The source.
+         */
+        void handleEntitySource(EntitySource source);
+
+        /**
+         * An entity derivation has been parsed.
+         * @param deriv The derivation.
+         */
+        void handleEntityDerivation(EntityDerivation deriv);
     }
 }
