@@ -180,7 +180,7 @@ class ExperimentJob extends RecursiveAction {
                             .withAttribute(CommonAttributes.USER_ID, uid)
                             .get();
 
-                    userTrainHistory.addAll(testHistory);
+                    userTestHistory.addAll(testHistory);
 
                 }
 
