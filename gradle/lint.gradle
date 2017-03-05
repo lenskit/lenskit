@@ -45,7 +45,7 @@ task jacocoMergedReport(type: JacocoReport) {
         if (prj.name == 'lenskit-integration-tests') continue;
         projects << prj
         dependsOn prj.test
-        sourceSets prj.sourceSets.test
+        sourceSets prj.sourceSets.main
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
             logger.info '{} has no tests', prj.name
         } else {
