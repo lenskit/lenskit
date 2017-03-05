@@ -24,7 +24,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.*;
@@ -149,6 +151,24 @@ public class StaticDataSourceTest {
     }
 
     @Test
+    public void testLoadRatingsDeriveBobcats() throws IOException, URISyntaxException {
+        URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
+        JsonNode node = reader.readTree("[{\"file\": \"ratings.csv\", \"format\": \"csv\"}, {\"type\": \"derived\", \"source_type\": \"rating\", \"entity_type\": \"bobcat\", \"source_attribute\": \"item\"}]");
+        StaticDataSource daoProvider = StaticDataSource.fromJSON(node, baseURI);
+
+        // we should have one text source for ratings; derived aren't sources
+        assertThat(daoProvider.getSourcesForType(CommonTypes.RATING),
+                   contains(instanceOf(TextEntitySource.class)));
+
+        DataAccessObject dao = daoProvider.get();
+        verifyRatingsCsvData(dao, EntityType.forName("bobcat"));
+
+        // we should have have a bunch of bobcats
+        LongSet bobcats = dao.getEntityIds(EntityType.forName("bobcat"));
+        assertThat(bobcats, equalTo(dao.getEntityIds(CommonTypes.ITEM)));
+    }
+
+    @Test
     public void testLoadInvalidDataSource() throws URISyntaxException, IOException {
         URI baseURI = TextEntitySourceTest.class.getResource("ratings.csv").toURI();
         JsonNode node = reader.readTree("\"foobar\"");
@@ -160,10 +180,13 @@ public class StaticDataSourceTest {
         }
     }
 
-    private void verifyRatingsCsvData(DataAccessObject dao) {
-        assertThat(dao.getEntityTypes(), containsInAnyOrder(CommonTypes.RATING,
-                                                            CommonTypes.USER,
-                                                            CommonTypes.ITEM));
+    private void verifyRatingsCsvData(DataAccessObject dao, EntityType... extraTypes) {
+        EntityType[] ets = new EntityType[3 + extraTypes.length];
+        ets[0] = CommonTypes.RATING;
+        ets[1] = CommonTypes.USER;
+        ets[2] = CommonTypes.ITEM;
+        System.arraycopy(extraTypes, 0, ets, 3, extraTypes.length);
+        assertThat(dao.getEntityTypes(), containsInAnyOrder(ets));
 
         List<Entity> ratings = dao.query(CommonTypes.RATING).get();
         assertThat(ratings, hasSize(2));
