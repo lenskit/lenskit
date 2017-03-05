@@ -33,16 +33,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-rootProject.name = 'lenskit'
+apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/test-utils.gradle"
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
-include 'lenskit-slim'
+dependencies {
+    compile project(':lenskit-core')
+}
 
+meta {
+    name 'LensKit SLIM CF'
+    description 'Sparse linear method collaborative filtering for LensKit'
+}
