@@ -45,7 +45,7 @@ task jacocoMergedReport(type: JacocoReport) {
         if (prj.name == 'lenskit-integration-tests') continue;
         projects << prj
         dependsOn prj.test
-        sourceSets prj.sourceSets.test
+        sourceSets prj.sourceSets.main
         if (prj.sourceSets.test.allSource.files.isEmpty()) {
             logger.info '{} has no tests', prj.name
         } else {
@@ -56,31 +56,12 @@ task jacocoMergedReport(type: JacocoReport) {
     reports {
         csv.enabled = false
         xml.enabled = true
+        xml.destination "${buildDir}/reports/jacoco/report.xml"
         html.destination = "$reporting.baseDir/jacoco"
     }
 }
 report.dependsOn jacocoMergedReport
 ciTest.dependsOn report
-
-coveralls {
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoMergedReport/jacocoMergedReport.xml"
-    sourceDirs = subprojects.collect({ prj ->
-        if (prj.name == 'lenskit-integration-tests') {
-            return []
-        } else {
-            return prj.sourceSets.main.java.srcDirs
-        }
-    }).flatten()
-}
-
-tasks.coveralls {
-    group = 'report'
-    description = 'Uploads the aggregated coverage report to Coveralls'
-
-    dependsOn jacocoMergedReport
-    onlyIf { System.env.'CI' && travis.activeJdk == 'oraclejdk8' }
-}
-ciTest.dependsOn tasks.coveralls
 
 sonarqube {
     properties {

@@ -20,10 +20,17 @@
  */
 package org.lenskit.eval.traintest;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
@@ -37,8 +44,8 @@ import java.util.List;
  */
 public class TestUser {
     private final Entity user;
-    private final List<Rating> trainHistory;
-    private final List<Rating> testHistory;
+    private final List<Entity> trainHistory;
+    private final List<Entity> testHistory;
     private transient volatile LongSet trainItems;
     private transient volatile LongSet testItems;
     private transient volatile Long2DoubleMap testRatings;
@@ -50,7 +57,7 @@ public class TestUser {
      * @param train The training history.
      * @param test  The test history.
      */
-    public TestUser(Entity user, List<Rating> train, List<Rating> test) {
+    public TestUser(Entity user, List<Entity> train, List<Entity> test) {
         Preconditions.checkNotNull(train, "training history");
         Preconditions.checkNotNull(test, "test history");
         this.user = user;
@@ -85,16 +92,19 @@ public class TestUser {
      *
      * @return The history of the user from the training/query set.
      */
-    public List<Rating> getTrainHistory() {
+    public List<Entity> getTrainHistory() {
         return trainHistory;
     }
 
     public LongSet getTrainItems() {
+
         LongSet items = trainItems;
         if (items == null) {
             items = new LongOpenHashSet();
-            for (Rating r : trainHistory) {
-                items.add(r.getItemId());
+            for (Entity e : trainHistory) {
+                if(e.hasAttribute(CommonAttributes.ITEM_ID)) {
+                    items.add(e.get(CommonAttributes.ITEM_ID));
+                }
             }
             trainItems = items;
         }
@@ -106,7 +116,7 @@ public class TestUser {
      *
      * @return The history of the user from the test set.
      */
-    public List<Rating> getTestHistory() {
+    public List<Entity> getTestHistory() {
         return testHistory;
     }
 
@@ -114,8 +124,10 @@ public class TestUser {
         LongSet items = testItems;
         if (items == null) {
             items = new LongOpenHashSet();
-            for (Rating r : testHistory) {
-                items.add(r.getItemId());
+            for (Entity e : testHistory) {
+                if(e.hasAttribute(CommonAttributes.ITEM_ID)) {
+                    items.add(e.get(CommonAttributes.ITEM_ID));
+                }
             }
             testItems = items;
         }
@@ -143,7 +155,10 @@ public class TestUser {
      */
     public Long2DoubleMap getTestRatings() {
         if (testRatings == null) {
-            testRatings = Ratings.userRatingVector(testHistory);
+            Predicate<Entity> predicate = Entities.typePredicate(CommonTypes.RATING);
+            Function<Entity, Rating> targetViewClass = Entities.projection(Rating.class);
+            ImmutableList<Rating> list = FluentIterable.from(testHistory).filter(predicate).transform(targetViewClass).toList();
+            testRatings = Ratings.userRatingVector(list);
         }
         return testRatings;
     }

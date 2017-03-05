@@ -26,6 +26,7 @@ import org.lenskit.api.ItemScorer
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.ratings.EntityCountRatingVectorPDAO
+import org.lenskit.data.ratings.InteractionEntityType
 import org.lenskit.data.ratings.RatingVectorPDAO
 import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
@@ -42,7 +43,7 @@ import static org.junit.Assert.assertThat
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ItemItemImplicitAccuracyTest extends CrossfoldTestSuite {
+class ItemItemImplicitAccuracyTest extends CrossfoldTestSuite {
     List<Table> runList
 
     @SuppressWarnings("unchecked")
@@ -52,7 +53,7 @@ public class ItemItemImplicitAccuracyTest extends CrossfoldTestSuite {
             bind ItemScorer to ItemItemScorer
             bind NeighborhoodScorer to SimilaritySumNeighborhoodScorer
             bind RatingVectorPDAO to EntityCountRatingVectorPDAO
-            set EntityCountRatingVectorPDAO.CountedType to CommonTypes.RATING
+            set InteractionEntityType to CommonTypes.RATING
             set NeighborhoodSize to 20
         }
     }
