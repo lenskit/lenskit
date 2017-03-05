@@ -24,13 +24,12 @@ import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.LenskitRecommenderEngineBuilder;
 import org.lenskit.LenskitRecommenderEngineLoader;
+import org.lenskit.api.RecommenderBuildException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,8 +71,6 @@ public class RecommenderLoader {
     }
 
     public LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
-        LenskitConfiguration roots = new LenskitConfiguration();
-        roots.addRoot(ItemNameDAO.class);
         File modelFile = options.get("model_file");
         if (modelFile == null) {
             logger.info("creating fresh recommender");
@@ -81,10 +78,8 @@ public class RecommenderLoader {
             for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 builder.addConfiguration(config);
             }
-            builder.addConfiguration(input.getConfiguration());
-            builder.addConfiguration(roots);
             Stopwatch timer = Stopwatch.createStarted();
-            LenskitRecommenderEngine engine = builder.build();
+            LenskitRecommenderEngine engine = builder.build(input.getDAO());
             timer.stop();
             logger.info("built recommender in {}", timer);
             return engine;
@@ -95,8 +90,6 @@ public class RecommenderLoader {
             for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 loader.addConfiguration(config);
             }
-            loader.addConfiguration(input.getConfiguration());
-            loader.addConfiguration(roots);
             Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine;
             InputStream input = new FileInputStream(modelFile);

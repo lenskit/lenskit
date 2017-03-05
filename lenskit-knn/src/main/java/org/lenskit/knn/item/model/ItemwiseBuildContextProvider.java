@@ -21,23 +21,21 @@
 package org.lenskit.knn.item.model;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.inject.Transient;
-import org.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.lenskit.transform.normalize.ItemVectorNormalizer;
-import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer;
-import org.lenskit.util.io.ObjectStream;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.ItemEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.Ratings;
-import org.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
+import org.lenskit.inject.Transient;
+import org.lenskit.transform.normalize.ItemVectorNormalizer;
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +53,12 @@ import java.util.List;
 public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildContext> {
     private static final Logger logger = LoggerFactory.getLogger(ItemwiseBuildContextProvider.class);
 
-    private final ItemEventDAO itemEventDAO;
-    private final ItemDAO itemDAO;
+    private final DataAccessObject dao;
     private final ItemVectorNormalizer normalizer;
 
     /**
      * Construct a new build context provider.
-     * @param edao The item-event DAO.
-     * @param idao The item DAO.
+     * @param dao  The data access object.
      * @param norm The item vector normalizer.  This is applied to item rating vectors.  You should
      *             take care to use a compatible normalizer for the item scorer (e.g. if this uses
      *             a {@link MeanCenteringVectorNormalizer},
@@ -70,10 +66,9 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
      *             for the user vector normalization in the scorer).
      */
     @Inject
-    public ItemwiseBuildContextProvider(@Transient ItemEventDAO edao, @Transient ItemDAO idao,
+    public ItemwiseBuildContextProvider(@Transient DataAccessObject dao,
                                         @Transient ItemVectorNormalizer norm) {
-        itemEventDAO = edao;
-        itemDAO = idao;
+        this.dao = dao;
         normalizer = norm;
     }
 
@@ -91,17 +86,18 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("Building item data");
         Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<>(1000);
         Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<>(1000);
-        ObjectStream<ItemEventCollection<Event>> itemObjectStream = itemEventDAO.streamEventsByItem();
+        ObjectStream<IdBox<List<Rating>>> itemObjectStream = dao.query(Rating.class)
+                                                                .groupBy(CommonAttributes.ITEM_ID)
+                                                                .stream();
         try {
-            for (ItemEventCollection<Event> item: itemObjectStream) {
+            for (IdBox<List<Rating>> itemRatings: itemObjectStream) {
+                long item = itemRatings.getId();
+                List<Rating> ratings = itemRatings.getValue();
                 if (logger.isTraceEnabled()) {
-                    logger.trace("processing {} ratings for item {}", item.size(), item);
+                    logger.trace("processing {} ratings for item {}", ratings.size(), item);
                 }
-                List<Rating> ratings = FluentIterable.from(item)
-                                                     .filter(Rating.class)
-                                                     .toList();
                 MutableSparseVector vector = MutableSparseVector.create(Ratings.itemRatingVector(ratings));
-                normalizer.normalize(item.getItemId(), vector, vector);
+                normalizer.normalize(item, vector, vector);
                 for (VectorEntry e: vector) {
                     long user = e.getKey();
                     LongList uis = userItems.get(user);
@@ -110,9 +106,9 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                         uis = new LongArrayList();
                         userItems.put(user, uis);
                     }
-                    uis.add(item.getItemId());
+                    uis.add(item);
                 }
-                itemVectors.put(item.getItemId(), vector.freeze());
+                itemVectors.put(item, vector.freeze());
             }
         } finally {
             itemObjectStream.close();

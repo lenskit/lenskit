@@ -20,7 +20,7 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.List;
 
@@ -34,5 +34,5 @@ public interface HistoryPartitionMethod {
      * @param data The data to partition.
      * @return The index of the start of the second partition, containing the test data.
      */
-    int partition(List<? extends Event> data);
+    int partition(List<? extends Rating> data);
 }

@@ -21,16 +21,8 @@ apply plugin: 'java'
 apply plugin: 'lenskit'
 apply from: 'common.gradle'
 
-task packRatings(type: PackRatings) {
-    input textFile {
-        file ratingsFile
-        delimiter "\t"
-    }
-    output "$buildDir/ml-100k.pack"
-}
-
 task simulate(type: Simulate) {
-    input packRatings
+    input type: 'textfile', file: project.uri(ratingsFile).toString(), format: 'tsv'
     output "$buildDir/simulation.csv"
     extendedOutput "$buildDir/simulation.json"
     // 5-item outputs

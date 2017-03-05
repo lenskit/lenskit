@@ -37,7 +37,7 @@ import static org.lenskit.data.ratings.PackedRatingData.*;
  * @since 0.11
  */
 class PackedRatingDataBuilder implements Builder<PackedRatingData> {
-    static final int INITIAL_CHUNK_COUNT = 512;
+    private static final int INITIAL_CHUNK_COUNT = 512;
 
     private int[][] users;
     private int[][] items;
@@ -49,7 +49,7 @@ class PackedRatingDataBuilder implements Builder<PackedRatingData> {
     
     private IntHeapPriorityQueue freeList;
 
-    public PackedRatingDataBuilder() {
+    PackedRatingDataBuilder() {
         itemIndex = new HashKeyIndex();
         userIndex = new HashKeyIndex();
         freeList = new IntHeapPriorityQueue();
@@ -95,34 +95,40 @@ class PackedRatingDataBuilder implements Builder<PackedRatingData> {
      *
      * @param ci   The chunk index.
      * @param ei   The element index.
-     * @param pref The rating data to set.
+     * @param user The user ID to set.
+     * @param item The item ID to set.
+     * @param pref The preference value to set.
      */
-    private void set(int ci, int ei, Preference pref) {
-        users[ci][ei] = userIndex.internId(pref.getUserId());
-        items[ci][ei] = itemIndex.internId(pref.getItemId());
-        values[ci][ei] = pref.getValue();
+    private void set(int ci, int ei, long user, long item, double pref) {
+        users[ci][ei] = userIndex.internId(user);
+        items[ci][ei] = itemIndex.internId(item);
+        values[ci][ei] = pref;
     }
 
     /**
      * Set the preference data at a particular index.
      *
      * @param idx  The index.
-     * @param pref The preference data.
+     * @param user The user ID to set.
+     * @param item The item ID to set.
+     * @param pref The preference value to set.
      */
-    public void set(int idx, Preference pref) {
+    public void set(int idx, long user, long item, double pref) {
         Preconditions.checkElementIndex(idx, nprefs);
         final int ci = chunk(idx);
         final int ei = element(idx);
-        set(ci, ei, pref);
+        set(ci, ei, user, item, pref);
     }
 
     /**
      * Add a rating to the pack.
      *
-     * @param pref The entry to add
-     * @return The index of the newly-added getEntry.
+     * @param user The user ID to add.
+     * @param item The item ID to add.
+     * @param pref The preference value.
+     * @return The index of the newly-added entry.
      */
-    public int add(Preference pref) {
+    public int add(long user, long item, double pref) {
         assert users != null;
         assert items != null;
         assert values != null;
@@ -148,22 +154,11 @@ class PackedRatingDataBuilder implements Builder<PackedRatingData> {
             values[ci] = new double[CHUNK_SIZE];
         }
 
-        set(ci, ei, pref);
+        set(ci, ei, user, item, pref);
         if (idx == nprefs) {
             nprefs += 1;
         }
         return idx;
-    }
-
-    /**
-     * Release the specified index. The index can then be re-used by a later call
-     * to {@link #add(Preference)}.
-     *
-     * @param idx The index to remove.
-     */
-    public void release(int idx) {
-        Preconditions.checkElementIndex(idx, nprefs);
-        freeList.enqueue(idx);
     }
 
     private PackedRatingData internalBuild() {
@@ -209,7 +204,7 @@ class PackedRatingDataBuilder implements Builder<PackedRatingData> {
             if (i < lasti) {
                 // if it is not the last element, move the last to it
                 pref.setIndex(lasti);
-                set(i, pref);
+                set(i, pref.getUserId(), pref.getItemId(), pref.getValue());
             }
             // finally, we decrease our count by 1
             n -= 1;
@@ -254,7 +249,7 @@ class PackedRatingDataBuilder implements Builder<PackedRatingData> {
      *
      * @param rng The random number generator to use.
      */
-    public void shuffle(Random rng) {
+    void shuffle(Random rng) {
         repack();
         // do a reverse Fisher-Yates shuffle on the arrays
         final int np = nprefs;

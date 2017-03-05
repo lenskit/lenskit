@@ -25,16 +25,18 @@ import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -42,7 +44,7 @@ import static org.junit.Assert.*;
 public class MeanVarianceNormalizerTest {
     private final static double MIN_DOUBLE_PRECISION = 0.00001;
 
-    private EventDAO dao;
+    private DataAccessObject dao;
     private ImmutableSparseVector userRatings;
     private ImmutableSparseVector uniformUserRatings;
 
@@ -73,20 +75,7 @@ public class MeanVarianceNormalizerTest {
         addRating(ratings, 1, 4, 3);
         addRating(ratings, 1, 5, 3);
         addRating(ratings, 1, 6, 3);
-        dao = EventCollectionDAO.create(ratings);
-    }
-
-    @Test
-    public void testBuilderNoSmoothing() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 0).get();
-        Assert.assertEquals(0.0, urvn.getGlobalVariance(), 0.0);
-    }
-
-    @Test
-    public void testBuilderSmoothing() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3).get();
-        Assert.assertEquals(3.0, urvn.getDamping(), 0.0);
-        Assert.assertEquals(2.0, urvn.getGlobalVariance(), MIN_DOUBLE_PRECISION);
+        dao = StaticDataSource.fromList(ratings).get();
     }
 
     @Test
@@ -133,8 +122,9 @@ public class MeanVarianceNormalizerTest {
     }
 
     @Test
+    @Ignore("removed builder")
     public void testSmoothingDetailed() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3.0).get();
+        MeanVarianceNormalizer urvn = null; //new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
         VectorTransformation trans = urvn.makeTransformation(userRatings.asMap());
         final double mean = 2.0;
@@ -193,8 +183,9 @@ public class MeanVarianceNormalizerTest {
     }
 
     @Test
+    @Ignore("removed smoothing")
     public void testSmoothingDetailedOldVector() {
-        MeanVarianceNormalizer urvn = new MeanVarianceNormalizer.Builder(dao, 3.0).get();
+        MeanVarianceNormalizer urvn = null; // new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
         VectorTransformation trans = urvn.makeTransformation(userRatings);
         MutableSparseVector nUR = userRatings.mutableCopy();

@@ -24,11 +24,10 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
+import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.ScriptEnvironment;
-import org.lenskit.data.packed.BinaryRatingDAO;
 import org.lenskit.eval.temporal.TemporalEvaluator;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.slf4j.Logger;
@@ -49,11 +48,7 @@ public class Simulate implements Command {
     public void configureArguments(ArgumentParser parser) {
         parser.description("Simulates a recommender over time");
         ScriptEnvironment.configureArguments(parser);
-        parser.addArgument("-i", "--input-file")
-              .type(File.class)
-              .metavar("FILE")
-              .setDefault("ratings.pack")
-              .help("Packed Rating File");
+        InputData.configureArguments(parser, true);
         parser.addArgument("-o", "--output-file")
               .type(File.class)
               .metavar("FILE")
@@ -74,10 +69,6 @@ public class Simulate implements Command {
               .setDefault(86400L)
               .metavar("SECONDS")
               .help("Rebuild Period for next build");
-        parser.addArgument("--spec-file")
-              .type(File.class)
-              .metavar("SPEC")
-              .help("load from spec file SPEC");
         parser.addArgument("config")
               .type(File.class)
               .metavar("CONFIG")
@@ -96,16 +87,18 @@ public class Simulate implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
 
         Context ctx = new Context(opts);
+        ScriptEnvironment environment = new ScriptEnvironment(opts);
+        InputData input = new InputData(environment, opts);
 
         TemporalEvaluator eval = new TemporalEvaluator();
 
         eval.setListSize(ctx.getListSize());
         eval.setRebuildPeriod(ctx.getRebuildPeriod());
 
-        eval.setDataSource(BinaryRatingDAO.open(ctx.getInputFile()));
+        eval.setDataSource(input.getDAO());
         File out = ctx.getOutputFile();
         if (out != null) {
             eval.setOutputFile(out);
@@ -115,19 +108,22 @@ public class Simulate implements Command {
             eval.setExtendedOutputFile(out.toPath());
         }
 
-        // FIXME Use a proper class loader
         List<AlgorithmInstance> algos = AlgorithmInstance.load(ctx.getConfigFile().toPath(), "algorithm",
-                                                               ClassLoaders.inferDefault());
+                                                               environment.getClassLoader());
         if (algos.size() != 1) {
             logger.error("expected 1 algorithm, found {}", algos.size());
-            System.exit(2);
+            throw new IllegalArgumentException("too many algorithms");
         } else {
             eval.setAlgorithm(algos.get(0));
         }
 
         Stopwatch timer = Stopwatch.createStarted();
         logger.info("beginning temporal evaluator");
-        eval.execute();
+        try {
+            eval.execute();
+        } catch (IOException e) {
+            throw new LenskitCommandException(e);
+        }
         timer.stop();
         logger.info("evaluator executed  in {}", timer);
     }
@@ -135,31 +131,27 @@ public class Simulate implements Command {
     private static class Context {
         private final Namespace options;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
         }
 
-        public File getInputFile() {
-            return options.get("input_file");
-        }
-
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
 
-        public File getExtendedOutputFile() {
+        File getExtendedOutputFile() {
             return options.get("extended_output");
         }
 
-        public File getConfigFile() {
+        File getConfigFile() {
             return options.get("config");
         }
 
-        public long getRebuildPeriod() {
+        long getRebuildPeriod() {
             return options.get("rebuild_period");
         }
 
-        public int getListSize() {
+        int getListSize() {
             return options.get("list_size");
         }
     }

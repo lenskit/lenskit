@@ -22,9 +22,9 @@
 
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.data.dao.DataAccessObject
+import org.lenskit.data.entities.CommonTypes
 import org.lenskit.inject.Transient
-import org.lenskit.data.dao.EventDAO
-import org.lenskit.data.dao.UserDAO
 import org.lenskit.eval.traintest.QueryData
 import org.grouplens.lenskit.eval.metrics.predict.*
 import org.lenskit.external.ExternalProcessItemScorerBuilder
@@ -36,14 +36,14 @@ import javax.inject.Provider
  * Shim class to run item-mean.py to build an ItemScorer.
  */
 class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
-    EventDAO eventDAO
-    UserDAO userDAO
+    DataAccessObject trainDAO
+    DataAccessObject queryDAO
 
     @Inject
-    public ExternalItemMeanScorerBuilder(@Transient EventDAO events,
-                                         @Transient @QueryData UserDAO users) {
-        eventDAO = events
-        userDAO = users
+    public ExternalItemMeanScorerBuilder(@Transient DataAccessObject dao,
+                                         @Transient @QueryData DataAccessObject qdata) {
+        trainDAO = dao
+        queryDAO = qdata
     }
 
     @Override
@@ -56,8 +56,8 @@ class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
                       .setExecutable("python")
                       .addArgument("../item-mean.py")
                       .addArgument("--for-users")
-                      .addUserFileArgument(userDAO)
-                      .addRatingFileArgument(eventDAO)
+                      .addUserFileArgument(queryDAO.getEntityIds(CommonTypes.USER))
+                      .addRatingFileArgument(trainDAO)
                       .build()
     }
 }

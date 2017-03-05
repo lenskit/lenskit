@@ -28,13 +28,14 @@ import org.lenskit.LenskitRecommenderEngine
 import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
 import org.lenskit.api.RecommenderBuildException
-import org.lenskit.baseline.*
+import org.lenskit.baseline.BaselineScorer
+import org.lenskit.baseline.MeanDamping
 import org.lenskit.bias.BiasModel
 import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.config.ConfigHelpers
-import org.lenskit.data.dao.ItemDAO
 
-import static org.hamcrest.Matchers.*
+import static org.hamcrest.Matchers.instanceOf
+import static org.hamcrest.Matchers.notNullValue
 import static org.junit.Assert.assertThat
 
 /**
@@ -49,7 +50,6 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         within (BaselineScorer, ItemScorer) {
             set MeanDamping to 25
         }
-        root ItemDAO
     }
 
 

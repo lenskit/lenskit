@@ -21,23 +21,17 @@
 package org.lenskit.knn.user;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
-import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
-import org.lenskit.transform.normalize.VectorTransformation;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.collections.SortedListAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,9 +40,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.PriorityQueue;
-
-import static java.lang.Math.abs;
+import java.util.Map;
 
 /**
  * Score items with user-user collaborative filtering.
@@ -61,41 +53,19 @@ public class UserUserItemScorer extends AbstractItemScorer {
     private final RatingVectorPDAO dao;
     protected final NeighborFinder neighborFinder;
     protected final UserVectorNormalizer normalizer;
+    private final UserNeighborhoodScorer neighborhoodScorer;
     private final int neighborhoodSize;
-    private final int minNeighborCount;
-    private final Threshold userThreshold;
 
     @Inject
     public UserUserItemScorer(RatingVectorPDAO rvd, NeighborFinder nf,
                               UserVectorNormalizer norm,
-                              @NeighborhoodSize int nnbrs,
-                              @MinNeighbors int minNbrs,
-                              @UserSimilarityThreshold Threshold thresh) {
+                              UserNeighborhoodScorer scorer,
+                              @NeighborhoodSize int nnbrs) {
         this.dao = rvd;
         neighborFinder = nf;
         normalizer = norm;
+        neighborhoodScorer = scorer;
         neighborhoodSize = nnbrs;
-        minNeighborCount = minNbrs;
-        userThreshold = thresh;
-    }
-
-    /**
-     * Normalize all neighbor rating vectors, taking care to normalize each one
-     * only once.
-     *
-     * FIXME: MDE does not like this method.
-     *
-     * @param neighborhoods
-     */
-    protected Long2ObjectMap<SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
-        Long2ObjectMap<SparseVector> normedVectors =
-                new Long2ObjectOpenHashMap<>();
-        for (Neighbor n : Iterables.concat(neighborhoods)) {
-            if (!normedVectors.containsKey(n.user)) {
-                normedVectors.put(n.user, normalizer.normalize(n.user, n.vector, null));
-            }
-        }
-        return normedVectors;
     }
 
     @Nonnull
@@ -107,56 +77,44 @@ public class UserUserItemScorer extends AbstractItemScorer {
                      items.size(), user, history.size());
 
         LongSortedSet itemSet = LongUtils.packedSet(items);
-        Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
+        Long2ObjectMap<List<Neighbor>> neighborhoods =
                 findNeighbors(user, itemSet);
-        Long2ObjectMap<SparseVector> normedUsers =
-                normalizeNeighborRatings(neighborhoods.values());
 
         // Make the normalizing transform to reverse
-        SparseVector urv = ImmutableSparseVector.create(history);
-        VectorTransformation vo = normalizer.makeTransformation(user, urv);
+        InvertibleFunction<Long2DoubleMap, Long2DoubleMap> xform = normalizer.makeTransformation(user, history);
 
         // And prepare results
-        List<ResultBuilder> resultBuilders = new ArrayList<>();
+        List<UserUserResult> rawResults = new ArrayList<>();
         LongIterator iter = itemSet.iterator();
         while (iter.hasNext()) {
             final long item = iter.nextLong();
             double sum = 0;
             double weight = 0;
             int count = 0;
-            Collection<Neighbor> nbrs = neighborhoods.get(item);
-            if (nbrs != null) {
-                for (Neighbor n : nbrs) {
-                    weight += abs(n.similarity);
-                    sum += n.similarity * normedUsers.get(n.user).get(item);
-                    count += 1;
-                }
-            }
+            List<Neighbor> nbrs = neighborhoods.get(item);
+            UserUserResult score = neighborhoodScorer.score(item, nbrs);
 
-            if (count >= minNeighborCount && weight > 0) {
+            if (score != null) {
                 if (logger.isTraceEnabled()) {
-                    logger.trace("Total neighbor weight for item {} is {} from {} neighbors",
-                                 item, weight, count);
+                    logger.trace("result {}", score);
                 }
-                resultBuilders.add(UserUserResult.newBuilder()
-                                                 .setItemId(item)
-                                                 .setRawScore(sum / weight)
-                                                 .setNeighborhoodSize(count)
-                                                 .setTotalWeight(weight));
+                rawResults.add(score);
             }
         }
 
         // de-normalize the results
-        MutableSparseVector vec = MutableSparseVector.create(itemSet);
-        for (ResultBuilder rb: resultBuilders) {
-            vec.set(rb.getItemId(), rb.getRawScore());
+        Long2DoubleMap itemScores = new Long2DoubleOpenHashMap(rawResults.size());
+        for (UserUserResult r: rawResults) {
+            itemScores.put(r.getId(), r.getScore());
         }
-        vo.unapply(vec);
+        itemScores = xform.unapply(itemScores);
 
-        List<Result> results = new ArrayList<>(resultBuilders.size());
-        for (ResultBuilder rb: resultBuilders) {
-            results.add(rb.setScore(vec.get(rb.getItemId()))
-                          .build());
+        // and finish up
+        List<Result> results = new ArrayList<>(rawResults.size());
+        for (UserUserResult r: rawResults) {
+            results.add(r.copyBuilder()
+                         .setScore(itemScores.get(r.getId()))
+                         .build());
         }
 
         return Results.newResultMap(results);
@@ -171,36 +129,32 @@ public class UserUserItemScorer extends AbstractItemScorer {
      * @param items The items for which neighborhoods are requested.
      * @return A mapping of item IDs to neighborhoods.
      */
-    protected Long2ObjectMap<? extends Collection<Neighbor>>
+    protected Long2ObjectMap<List<Neighbor>>
     findNeighbors(long user, @Nonnull LongSet items) {
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
 
-        Long2ObjectMap<PriorityQueue<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
+        Long2ObjectMap<SortedListAccumulator<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
         for (LongIterator iter = items.iterator(); iter.hasNext();) {
             long item = iter.nextLong();
-            heaps.put(item, new PriorityQueue<>(neighborhoodSize + 1,
-                                                Neighbor.SIMILARITY_COMPARATOR));
+            heaps.put(item, SortedListAccumulator.decreasing(neighborhoodSize,
+                                                             Neighbor.SIMILARITY_COMPARATOR));
         }
 
-        int neighborsUsed = 0;
         for (Neighbor nbr: neighborFinder.getCandidateNeighbors(user, items)) {
-            for (VectorEntry e: nbr.vector) {
-                final long item = e.getKey();
-                PriorityQueue<Neighbor> heap = heaps.get(item);
+            // TODO consider optimizing
+            for (Long2DoubleMap.Entry e: nbr.vector.long2DoubleEntrySet()) {
+                final long item = e.getLongKey();
+                SortedListAccumulator<Neighbor> heap = heaps.get(item);
                 if (heap != null) {
                     heap.add(nbr);
-                    if (heap.size() > neighborhoodSize) {
-                        assert heap.size() == neighborhoodSize + 1;
-                        heap.remove();
-                    } else {
-                        neighborsUsed += 1;
-                    }
                 }
             }
         }
-        logger.debug("using {} neighbors across {} items",
-                     neighborsUsed, items.size());
-        return heaps;
+        Long2ObjectMap<List<Neighbor>> neighbors = new Long2ObjectOpenHashMap<>();
+        for (Map.Entry<Long,SortedListAccumulator<Neighbor>> me: heaps.entrySet()) {
+            neighbors.put(me.getKey(), me.getValue().finish());
+        }
+        return neighbors;
     }
 }

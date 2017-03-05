@@ -64,7 +64,7 @@ public abstract class AbstractEntity implements Entity, Describable {
     @Override
     public boolean hasAttribute(TypedName<?> name) {
         Object value = maybeGet(name.getName());
-        return value != null && name.getType().isInstance(value);
+        return value != null && name.getRawType().isInstance(value);
     }
 
     /**
@@ -178,7 +178,8 @@ public abstract class AbstractEntity implements Entity, Describable {
     @Override
     public <T> T maybeGet(TypedName<T> name) {
         try {
-            return name.getType().cast(maybeGet(name.getName()));
+            // FIXME This is not fully type-safe!
+            return (T) name.getRawType().cast(maybeGet(name.getName()));
         } catch (ClassCastException e) {
             throw new IllegalArgumentException(e);
         }

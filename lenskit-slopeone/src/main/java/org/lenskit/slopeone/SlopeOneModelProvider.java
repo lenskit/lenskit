@@ -22,12 +22,10 @@ package org.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.inject.Transient;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Transient;
+import org.lenskit.knn.item.model.ItemItemBuildContext;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -43,12 +41,11 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
     private final ItemItemBuildContext buildContext;
 
     @Inject
-    public SlopeOneModelProvider(@Transient @Nonnull ItemDAO dao,
-                                 @Transient ItemItemBuildContext context,
+    public SlopeOneModelProvider(@Transient ItemItemBuildContext context,
                                  @DeviationDamping double damping) {
 
         buildContext = context;
-        accumulator = new SlopeOneModelDataAccumulator(damping, dao);
+        accumulator = new SlopeOneModelDataAccumulator(damping, context.getItems());
     }
 
     /**

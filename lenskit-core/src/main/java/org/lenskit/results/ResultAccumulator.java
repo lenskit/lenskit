@@ -20,42 +20,41 @@
  */
 package org.lenskit.results;
 
-import com.google.common.base.Preconditions;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
+import org.lenskit.api.ResultMap;
+import org.lenskit.util.collections.SortedListAccumulator;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * Accumulator for sorted lists of results.  This class will return result lists, with the highest-scored result first.
  *
  * Create one with {@link #create(int)}.
  */
-public abstract class ResultAccumulator {
+public class ResultAccumulator {
+    private final SortedListAccumulator<Result> accum;
+
     /**
      * Create a new result accumulator.
-     * @param n The number of results desired; -1 for unlimited.
+     * @param n The number of results desired; negative for unlimited.
      * @return A result accumulator.
      */
     public static ResultAccumulator create(int n) {
-        if (n < 0) {
-            return new Unlimited();
-        } else {
-            return new TopN(n);
-        }
+        return new ResultAccumulator(SortedListAccumulator.decreasing(n, Results.scoreOrder()));
     }
 
-    private ResultAccumulator() {}
+    private ResultAccumulator(SortedListAccumulator<Result> acc) {
+        accum = acc;
+    }
 
     /**
      * Add a result to the accumulator.
      * @param r The result to add.
      */
-    public abstract void add(@Nonnull Result r);
+    public void add(@Nonnull Result r) {
+        accum.add(r);
+    }
 
     /**
      * Add a basic result to the accumulator.
@@ -73,54 +72,11 @@ public abstract class ResultAccumulator {
      *
      * @return The accumulated results, in nonincreasing order of score.
      */
-    public abstract ResultList finish();
-
-    private static class Unlimited extends ResultAccumulator {
-        List<Result> results = new ArrayList<>();
-
-        @Override
-        public void add(@Nonnull Result r) {
-            Preconditions.checkNotNull(r, "result");
-            results.add(r);
-        }
-
-        @Override
-        public ResultList finish() {
-            Collections.sort(results, Results.scoreOrder().reverse());
-            ResultList rv = new BasicResultList(results);
-            results.clear();
-            return rv;
-        }
+    public ResultList finish() {
+        return Results.newResultList(accum.finish());
     }
 
-    private static class TopN extends ResultAccumulator {
-        private PriorityQueue<Result> results;
-        private final int size;
-
-        public TopN(int n) {
-            results = new PriorityQueue<>(n + 1, Results.scoreOrder());
-            size = n;
-        }
-
-        @Override
-        public void add(@Nonnull Result r) {
-            Preconditions.checkNotNull(r, "result");
-            results.add(r);
-            if (results.size() > size) {
-                results.remove();
-            }
-        }
-
-        @Override
-        public ResultList finish() {
-            ArrayList<Result> list = new ArrayList<>();
-            while (!results.isEmpty()) {
-                list.add(results.remove());
-            }
-            // list is now least-first, because priority queue
-            // also, pq is empty
-            Collections.reverse(list);
-            return new BasicResultList(list);
-        }
+    public ResultMap finishMap() {
+        return Results.newResultMap(accum.finish());
     }
 }

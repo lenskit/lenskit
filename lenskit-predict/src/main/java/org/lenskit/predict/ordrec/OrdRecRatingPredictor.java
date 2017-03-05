@@ -37,8 +37,8 @@ import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractRatingPredictor;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
 import org.lenskit.results.AbstractResult;
@@ -69,7 +69,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(OrdRecRatingPredictor.class);
 
     private ItemScorer itemScorer;
-    private UserEventDAO userEventDao;
+    private DataAccessObject dao;
     private Quantizer quantizer;
     private final double learningRate;
     private final double regTerm;
@@ -85,11 +85,11 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      * @param reg Regularization term for user profile training.
      */
     @Inject
-    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer,
+    public OrdRecRatingPredictor(ItemScorer scorer, DataAccessObject dao, Quantizer quantizer,
                                  @LearningRate double rate,
                                  @RegularizationTerm double reg,
                                  @IterationCount int niters) {
-        this.userEventDao = dao;
+        this.dao = dao;
         this.itemScorer = scorer;
         this.quantizer = quantizer;
         this.learningRate = rate;
@@ -103,8 +103,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      * @param dao The user event DAO.
      * @param q The quantizer.
      */
-    OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer q) {
-        this.userEventDao = dao;
+    OrdRecRatingPredictor(ItemScorer scorer, DataAccessObject dao, Quantizer q) {
+        this.dao = dao;
         this.itemScorer = scorer;
         this.quantizer = q;
         this.learningRate = 1e-3;
@@ -113,15 +113,16 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     }
 
     /**
-     * It is used to generate rating list from UserEventDAO.
+     * Extract a user vector from a data source.
      *
      * @param uid The user ID.
-     * @param dao The UserEventDAO.
-     *
+     * @param dao The DAO.
      * @return The VectorEntry list of rating.
      */
-    private SparseVector makeUserVector(long uid, UserEventDAO dao) {
-        UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
+    private SparseVector makeUserVector(long uid, DataAccessObject dao) {
+        List<Rating> history = dao.query(Rating.class)
+                                  .withAttribute(CommonAttributes.USER_ID, uid)
+                                  .get();
         SparseVector vector = null;
         if (history != null) {
             vector = ImmutableSparseVector.create(Ratings.userRatingVector(history));
@@ -206,7 +207,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     @Nonnull
     private ResultMap computePredictions(long user, @Nonnull Collection<Long> items, boolean includeDetails) {
         logger.debug("predicting {} items for {}", items.size(), user);
-        SparseVector ratings = makeUserVector(user, userEventDao);
+        SparseVector ratings = makeUserVector(user, dao);
         LongSet allItems = new LongOpenHashSet(ratings.keySet());
         allItems.addAll(items);
 

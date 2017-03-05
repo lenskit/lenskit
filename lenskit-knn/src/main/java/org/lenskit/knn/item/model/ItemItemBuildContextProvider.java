@@ -20,12 +20,7 @@
  */
 package org.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.scored.ScoredIdListBuilder;
-import org.grouplens.lenskit.scored.ScoredIds;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -79,7 +74,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("using normalizer {}", normalizer);
 
         logger.debug("Building item data");
-        Long2ObjectMap<ScoredIdListBuilder> itemRatingData = new Long2ObjectOpenHashMap<>(1000);
+        Long2ObjectMap<Long2DoubleMap> itemRatingData = new Long2ObjectOpenHashMap<>(1000);
         Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<>(1000);
         buildItemRatings(itemRatingData, userItems);
 
@@ -91,8 +86,8 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
         for (int i = 0; i < n; i++) {
             final long item = items.getKey(i);
-            ScoredIdListBuilder ratings = itemRatingData.get(item);
-            SparseVector v = ratings.buildVector();
+            Long2DoubleMap ratings = itemRatingData.get(item);
+            SparseVector v = MutableSparseVector.create(ratings);
             assert v.size() == ratings.size();
             itemRatings[i] = v;
             // release some memory
@@ -106,11 +101,10 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
     /**
      * Transpose the user matrix so we have a matrix of item ids to ratings. Accumulate user item vectors into
      * the candidate sets for each item
-     *
-     * @param itemRatings    mapping from item ids to (userId: rating) maps (to be filled)
+     *  @param itemRatings    mapping from item ids to (userId: rating) maps (to be filled)
      * @param userItems mapping of user IDs to rated item sets to be filled.
      */
-    private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> itemRatings,
+    private void buildItemRatings(Long2ObjectMap<Long2DoubleMap> itemRatings,
                                   Long2ObjectMap<LongSortedSet> userItems) {
         // initialize the transposed array to collect item vector data
         try (ObjectStream<IdBox<Long2DoubleMap>> stream = rvDAO.streamUsers()) {
@@ -124,12 +118,12 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
                 for (VectorEntry rating : normed) {
                     final long item = rating.getKey();
                     // get the item's rating accumulator
-                    ScoredIdListBuilder ivect = itemRatings.get(item);
+                    Long2DoubleMap ivect = itemRatings.get(item);
                     if (ivect == null) {
-                        ivect = ScoredIds.newListBuilder(100);
+                        ivect = new Long2DoubleOpenHashMap(100);
                         itemRatings.put(item, ivect);
                     }
-                    ivect.add(uid, rating.getValue());
+                    ivect.put(uid, rating.getValue());
                 }
 
                 // get the item's candidate set

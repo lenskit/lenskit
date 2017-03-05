@@ -20,22 +20,22 @@
  */
 package org.lenskit.basic;
 
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventCollectionDAO;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
+import org.lenskit.data.dao.EntityCollectionDAO;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class ConstantItemScorerTest {
 
@@ -64,7 +64,7 @@ public class ConstantItemScorerTest {
     @Test
     public void testInject() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.addComponent(EventCollectionDAO.empty());
+        config.addComponent(EntityCollectionDAO.create());
         config.bind(ItemScorer.class).to(ConstantItemScorer.class);
         config.set(ConstantItemScorer.Value.class).to(Math.PI);
 

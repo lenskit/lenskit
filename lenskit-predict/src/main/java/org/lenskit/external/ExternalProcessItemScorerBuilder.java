@@ -27,12 +27,10 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.ItemDAO;
-import org.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.basic.PrecomputedItemScorer;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
@@ -137,13 +135,13 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      * Add a list of ratings as a command-line argument.  The ratings will be provided as a CSV file
      * in the format (user, item, rating, timestamp).
      *
-     * @param ratings A DAO of ratings to provide to the process.  Only ratings will be considered.
+     * @param dao A DAO of ratings to provide to the process.  Only ratings will be considered.
      * @param name A file name (optional).  If provided, the ratings will be stored in this file
      *             name in the working directory; otherwise, a fresh name will be generated.
      * @return The builder (for chaining).
      */
-    public ExternalProcessItemScorerBuilder addRatingFileArgument(EventDAO ratings, @Nullable String name) {
-        arguments.add(new RatingFileSupplier(ratings, name));
+    public ExternalProcessItemScorerBuilder addRatingFileArgument(DataAccessObject dao, @Nullable String name) {
+        arguments.add(new RatingFileSupplier(dao, name));
         return this;
     }
 
@@ -151,11 +149,11 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      * Add a list of ratings as a command-line argument.  The ratings will be provided as a CSV file
      * in the format (user, item, rating, timestamp).
      *
-     * @param ratings A DAO of ratings to provide to the process.  Only ratings will be considered.
+     * @param dao A DAO of ratings to provide to the process.  Only ratings will be considered.
      * @return The builder (for chaining).
      */
-    public ExternalProcessItemScorerBuilder addRatingFileArgument(EventDAO ratings) {
-        return addRatingFileArgument(ratings, null);
+    public ExternalProcessItemScorerBuilder addRatingFileArgument(DataAccessObject dao) {
+        return addRatingFileArgument(dao, null);
     }
 
     /**
@@ -167,8 +165,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      *             name in the working directory; otherwise, a fresh name will be generated.
      * @return The builder (for chaining).
      */
-    public ExternalProcessItemScorerBuilder addItemFileArgument(ItemDAO items, @Nullable String name) {
-        arguments.add(new ItemFileSupplier(items, name));
+    public ExternalProcessItemScorerBuilder addItemFileArgument(LongSet items, @Nullable String name) {
+        arguments.add(new IDFileSupplier(name, items));
         return this;
     }
 
@@ -179,8 +177,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      * @param items A DAO of items to provide to the process.
      * @return The builder (for chaining).
      */
-    public ExternalProcessItemScorerBuilder addItemFileArgument(ItemDAO items) {
-        return addItemFileArgument(items, null);
+    public ExternalProcessItemScorerBuilder addItemFileArgument(LongSet items) {
+        return addItemFileArgument(items, String.format("items-%s.csv", UUID.randomUUID()));
     }
 
     /**
@@ -192,8 +190,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      *             name in the working directory; otherwise, a fresh name will be generated.
      * @return The builder (for chaining).
      */
-    public ExternalProcessItemScorerBuilder addUserFileArgument(UserDAO users, @Nullable String name) {
-        arguments.add(new UserFileSupplier(users, name));
+    public ExternalProcessItemScorerBuilder addUserFileArgument(LongSet users, @Nullable String name) {
+        arguments.add(new IDFileSupplier(name, users));
         return this;
     }
 
@@ -204,8 +202,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      * @param users A DAO of users to provide to the process.
      * @return The builder (for chaining).
      */
-    public ExternalProcessItemScorerBuilder addUserFileArgument(UserDAO users) {
-        return addUserFileArgument(users, null);
+    public ExternalProcessItemScorerBuilder addUserFileArgument(LongSet users) {
+        return addUserFileArgument(users, String.format("users-%s.csv", UUID.randomUUID()));
     }
 
     /**
@@ -262,11 +260,11 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
     }
 
     private class RatingFileSupplier implements Supplier<String> {
-        private final EventDAO eventDAO;
+    private final DataAccessObject dao;
         private final String fileName;
 
-        public RatingFileSupplier(EventDAO dao, @Nullable String name) {
-            eventDAO = dao;
+        public RatingFileSupplier(DataAccessObject dao, @Nullable String name) {
+            this.dao = dao;
             fileName = name;
         }
 
@@ -279,7 +277,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             logger.info("writing ratings to {}", name);
             File file = new File(workingDir, name);
             try (PrintWriter writer = new PrintWriter(file, CHARSET_UTF_8);
-                 ObjectStream<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
+                 ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
                 for (Rating r: ratings) {
                     writer.printf("%d,%d,", r.getUserId(), r.getItemId());
                     if (r.hasValue()) {
@@ -299,28 +297,22 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
         }
     }
 
-    private abstract class IDFileSupplier implements Supplier<String> {
+    private class IDFileSupplier implements Supplier<String> {
         private final String fileName;
-        private final String prefix;
+        private final LongSet identifiers;
 
-        IDFileSupplier(String name, String pfx) {
+        IDFileSupplier(String name, LongSet ids) {
             fileName = name;
-            prefix = pfx;
+            identifiers = ids;
         }
-
-        protected abstract LongSet getIds();
 
         @Override
         public String get() {
             String name = fileName;
-            if (name == null) {
-                name = prefix + "-" + UUID.randomUUID().toString() + ".csv";
-            }
-            logger.info("writing {} to {}", prefix, name);
+            logger.info("writing {}", name);
             File file = new File(workingDir, name);
             try (PrintWriter writer = new PrintWriter(file, CHARSET_UTF_8)) {
-                LongSet ids = getIds();
-                LongIterator iter = ids.iterator();
+                LongIterator iter = identifiers.iterator();
                 while (iter.hasNext()) {
                     writer.println(iter.nextLong());
                 }
@@ -328,34 +320,6 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                 throw new ExternalProcessException("Error creating ratings file", e);
             }
             return name;
-        }
-    }
-
-    private class ItemFileSupplier extends IDFileSupplier {
-        private final ItemDAO itemDAO;
-
-        public ItemFileSupplier(ItemDAO dao, @Nullable String name) {
-            super(name, "items");
-            itemDAO = dao;
-        }
-
-        @Override
-        protected LongSet getIds() {
-            return itemDAO.getItemIds();
-        }
-    }
-
-    private class UserFileSupplier extends IDFileSupplier {
-        private final UserDAO userDAO;
-
-        public UserFileSupplier(UserDAO dao, @Nullable String name) {
-            super(name, "users");
-            userDAO = dao;
-        }
-
-        @Override
-        protected LongSet getIds() {
-            return userDAO.getUserIds();
         }
     }
 }

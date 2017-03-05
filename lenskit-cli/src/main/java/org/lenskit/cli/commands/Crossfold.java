@@ -26,6 +26,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.EntityType;
@@ -61,9 +62,13 @@ public class Crossfold implements Command {
     }
 
     @Override
-    public void execute(Namespace options) throws IOException {
+    public void execute(Namespace options) throws LenskitCommandException {
         Crossfolder cf;
-        cf = configureCrossfolder(options);
+        try {
+            cf = configureCrossfolder(options);
+        } catch (IOException e) {
+            throw new LenskitCommandException(e);
+        }
 
         cf.execute();
     }

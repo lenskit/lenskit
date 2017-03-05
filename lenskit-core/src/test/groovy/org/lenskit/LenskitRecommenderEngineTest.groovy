@@ -38,7 +38,6 @@ import org.lenskit.baseline.*
 import org.lenskit.basic.*
 import org.lenskit.data.dao.DataAccessObject
 import org.lenskit.data.dao.EntityCollectionDAO
-import org.lenskit.data.dao.EventCollectionDAO
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.data.ratings.RatingMatrix
 import org.lenskit.inject.Shareable
@@ -225,7 +224,7 @@ public class LenskitRecommenderEngineTest {
         }
     }
 
-    private static void assertNodeNotEVDao(DAGNode<Component,Dependency> node) {
+    private static void assertNodeNotDAO(DAGNode<Component,Dependency> node) {
         def lbl = node.getLabel()
         if (lbl == null) {
             return
@@ -233,7 +232,7 @@ public class LenskitRecommenderEngineTest {
         Satisfaction sat = lbl.getSatisfaction()
         if (sat instanceof InstanceSatisfaction) {
             assertThat((Class) sat.getErasedType(),
-                       not(equalTo((Class) EventCollectionDAO.class)))
+                       not(equalTo((Class) DataAccessObject.class)))
         }
     }
 
@@ -290,7 +289,7 @@ public class LenskitRecommenderEngineTest {
         def g = engine.graph
         // make sure we have no record of an instance dao
         for (n in g.reachableNodes) {
-            assertNodeNotEVDao(n)
+            assertNodeNotDAO(n)
         }
     }
 

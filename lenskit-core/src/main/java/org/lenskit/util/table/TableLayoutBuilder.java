@@ -21,7 +21,6 @@
 package org.lenskit.util.table;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.apache.commons.lang3.exception.CloneFailedException;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -32,7 +31,7 @@ import java.util.LinkedHashSet;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
+public class TableLayoutBuilder implements Builder<TableLayout> {
     private LinkedHashSet<String> columns = new LinkedHashSet<>();
 
     /**
@@ -96,24 +95,6 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
      */
     public int getColumnCount() {
         return columns.size();
-    }
-
-    /**
-     * Clone this layout command. Used to build multiple layouts from the same initial
-     * columns.
-     *
-     * @return An independent copy of this table layout command.
-     */
-    @Override
-    public TableLayoutBuilder clone() {
-        TableLayoutBuilder copy;
-        try {
-            copy = (TableLayoutBuilder) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new CloneFailedException(e);
-        }
-        copy.columns = new LinkedHashSet<>(columns);
-        return copy;
     }
 
     @Override

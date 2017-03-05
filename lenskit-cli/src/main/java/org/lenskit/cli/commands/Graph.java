@@ -27,20 +27,22 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.EventDAO;
 import org.lenskit.*;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
+import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.graph.GraphDumper;
 import org.lenskit.inject.RecommenderGraphBuilder;
-import org.lenskit.cli.Command;
-import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
-import java.io.File;
-import java.io.IOException;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -65,7 +67,7 @@ public class Graph implements Command {
 
     private LenskitConfiguration makeDataConfig(Context ctx) {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).toProvider(new DAOProvider());
+        config.bind(DataAccessObject.class).toProvider(new DAOProvider());
         String dspec = ctx.options.getString("domain");
         if (dspec != null) {
             PreferenceDomain domain = PreferenceDomain.fromString(dspec);
@@ -78,8 +80,8 @@ public class Graph implements Command {
      * Load a configuration graph from a recommender model.
      * @param file The model file.
      * @return The recommender graph.
-     * @throws IOException
-     * @throws RecommenderConfigurationException
+     * @throws IOException if there is an error loading the model.
+     * @throws RecommenderConfigurationException if the model fails to configure.
      */
     private DAGNode<Component, Dependency> loadModel(Context ctx, File file) throws IOException, RecommenderConfigurationException {
         logger.info("loading model from {}", file);
@@ -96,8 +98,8 @@ public class Graph implements Command {
     /**
      * Build a configured recommender graph from the specified configurations.
      * @return The configuration graph.
-     * @throws IOException
-     * @throws RecommenderConfigurationException
+     * @throws IOException if there is an error loading the configurations
+     * @throws RecommenderConfigurationException if there is an error building the configurations
      */
     private DAGNode<Component,Dependency> makeNewGraph(Context ctx) throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
@@ -114,18 +116,74 @@ public class Graph implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
         File modelFile = opts.get("model_file");
         DAGNode<Component, Dependency> graph;
         if (modelFile != null) {
-            graph = loadModel(ctx, modelFile);
+            try {
+                graph = loadModel(ctx, modelFile);
+            } catch (IOException e) {
+                throw new LenskitCommandException("failed to load model", e);
+            }
         } else {
-            graph = makeNewGraph(ctx);
+            try {
+                graph = makeNewGraph(ctx);
+            } catch (IOException e) {
+                throw new LenskitCommandException("failed to instantiate graph");
+            }
         }
         File output = ctx.getOutputFile();
-        logger.info("writing graph to {}", output);
-        GraphDumper.renderGraph(graph, output);
+        try {
+            switch (ctx.getOutputType()) {
+            case dot:
+                writeDotFile(graph, output);
+                break;
+            case svg:
+                writeSvgFile(graph, output);
+                break;
+            }
+        } catch (IOException e) {
+            throw new LenskitCommandException("error writing graph output", e);
+        }
+    }
+
+    private void writeDotFile(DAGNode<Component, Dependency> graph, File outFile) throws IOException {
+        try (Writer writer = new FileWriter(outFile)) {
+            logger.info("writing graph to {}", outFile);
+            GraphDumper.renderGraph(graph, writer);
+        }
+    }
+
+    private void writeSvgFile(DAGNode<Component, Dependency> graph, File outFile) throws IOException, LenskitCommandException {
+        StringWriter sw = new StringWriter();
+        logger.info("writing graph to memory");
+        GraphDumper.renderGraph(graph, sw);
+        String dotSrc = sw.toString();
+
+        logger.debug("setting up script engine");
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine engine = sem.getEngineByMimeType("text/javascript");
+        try (InputStream istr = Graph.class.getResourceAsStream("/META-INF/resources/webjars/viz.js/1.5.1/viz.js");
+             Reader rdr = new InputStreamReader(istr)) {
+            logger.debug("loading Viz.js");
+            engine.put(ScriptEngine.FILENAME, "viz.js");
+            engine.eval(rdr);
+        } catch (ScriptException e) {
+            logger.error("error loading Viz.js", e);
+            throw new RuntimeException(e);
+        }
+        engine.put("dotSrc", dotSrc);
+        engine.put("outFile", outFile);
+        try (InputStream istr = Graph.class.getResourceAsStream("render-graph.js");
+             Reader rdr = new InputStreamReader(istr)) {
+            logger.info("rendering graph to {}", outFile);
+            engine.put(ScriptEngine.FILENAME, "render-graph.js");
+            engine.eval(rdr);
+        } catch (ScriptException e) {
+            logger.error("error evaluating render script", e);
+            throw new LenskitCommandException("could not evaluate SVG renderer", e);
+        }
     }
 
     public void configureArguments(ArgumentParser parser) {
@@ -137,6 +195,11 @@ public class Graph implements Command {
               .metavar("FILE")
               .setDefault(new File("recommender.dot"))
               .help("write recommender diagram to FILE");
+        parser.addArgument("-t", "--output-type")
+              .type(OutputType.class)
+              .metavar("TYPE")
+              .setDefault(OutputType.dot)
+              .help("specify output format");
         parser.addArgument("--domain")
               .metavar("DOMAIN")
               .help("specify preference domain");
@@ -151,9 +214,9 @@ public class Graph implements Command {
               .help("load algorithm configuration from file CONFIG");
     }
 
-    private static class DAOProvider implements Provider<EventDAO> {
+    private static class DAOProvider implements Provider<DataAccessObject> {
         @Override
-        public EventDAO get() {
+        public DataAccessObject get() {
             return null;
         }
 
@@ -167,17 +230,25 @@ public class Graph implements Command {
         private final Namespace options;
         private final ScriptEnvironment environment;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
         }
 
-        public List<File> getConfigFiles() {
+        List<File> getConfigFiles() {
             return options.get("config");
         }
 
-        public File getOutputFile() {
+        File getOutputFile() {
             return options.get("output_file");
         }
+
+        OutputType getOutputType() {
+            return options.get("output_type");
+        }
+    }
+
+    private enum OutputType {
+        dot, svg
     }
 }

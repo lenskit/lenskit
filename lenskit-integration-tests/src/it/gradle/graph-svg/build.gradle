@@ -1,0 +1,41 @@
+import java.nio.file.NoSuchFileException
+
+apply plugin: 'java'
+apply from: 'common.gradle'
+
+task renderGraph(type: JavaExec) {
+    onlyIf {
+        JavaVersion.current().isJava8Compatible()
+    }
+    dependsOn classes
+    classpath configurations.runtime
+    inputs.file 'predictor.groovy'
+
+    main 'org.lenskit.cli.Main'
+    args '--log-level', 'debug'
+    args 'graph'
+    args '-t', 'svg'
+    args '-o', "$buildDir/predictor.svg"
+    args 'predictor.groovy'
+
+    doFirst {
+        mkdir buildDir
+    }
+}
+
+check {
+    onlyIf {
+        JavaVersion.current().isJava8Compatible()
+    }
+
+    dependsOn renderGraph
+    doLast {
+        def outFile = file("$buildDir/predictor.svg")
+        if (!outFile.exists()) {
+            throw new NoSuchFileException("not found: $outFile")
+        }
+        if (outFile.length() < 1024) {
+            throw new RuntimeException("file $outFile unreasonably short")
+        }
+    }
+}

@@ -75,7 +75,7 @@ public class Main {
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
-        } catch (Exception e) {
+        } catch (LenskitCommandException e) {
             logger.error("error running command: " + e, e);
             System.exit(2);
         }

@@ -20,36 +20,56 @@
  */
 package org.lenskit.gradle
 
+import groovy.json.JsonOutput
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputFiles
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFile
 
 class Simulate extends LenskitTask {
     def File specFile
+    private Object source
+    private Object srcFile
+    def output, extendedOutput
+    def algorithm
+    int listSize = 10
+    long rebuildPeriod = 60 * 60 * 24
 
     Simulate() {
-        conventionMapping.specFile = {
-            project.file("$project.buildDir/${name}.json")
+        conventionMapping.output = {
+            project.file("$project.buildDir/${name}-output.csv")
         }
-        spec.outputFile = project.file("$project.buildDir/${name}-output.csv").toPath()
-        // FIXME re-enable simulate task
-        throw new UnsupportedOperationException("simulate task does not work")
     }
 
     /**
-     * Specify the input file.
-     * @param obj The name of the input file.
+     * Set the input source manifest.
+     * @param file The path to an input source manifest file (in YAML format).
      */
-    public void input(obj) {
-        spec.inputFile = project.file(obj).toPath()
+    void input(Object file) {
+        srcFile = file
+    }
+
+    void input(Map spec) {
+        source = spec
     }
 
     /**
-     * Get the input file for the simulation.
-     * @return The simulation input file.
+     * Configure an input CSV file of ratings.  Convenience method; {@link #input(Object)} is more general.
+     * @param csv A CSV file containing ratings.
      */
-    @InputFile
-    public File getInputFile() {
-        return spec.inputFile?.toFile()
+    void inputFile(Object csv) {
+        source = [type: "textfile",
+                  file: project.uri(csv).toString(),
+                  format: "csv"]
+    }
+
+    @InputFiles
+    Set<File> getInputFiles() {
+        def files = new HashSet()
+        if (srcFile) {
+            files << srcFile
+        }
+        // TODO Extract source files
+        return files
     }
 
     /**
@@ -57,15 +77,16 @@ class Simulate extends LenskitTask {
      * @param obj The output file.
      */
     public void output(obj) {
-        spec.outputFile = project.file(obj).toPath()
+        output = obj
     }
 
     /**
      * Get the primary output file for the simulation.
      * @return The CSV output file for the simulation.
      */
+    @OutputFile
     public File getOutputFile() {
-        return spec.outputFile?.toFile()
+        return getOutput() ? project.file(getOutput()) : null
     }
 
     /**
@@ -73,63 +94,25 @@ class Simulate extends LenskitTask {
      * @param obj The extended output file.
      */
     public void extendedOutput(obj) {
-        spec.extendedOutputFile = project.file(obj).toPath()
+        extendedOutput = obj
     }
 
     /**
      * Get the output file for the extended JSON output.
      * @return The file where the extended JSON output will be stored.
      */
+    @OutputFile
     public File getExtendedOutputFile() {
-        return spec.extendedOutputFile?.toFile()
+        return extendedOutput ? project.file(extendedOutput) : null
     }
 
     public void algorithm(fn) {
-         algorithm(null, fn)
+        algorithm = fn
     }
 
-    public void algorithm(name, fn) {
-        def file = project.file(fn)
-        if (name == null) {
-            name = file.name
-        }
-        // FIXME fix this
-    }
-
-    @OutputFiles
-    public Set<File> getOutputFiles() {
-        return spec.outputFiles*.toFile()
-    }
-
-    public void listSize(int s) {
-        spec.listSize = s
-    }
-
-    public int setListSize(int s) {
-        spec.listSize = s
-    }
-
-    public int getListSize() {
-        return spec.listSize
-    }
-
-    public void rebuildPeriod(long p) {
-        spec.rebuildPeriod = p
-    }
-
-    public void setRebuildPeriod(long p) {
-        spec.rebuildPeriod = p
-    }
-
-    public long getRebuildPeriod() {
-        return spec.rebuildPeriod
-    }
-
-    @Override
-    protected void doPrepare() {
-        def file = getSpecFile()
-        project.mkdir file.parentFile
-        logger.info('preparing spec file {}', file)
+    @InputFile
+    public File getAlgorithmFile() {
+        return algorithm ? project.file(algorithm) : null
     }
 
     @Override
@@ -139,6 +122,20 @@ class Simulate extends LenskitTask {
 
     @Override
     List getCommandArgs() {
-        return ["--spec-file", getSpecFile()]
+        def args = ['--list-size', listSize, '--rebuild-period', rebuildPeriod,
+                    '--output', outputFile]
+        if (srcFile != null) {
+            args << "--data-source" << project.file(srcFile)
+        } else {
+            project.mkdir project.buildDir
+            project.file("$project.buildDir/$name-input.json").text = JsonOutput.toJson(source)
+            // FIXME Don't use JSON spec
+            args << "--data-source" << project.file("$project.buildDir/$name-input.json")
+        }
+        if (extendedOutput) {
+            args << '--extended-output' << extendedOutputFile
+        }
+        args << algorithmFile
+        return args
     }
 }

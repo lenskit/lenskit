@@ -218,12 +218,20 @@ class ExperimentJob extends RecursiveAction {
                 outputRow.addAll(eval.finish());
             }
         } catch (UncheckedInterruptException ex) {
-            logger.info("evaluation interrupted");
-            tracker.fail(ex);
+            try {
+                logger.info("evaluation of {} on {} interrupted", algorithm, dataSet);
+                tracker.fail(ex);
+            } catch (Throwable th) {
+                ex.addSuppressed(th);
+            }
             throw ex;
         } catch (Throwable th) {
-            logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
-            tracker.fail(th);
+            try {
+                logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
+                tracker.fail(th);
+            } catch (Throwable th2) {
+                th.addSuppressed(th2);
+            }
             throw th;
         }
 

@@ -30,17 +30,21 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
-import org.lenskit.data.dao.ItemNameDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
@@ -65,22 +69,21 @@ public class Recommend implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
-        LenskitRecommenderEngine engine = ctx.loader.loadEngine();
+        LenskitRecommenderEngine engine;
+        try {
+            engine = ctx.loader.loadEngine();
+        } catch (IOException e) {
+            throw new LenskitCommandException("could not load engine", e);
+        }
 
         List<Long> users = ctx.options.get("users");
         final int n = ctx.options.getInt("num_recs");
 
-        try (LenskitRecommender rec = engine.createRecommender()) {
+        try (LenskitRecommender rec = engine.createRecommender(ctx.input.getDAO())) {
             ItemRecommender irec = rec.getItemRecommender();
-            ItemNameDAO indao = rec.get(ItemNameDAO.class);
-            RecOutput output;
-            if (ctx.options.getBoolean("json")) {
-                output = new JSONOutput(indao);
-            } else {
-                output = new HumanOutput(indao);
-            }
+            DataAccessObject dao = rec.getDataAccessObject();
 
             if (irec == null) {
                 logger.error("recommender has no item recommender");
@@ -89,14 +92,24 @@ public class Recommend implements Command {
 
             logger.info("recommending for {} users", users.size());
             Stopwatch timer = Stopwatch.createStarted();
-            output.begin();
-            for (long user : users) {
-                ResultList recs = irec.recommendWithDetails(user, n, null, null);
-                output.writeUser(user, recs);
+            try (RecOutput output = openOutput(ctx, dao)) {
+                for (long user : users) {
+                    ResultList recs = irec.recommendWithDetails(user, n, null, null);
+                    output.writeUser(user, recs);
+                }
             }
-            output.end();
             timer.stop();
             logger.info("recommended for {} users in {}", users.size(), timer);
+        } catch (IOException e) {
+            throw new LenskitCommandException("I/O error writing output", e);
+        }
+    }
+
+    private RecOutput openOutput(Context ctx, DataAccessObject dao) throws IOException {
+        if (ctx.options.getBoolean("json")) {
+            return new JSONOutput(dao);
+        } else {
+            return new HumanOutput(dao);
         }
     }
 
@@ -126,7 +139,7 @@ public class Recommend implements Command {
         private final ScriptEnvironment environment;
         private final RecommenderLoader loader;
 
-        public Context(Namespace opts) {
+        Context(Namespace opts) {
             options = opts;
             environment = new ScriptEnvironment(opts);
             input = new InputData(environment, opts);
@@ -134,55 +147,47 @@ public class Recommend implements Command {
         }
     }
 
-    private static interface RecOutput {
-        void begin() throws IOException;
+    private interface RecOutput extends Closeable {
         void writeUser(long user, ResultList recs) throws IOException;
-        void end() throws IOException;
     }
 
     private class HumanOutput implements RecOutput {
-        private final ItemNameDAO nameDAO;
+        private final DataAccessObject dao;
 
-        HumanOutput(ItemNameDAO ind) {
-            nameDAO = ind;
-        }
-
-        @Override
-        public void begin() {
+        HumanOutput(DataAccessObject dao) {
+            this.dao = dao;
         }
 
         @Override
         public void writeUser(long user, ResultList recs) {
             System.out.format("recommendations for user %d:%n", user);
-            for (Result item : recs) {
-                System.out.format("  %d", item.getId());
-                if (nameDAO != null) {
-                    System.out.format(" (%s)", nameDAO.getItemName(item.getId()));
+            for (Result res : recs) {
+                System.out.format("  %d", res.getId());
+                Entity item = dao.lookupEntity(CommonTypes.ITEM, res.getId());
+                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+                if (name != null) {
+                    System.out.format(" (%s)", name);
                 }
-                System.out.format(": %.3f", item.getScore());
+                System.out.format(": %.3f", res.getScore());
                 System.out.println();
             }
         }
 
         @Override
-        public void end() {
+        public void close() {
 
         }
     }
 
     private class JSONOutput implements RecOutput {
-        private final ItemNameDAO nameDAO;
+        private final DataAccessObject dao;
         private JsonGenerator generator;
 
-        JSONOutput(ItemNameDAO ind) throws IOException {
-            nameDAO = ind;
+        JSONOutput(DataAccessObject dao) throws IOException {
+            this.dao = dao;
             JsonFactory jfac = new JsonFactory();
             generator = jfac.createGenerator(System.out)
                             .useDefaultPrettyPrinter();
-        }
-
-        @Override
-        public void begin() throws IOException {
             generator.writeStartArray();
         }
 
@@ -195,8 +200,10 @@ public class Recommend implements Command {
                 generator.writeStartObject();
                 generator.writeNumberField("item", r.getId());
                 generator.writeNumberField("score", r.getScore());
-                if (nameDAO != null) {
-                    generator.writeStringField("name", nameDAO.getItemName(r.getId()));
+                Entity item = dao.lookupEntity(CommonTypes.ITEM, r.getId());
+                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+                if (name != null) {
+                    generator.writeStringField("name", name);
                 }
                 generator.writeEndObject();
             }
@@ -205,9 +212,12 @@ public class Recommend implements Command {
         }
 
         @Override
-        public void end() throws IOException {
-            generator.writeEndArray();
-            generator.close();
+        public void close() throws IOException {
+            try {
+                generator.writeEndArray();
+            } finally {
+                generator.close();
+            }
         }
     }
 }

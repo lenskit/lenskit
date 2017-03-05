@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.ResultList;
-import org.lenskit.data.dao.*;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entities;
@@ -35,18 +35,16 @@ import org.lenskit.results.Results;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class TopNItemRecommenderTest {
     @Test
     public void testNoScores() {
         StaticDataSource source = new StaticDataSource();
         DataAccessObject dao = source.get();
-        ItemDAO idao = new BridgeItemDAO(dao);
-        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .build();
-        ItemRecommender rec = new TopNItemRecommender(uedao, idao, scorer);
+        ItemRecommender rec = new TopNItemRecommender(dao, scorer);
 
         List<Long> recs = rec.recommend(42);
         assertThat(recs, hasSize(0));
@@ -60,12 +58,10 @@ public class TopNItemRecommenderTest {
         StaticDataSource source = new StaticDataSource();
         source.addSource(ImmutableList.of(Entities.create(CommonTypes.ITEM, 3)));
         DataAccessObject dao = source.get();
-        ItemDAO idao = new BridgeItemDAO(dao);
-        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .addScore(42, 3, 3.5)
                                                  .build();
-        ItemRecommender rec = new TopNItemRecommender(uedao, idao, scorer);
+        ItemRecommender rec = new TopNItemRecommender(dao, scorer);
 
         List<Long> recs = rec.recommend(42);
         assertThat(recs, contains(3L));
@@ -81,12 +77,10 @@ public class TopNItemRecommenderTest {
         StaticDataSource source = new StaticDataSource();
         source.addSource(ImmutableList.of(Entities.create(CommonTypes.ITEM, 3)));
         DataAccessObject dao = source.get();
-        ItemDAO idao = new BridgeItemDAO(dao);
-        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .addScore(42, 3, 3.5)
                                                  .build();
-        ItemRecommender rec = new TopNItemRecommender(uedao, idao, scorer);
+        ItemRecommender rec = new TopNItemRecommender(dao, scorer);
 
         List<Long> recs = rec.recommend(42, -1, null, LongSets.singleton(3L));
         assertThat(recs, hasSize(0));
@@ -103,14 +97,12 @@ public class TopNItemRecommenderTest {
                                           Entities.create(CommonTypes.ITEM, 2),
                                           Entities.create(CommonTypes.ITEM, 7)));
         DataAccessObject dao = source.get();
-        ItemDAO idao = new BridgeItemDAO(dao);
-        UserEventDAO uedao = new BridgeUserEventDAO(dao);
         ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                                  .addScore(42, 2, 3.0)
                                                  .addScore(42, 7, 1.0)
                                                  .addScore(42, 3, 3.5)
                                                  .build();
-        ItemRecommender rec = new TopNItemRecommender(uedao, idao, scorer);
+        ItemRecommender rec = new TopNItemRecommender(dao, scorer);
 
         List<Long> recs = rec.recommend(42, 2, null, null);
         assertThat(recs, hasSize(2));

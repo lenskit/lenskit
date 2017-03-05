@@ -29,10 +29,8 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.BridgeEventDAO;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.dao.file.TextEntitySource;
@@ -165,12 +163,6 @@ public class InputData {
     public DataAccessObject getDAO() {
         StaticDataSource source = getSource();
         return source != null ? source.get() : null;
-    }
-
-    @Nullable
-    public EventDAO getEventDAO() throws IOException {
-        DataAccessObject dao = getDAO();
-        return new BridgeEventDAO(dao);
     }
 
     @Nonnull

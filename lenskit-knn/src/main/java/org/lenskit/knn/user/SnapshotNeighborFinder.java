@@ -21,15 +21,10 @@
 package org.lenskit.knn.user;
 
 import com.google.common.collect.AbstractIterator;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.knn.SimilarityNormalizer;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +35,9 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * A neighborhood finder that has a snapshot of the rating data for efficiency.  This is built by
- * backing a {@link LiveNeighborFinder} with a {@link org.lenskit.data.packed.BinaryRatingDAO}.
+ * A neighborhood finder that has a snapshot of the rating data for efficiency.
  *
  * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
 public class SnapshotNeighborFinder implements NeighborFinder {
@@ -53,35 +46,36 @@ public class SnapshotNeighborFinder implements NeighborFinder {
     private final UserSnapshot snapshot;
     private final UserSimilarity similarity;
     private final RatingVectorPDAO rvDAO;
-    private final UserVectorNormalizer normalizer;
+    private final UserVectorNormalizer similarityNormalizer;
     private final Threshold threshold;
 
     @Inject
     public SnapshotNeighborFinder(UserSnapshot snap,
                                   UserSimilarity sim,
                                   RatingVectorPDAO rvd,
-                                  UserVectorNormalizer norm,
+                                  @SimilarityNormalizer UserVectorNormalizer simNorm,
                                   @UserSimilarityThreshold Threshold thresh) {
         snapshot = snap;
         similarity = sim;
         rvDAO = rvd;
-        normalizer = norm;
+        similarityNormalizer = simNorm;
         threshold = thresh;
     }
 
     @Override
     public Iterable<Neighbor> getCandidateNeighbors(final long user, LongSet items) {
-        SparseVector urs = MutableSparseVector.create(rvDAO.userRatingVector(user));
+        Long2DoubleMap urs = rvDAO.userRatingVector(user);
         if (urs.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final ImmutableSparseVector vector = normalizer.normalize(user, urs, null)
-                                                 .freeze();
+        final Long2DoubleMap normed = similarityNormalizer.makeTransformation(user, urs)
+                                                          .apply(urs);
+        assert normed != null;
 
         LongCollection qset = items;
-        if (vector.size() < qset.size()) {
-            qset = vector.keySet();
+        if (normed.size() < qset.size()) {
+            qset = normed.keySet();
         }
         final LongSet candidates = new LongOpenHashSet();
         for (LongIterator iter = qset.iterator(); iter.hasNext();) {
@@ -96,7 +90,7 @@ public class SnapshotNeighborFinder implements NeighborFinder {
         return new Iterable<Neighbor>() {
             @Override
             public Iterator<Neighbor> iterator() {
-                return new NeighborIterator(user, vector, candidates);
+                return new NeighborIterator(user, normed, candidates);
             }
         };
     }
@@ -114,19 +108,20 @@ public class SnapshotNeighborFinder implements NeighborFinder {
 
     private class NeighborIterator extends AbstractIterator<Neighbor> {
         private final long user;
-        private final SparseVector userVector;
+        private final Long2DoubleMap userVector;
         private final LongIterator neighborIter;
 
-        public NeighborIterator(long uid, SparseVector uvec, LongSet nbrs) {
+        NeighborIterator(long uid, Long2DoubleMap uvec, LongSet nbrs) {
             user = uid;
             userVector = uvec;
             neighborIter = nbrs.iterator();
         }
+
         @Override
         protected Neighbor computeNext() {
             while (neighborIter.hasNext()) {
                 final long neighbor = neighborIter.nextLong();
-                SparseVector vector = snapshot.getNormalizedUserVector(neighbor);
+                Long2DoubleMap vector = snapshot.getNormalizedUserVector(neighbor);
                 double sim = similarity.similarity(user, userVector, neighbor, vector);
                 if (acceptSimilarity(sim)) {
                     return new Neighbor(neighbor, snapshot.getUserVector(neighbor), sim);

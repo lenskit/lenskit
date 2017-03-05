@@ -28,6 +28,7 @@ import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
 import org.lenskit.api.*;
+import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.inject.AbstractConfigContext;
 import org.lenskit.inject.RecommenderGraphBuilder;
 
@@ -51,7 +52,8 @@ public class LenskitConfiguration extends AbstractConfigContext {
             ItemScorer.class,
             ItemRecommender.class,
             ItemBasedItemScorer.class,
-            ItemBasedItemRecommender.class
+            ItemBasedItemRecommender.class,
+            DataAccessObject.class
     };
 
     private final BindingFunctionBuilder bindings;

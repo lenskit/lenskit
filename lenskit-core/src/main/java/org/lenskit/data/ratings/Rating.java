@@ -23,7 +23,6 @@ package org.lenskit.data.ratings;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
-import org.lenskit.data.events.Event;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
@@ -40,10 +39,9 @@ import java.util.Set;
  *
  * @compat Public
  */
-@org.lenskit.data.events.BuiltBy(RatingBuilder.class)
 @BuiltBy(RatingBuilder.class)
 @DefaultEntityType("rating")
-public final class Rating extends AbstractEntity implements Event, Preference, Serializable {
+public final class Rating extends AbstractEntity implements Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
     private static final Set<TypedName<?>> FULL_ATTR_NAMES =
@@ -142,7 +140,6 @@ public final class Rating extends AbstractEntity implements Event, Preference, S
         return item;
     }
 
-    @Override
     public long getTimestamp() {
         return timestamp;
     }

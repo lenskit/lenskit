@@ -62,9 +62,6 @@ Each command is documented in its own man page, *lenskit-command*(1).
 :   Output a GraphViz diagram of a recommender configuration (either from configuration files or a
     trained model).
 
-[pack-ratings](man:lenskit-pack-ratings(1))
-:   Pack rating data into a binary file for more efficient access.
-
 ## Environment and System Properties
 
 The LensKit CLI (or its launcher script) recognize the following environment variables:
@@ -90,8 +87,7 @@ logback.configurationFile
    [**lenskit-predict**(1)](man:lenskit-predict(1)),
    [**lenskit-recommend**(1)](man:lenskit-recommend(1)),
    [**lenskit-global-recommend**(1)](man:lenskit-global-recommend(1)),
-   [**lenskit-graph**(1)](man:lenskit-graph(1)),
-   [**lenskit-pack-ratings**(1)](man:lenskit-pack-ratings(1))
+   [**lenskit-graph**(1)](man:lenskit-graph(1))
 -  The [LensKit home page](http://lenskit.org)
 -  The [LensKit manual](http://lenskit.org/documentation)
 

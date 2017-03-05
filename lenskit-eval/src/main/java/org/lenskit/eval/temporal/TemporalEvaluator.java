@@ -30,16 +30,15 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
-import org.lenskit.ModelDisposition;
 import org.lenskit.api.*;
-import org.lenskit.data.dao.SortOrder;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.UserHistory;
-import org.lenskit.data.packed.BinaryRatingDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -52,10 +51,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.sqrt;
@@ -65,7 +61,7 @@ public class TemporalEvaluator {
     @Nonnull
     private Random rng;
     private AlgorithmInstance algorithm;
-    private BinaryRatingDAO dataSource;
+    private DataAccessObject dataSource;
     private File outputFile;
     private File extendedOutputFile;
     private long rebuildPeriod;
@@ -104,7 +100,7 @@ public class TemporalEvaluator {
      * @param dao The datasource to be added to the command.
      * @return Itself to allow for  method chaining.
      */
-    public TemporalEvaluator setDataSource(BinaryRatingDAO dao) {
+    public TemporalEvaluator setDataSource(DataAccessObject dao) {
         dataSource = dao;
         return this;
     }
@@ -114,7 +110,7 @@ public class TemporalEvaluator {
      * @return itself
      */
     public TemporalEvaluator setDataSource(File file) throws IOException {
-        dataSource = BinaryRatingDAO.open(file);
+        dataSource = StaticDataSource.load(file.toPath()).get();
         return this;
     }
 
@@ -226,9 +222,13 @@ public class TemporalEvaluator {
         //Start try block -- will try to write output on file
         try (TableWriter tableWriter = openOutput();
              SequenceWriter extWriter = openExtendedOutput()) {
+            // FIXME Don't keep this whole list in (second) memory.
+            List<Rating> ratings = dataSource.query(Rating.class)
+                                             .orderBy(CommonAttributes.TIMESTAMP)
+                                             .get();
 
-            List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
-            BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
+            DataAccessObject limitedDao = StaticDataSource.fromList(Collections.<Entity>emptyList()).get();
+            long limitTimestamp = 0;
 
             //Initialize local variables, will use to calculate RMSE
             double sse = 0;
@@ -239,17 +239,18 @@ public class TemporalEvaluator {
             int ratingsSinceLastBuild = 0;
 
             //Loop through ratings
-            for (Rating r : ratings) {
+            ListIterator<Rating> riter = ratings.listIterator();
+            while (riter.hasNext()) {
+                int ridx = riter.nextIndex();
+                Rating r = riter.next();
                 Map<String,Object> json = new HashMap<>();
                 json.put("userId", r.getUserId());
                 json.put("itemId", r.getItemId());
                 json.put("timestamp", r.getTimestamp());
                 json.put("rating", r.getValue());
 
-                if (recommender == null || (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp())) {
-                    limitedDao = dataSource.createWindowedView(r.getTimestamp());
-                    LenskitConfiguration config = new LenskitConfiguration();
-                    config.addComponent(limitedDao);
+                if (recommender == null || (r.getTimestamp() > 0 && limitTimestamp < r.getTimestamp())) {
+                    limitedDao = StaticDataSource.fromList(ratings.subList(0, ridx)).get();
 
                     //rebuild recommender system if its older then rebuild period set or null
                     if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
@@ -262,8 +263,7 @@ public class TemporalEvaluator {
                         Stopwatch timer = Stopwatch.createStarted();
                         lre = LenskitRecommenderEngine.newBuilder()
                                                       .addConfiguration(algorithm.getConfigurations().get(0))
-                                                      .addConfiguration(config, ModelDisposition.EXCLUDED)
-                                                      .build();
+                                                      .build(limitedDao);
                         timer.stop();
                         logger.info("built model {} in {}", buildsCount, timer);
 
@@ -272,7 +272,7 @@ public class TemporalEvaluator {
                     if (recommender != null) {
                         recommender.close();
                     }
-                    recommender = lre.createRecommender(config);
+                    recommender = lre.createRecommender(limitedDao);
                 }
                 ratingsSinceLastBuild += 1;
 
@@ -335,7 +335,7 @@ public class TemporalEvaluator {
      * @return The rank, or `null` if the item is not recommended.
      */
     @Nullable
-    private Integer getRecommendationRank(BinaryRatingDAO dao, Rating rating, Map<String, Object> json, ItemRecommender irec) {
+    private Integer getRecommendationRank(DataAccessObject dao, Rating rating, Map<String, Object> json, ItemRecommender irec) {
         Integer rank; /***calculate recommendation rank***/
                     /* set of candidates that includes current item +
                        listsize-1 random values from (items from dao - items rated by user) */
@@ -348,13 +348,13 @@ public class TemporalEvaluator {
         excludes.add(rating.getItemId());
 
         //Check if events for users exists to avoid NULL exception
-        UserHistory<Event> profile = dao.getEventsForUser(rating.getUserId());
-        if (profile != null) {
-            excludes.addAll(profile.itemSet());
-        }
+        excludes.addAll(dao.query(Rating.class)
+                           .withAttribute(CommonAttributes.USER_ID, rating.getUserId())
+                           .valueSet(CommonAttributes.ITEM_ID));
 
         // Add a random set of decoy items
-        candidates.addAll(LongUtils.randomSubset(dao.getItemIds(), listSize - 1, excludes, rng));
+        candidates.addAll(LongUtils.randomSubset(dao.getEntityIds(CommonTypes.ITEM),
+                                                 listSize - 1, excludes, rng));
 
         // get list of recommendations
         List<Long> recs = irec.recommend(rating.getUserId(), listSize, candidates, null);

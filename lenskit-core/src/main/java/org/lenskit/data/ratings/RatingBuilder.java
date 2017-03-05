@@ -26,7 +26,6 @@ import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityBuilder;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
-import org.lenskit.data.events.EventBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +37,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
+public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
     private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
     private static final AtomicLong idGenerator = new AtomicLong();
     private static volatile boolean hasWarned;
 
-    private boolean hasId;
-    private long id;
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -82,7 +79,8 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
 
     @Override
     public RatingBuilder reset() {
-        hasId = hasUserId = hasItemId = hasRating = false;
+        super.reset();
+        hasUserId = hasItemId = hasRating = false;
         timestamp = -1;
         return this;
     }
@@ -101,9 +99,7 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @return The builder (for chaining).
      */
     public RatingBuilder setId(long id) {
-        this.id = id;
-        hasId = true;
-        return this;
+        return (RatingBuilder) super.setId(id);
     }
 
     /**
@@ -119,7 +115,6 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @param uid The user ID.
      * @return The builder (for chaining).
      */
-    @Override
     public RatingBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
@@ -139,7 +134,6 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @param iid The item ID.
      * @return The builder (for chaining).
      */
-    @Override
     public RatingBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
@@ -203,7 +197,6 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
      * @param ts The timestamp.
      * @return The builder (for chaining).
      */
-    @Override
     public RatingBuilder setTimestamp(long ts) {
         timestamp = ts;
         return this;
@@ -240,7 +233,7 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
             hasRating = false;
             break;
         case "id":
-            hasId = false;
+            idSet = false;
             break;
         case "timestamp":
             timestamp = -1;
@@ -256,7 +249,7 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
         Preconditions.checkState(hasRating, "no rating set");
-        if (!hasId) {
+        if (!idSet) {
             if (!hasWarned) {
                 logger.warn("creating rating without ID");
                 hasWarned = true;
@@ -264,14 +257,5 @@ public class RatingBuilder extends EntityBuilder implements EventBuilder<Rating>
             id = idGenerator.incrementAndGet();
         }
         return new Rating(id, userId, itemId, rating, timestamp);
-    }
-
-    @Override
-    public RatingBuilder clone() {
-        try {
-            return (RatingBuilder) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
     }
 }

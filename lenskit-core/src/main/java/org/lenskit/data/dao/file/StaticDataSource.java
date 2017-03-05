@@ -257,8 +257,8 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
 
         for (EntityDerivation deriv: derivations) {
             TypedName<Long> column = deriv.getAttribute();
-            logger.info("deriving entity type {} from {} (column {})",
-                        deriv.getType(), deriv.getSourceType(), column);
+            logger.debug("deriving entity type {} from {} (column {})",
+                         deriv.getType(), deriv.getSourceType(), column);
             builder.deriveEntities(deriv.getType(), deriv.getSourceType(), column);
         }
 

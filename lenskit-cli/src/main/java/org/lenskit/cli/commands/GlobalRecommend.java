@@ -28,14 +28,17 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemBasedItemRecommender;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.cli.Command;
+import org.lenskit.cli.LenskitCommandException;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
-import org.lenskit.data.dao.ItemNameDAO;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,18 +68,23 @@ public class GlobalRecommend implements Command {
     }
 
     @Override
-    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+    public void execute(Namespace opts) throws LenskitCommandException {
         ScriptEnvironment env = new ScriptEnvironment(opts);
         InputData input = new InputData(env, opts);
         RecommenderLoader loader = new RecommenderLoader(input, env, opts);
-        LenskitRecommenderEngine engine = loader.loadEngine();
+        LenskitRecommenderEngine engine;
+        try {
+            engine = loader.loadEngine();
+        } catch (IOException e) {
+            throw new LenskitCommandException("failed to load recommender", e);
+        }
 
         List<Long> items = opts.get("items");
         final int n = opts.getInt("num_recs");
 
-        try (LenskitRecommender rec = engine.createRecommender()) {
+        try (LenskitRecommender rec = engine.createRecommender(input.getDAO())) {
             ItemBasedItemRecommender irec = rec.getItemBasedItemRecommender();
-            ItemNameDAO indao = rec.get(ItemNameDAO.class);
+            DataAccessObject dao = rec.getDataAccessObject();
             if (irec == null) {
                 logger.error("recommender has no global recommender");
                 throw new UnsupportedOperationException("no global recommender");
@@ -86,12 +94,14 @@ public class GlobalRecommend implements Command {
             Stopwatch timer = Stopwatch.createStarted();
 
             ResultList recs = irec.recommendRelatedItemsWithDetails(LongUtils.packedSet(items), n, null, null);
-            for (Result item : recs) {
-                System.out.format("%d", item.getId());
-                if (indao != null) {
-                    System.out.format(" (%s)", indao.getItemName(item.getId()));
+            for (Result res : recs) {
+                System.out.format("%d", res.getId());
+                Entity item = dao.lookupEntity(CommonTypes.ITEM, res.getId());
+                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+                if (name != null) {
+                    System.out.format(" (%s)", name);
                 }
-                System.out.format(": %.3f", item.getScore());
+                System.out.format(": %.3f", res.getScore());
                 System.out.println();
             }
 

@@ -22,7 +22,7 @@ package org.lenskit.eval.crossfold;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class RetainNHistoryPartitionMethod implements HistoryPartitionMethod {
     }
 
     @Override
-    public int partition(List<? extends Event> data) {
+    public int partition(List<? extends Rating> data) {
         return min(count, data.size());
     }
 

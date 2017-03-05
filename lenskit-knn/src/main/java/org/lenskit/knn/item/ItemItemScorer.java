@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
@@ -34,8 +33,8 @@ import org.lenskit.knn.item.model.ItemItemModel;
 import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
-import org.lenskit.util.ScoredIdAccumulator;
-import org.lenskit.util.TopNScoredIdAccumulator;
+import org.lenskit.util.collections.Long2DoubleAccumulator;
+import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +52,6 @@ import java.util.Map;
  */
 public class ItemItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
-    public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
-            Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
     private final RatingVectorPDAO rvDAO;
@@ -152,7 +149,7 @@ public class ItemItemScorer extends AbstractItemScorer {
             if (logger.isTraceEnabled()) {
                 logger.trace("truncating {} neighbors to {}", neighborhood.size(), neighborhoodSize);
             }
-            ScoredIdAccumulator acc = new TopNScoredIdAccumulator(neighborhoodSize);
+            Long2DoubleAccumulator acc = new TopNLong2DoubleAccumulator(neighborhoodSize);
             for (Long2DoubleMap.Entry e: neighborhood.long2DoubleEntrySet()) {
                 acc.put(e.getLongKey(), e.getDoubleValue());
             }

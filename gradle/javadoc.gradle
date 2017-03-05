@@ -80,14 +80,15 @@ allprojects {
                       'org.grouplens.lenskit.collections', 'org.grouplens.lenskit.symbols',
                       'org.grouplens.lenskit.scored', 'org.grouplens.lenskit.indexes',
                       'org.lenskit.results')
-                group('Data Access', 'org.grouplens.lenskit.data*',
-                      'org.grouplens.util.io')
+                group('Data Access', 'org.lenskit.data*',
+                      'org.lenskit.util.io')
                 group('Data Transformation',
                       'org.grouplens.lenskit.baseline*', 'org.grouplens.lenskit.transform*',
                       'org.grouplens.lenskit.vectors.*')
                 group('Recommender Implementations',
-                      'org.lenskit.predict*', 'org.grouplens.lenskit.knn*',
-                      'org.grouplens.lenskit.mf*', 'org.grouplens.lenskit.slopeone*')
+                      'org.lenskit.baseline*',
+                      'org.lenskit.predict*', 'org.lenskit.knn*',
+                      'org.lenskit.mf*', 'org.lenskit.slopeone*')
                 group('Recommender Evaluation and Tooling',
                       'org.grouplens.lenskit.eval*',
                       'org.grouplens.lenskit.cli*',
@@ -97,6 +98,7 @@ allprojects {
                       'org.grouplens.lenskit.util*',
                       'org.lenskit.util*',
                       'org.grouplens.lenskit.test*',
+                      'org.lenskit.test*',
                       'org.lenskit.inject',
                       'org.grouplens.lenskit.iterative')
 
