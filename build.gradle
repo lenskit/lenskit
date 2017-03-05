@@ -36,7 +36,6 @@ import org.grouplens.lenskit.build.GitExtension
 
 plugins {
     id "org.sonarqube" version "1.0"
-    id 'com.github.kt3k.coveralls' version '2.6.3'
 }
 apply plugin: 'base'
 apply plugin: 'project-report'
