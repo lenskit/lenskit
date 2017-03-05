@@ -21,8 +21,10 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.collect.ImmutableList;
+import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entities;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -35,8 +37,8 @@ import java.util.List;
  */
 public class TestUserBuilder {
     private long userId;
-    private List<Rating> trainEvents = new ArrayList<>();
-    private List<Rating> testEvents = new ArrayList<>();
+    private List<Entity> trainEvents = new ArrayList<>();
+    private List<Entity> testEvents = new ArrayList<>();
 
     /**
      * Construct a new test user builder.
@@ -48,10 +50,10 @@ public class TestUserBuilder {
         return this;
     }
 
-    public TestUserBuilder addTestEntity(Rating... events) {
-        for (Rating e: events) {
-            if (e.getUserId() != userId) {
-                throw new IllegalArgumentException("invalid user ID: " + e.getUserId());
+    public TestUserBuilder addTestEntity(Entity... events) {
+        for (Entity e: events) {
+            if (e.get(CommonAttributes.USER_ID) != userId) {
+                throw new IllegalArgumentException("invalid user ID: " + e.get(CommonAttributes.USER_ID));
             }
             testEvents.add(e);
         }
@@ -63,19 +65,19 @@ public class TestUserBuilder {
         return this;
     }
 
-    public TestUserBuilder addTrainEntity(Rating... events) {
-        for (Rating e: events) {
+    public TestUserBuilder addTrainEntity(Entity... events) {
+        for (Entity e: events) {
             trainEvents.add(e);
         }
         return this;
     }
 
-    public TestUserBuilder setTrainHistory(List<Rating> train) {
+    public TestUserBuilder setTrainHistory(List<Entity> train) {
         trainEvents = new ArrayList<>(train);
         return this;
     }
 
-    public TestUserBuilder setTestHistory(List<Rating> test) {
+    public TestUserBuilder setTestHistory(List<Entity> test) {
         testEvents = new ArrayList<>(test);
         return this;
     }

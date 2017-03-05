@@ -34,6 +34,7 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.inject.GraphtUtils;
@@ -51,6 +52,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,7 +156,9 @@ class ExperimentJob extends RecursiveAction {
                                                     .setCount(nusers)
                                                     .setLabel("testing users")
                                                     .start();
-            // TODO Support something other than ratings
+
+            List<EntityType> entityTypes = dataSet.getEntityTypes();
+
             for (Entity user: testData.query(CommonTypes.USER).get()) {
                 if (Thread.interrupted()) {
                     throw new EvaluationException("eval job interrupted");
@@ -162,12 +166,24 @@ class ExperimentJob extends RecursiveAction {
                 long uid = user.getId();
                 userRow.add("User", uid);
 
-                List<Rating> userTrainHistory = trainData.query(Rating.class)
-                                                         .withAttribute(CommonAttributes.USER_ID, uid)
-                                                         .get();
-                List<Rating> userTestHistory = testData.query(Rating.class)
-                                                       .withAttribute(CommonAttributes.USER_ID, uid)
-                                                       .get();
+                List<Entity> userTrainHistory = new ArrayList<>();
+                List<Entity> userTestHistory = new ArrayList<>();
+
+                for (EntityType entityType: entityTypes) {
+                    List<Entity> trainHistory = trainData.query(entityType)
+                            .withAttribute(CommonAttributes.USER_ID, uid)
+                            .get();
+
+                    userTrainHistory.addAll(trainHistory);
+
+                    List<Entity> testHistory = testData.query(entityType)
+                            .withAttribute(CommonAttributes.USER_ID, uid)
+                            .get();
+
+                    userTestHistory.addAll(testHistory);
+
+                }
+
                 TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
 
                 Stopwatch userTimer = Stopwatch.createStarted();
@@ -190,6 +206,7 @@ class ExperimentJob extends RecursiveAction {
                 test.finishStep();
                 progress.advance();
             }
+
 
             test.finish();
             progress.finish();

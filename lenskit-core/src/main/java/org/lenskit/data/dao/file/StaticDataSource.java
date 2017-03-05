@@ -142,6 +142,20 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
     }
 
     /**
+     * Add a derived entity to the data source.  Derived entities are synthesized from IDs found in attributes
+     * of other entities (effectively *foreign keys*).  This allows for things such as extracting the set of
+     * users or items from a file of ratings.
+     *
+     * The derived entities will not overwrite entities from other
+     * sources with the same ID.
+     *
+     * @param deriv The entity derivation.
+     */
+    public void addDerivedEntity(EntityDerivation deriv) {
+        derivations.add(deriv);
+    }
+
+    /**
      * Get the list of entity sources.
      * @return The list of entity sources.
      */
@@ -282,22 +296,33 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         if (name == null && object.has("name")) {
             name = object.get("name").asText();
         }
-        StaticDataSource layout = new StaticDataSource(name);
+        final StaticDataSource layout = new StaticDataSource(name);
+        EntitySources.ParseHandler handler = new EntitySources.ParseHandler() {
+            @Override
+            public void handleEntitySource(EntitySource source) {
+                layout.addSource(source);
+            }
+
+            @Override
+            public void handleEntityDerivation(EntityDerivation deriv) {
+                layout.addDerivedEntity(deriv);
+            }
+        };
 
         if (object.isArray()) {
             for (JsonNode source: object) {
-                layout.addSource(EntitySources.fromJSON(null, source, base));
+                EntitySources.fromJSON(null, source, base, handler);
             }
         } else if (object.isObject()) {
             if (object.has("file") || object.has("type")) {
                 // the whole object describes one data source
-                layout.addSource(EntitySources.fromJSON(null, object, base));
+                EntitySources.fromJSON(null, object, base, handler);
             } else {
                 // the object describes multiple data sources
                 Iterator<Map.Entry<String, JsonNode>> iter = object.fields();
                 while (iter.hasNext()) {
                     Map.Entry<String, JsonNode> entry = iter.next();
-                    layout.addSource(EntitySources.fromJSON(entry.getKey(), entry.getValue(), base));
+                    EntitySources.fromJSON(entry.getKey(), entry.getValue(), base, handler);
                 }
             }
         } else {

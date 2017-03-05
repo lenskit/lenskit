@@ -29,6 +29,7 @@ import org.lenskit.bias.ZeroBiasModel
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.entities.CommonTypes
 import org.lenskit.data.ratings.EntityCountRatingVectorPDAO
+import org.lenskit.data.ratings.InteractionEntityType
 import org.lenskit.data.ratings.RatingVectorPDAO
 import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
@@ -54,7 +55,7 @@ class FunkSVDImplicitAccuracyTest extends CrossfoldTestSuite {
             bind ItemScorer to FunkSVDItemScorer
             bind BiasModel to ZeroBiasModel
             bind RatingVectorPDAO to EntityCountRatingVectorPDAO
-            set EntityCountRatingVectorPDAO.CountedType to CommonTypes.RATING
+            set InteractionEntityType to CommonTypes.RATING
             set FeatureCount to 25
             set IterationCount to 125
         }

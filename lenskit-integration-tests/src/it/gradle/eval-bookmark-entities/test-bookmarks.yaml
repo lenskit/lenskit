@@ -1,0 +1,108 @@
+name: purchases
+datasets:
+- entity_types: bookmark
+  test:
+  - file: bookmark-test-1.csv
+    format: csv
+    header: true
+    entity_type: bookmark
+    columns:
+      id:
+        name: id
+        type: long
+      user:
+        name: user
+        type: long
+      item:
+        name: item
+        type: long
+      timestamp:
+        name: timestamp
+        type: long
+  - type: derived
+    entity_type: item
+    source_type: bookmark
+    source_attribute: item
+  - type: derived
+    entity_type: user
+    source_type: bookmark
+    source_attribute: user
+  train:
+  - file: bookmark-train-1.csv
+    format: csv
+    header: true
+    entity_type: bookmark
+    columns:
+      id:
+        name: id
+        type: long
+      user:
+        name: user
+        type: long
+      item:
+        name: item
+        type: long
+      timestamp:
+        name: timestamp
+        type: long
+  - type: derived
+    entity_type: item
+    source_type: bookmark
+    source_attribute: item
+  - type: derived
+    entity_type: user
+    source_type: bookmark
+    source_attribute: user
+- entity_types: bookmark
+  test:
+  - file: bookmark-test-2.csv
+    format: csv
+    header: true
+    entity_type: bookmark
+    columns:
+      id:
+        name: id
+        type: long
+      user:
+        name: user
+        type: long
+      item:
+        name: item
+        type: long
+      timestamp:
+        name: timestamp
+        type: long
+  - type: derived
+    entity_type: item
+    source_type: bookmark
+    source_attribute: item
+  - type: derived
+    entity_type: user
+    source_type: bookmark
+    source_attribute: user
+  train:
+  - file: bookmark-train-2.csv
+    format: csv
+    header: true
+    entity_type: bookmark
+    columns:
+      id:
+        name: id
+        type: long
+      user:
+        name: user
+        type: long
+      item:
+        name: item
+        type: long
+      timestamp:
+        name: timestamp
+        type: long
+  - type: derived
+    entity_type: item
+    source_type: bookmark
+    source_attribute: item
+  - type: derived
+    entity_type: user
+    source_type: bookmark
+    source_attribute: user
