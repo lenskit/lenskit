@@ -26,9 +26,9 @@ dependencies {
 task prepData(type: JavaExec) {
     classpath configurations.analyze
     main 'org.lenskit.util.test.RunScript'
-    args file('transmute.R'), ratingFile
+    args file('transmute.R'), ratingsFile
 
-    inputs.file ratingFile
+    inputs.file ratingsFile
     outputs.files fileTree(projectDir) {
         include '*.csv'
     }
@@ -46,7 +46,7 @@ task trainTest(type: TrainTest) {
     userOutputFile 'users.csv'
     algorithm 'Baseline', 'baseline.groovy'
     recommend {
-        listSize 10
+        listSize 100
         metric 'length'
         metric 'mrr'
         metric 'map'
@@ -54,10 +54,4 @@ task trainTest(type: TrainTest) {
     }
 }
 
-task check(overwrite: true, type: JavaExec) {
-    dependsOn trainTest
-    classpath configurations.testRuntime
-
-    main 'groovy.ui.GroovyMain'
-    args 'verify.groovy'
-}
+verifyR.dependsOn trainTest

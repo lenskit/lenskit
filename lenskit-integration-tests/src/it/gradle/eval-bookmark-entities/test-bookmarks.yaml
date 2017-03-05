@@ -1,10 +1,12 @@
-- name: purch1
-  entity_types: bookmark
+name: purchases
+datasets:
+- entity_types: bookmark
   test:
   - file: bookmark-test-1.csv
     format: csv
+    header: true
     entity_type: bookmark
-    fields:
+    columns:
       id:
         name: id
         type: long
@@ -28,8 +30,9 @@
   train:
   - file: bookmark-train-1.csv
     format: csv
+    header: true
     entity_type: bookmark
-    fields:
+    columns:
       id:
         name: id
         type: long
@@ -50,12 +53,13 @@
     entity_type: user
     source_type: bookmark
     source_attribute: user
-- name: purch2
+- entity_types: bookmark
   test:
   - file: bookmark-test-2.csv
     format: csv
+    header: true
     entity_type: bookmark
-    fields:
+    columns:
       id:
         name: id
         type: long
@@ -79,8 +83,9 @@
   train:
   - file: bookmark-train-2.csv
     format: csv
+    header: true
     entity_type: bookmark
-    fields:
+    columns:
       id:
         name: id
         type: long
