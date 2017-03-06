@@ -22,6 +22,9 @@
 
 import org.grouplens.lenskit.iterative.IterationCount
 import org.lenskit.api.ItemScorer
+import org.lenskit.slim.SimpleItemItemScorer
+import org.lenskit.slim.LinearRegressionAbstract
+import org.lenskit.slim.CovarianceUpdateCoordDestLinearRegression
 import org.lenskit.bias.BiasModel
 import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.mf.funksvd.FeatureCount
@@ -33,6 +36,6 @@ dumpGraph {
     algorithm {
         bind ItemScorer to SimpleItemItemScorer
         set IterationCount to 10
-        bind LinearRegressionAbstract to CovarianceUpdateDescentRuleCoordDestLinearRegression
+
     }
 }

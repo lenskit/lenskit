@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -16,8 +17,11 @@ import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.basic.SimpleRatingPredictor;
+import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
@@ -53,7 +57,7 @@ public class NaiveCoordDestLinearRegrTest {
         Map<Long, Long2DoubleMap> simulatedData = Maps.newHashMap();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        int userNum = 10;
+        int userNum = 20;
         int maxRatingNum = 10; // each user's max rating number (less than itemIdBound)
         int userIdBound = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
@@ -101,6 +105,10 @@ public class NaiveCoordDestLinearRegrTest {
 
         config.bind(ItemScorer.class)
                 .to(SimpleItemItemScorer.class);
+        config.within(SimpleItemItemScorer.class)
+                .bind(LinearRegressionAbstract.class)
+                .to(CovarianceUpdateCoordDestLinearRegression.class);
+
         config.bind(StoppingCondition.class)
                 .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)
@@ -112,7 +120,7 @@ public class NaiveCoordDestLinearRegrTest {
     @Before
     public void buildModel() {
         int itemNum = 10;
-        int maxWeight = 10;
+        int maxWeight = 50;
         this.weights = createWeights(itemNum, maxWeight);
         Map<Long, Long2DoubleMap> temp = Maps.newHashMap(createModel(itemNum, weights));
         LongOpenHashBigSet userIdSet = new LongOpenHashBigSet(temp.keySet());
@@ -198,9 +206,17 @@ public class NaiveCoordDestLinearRegrTest {
     public void testRecommender() {
         LenskitRecommenderEngine engine = makeEngine();
         try (Recommender rec = engine.createRecommender(dao)) {
-
-            List<Long> recommend = rec.getItemRecommender().recommend(500);
+            assertThat(rec.getItemScorer(),
+                    instanceOf(SimpleItemItemScorer.class));
+            assertThat(rec.getItemRecommender(),
+                    instanceOf(TopNItemRecommender.class));
+            Map<Long,Long2DoubleMap> dataTrans = LinearRegressionHelper.transposeMap(data);
+            Iterator<Long> iter = dataTrans.keySet().iterator();
+            long user = iter.next();
+            rec.getItemScorer().scoreWithDetails(user, new ArrayList<>(data.keySet()));
+            List<Long> recommend = rec.getItemRecommender().recommend(user);
             logger.info("{}", recommend);
+            logger.info("input data {} and dao is {}",data, dao);
         }
     }
 

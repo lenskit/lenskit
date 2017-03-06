@@ -29,14 +29,15 @@ public class SimpleItemItemScorer extends AbstractItemScorer {
     private final DataAccessObject dao;
     private final int neighborhoodSize;
     final static Logger logger = LoggerFactory.getLogger(org.lenskit.slim.SimpleItemItemScorer.class);
-    private final SLIMUpdateParameters parameters;
+    //private final SLIMUpdateParameters parameters;
+    private LinearRegressionAbstract lrModel;
 
     @Inject
-    public SimpleItemItemScorer(SimpleItemItemModel m, DataAccessObject dao, SLIMUpdateParameters parameters) {
+    public SimpleItemItemScorer(SimpleItemItemModel m, DataAccessObject dao, @LinearRegression LinearRegressionAbstract lrModel) {
         model = m;
         this.dao = dao;
         neighborhoodSize = 20;
-        this.parameters = parameters;
+        this.lrModel = lrModel;
     }
 
     /**
@@ -62,7 +63,7 @@ public class SimpleItemItemScorer extends AbstractItemScorer {
             Map<Long,Long2DoubleMap> neighbors = getItemItemKNN(item, neighborSize);
             Map<Long,Long2DoubleMap> neighborsT = transposeMap(neighbors);
             //NaiveCoordDestLinearRegression modelSLIM = new NaiveCoordDestLinearRegression(3.0, 0.5, false, 10);
-            LinearRegressionAbstract modelSLIM = new CovarianceUpdateCoordDestLinearRegression(parameters);
+            LinearRegressionAbstract modelSLIM = lrModel;
             Long2DoubleMap labels = getItemRatingVector(item);
             Long2DoubleMap weights = modelSLIM.fit(labels, neighborsT);
             //logger.info("current learned weight vector is {}\n and its {}th element is {} ", weights, item, weights.get(item));

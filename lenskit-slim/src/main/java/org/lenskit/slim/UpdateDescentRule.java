@@ -7,6 +7,7 @@ import java.util.Map;
 /**
  * not used. wonder if abstract class is better than interface for different updates??
  */
+
 public interface UpdateDescentRule {
     /**
      * learning process

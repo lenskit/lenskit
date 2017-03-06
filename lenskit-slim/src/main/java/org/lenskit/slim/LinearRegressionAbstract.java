@@ -2,11 +2,14 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import java.util.Map;
 
 import static org.lenskit.slim.LinearRegressionHelper.addVectors;
@@ -16,12 +19,13 @@ import static org.lenskit.slim.LinearRegressionHelper.addVectors;
  * Created by tmc on 2/10/17.
  * minimize 1/2*||a_j - A*w_j||^2 + beta/2*||wj||^2 + lambda*||w_j||
  */
+@LinearRegression
 @DefaultImplementation(CovarianceUpdateCoordDestLinearRegression.class)
-public abstract class LinearRegressionAbstract implements UpdateDescentRule{
+public abstract class LinearRegressionAbstract {
     protected static final Logger logger = LoggerFactory.getLogger(LinearRegressionAbstract.class);
     protected final SLIMUpdateParameters updateParameters;
 
-
+    @Inject
     public LinearRegressionAbstract(SLIMUpdateParameters updateParameters) {
         this.updateParameters = updateParameters;
     }

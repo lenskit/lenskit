@@ -9,14 +9,14 @@ import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import java.util.Map;
 
 import static org.lenskit.slim.LinearRegressionHelper.*;
 
 
-
-public class CovarianceUpdateCoordDestLinearRegression extends LinearRegressionAbstract {
-
+public final class CovarianceUpdateCoordDestLinearRegression extends LinearRegressionAbstract {
+    @Inject
     public CovarianceUpdateCoordDestLinearRegression(SLIMUpdateParameters parameters) {
         super(parameters);
     }
