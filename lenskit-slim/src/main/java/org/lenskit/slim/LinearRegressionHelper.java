@@ -2,6 +2,7 @@ package org.lenskit.slim;
 
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.*;
+import org.lenskit.util.math.Scalars;
 import org.lenskit.util.math.Vectors;
 
 import java.util.Iterator;
@@ -59,15 +60,16 @@ public final class LinearRegressionHelper {
      * @return
      */
     public static Long2DoubleMap addVectors(Long2DoubleMap a, Long2DoubleMap b) {
+        //Long2DoubleMap sumOfTwoVectors = Vectors.combine(a, b, 1.0, 0.0);
         Long2DoubleMap sumOfTwoVectors = new Long2DoubleOpenHashMap(a);
         for (Map.Entry<Long, Double> e : b.entrySet()) {
             long key = e.getKey();
             double value = e.getValue();
-            //double sum = sumOfTwoVectors.getOrDefault(key, 0.0) + value;
             double sum = sumOfTwoVectors.get(key) + value;
             sumOfTwoVectors.put(key, sum);
         }
         return sumOfTwoVectors;
+
     }
 
     /**
@@ -114,7 +116,7 @@ public final class LinearRegressionHelper {
         for (Map.Entry<Long, Double> e : a.entrySet()) {
             long key = e.getKey();
             double v = e.getValue();
-            if (v != value) {
+            if (!Scalars.isZero(abs(v - value))) {
                 result.put(key, v);
             }
         }

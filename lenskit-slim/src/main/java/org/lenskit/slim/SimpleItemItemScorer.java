@@ -29,11 +29,14 @@ public class SimpleItemItemScorer extends AbstractItemScorer {
     private final DataAccessObject dao;
     private final int neighborhoodSize;
     final static Logger logger = LoggerFactory.getLogger(org.lenskit.slim.SimpleItemItemScorer.class);
+    private final SLIMUpdateParameters parameters;
+
     @Inject
-    public SimpleItemItemScorer(SimpleItemItemModel m, DataAccessObject dao) {
+    public SimpleItemItemScorer(SimpleItemItemModel m, DataAccessObject dao, SLIMUpdateParameters parameters) {
         model = m;
         this.dao = dao;
         neighborhoodSize = 20;
+        this.parameters = parameters;
     }
 
     /**
@@ -59,10 +62,10 @@ public class SimpleItemItemScorer extends AbstractItemScorer {
             Map<Long,Long2DoubleMap> neighbors = getItemItemKNN(item, neighborSize);
             Map<Long,Long2DoubleMap> neighborsT = transposeMap(neighbors);
             //NaiveCoordDestLinearRegression modelSLIM = new NaiveCoordDestLinearRegression(3.0, 0.5, false, 10);
-            CovarianceUpdateCoordDestLinearRegression modelSLIM = new CovarianceUpdateCoordDestLinearRegression(3.0, 0.5, false, 10);
+            LinearRegressionAbstract modelSLIM = new CovarianceUpdateCoordDestLinearRegression(parameters);
             Long2DoubleMap labels = getItemRatingVector(item);
-            Long2DoubleMap weights = modelSLIM.fit(labels, neighborsT, neighbors, innerProduct, item);
-            logger.info("current learned weight vector is {}\n and its {}th element is {} ", weights, item, weights.getOrDefault(item, 0.0));
+            Long2DoubleMap weights = modelSLIM.fit(labels, neighborsT);
+            //logger.info("current learned weight vector is {}\n and its {}th element is {} ", weights, item, weights.get(item));
             double score = 0.0;
             if (neighborsT.get(user) != null) score = modelSLIM.computePrediction(neighborsT.get(user), weights);
             results.add(Results.create(item, score));

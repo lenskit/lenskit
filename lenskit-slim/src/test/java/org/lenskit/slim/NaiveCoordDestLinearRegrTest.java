@@ -8,17 +8,26 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import org.grouplens.lenskit.iterative.IterationCount;
+import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
+import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class NaiveCoordDestLinearRegrTest {
@@ -26,7 +35,7 @@ public class NaiveCoordDestLinearRegrTest {
     private Map<Long, Long2DoubleMap> data;
     private Long2DoubleMap weights;
     final static Logger logger = LoggerFactory.getLogger(org.lenskit.slim.NaiveCoordDestLinearRegrTest.class);
-
+    private DataAccessObject dao;
     // create weights
     static Long2DoubleMap createWeights(int itemIdBound, int maxWeight) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
@@ -44,8 +53,8 @@ public class NaiveCoordDestLinearRegrTest {
         Map<Long, Long2DoubleMap> simulatedData = Maps.newHashMap();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        int userNum = 2000;
-        int maxRatingNum = 50; // each user's max rating number (less than itemIdBound)
+        int userNum = 10;
+        int maxRatingNum = 10; // each user's max rating number (less than itemIdBound)
         int userIdBound = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
 
@@ -71,9 +80,38 @@ public class NaiveCoordDestLinearRegrTest {
         return simulatedData;
     }
 
+    public void setup(Map<Long,Long2DoubleMap> data) throws RecommenderBuildException {
+        List<Rating> rs = new ArrayList<>();
+        Iterator<Map.Entry<Long,Long2DoubleMap>> iter = data.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<Long,Long2DoubleMap> entry = iter.next();
+            long itemId = entry.getKey();
+            Long2DoubleMap ratings = entry.getValue();
+            for (long userId : ratings.keySet()) {
+                rs.add(Rating.create(userId, itemId, ratings.get(userId)));
+            }
+        }
+
+        StaticDataSource source = StaticDataSource.fromList(rs);
+        dao = source.get();
+    }
+
+    private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+
+        config.bind(ItemScorer.class)
+                .to(SimpleItemItemScorer.class);
+        config.bind(StoppingCondition.class)
+                .to(IterationCountStoppingCondition.class);
+        config.set(IterationCount.class)
+                .to(10);
+
+        return LenskitRecommenderEngine.build(config, dao);
+    }
+
     @Before
     public void buildModel() {
-        int itemNum = 1000;
+        int itemNum = 10;
         int maxWeight = 10;
         this.weights = createWeights(itemNum, maxWeight);
         Map<Long, Long2DoubleMap> temp = Maps.newHashMap(createModel(itemNum, weights));
@@ -83,9 +121,12 @@ public class NaiveCoordDestLinearRegrTest {
         temp.remove(maxUserId);
         this.data = Maps.newHashMap(temp);
         Map<Long, Long2DoubleMap> dataT = LinearRegressionHelper.transposeMap(data);
+        this.data = dataT;
+        setup(data);
         LongOpenHashBigSet itemKeySet = new LongOpenHashBigSet(dataT.keySet());
         logger.info("item matrix size {} \n max item id is {} \n min item id is {} ",itemKeySet.size64(), Collections.max(itemKeySet), Collections.min(itemKeySet));
     }
+
 
     @Test
     public void testLabels() {
@@ -110,7 +151,8 @@ public class NaiveCoordDestLinearRegrTest {
 
         // Naive update
         final long startTimeNaive = System.currentTimeMillis();
-        NaiveCoordDestLinearRegression model = new NaiveCoordDestLinearRegression(2.0, 0.2, false, 100);
+        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(10));
+        NaiveCoordDestLinearRegression model = new NaiveCoordDestLinearRegression(parameters);
         Long2DoubleMap predictedW = model.fit(y, data);
         //Long2DoubleMap predictions = model.predict(data, predictedW);
         Long2DoubleMap residuals = model.computeResiduals(y, data, predictedW);
@@ -121,7 +163,7 @@ public class NaiveCoordDestLinearRegrTest {
 
         // Covariance update
         final long startTimeCov = System.currentTimeMillis();
-        CovarianceUpdateCoordDestLinearRegression model_Cov = new CovarianceUpdateCoordDestLinearRegression(2.0, 0.2, false, 100);
+        CovarianceUpdateCoordDestLinearRegression model_Cov = new CovarianceUpdateCoordDestLinearRegression(parameters);
         Long2DoubleMap predictedW_Cov = model_Cov.fit(y, data);
         //Long2DoubleMap predictions = model.predict(data, predictedW);
         Long2DoubleMap residuals_Cov = model_Cov.computeResiduals(y, data, predictedW_Cov);
@@ -144,9 +186,22 @@ public class NaiveCoordDestLinearRegrTest {
         Long2DoubleMap resOrig = model_Cov.computeResiduals(y, data, weights);
         double lossFunOrig = model_Cov.computeLossFunction(resOrig, weights);
         logger.info("Original loss function is {}", lossFunOrig);
+        Long2DoubleMap resAfter = model_Cov.computeResiduals(y, data, predictedW_Cov);
+        double lossFunAfter = model_Cov.computeLossFunction(resAfter, predictedW_Cov);
+        logger.info("after loss function is {}", lossFunAfter);
         Long2DoubleMap nonzeroWeigt = LinearRegressionHelper.filterValues(predictedW_Cov, 0.0);
         logger.info("non-zero weight size {}", nonzeroWeigt.size());
 
+    }
+
+    @Test
+    public void testRecommender() {
+        LenskitRecommenderEngine engine = makeEngine();
+        try (Recommender rec = engine.createRecommender(dao)) {
+
+            List<Long> recommend = rec.getItemRecommender().recommend(500);
+            logger.info("{}", recommend);
+        }
     }
 
 }

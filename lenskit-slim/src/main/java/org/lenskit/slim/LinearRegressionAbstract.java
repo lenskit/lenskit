@@ -2,6 +2,7 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,26 +16,14 @@ import static org.lenskit.slim.LinearRegressionHelper.addVectors;
  * Created by tmc on 2/10/17.
  * minimize 1/2*||a_j - A*w_j||^2 + beta/2*||wj||^2 + lambda*||w_j||
  */
-
-public abstract class LinearRegressionAbstract {
+@DefaultImplementation(CovarianceUpdateCoordDestLinearRegression.class)
+public abstract class LinearRegressionAbstract implements UpdateDescentRule{
     protected static final Logger logger = LoggerFactory.getLogger(LinearRegressionAbstract.class);
-    protected final double beta;
-    protected final double lambda;
-    protected final boolean intercept;
-    protected final int iterNum;
+    protected final SLIMUpdateParameters updateParameters;
 
-    /**
-     * constructor of linear regression
-     * @param beta coefficient of L2 term
-     * @param lambda coefficient of L1 term
-     * @param intercept whether or not including intercept
-     * @param iterNum iteration number
-     */
-    public LinearRegressionAbstract(double beta, double lambda, boolean intercept, int iterNum) {
-        this.beta = beta;
-        this.lambda = lambda;
-        this.intercept = intercept;
-        this.iterNum = iterNum;
+
+    public LinearRegressionAbstract(SLIMUpdateParameters updateParameters) {
+        this.updateParameters = updateParameters;
     }
 
     /**
@@ -77,34 +66,37 @@ public abstract class LinearRegressionAbstract {
      * @return
      */
     public Long2DoubleMap updateResiduals(Long2DoubleMap r, Long2DoubleMap column, double weightToUpdate, double weightUpdated) {
-        Long2DoubleMap residualsIncrement = Vectors.multiplyScalar(column, weightToUpdate - weightUpdated);
-        return addVectors(r, residualsIncrement);
+        Long2DoubleMap residualsIncrement = Vectors.multiplyScalar(column, (weightToUpdate - weightUpdated));
+        Long2DoubleMap residulsUpdated = addVectors(r, residualsIncrement);
+        return residulsUpdated;
     }
 
     /**
-     * compute predictions given test data matrix and weights
-     * @param testData data matrix
+     * compute predictions given test data matrix and learned weights
+     * @param testData column-wise data matrix
      * @param weights weight
      * @return prediction vector
      */
     public Long2DoubleMap predict(Map<Long, Long2DoubleMap> testData, Long2DoubleMap weights) {
         Long2DoubleMap predictions = new Long2DoubleOpenHashMap();
-        for (Map.Entry<Long, Long2DoubleMap> row : testData.entrySet()) {
-            long key = row.getKey();
-            Long2DoubleMap value = row.getValue();
-            double predictValue = computePrediction(value, weights);
-            predictions.put(key, predictValue);
+        for (Map.Entry<Long, Long2DoubleMap> column : testData.entrySet()) {
+            long key = column.getKey();
+            Long2DoubleMap value = column.getValue();
+            Long2DoubleMap vector = Vectors.multiplyScalar(value, weights.get(key));
+            predictions = addVectors(predictions, vector);
         }
         return predictions;
     }
 
     /**
-     * Compute target function of elastic regression
+     * Compute loss function of elastic regression
      * @param residuals
      * @param weights
      * @return
      */
     public double computeLossFunction(Long2DoubleMap residuals, Long2DoubleMap weights) {
+        double beta = updateParameters.getBeta();
+        double lambda = updateParameters.getLambda();
         return 1/2.0 * Vectors.sumOfSquares(residuals) + beta/2* Vectors.sumOfSquares(weights) + lambda* Vectors.sumAbs(weights);
     }
 

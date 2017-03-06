@@ -26,10 +26,13 @@ import org.lenskit.bias.BiasModel
 import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.mf.funksvd.FeatureCount
 import org.lenskit.mf.funksvd.FunkSVDItemScorer
+import org.lenskit.slim.CovarianceUpdateDescentRuleCoordDestLinearRegression
 
 dumpGraph {
     output "${config.analysisDir}/slim.dot"
     algorithm {
         bind ItemScorer to SimpleItemItemScorer
+        set IterationCount to 10
+        bind LinearRegressionAbstract to CovarianceUpdateDescentRuleCoordDestLinearRegression
     }
 }
