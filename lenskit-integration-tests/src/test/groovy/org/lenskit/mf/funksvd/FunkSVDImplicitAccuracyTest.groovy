@@ -75,7 +75,7 @@ class FunkSVDImplicitAccuracyTest extends CrossfoldTestSuite {
     protected void checkResults(Table table) {
         if (runList == null) {
             assertThat(table.column("MAP").average(),
-                    closeTo(0.0565d, 0.002d))
+                    closeTo(0.0565d, 0.0025d))
             assertThat(table.column("MRR").average(),
                     closeTo(0.08d, 0.012d))
             assertThat(table.column("TopN.nDCG").average(),
