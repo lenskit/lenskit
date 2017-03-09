@@ -72,7 +72,7 @@ class ItemItemImplicitAccuracyTest extends CrossfoldTestSuite {
     protected void checkResults(Table table) {
         if (runList == null) {
             assertThat(table.column("MAP").average(),
-                    closeTo(0.215d, 0.005d))
+                    closeTo(0.215d, 0.0055d))
             assertThat(table.column("MRR").average(),
                     closeTo(0.59d, 0.023d))
             assertThat(table.column("TopN.nDCG").average(),
