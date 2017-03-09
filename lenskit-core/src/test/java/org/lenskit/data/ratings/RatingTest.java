@@ -21,7 +21,6 @@
 package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
 import java.util.ArrayList;
