@@ -20,14 +20,9 @@
  */
 package org.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.apache.commons.lang3.tuple.Pair;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import java.util.Map;
@@ -64,7 +59,7 @@ public class SlopeOneModelDataAccumulator {
      * @param id2      The id of the second item.
      * @param itemVec2 The rating vector of the second item.
      */
-    public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
+    public void putItemPair(long id1, Long2DoubleSortedMap itemVec1, long id2, Long2DoubleSortedMap itemVec2) {
         if (workMatrix == null) {
             throw new IllegalStateException("Model is already built");
         }
@@ -73,9 +68,13 @@ public class SlopeOneModelDataAccumulator {
         if (id1 < id2) {
             int coratings = 0;
             double deviation = 0.0;
-            for (Pair<VectorEntry,VectorEntry> pair: SparseVector.fastIntersect(itemVec1, itemVec2)) {
-                coratings++;
-                deviation += pair.getLeft().getValue() - pair.getRight().getValue();
+            LongIterator iter = itemVec1.keySet().iterator();
+            while (iter.hasNext()) {
+                long u = iter.nextLong();
+                if (itemVec2.containsKey(u)) {
+                    coratings++;
+                    deviation += itemVec1.get(u) - itemVec2.get(u);
+                }
             }
             deviation = (coratings == 0) ? Double.NaN : deviation;
 

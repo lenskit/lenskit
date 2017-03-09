@@ -24,11 +24,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
 import org.lenskit.transform.normalize.ItemVectorNormalizer;
@@ -100,7 +100,7 @@ public class NormalizingItemItemModelProvider implements Provider<ItemItemModel>
         for (int i = 0; i < nitems; i++) {
             assert matrix.size() == i;
             final long rowItem = itemDomain.getKey(i);
-            final SparseVector vec1 = buildContext.itemVector(rowItem);
+            final Long2DoubleSortedMap vec1 = buildContext.itemVector(rowItem);
 
             // Take advantage of sparsity if we can
             LongIterator neighbors = iterationStrategy.neighborIterator(buildContext, rowItem, false);
@@ -109,7 +109,7 @@ public class NormalizingItemItemModelProvider implements Provider<ItemItemModel>
             // Compute similarities and populate the vector
             while (neighbors.hasNext()) {
                 final long colItem = neighbors.nextLong();
-                final SparseVector vec2 = buildContext.itemVector(colItem);
+                final Long2DoubleSortedMap vec2 = buildContext.itemVector(colItem);
                 assert currentRow.containsKey(colItem);
                 currentRow.set(colItem, similarity.similarity(rowItem, vec1, colItem, vec2));
             }
