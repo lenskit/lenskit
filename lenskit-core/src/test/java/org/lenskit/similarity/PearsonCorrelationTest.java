@@ -20,12 +20,15 @@
  */
 package org.lenskit.similarity;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
@@ -45,17 +48,16 @@ public class PearsonCorrelationTest {
 
     @Test
     public void testEmptyVector() {
-        SparseVector v = ImmutableSparseVector.create(Long2DoubleMaps.EMPTY_MAP);
-        assertThat(sim.similarity(v, v), closeTo(0, EPSILON));
+        assertThat(sim.similarity(Long2DoubleMaps.EMPTY_MAP, Long2DoubleMaps.EMPTY_MAP), closeTo(0, EPSILON));
     }
 
     @Test
     public void testSelfSimilarity() {
         long keys[] = {1, 5, 7};
         double values[] = {1.5, 2.5, 2};
-        SparseVector v = MutableSparseVector.wrap(keys, values).freeze();
+        Long2DoubleMap v = Long2DoubleSortedArrayMap.wrapUnsorted(keys, values);
         assertThat(sim.similarity(v, v), closeTo(1, EPSILON));
-        assertThat(sim.similarity(v, v.mutableCopy().freeze()), closeTo(1, EPSILON));
+        assertThat(sim.similarity(v, new Long2DoubleOpenHashMap(v)), closeTo(1, EPSILON));
     }
 
     @Test
@@ -63,8 +65,8 @@ public class PearsonCorrelationTest {
         long keys[] = {1, 5, 7};
         double values[] = {1.5, 2.5, 2};
         long keys2[] = {2, 4, 8};
-        SparseVector v1 = MutableSparseVector.wrap(keys, values).freeze();
-        SparseVector v2 = MutableSparseVector.wrap(keys2, values).freeze();
+        Long2DoubleSortedArrayMap v1 = Long2DoubleSortedArrayMap.wrapUnsorted(keys, values);
+        Long2DoubleSortedArrayMap v2 = Long2DoubleSortedArrayMap.wrapUnsorted(keys2, values);
         assertThat(sim.similarity(v1, v2), closeTo(0, EPSILON));
     }
 
@@ -74,8 +76,8 @@ public class PearsonCorrelationTest {
         double val1[] = {1.5, 2.5, 2};
         long k2[] = {1, 5, 6};
         double val2[] = {2, 2.5, 1.7};
-        SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
-        SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
+        Long2DoubleMap v1 = Long2DoubleSortedArrayMap.wrapUnsorted(k1, val1);
+        Long2DoubleMap v2 = Long2DoubleSortedArrayMap.wrapUnsorted(k2, val2);
         assertThat(sim.similarity(v1, v2), closeTo(1, EPSILON));
     }
 
@@ -85,8 +87,8 @@ public class PearsonCorrelationTest {
         double val1[] = {1.5, 2.5, 2, 3.5};
         long k2[] = {1, 5, 7, 9};
         double val2[] = {2, 2.5, 1.7, 0.8};
-        SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
-        SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
+        Long2DoubleMap v1 = Long2DoubleSortedArrayMap.wrapUnsorted(k1, val1);
+        Long2DoubleMap v2 = Long2DoubleSortedArrayMap.wrapUnsorted(k2, val2);
         assertThat(sim.similarity(v1, v2), closeTo(0.6185896, EPSILON));
     }
 }
