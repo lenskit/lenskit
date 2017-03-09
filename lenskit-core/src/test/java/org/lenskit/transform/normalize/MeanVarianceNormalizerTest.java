@@ -21,8 +21,7 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -30,13 +29,13 @@ import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -45,8 +44,8 @@ public class MeanVarianceNormalizerTest {
     private final static double MIN_DOUBLE_PRECISION = 0.00001;
 
     private DataAccessObject dao;
-    private ImmutableSparseVector userRatings;
-    private ImmutableSparseVector uniformUserRatings;
+    private Long2DoubleMap userRatings;
+    private Long2DoubleMap uniformUserRatings;
 
     private void addRating(List<Rating> ratings, long uid, long iid, double value) {
         ratings.add(Rating.create(uid, iid, value));
@@ -57,9 +56,9 @@ public class MeanVarianceNormalizerTest {
 
         long[] keys = {0L, 1L, 2L};
         double[] values = {0., 2., 4.};
-        userRatings = MutableSparseVector.wrap(keys, values).freeze();
+        userRatings = Long2DoubleSortedArrayMap.wrapUnsorted(keys, values);
         double[] uniformValues = {2., 2., 2.};
-        uniformUserRatings = MutableSparseVector.wrap(keys, uniformValues).freeze();
+        uniformUserRatings = Long2DoubleSortedArrayMap.wrapUnsorted(keys, uniformValues);
         List<Rating> ratings = new ArrayList<>();
         addRating(ratings, 0, 0, 0);
         addRating(ratings, 0, 1, 1);
@@ -82,8 +81,8 @@ public class MeanVarianceNormalizerTest {
     public void testMakeTransformation() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
-        VectorTransformation trans = urvn.makeTransformation(userRatings.asMap());
-        Long2DoubleMap nUR = trans.apply(userRatings.asMap());
+        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        Long2DoubleMap nUR = trans.apply(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(8.0 / 3.0);
 
@@ -105,8 +104,8 @@ public class MeanVarianceNormalizerTest {
     public void testUniformRatings() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
-        VectorTransformation trans = urvn.makeTransformation(uniformUserRatings.asMap());
-        Long2DoubleMap nUR = trans.apply(userRatings.asMap());
+        VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
+        Long2DoubleMap nUR = trans.apply(userRatings);
         assertThat(nUR, notNullValue());
 
         //Test apply - shoudl subtract mean
@@ -126,10 +125,10 @@ public class MeanVarianceNormalizerTest {
     public void testSmoothingDetailed() {
         MeanVarianceNormalizer urvn = null; //new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
-        VectorTransformation trans = urvn.makeTransformation(userRatings.asMap());
+        VectorTransformation trans = urvn.makeTransformation(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(7.0 / 3.0);
-        Long2DoubleMap nUR = trans.apply(userRatings.asMap());
+        Long2DoubleMap nUR = trans.apply(userRatings);
         assertThat(nUR, notNullValue());
 
         //Test apply
@@ -149,7 +148,7 @@ public class MeanVarianceNormalizerTest {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
         VectorTransformation trans = urvn.makeTransformation(userRatings);
-        MutableSparseVector nUR = userRatings.mutableCopy();
+        Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(8.0 / 3.0);
         trans.apply(nUR);
@@ -169,7 +168,7 @@ public class MeanVarianceNormalizerTest {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
         VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
-        MutableSparseVector nUR = userRatings.mutableCopy();
+        Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
         trans.apply(nUR);
         //Test apply - shoudl subtract mean
         assertThat(nUR.get(0L), closeTo(-2.0, 1.0e-6));
@@ -188,7 +187,7 @@ public class MeanVarianceNormalizerTest {
         MeanVarianceNormalizer urvn = null; // new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
         VectorTransformation trans = urvn.makeTransformation(userRatings);
-        MutableSparseVector nUR = userRatings.mutableCopy();
+        Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(7.0 / 3.0);
         trans.apply(nUR);
