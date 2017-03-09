@@ -21,7 +21,6 @@
 package org.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.similarity.VectorSimilarity;
 
