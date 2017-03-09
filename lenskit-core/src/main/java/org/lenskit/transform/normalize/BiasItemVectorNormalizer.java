@@ -20,16 +20,13 @@
  */
 package org.lenskit.transform.normalize;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -45,11 +42,6 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
     @Inject
     public BiasItemVectorNormalizer(BiasModel bias) {
         model = bias;
-    }
-
-    @Override
-    public VectorTransformation makeTransformation(long itemId, SparseVector vector) {
-        return new Transform(itemId);
     }
 
     @Override

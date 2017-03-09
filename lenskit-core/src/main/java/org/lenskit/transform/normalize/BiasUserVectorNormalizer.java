@@ -22,13 +22,11 @@ package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -44,11 +42,6 @@ public class BiasUserVectorNormalizer extends AbstractUserVectorNormalizer {
     @Inject
     public BiasUserVectorNormalizer(BiasModel bias) {
         model = bias;
-    }
-
-    @Override
-    public VectorTransformation makeTransformation(long userId, SparseVector vector) {
-        return new Transform(userId);
     }
 
     @Override
