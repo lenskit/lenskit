@@ -26,7 +26,7 @@ allprojects {
 subprojects {
     tasks.withType(Test).all { t ->
         t.jacoco {
-            enabled = lintMode != 'disabled'
+            enabled = travis.isActive() || lintMode != 'disabled'
         }
     }
     tasks.withType(JacocoReport).all { rpt ->
@@ -39,7 +39,7 @@ subprojects {
 task jacocoMergedReport(type: JacocoReport) {
     ext.projects = []
     onlyIf {
-        lintMode != 'disabled'
+        travis.isActive() || lintMode != 'disabled'
     }
     for (prj in subprojects) {
         if (prj.name == 'lenskit-integration-tests') continue;
