@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class MeanVarianceNormalizerTest {
     public void testMakeTransformation() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
-        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(userRatings);
         Long2DoubleMap nUR = trans.apply(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(8.0 / 3.0);
@@ -104,7 +105,7 @@ public class MeanVarianceNormalizerTest {
     public void testUniformRatings() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
-        VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
+        InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(uniformUserRatings);
         Long2DoubleMap nUR = trans.apply(userRatings);
         assertThat(nUR, notNullValue());
 
@@ -125,7 +126,7 @@ public class MeanVarianceNormalizerTest {
     public void testSmoothingDetailed() {
         MeanVarianceNormalizer urvn = null; //new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
-        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(7.0 / 3.0);
         Long2DoubleMap nUR = trans.apply(userRatings);
@@ -147,7 +148,7 @@ public class MeanVarianceNormalizerTest {
     public void testMakeTransformationOldVector() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
-        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(userRatings);
         Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(8.0 / 3.0);
@@ -167,7 +168,7 @@ public class MeanVarianceNormalizerTest {
     public void testUniformRatingsOldVector() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
-        VectorTransformation trans = urvn.makeTransformation(uniformUserRatings);
+        InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(uniformUserRatings);
         Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
         trans.apply(nUR);
         //Test apply - shoudl subtract mean
@@ -186,7 +187,7 @@ public class MeanVarianceNormalizerTest {
     public void testSmoothingDetailedOldVector() {
         MeanVarianceNormalizer urvn = null; // new MeanVarianceNormalizer.Builder(dao, 3.0).get();
 
-        VectorTransformation trans = urvn.makeTransformation(userRatings);
+        InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(userRatings);
         Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(7.0 / 3.0);

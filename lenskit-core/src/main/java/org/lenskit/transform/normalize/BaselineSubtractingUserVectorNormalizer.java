@@ -20,15 +20,10 @@
  */
 package org.lenskit.transform.normalize;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
-import org.lenskit.api.Result;
 import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.util.InvertibleFunction;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
@@ -64,26 +59,6 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
         public Transformation(long u) {
             user = u;
-        }
-
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            Map<Long,Double> base = baselineScorer.score(user, vector.keySet());
-            Long2DoubleFunction bf = LongUtils.asLong2DoubleFunction(base);
-            for (VectorEntry e: vector.view(VectorEntry.State.SET)) {
-                vector.set(e, e.getValue() - bf.get(e.getKey()));
-            }
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            Map<Long,Double> base = baselineScorer.score(user, vector.keySet());
-            Long2DoubleFunction bf = LongUtils.asLong2DoubleFunction(base);
-            for (VectorEntry e: vector.view(VectorEntry.State.SET)) {
-                vector.set(e, e.getValue() + bf.get(e.getKey()));
-            }
-            return vector;
         }
 
         @Override
@@ -125,17 +100,6 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
             return Long2DoubleSortedArrayMap.wrap(idx, values);
         }
 
-        @Override
-        public double apply(long key, double value) {
-            Result res = baselineScorer.score(user, key);
-            return res != null ? value - res.getScore() : value;
-        }
-
-        @Override
-        public double unapply(long key, double value) {
-            Result res = baselineScorer.score(user, key);
-            return res != null ? value + res.getScore() : value;
-        }
     }
 
     @Override

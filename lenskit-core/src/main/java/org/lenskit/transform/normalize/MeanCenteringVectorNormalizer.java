@@ -21,7 +21,6 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
@@ -49,18 +48,6 @@ public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer impl
             this.mean = mean;
         }
 
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            vector.add(-mean);
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            vector.add(mean);
-            return vector;
-        }
-
         @Nullable
         @Override
         public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
@@ -81,14 +68,5 @@ public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer impl
         }
 
 
-        @Override
-        public double apply(long key, double value) {
-            return value - mean;
-        }
-
-        @Override
-        public double unapply(long key, double value) {
-            return value + mean;
-        }
     }
 }

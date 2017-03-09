@@ -28,10 +28,9 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.function.Add;
 import org.apache.commons.math3.analysis.function.Multiply;
 import org.apache.commons.math3.analysis.function.Subtract;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.inject.Shareable;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Scalars;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -97,12 +96,12 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         return globalVariance;
     }
 
-    public VectorTransformation makeTransformation(SparseVector reference) {
+    public InvertibleFunction<Long2DoubleMap,Long2DoubleMap> makeTransformation(SparseVector reference) {
         return makeTransformation(reference.asMap());
     }
 
     @Override
-    public VectorTransformation makeTransformation(Long2DoubleMap reference) {
+    public InvertibleFunction<Long2DoubleMap,Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
         if (reference.isEmpty()) {
             return new IdentityVectorNormalizer().makeTransformation(reference);
         } else {
@@ -156,27 +155,6 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         }
 
         @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            double recipSD = Scalars.isZero(stdev) ? 1 : (1 / stdev);
-            for (VectorEntry rating : vector) {
-                vector.set(rating, (rating.getValue() - mean) * recipSD);
-            }
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            for (VectorEntry rating : vector) {
-                double val = rating.getValue();
-                if (!Scalars.isZero(stdev)) {
-                    val *= stdev;
-                }
-                vector.set(rating, val + mean);
-            }
-            return vector;
-        }
-
-        @Override
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             if (input == null) return null;
 
@@ -191,14 +169,5 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
             return Vectors.transform(input, function);
         }
 
-        @Override
-        public double apply(long key, double value) {
-            return (value - mean) / stdev;
-        }
-
-        @Override
-        public double unapply(long key, double value) {
-            return value * stdev + mean;
-        }
     }
 }

@@ -21,8 +21,6 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
@@ -56,34 +54,6 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
         Transform(long iid) {
             item = iid;
             itemBias = model.getIntercept() + model.getItemBias(item);
-        }
-
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            Long2DoubleMap users = model.getUserBiases(vector.keySet());
-            for (VectorEntry e: vector) {
-                vector.set(e, e.getValue() - itemBias - users.get(e.getKey()));
-            }
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            Long2DoubleMap users = model.getUserBiases(vector.keySet());
-            for (VectorEntry e: vector) {
-                vector.set(e, e.getValue() + itemBias + users.get(e.getKey()));
-            }
-            return vector;
-        }
-
-        @Override
-        public double apply(long key, double value) {
-            return value - itemBias - model.getUserBias(key);
-        }
-
-        @Override
-        public double unapply(long key, double value) {
-            return value + itemBias + model.getUserBias(key);
         }
 
         @Override
