@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Scalars;
 
@@ -94,11 +93,6 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
 
         // Make a sparse vector out of it
         return rank;
-    }
-
-    @Override
-    public double similarity(SparseVector vec1, SparseVector vec2) {
-        return similarity(vec1.asMap(), vec2.asMap());
     }
 
     @Override

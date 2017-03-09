@@ -21,7 +21,6 @@
 package org.lenskit.similarity;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 
@@ -69,14 +68,6 @@ public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, S
      */
     public VectorSimilarity getDelegate() {
         return delegate;
-    }
-
-    @Override
-    public double similarity(SparseVector vec1, SparseVector vec2) {
-        double s = delegate.similarity(vec1, vec2);
-        int n = vec1.countCommonKeys(vec2);
-        s *= n;
-        return s / max(n, threshold);
     }
 
     @Override

@@ -24,9 +24,6 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 
@@ -63,59 +60,6 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
     public PearsonCorrelation(@SimilarityDamping double s) {
         Preconditions.checkArgument(s >= 0, "negative damping not allowed");
         shrinkage = s;
-    }
-
-    @Override
-    public double similarity(SparseVector vec1, SparseVector vec2) {
-        // First check for empty vectors - then we can assume at least one element
-        if (vec1.isEmpty() || vec2.isEmpty()) {
-            return 0;
-        }
-
-        /*
-         * Basic similarity: walk in parallel across the two vectors, computing
-         * the dot product and simultaneously computing the variance within each
-         * vector of the items also contained in the other vector.  Pearson
-         * correlation only considers items shared by both vectors; other items
-         * are discarded for the purpose of similarity computation.
-         */
-
-        // first compute means of common items
-        double sum1 = 0;
-        double sum2 = 0;
-        int n = 0;
-        for (Pair<VectorEntry,VectorEntry> pair: SparseVector.fastIntersect(vec1, vec2)) {
-            sum1 += pair.getLeft().getValue();
-            sum2 += pair.getRight().getValue();
-            n += 1;
-        }
-
-        if (n == 0) {
-            return 0;
-        }
-
-        final double mu1 = sum1 / n;
-        final double mu2 = sum2 / n;
-
-        double var1 = 0;
-        double var2 = 0;
-        double dot = 0;
-        int nCoratings = 0;
-
-        for (Pair<VectorEntry,VectorEntry> pair: SparseVector.fastIntersect(vec1, vec2)) {
-            final double v1 = pair.getLeft().getValue() - mu1;
-            final double v2 = pair.getRight().getValue() - mu2;
-            var1 += v1 * v1;
-            var2 += v2 * v2;
-            dot += v1 * v2;
-            nCoratings += 1;
-        }
-
-        if (nCoratings == 0) {
-            return 0;
-        } else {
-            return dot / (sqrt(var1 * var2) + shrinkage);
-        }
     }
 
     @Override
