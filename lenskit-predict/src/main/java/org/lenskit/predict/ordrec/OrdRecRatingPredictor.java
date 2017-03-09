@@ -111,7 +111,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      *
      * @param uid The user ID.
      * @param dao The DAO.
-     * @return The VectorEntry list of rating.
+     * @return The user rating vector.
      */
     private Long2DoubleMap makeUserVector(long uid, DataAccessObject dao) {
         List<Rating> history = dao.query(Rating.class)

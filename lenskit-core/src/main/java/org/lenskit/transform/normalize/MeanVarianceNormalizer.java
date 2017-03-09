@@ -28,7 +28,6 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.function.Add;
 import org.apache.commons.math3.analysis.function.Multiply;
 import org.apache.commons.math3.analysis.function.Subtract;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Scalars;
@@ -94,10 +93,6 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
      */
     public double getGlobalVariance() {
         return globalVariance;
-    }
-
-    public InvertibleFunction<Long2DoubleMap,Long2DoubleMap> makeTransformation(SparseVector reference) {
-        return makeTransformation(reference.asMap());
     }
 
     @Override

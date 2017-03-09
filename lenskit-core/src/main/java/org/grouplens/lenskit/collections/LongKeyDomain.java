@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * Implement a domain of long keys, sorted by key.  Keys can be mapped back to indexes and vice
  * versa; it has a fixed domain, and a bitmask of active entries.  This is a helper class for
- * implementing {@link LongSortedArraySet}, {@link org.grouplens.lenskit.vectors.SparseVector}, etc.
+ * implementing {@link LongSortedArraySet}, etc.
  * This class should not be directly used outside of the LensKit data structures.
  * <p>
  * A key set has a <em>domain</em>, which is the set of all possible keys that it can contain.
