@@ -27,8 +27,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
@@ -139,13 +137,6 @@ public final class PreferenceDomain implements Serializable {
             return maximum;
         } else {
             return v;
-        }
-    }
-
-    public void clampVector(MutableSparseVector vec) {
-        for (VectorEntry ve : vec) {
-            final double v = ve.getValue();
-            vec.set(ve, clampValue(v));
         }
     }
 
