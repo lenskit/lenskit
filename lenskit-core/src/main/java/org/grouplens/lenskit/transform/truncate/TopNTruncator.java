@@ -20,11 +20,11 @@
  */
 package org.grouplens.lenskit.transform.truncate;
 
-import org.lenskit.inject.Shareable;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.transform.threshold.Threshold;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.math.Vectors;
 
 import java.io.Serializable;
 
@@ -36,13 +36,13 @@ public class TopNTruncator implements VectorTruncator, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final ThresholdTruncator threshold;
+    private final Threshold threshold;
     private final int n;
 
     public TopNTruncator(int n, Threshold threshold) {
         this.n = n;
         if (threshold != null) {
-            this.threshold = new ThresholdTruncator(threshold);
+            this.threshold = threshold;
         } else {
             this.threshold = null;
         }
@@ -53,18 +53,14 @@ public class TopNTruncator implements VectorTruncator, Serializable {
     }
 
     @Override
-    public void truncate(MutableSparseVector v) {
-        if (threshold != null) {
-            threshold.truncate(v);
-        }
-
+    public Long2DoubleMap truncate(Long2DoubleMap v) {
         TopNLong2DoubleAccumulator accumulator = new TopNLong2DoubleAccumulator(n);
-        for (VectorEntry e : v.view(VectorEntry.State.SET)) {
-            accumulator.put(e.getKey(), e.getValue());
+        for (Long2DoubleMap.Entry e : Vectors.fastEntries(v)) {
+            double x = e.getDoubleValue();
+            if (threshold == null || threshold.retain(x)) {
+                accumulator.put(e.getLongKey(), x);
+            }
         }
-        MutableSparseVector truncated = accumulator.finishVector();
-
-        // retain only the truncated keys
-        v.keySet().retainAll(truncated.keySet());
+        return accumulator.finishMap();
     }
 }
