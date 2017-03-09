@@ -22,8 +22,6 @@ package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 import org.lenskit.util.InvertibleFunction;
 
@@ -53,38 +51,5 @@ public class MeanCenteringVectorNormalizerTest {
         toRev.put(4L, 2.0);
         out = tx.unapply(toRev);
         assertThat(out.get(4L), closeTo(5, 1.0e-5));
-    }
-
-    @Test
-    public void testEmptyReferenceOld() {
-        MutableSparseVector msv = MutableSparseVector.create(4L);
-        msv.set(4, 3.5);
-        norm.normalize(SparseVector.empty(), msv);
-        assertThat(msv.get(4), closeTo(3.5, 1.0e-5));
-    }
-
-    @Test
-    public void testSameReferenceOld() {
-        MutableSparseVector msv = MutableSparseVector.create(4L);
-        msv.set(4, 3.5);
-        norm.normalize(msv, msv);
-        assertThat(msv.get(4), closeTo(0, 1.0e-5));
-    }
-
-    @Test
-    public void testTransformOld() {
-        MutableSparseVector reference = MutableSparseVector.create(4L, 5L);
-        reference.set(4, 3.5);
-        reference.set(5, 2.5);
-        VectorTransformation tx = norm.makeTransformation(reference);
-
-        MutableSparseVector msv = reference.mutableCopy();
-        tx.apply(msv);
-        assertThat(msv.get(4), closeTo(0.5, 1.0e-5));
-        assertThat(msv.get(5), closeTo(-0.5, 1.0e-5));
-
-        msv.set(4, 2);
-        tx.unapply(msv);
-        assertThat(msv.get(4), closeTo(5, 1.0e-5));
     }
 }

@@ -97,7 +97,6 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         return globalVariance;
     }
 
-    @Override
     public VectorTransformation makeTransformation(SparseVector reference) {
         return makeTransformation(reference.asMap());
     }

@@ -22,7 +22,6 @@ package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
@@ -60,16 +59,6 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
      */
     public UnitVectorNormalizer(double t) {
         tolerance = t;
-    }
-
-    @Override
-    public VectorTransformation makeTransformation(SparseVector reference) {
-        double s = reference.norm();
-        if (Math.abs(s) < tolerance) {
-            return new IdentityVectorNormalizer().makeTransformation(reference);
-        } else {
-            return new ScalingTransform(s);
-        }
     }
 
     @Override

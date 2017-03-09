@@ -22,7 +22,6 @@ package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
@@ -69,11 +68,6 @@ public class IdentityVectorNormalizer extends AbstractVectorNormalizer implement
             return Long2DoubleSortedArrayMap.create(vector);
         }
     };
-
-    @Override
-    public VectorTransformation makeTransformation(SparseVector ratings) {
-        return IDENTITY_TRANSFORM;
-    }
 
     @Override
     public VectorTransformation makeTransformation(Long2DoubleMap reference) {
