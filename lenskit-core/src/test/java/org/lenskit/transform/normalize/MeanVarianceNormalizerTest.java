@@ -145,38 +145,38 @@ public class MeanVarianceNormalizerTest {
     }
 
     @Test
-    public void testMakeTransformationOldVector() {
+    public void testMakeTransformationVector() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
         InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(userRatings);
-        Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
+        Long2DoubleMap nUR = trans.apply(userRatings);
         final double mean = 2.0;
         final double stdev = Math.sqrt(8.0 / 3.0);
-        trans.apply(nUR);
         //Test apply
         Assert.assertEquals((0.0 - mean) / stdev, nUR.get(0L), MIN_DOUBLE_PRECISION);
         Assert.assertEquals((2.0 - mean) / stdev, nUR.get(1L), MIN_DOUBLE_PRECISION);
         Assert.assertEquals((4.0 - mean) / stdev, nUR.get(2L), MIN_DOUBLE_PRECISION);
-        trans.unapply(nUR);
+
         //Test unapply
+        nUR = trans.unapply(nUR);
         Assert.assertEquals(0.0, nUR.get(0L), MIN_DOUBLE_PRECISION);
         Assert.assertEquals(2.0, nUR.get(1L), MIN_DOUBLE_PRECISION);
         Assert.assertEquals(4.0, nUR.get(2L), MIN_DOUBLE_PRECISION);
     }
 
     @Test
-    public void testUniformRatingsOldVector() {
+    public void testUniformRatingsVector() {
         MeanVarianceNormalizer urvn;
         urvn = new MeanVarianceNormalizer();
         InvertibleFunction<Long2DoubleMap,Long2DoubleMap> trans = urvn.makeTransformation(uniformUserRatings);
-        Long2DoubleOpenHashMap nUR = new Long2DoubleOpenHashMap(userRatings);
-        trans.apply(nUR);
+        Long2DoubleMap nUR = trans.apply(userRatings);
         //Test apply - shoudl subtract mean
         assertThat(nUR.get(0L), closeTo(-2.0, 1.0e-6));
         assertThat(nUR.get(1L), closeTo(0.0, 1.0e-6));
         assertThat(nUR.get(2L), closeTo(2.0, 1.0e-6));
-        trans.unapply(nUR);
+
         //Test unapply
+        nUR = trans.unapply(nUR);
         assertThat(nUR.get(0L), closeTo(0.0, 1.0e-6));
         assertThat(nUR.get(1L), closeTo(2.0, 1.0e-6));
         assertThat(nUR.get(2L), closeTo(4.0, 1.0e-6));
