@@ -24,9 +24,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Scalars;
@@ -55,7 +54,7 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
         this(0.0);
     }
 
-    static SparseVector rank(final SparseVector vec) {
+    static Long2DoubleMap rank(final Long2DoubleMap vec) {
         long[] ids = vec.keySet().toLongArray();
         // sort ID set by value (decreasing)
         LongArrays.quickSort(ids, new AbstractLongComparator() {
@@ -67,10 +66,10 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
 
         final int n = ids.length;
         final double[] values = new double[n];
-        MutableSparseVector rank = vec.mutableCopy();
+        Long2DoubleMap rank = new Long2DoubleOpenHashMap(n);
         // assign ranks to each item
         for (int i = 0; i < n; i++) {
-            rank.set(ids[i], i + 1);
+            rank.put(ids[i], i+1);
             values[i] = vec.get(ids[i]);
         }
 
@@ -87,7 +86,7 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
             if (j - i > 1) {
                 double r2 = (rank.get(ids[i]) + rank.get(ids[j - 1])) / (j - i);
                 for (int k = i; k < j; k++) {
-                    rank.set(ids[k], r2);
+                    rank.put(ids[k], r2);
                 }
             }
             i = j;
@@ -99,14 +98,12 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
 
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
-        return pearson.similarity(rank(vec1), rank(vec2));
+        return similarity(vec1.asMap(), vec2.asMap());
     }
 
     @Override
     public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
-        // FIXME Implement directly
-        return similarity(ImmutableSparseVector.create(vec1),
-                          ImmutableSparseVector.create(vec2));
+        return pearson.similarity(rank(vec1), rank(vec2));
     }
 
     @Override

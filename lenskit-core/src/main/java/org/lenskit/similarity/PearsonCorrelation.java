@@ -22,11 +22,13 @@ package org.lenskit.similarity;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.inject.Shareable;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -118,9 +120,59 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
 
     @Override
     public double similarity(Long2DoubleMap vec1, Long2DoubleMap vec2) {
-        // FIXME Implement directly
-        return similarity(ImmutableSparseVector.create(vec1),
-                          ImmutableSparseVector.create(vec2));
+        // First check for empty vectors - then we can assume at least one element
+        if (vec1.isEmpty() || vec2.isEmpty()) {
+            return 0;
+        }
+
+        /*
+         * Basic similarity: walk in parallel across the two vectors, computing
+         * the dot product and simultaneously computing the variance within each
+         * vector of the items also contained in the other vector.  Pearson
+         * correlation only considers items shared by both vectors; other items
+         * are discarded for the purpose of similarity computation.
+         */
+
+        // first compute means of common items
+        LongSortedSet commonKeys = LongUtils.setIntersect(vec1.keySet(), vec2.keySet());
+        int n = commonKeys.size();
+        if (n == 0) {
+            return 0;
+        }
+
+        double sum1 = 0;
+        double sum2 = 0;
+
+        for (LongIterator iter = commonKeys.iterator(); iter.hasNext();) {
+            long k = iter.nextLong();
+            sum1 += vec1.get(k);
+            sum2 += vec2.get(k);
+        }
+
+
+        final double mu1 = sum1 / n;
+        final double mu2 = sum2 / n;
+
+        double var1 = 0;
+        double var2 = 0;
+        double dot = 0;
+        int nCoratings = 0;
+
+        for (LongIterator iter = commonKeys.iterator(); iter.hasNext();) {
+            long k = iter.nextLong();
+            final double v1 = vec1.get(k) - mu1;
+            final double v2 = vec2.get(k) - mu2;
+            var1 += v1 * v1;
+            var2 += v2 * v2;
+            dot += v1 * v2;
+            nCoratings += 1;
+        }
+
+        if (nCoratings == 0) {
+            return 0;
+        } else {
+            return dot / (sqrt(var1 * var2) + shrinkage);
+        }
     }
 
     @Override
