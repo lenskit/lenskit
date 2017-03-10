@@ -20,9 +20,9 @@
  */
 package org.lenskit.slopeone;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.model.ItemItemBuildContext;
 
@@ -57,12 +57,12 @@ public class SlopeOneModelProvider implements Provider<SlopeOneModel> {
         LongIterator outer = items.iterator();
         while (outer.hasNext()) {
             final long item1 = outer.nextLong();
-            final SparseVector vec1 = buildContext.itemVector(item1);
+            final Long2DoubleSortedMap vec1 = buildContext.itemVector(item1);
             LongIterator inner = items.iterator();
             while (inner.hasNext()) {
                 final long item2 = inner.nextLong();
                 if (item1 != item2) {
-                    SparseVector vec2 = buildContext.itemVector(item2);
+                    Long2DoubleSortedMap vec2 = buildContext.itemVector(item2);
                     accumulator.putItemPair(item1, vec1, item2, vec2);
                 }
             }

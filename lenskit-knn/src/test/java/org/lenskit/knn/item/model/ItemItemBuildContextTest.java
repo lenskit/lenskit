@@ -20,12 +20,9 @@
  */
 package org.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.knn.item.model.ItemItemBuildContext.ItemVecPair;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import static org.junit.Assert.*;
@@ -40,16 +37,17 @@ public class ItemItemBuildContextTest {
         SortedKeyIndex items = SortedKeyIndex.create(1, 2, 3, 4);
 
         long[] userIds = {101, 102, 103, 104};
+        SortedKeyIndex idx = SortedKeyIndex.create(userIds);
         double[] ratings1 = {4.0, 3.0, 2.5, 2.0};
         double[] ratings2 = {3.0, 2.5, 4.0, 1.0};
         double[] ratings3 = {5.0, 3.5, 0.5, 1.0};
         double[] ratings4 = {4.5, 3.0, 3.5, 1.5};
-        SparseVector v1 = MutableSparseVector.wrap(userIds, ratings1);
-        SparseVector v2 = MutableSparseVector.wrap(userIds, ratings2);
-        SparseVector v3 = MutableSparseVector.wrap(userIds, ratings3);
-        SparseVector v4 = MutableSparseVector.wrap(userIds, ratings4);
+        Long2DoubleSortedArrayMap v1 = Long2DoubleSortedArrayMap.wrap(idx, ratings1);
+        Long2DoubleSortedArrayMap v2 = Long2DoubleSortedArrayMap.wrap(idx, ratings2);
+        Long2DoubleSortedArrayMap v3 = Long2DoubleSortedArrayMap.wrap(idx, ratings3);
+        Long2DoubleSortedArrayMap v4 = Long2DoubleSortedArrayMap.wrap(idx, ratings4);
 
-        SparseVector[] ratings = { v1, v2, v3, v4 };
+        Long2DoubleSortedArrayMap[] ratings = { v1, v2, v3, v4 };
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratings,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
 
@@ -64,15 +62,17 @@ public class ItemItemBuildContextTest {
         SortedKeyIndex items = SortedKeyIndex.create(1, 2, 3, 4);
 
         long[] userIds = {101, 102, 103, 104};
+        SortedKeyIndex idx = SortedKeyIndex.create(userIds);
         double[] ratings1 = {4.0, 3.0, 2.5, 2.0};
         double[] ratings4 = {4.5, 3.0, 3.5, 1.5};
-        SparseVector v1 = MutableSparseVector.wrap(userIds, ratings1);
-        SparseVector v4 = MutableSparseVector.wrap(userIds, ratings4);
+        Long2DoubleSortedArrayMap v1 = Long2DoubleSortedArrayMap.wrap(idx, ratings1);
+        Long2DoubleSortedArrayMap v4 = Long2DoubleSortedArrayMap.wrap(idx, ratings4);
 
-        SparseVector[] ratingMap = {
+        Long2DoubleSortedMap[] ratingMap = {
                 v1,
-                MutableSparseVector.create(),
-                MutableSparseVector.create(),
+                Long2DoubleSortedMaps.EMPTY_MAP,
+                Long2DoubleSortedMaps.EMPTY_MAP,
+                Long2DoubleSortedMaps.EMPTY_MAP,
                 v4
         };
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
@@ -88,11 +88,11 @@ public class ItemItemBuildContextTest {
     public void testNoItemsData() {
         SortedKeyIndex items = SortedKeyIndex.create(1, 2, 3, 4);
 
-        SparseVector[] ratingMap = {
-                MutableSparseVector.create(),
-                MutableSparseVector.create(),
-                MutableSparseVector.create(),
-                MutableSparseVector.create()
+        Long2DoubleSortedMap[] ratingMap = {
+                Long2DoubleSortedMaps.EMPTY_MAP,
+                Long2DoubleSortedMaps.EMPTY_MAP,
+                Long2DoubleSortedMaps.EMPTY_MAP,
+                Long2DoubleSortedMaps.EMPTY_MAP
         };
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
@@ -106,7 +106,7 @@ public class ItemItemBuildContextTest {
     @Test
     public void testEmpty() {
         SortedKeyIndex items = SortedKeyIndex.create();
-        SparseVector[] ratingMap = new SparseVector[] {};
+        Long2DoubleSortedMap[] ratingMap = new Long2DoubleSortedMap[0];
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
 
@@ -114,14 +114,10 @@ public class ItemItemBuildContextTest {
     }
 
     @SuppressWarnings("deprecation")
-    private void testRatingIntegrity(SortedKeyIndex items, SparseVector[] trueRatings, ItemItemBuildContext context) {
+    private void testRatingIntegrity(SortedKeyIndex items, Long2DoubleMap[] trueRatings, ItemItemBuildContext context) {
         for (long itemId : context.getItems()) {
             assertEquals(trueRatings[items.tryGetIndex(itemId)], context.itemVector(itemId));
         }
 
-        for (ItemVecPair pair : context.getItemPairs()) {
-            assertEquals(trueRatings[items.tryGetIndex(pair.itemId1)], pair.vec1);
-            assertEquals(trueRatings[items.tryGetIndex(pair.itemId2)], pair.vec2);
-        }
     }
 }

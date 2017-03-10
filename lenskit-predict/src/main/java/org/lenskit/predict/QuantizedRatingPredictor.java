@@ -20,8 +20,6 @@
  */
 package org.lenskit.predict;
 
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
@@ -53,12 +51,6 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor {
                                     Quantizer q) {
         itemScorer = scorer;
         quantizer = q;
-    }
-
-    private void quantize(MutableSparseVector scores) {
-        for (VectorEntry e: scores) {
-            scores.set(e, quantizer.getIndexValue(quantizer.index(e.getValue())));
-        }
     }
 
     @Nonnull

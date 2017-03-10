@@ -23,7 +23,6 @@ package org.lenskit.transform.normalize;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.util.InvertibleFunction;
@@ -31,7 +30,6 @@ import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
 import static java.lang.Math.sqrt;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -72,39 +70,13 @@ public class UnitVectorNormalizerTest {
 
     @Test
     public void testScale() {
-        MutableSparseVector v = MutableSparseVector.create(keySet);
-        v.set(1, 1);
-        v.set(4, 1);
-        assertThat(norm.normalize(v.immutable(), v), sameInstance(v));
-        assertThat(v.norm(), closeTo(1, 1.0e-6));
-        assertThat(v.size(), equalTo(2));
-        assertThat(v.get(1), closeTo(1 / sqrt(2), 1.0e-6));
-        assertThat(v.get(4), closeTo(1 / sqrt(2), 1.0e-6));
+        Long2DoubleMap v = new Long2DoubleOpenHashMap();
+        v.put(1, 1);
+        v.put(4, 1);
+        Long2DoubleMap v2 = norm.makeTransformation(v).apply(v);
+        assertThat(Vectors.euclideanNorm(v2), closeTo(1, 1.0e-6));
+        assertThat(v2.size(), equalTo(2));
+        assertThat(v2.get(1), closeTo(1 / sqrt(2), 1.0e-6));
+        assertThat(v2.get(4), closeTo(1 / sqrt(2), 1.0e-6));
     }
-
-    @Test
-    public void testScaleOther() {
-        MutableSparseVector v = MutableSparseVector.create(keySet);
-        v.set(1, 1);
-        v.set(4, 1);
-        MutableSparseVector ref = MutableSparseVector.create(keySet);
-        ref.set(1, 1);
-        ref.set(6, 1);
-        ref.set(3, 2);
-
-        VectorTransformation tx = norm.makeTransformation(ref.immutable());
-        assertThat(tx.apply(v), sameInstance(v));
-        assertThat(v.norm(), closeTo(sqrt(2.0 / 6), 1.0e-6));
-        assertThat(v.size(), equalTo(2));
-        assertThat(v.get(1), closeTo(1 / sqrt(6), 1.0e-6));
-        assertThat(v.get(4), closeTo(1 / sqrt(6), 1.0e-6));
-
-        assertThat(tx.unapply(v), sameInstance(v));
-        assertThat(v.size(), equalTo(2));
-        assertThat(v.get(1), closeTo(1, 1.0e-6));
-        assertThat(v.get(4), closeTo(1, 1.0e-6));
-        assertThat(v.sum(), closeTo(2, 1.0e-6));
-        assertThat(v.norm(), closeTo(sqrt(2), 1.0e-6));
-    }
-
 }

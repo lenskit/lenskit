@@ -55,6 +55,15 @@ public final class Vectors {
         }
     }
 
+    public static Iterable<Long2DoubleMap.Entry> fastEntries(final Long2DoubleMap map) {
+        return new Iterable<Long2DoubleMap.Entry>() {
+            @Override
+            public Iterator<Long2DoubleMap.Entry> iterator() {
+                return fastEntryIterator(map);
+            }
+        };
+    }
+
     /**
      * Compute the sum of the elements of a map.
      * @param v The vector

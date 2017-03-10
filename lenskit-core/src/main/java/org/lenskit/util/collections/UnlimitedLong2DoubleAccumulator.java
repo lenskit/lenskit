@@ -22,7 +22,6 @@ package org.lenskit.util.collections;
 
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Scored item accumulator with no upper bound.
@@ -48,17 +47,6 @@ public final class UnlimitedLong2DoubleAccumulator implements Long2DoubleAccumul
             entries = new Long2DoubleOpenHashMap();
         }
         entries.put(item, score);
-    }
-
-    @Override
-    public MutableSparseVector finishVector() {
-        if (entries == null) {
-            return MutableSparseVector.create();
-        }
-
-        MutableSparseVector vec = MutableSparseVector.create(entries);
-        entries = null;
-        return vec;
     }
 
     @Override

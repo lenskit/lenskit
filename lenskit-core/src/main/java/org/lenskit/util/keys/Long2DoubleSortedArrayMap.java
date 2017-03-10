@@ -100,10 +100,10 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
     }
 
     /**
-     * Create a new {@code MutableSparseVector} from unsorted key and value
+     * Create a new {@link Long2DoubleSortedArrayMap} from unsorted key and value
      * arrays. The provided arrays will be modified and should not be used
      * by the client after this operation has completed. The key domain of
-     * the new {@code MutableSparseVector} will be the same as {@code keys}.
+     * the new {@link Long2DoubleSortedArrayMap} will be the same as {@code keys}.
      *
      * @param keys Array of entry keys. This should be duplicate-free.
      * @param values The values of the vector, in key order.

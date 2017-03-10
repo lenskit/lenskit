@@ -20,12 +20,11 @@
  */
 package org.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.keys.KeyedObject;
+import org.lenskit.util.keys.KeyedObjectMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import java.io.Serializable;
 
@@ -36,14 +35,11 @@ import java.io.Serializable;
 @DefaultProvider(SlopeOneModelProvider.class)
 @Shareable
 public class SlopeOneModel implements Serializable {
+    private static final long serialVersionUID = 2L;
 
-    private static final long serialVersionUID = 1L;
+    private final KeyedObjectMap<ModelRow> matrix;
 
-    private final Long2ObjectMap<ImmutableSparseVector> matrix;
-
-    public static final Symbol CORATINGS_SYMBOL = Symbol.of("coratings");
-
-    public SlopeOneModel(Long2ObjectMap<ImmutableSparseVector> matrix) {
+    public SlopeOneModel(KeyedObjectMap<ModelRow> matrix) {
         this.matrix = matrix;
     }
 
@@ -51,18 +47,18 @@ public class SlopeOneModel implements Serializable {
         if (item1 == item2) {
             return 0;
         } else if (item1 < item2) {
-            SparseVector row = matrix.get(item1);
+            ModelRow row = matrix.get(item1);
             if (row == null) {
                 return Double.NaN;
             } else {
-                return row.get(item2, Double.NaN);
+                return row.getDeviation(item2);
             }
         } else {
-            SparseVector row = matrix.get(item2);
+            ModelRow row = matrix.get(item2);
             if (row == null) {
                 return Double.NaN;
             } else {
-                return -row.get(item1, Double.NaN);
+                return -row.getDeviation(item1);
             }
         }
     }
@@ -71,20 +67,59 @@ public class SlopeOneModel implements Serializable {
         if (item1 == item2) {
             return 0;
         } else if (item1 < item2) {
-            SparseVector row = matrix.get(item1);
+            ModelRow row = matrix.get(item1);
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.getChannelVector(CORATINGS_SYMBOL).get(item2, 0);
-                return (int) coratings;
+                return row.getCoratings(item2);
             }
         } else {
-            SparseVector row = matrix.get(item2);
+            ModelRow row = matrix.get(item2);
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.getChannelVector(CORATINGS_SYMBOL).get(item1, 0);
-                return (int) coratings;
+                return row.getCoratings(item1);
+            }
+        }
+    }
+
+    static class ModelRow implements Serializable, KeyedObject {
+        private static final long serialVersionUID = 1L;
+
+        private final long item;
+        private final SortedKeyIndex items;
+        private final double[] deviations;
+        private final int[] coratings;
+
+        ModelRow(long i, SortedKeyIndex is, double[] ds, int[] crs) {
+            assert ds.length == is.size();
+            assert crs.length == is.size();
+            item = i;
+            items = is;
+            deviations = ds;
+            coratings = crs;
+        }
+
+        @Override
+        public long getKey() {
+            return item;
+        }
+
+        double getDeviation(long item) {
+            int idx = items.tryGetIndex(item);
+            if (idx >= 0) {
+                return deviations[idx];
+            } else {
+                return Double.NaN;
+            }
+        }
+
+        int getCoratings(long item) {
+            int idx = items.tryGetIndex(item);
+            if (idx >= 0) {
+                return coratings[idx];
+            } else {
+                return 0;
             }
         }
     }

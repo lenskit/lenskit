@@ -21,11 +21,6 @@
 package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.RatingBuilder;
-import org.lenskit.data.ratings.Ratings;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;

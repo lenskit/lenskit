@@ -22,7 +22,7 @@ package org.lenskit.util.keys;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.MoreArrays;
+import org.lenskit.util.MoreArrays;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;

@@ -18,15 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.collections;
+package org.lenskit.util;
 
 /**
- * Additional array utilities.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @deprecated Methods in this class still in use will be migrated to `lenskit-core`.
+ * Extra array utilities.
  */
-@Deprecated
 public final class MoreArrays {
     private MoreArrays() {
     }

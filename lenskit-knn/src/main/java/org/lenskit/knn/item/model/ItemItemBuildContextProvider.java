@@ -21,10 +21,6 @@
 package org.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Transient;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
@@ -32,11 +28,13 @@ import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
+import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.Iterator;
 
 /**
  * Provider that sets up an {@link ItemItemBuildContext}.
@@ -82,14 +80,12 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         final int n = items.size();
         assert n == itemRatingData.size();
         // finalize the item data into vectors
-        SparseVector[] itemRatings = new SparseVector[n];
+        Long2DoubleSortedMap[] itemRatings = new Long2DoubleSortedMap[n];
 
         for (int i = 0; i < n; i++) {
             final long item = items.getKey(i);
             Long2DoubleMap ratings = itemRatingData.get(item);
-            SparseVector v = MutableSparseVector.create(ratings);
-            assert v.size() == ratings.size();
-            itemRatings[i] = v;
+            itemRatings[i] = LongUtils.frozenMap(ratings);
             // release some memory
             ratings.clear();
         }
@@ -111,23 +107,24 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
             for (IdBox<Long2DoubleMap> user : stream) {
                 long uid = user.getId();
                 Long2DoubleMap ratings = user.getValue();
-                SparseVector summary = ImmutableSparseVector.create(ratings);
-                MutableSparseVector normed = summary.mutableCopy();
-                normalizer.normalize(uid, summary, normed);
+                Long2DoubleMap normed = normalizer.makeTransformation(uid, ratings).apply(ratings);
+                assert normed != null;
 
-                for (VectorEntry rating : normed) {
-                    final long item = rating.getKey();
+                Iterator<Long2DoubleMap.Entry> iter = Vectors.fastEntryIterator(normed);
+                while (iter.hasNext()) {
+                    Long2DoubleMap.Entry rating = iter.next();
+                    final long item = rating.getLongKey();
                     // get the item's rating accumulator
                     Long2DoubleMap ivect = itemRatings.get(item);
                     if (ivect == null) {
                         ivect = new Long2DoubleOpenHashMap(100);
                         itemRatings.put(item, ivect);
                     }
-                    ivect.put(uid, rating.getValue());
+                    ivect.put(uid, rating.getDoubleValue());
                 }
 
                 // get the item's candidate set
-                userItems.put(uid, LongUtils.packedSet(summary.keySet()));
+                userItems.put(uid, LongUtils.packedSet(normed.keySet()));
             }
         }
     }

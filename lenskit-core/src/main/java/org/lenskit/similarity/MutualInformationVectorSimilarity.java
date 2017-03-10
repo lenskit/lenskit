@@ -21,10 +21,7 @@
 package org.lenskit.similarity;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.transform.quantize.Quantizer;
 
 import javax.inject.Inject;
@@ -54,32 +51,6 @@ public class MutualInformationVectorSimilarity implements VectorSimilarity, Seri
     @Inject
     public MutualInformationVectorSimilarity(Quantizer quantizer) {
         this.quantizer = quantizer;
-    }
-
-    /**
-     * Compute similarity using mutual information.
-     * <p>
-     *     Note, this similarity function measures the
-     * absolute correlation between two vectors. Because of this it ranges from [0,inf), not [-1,1]
-     * as specified by superclass. Caution should be used when using this vector similarity function
-     * that your implementation will accept values in this range.
-     * </p>
-     *
-     * @param vec1 The first vector.
-     * @param vec2 The second vector.
-     * @return The similarity between the two vectors, based on mutual information.
-     * @see VectorSimilarity#similarity(SparseVector, SparseVector)
-     */
-    @Override
-    public double similarity(SparseVector vec1, SparseVector vec2) {
-        MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
-
-        for (Pair<VectorEntry,VectorEntry> e: SparseVector.fastIntersect(vec1, vec2)) {
-            accum.count(quantizer.index(e.getLeft().getValue()),
-                        quantizer.index(e.getRight().getValue()));
-        }
-
-        return accum.getMutualInformation();
     }
 
     @Override
