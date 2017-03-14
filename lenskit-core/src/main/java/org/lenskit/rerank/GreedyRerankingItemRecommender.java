@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -49,10 +50,10 @@ import java.util.List;
 public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
     private static final Logger logger = LoggerFactory.getLogger(GreedyRerankingItemRecommender.class);
     private final ItemRecommender baseRecommender;
-    private final Rescorer rescorer;
+    private final CandidateItemSelector rescorer;
 
     @Inject
-    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, Rescorer rescorer) {
+    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, CandidateItemSelector rescorer) {
         this.baseRecommender = baseRecommender;
         this.rescorer = rescorer;
     }
@@ -67,23 +68,22 @@ public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
             n = candidates.size();
         }
 
-        List<GreedyRerankingResult> results = new ArrayList<>(n);
+        List<Result> results = new ArrayList<>(n);
         for (int i = 0; i<n; i++) {
-            Result bestResult = null;
-            double bestScore = 0;
-            for (Result option : candidates) {
-                double score = rescorer.score(results, option);
-                if (bestResult == null || score > bestScore) {
-                    bestResult = option;
-                    bestScore = score;
-                }
-            }
-            if (bestResult != null) {
-                candidates.remove(bestResult);
-                GreedyRerankingResult result = new GreedyRerankingResult(bestResult.getId(), bestResult.getScore(), i, bestScore);
-                results.add(result);
-            } else {
+            Result nextItem = rescorer.nextItem(user, n, results, candidates);
+            if (nextItem == null) {
                 break;
+            } else {
+                //TODO: REVIEW: there should be an easier way to do this.
+                // Remove the selected item from the list of candidate items.
+                for(Iterator<Result> it = candidates.iterator(); it.hasNext();) {
+                    Result listResult = it.next();
+                    if (listResult.getId() == nextItem.getId()) {
+                        it.remove();
+                        break;
+                    }
+                }
+                results.add(nextItem);
             }
         }
         return Results.newResultList(results);
