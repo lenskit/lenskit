@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -30,34 +29,26 @@ import java.util.List;
 public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
     private static final Logger logger = LoggerFactory.getLogger(GreedyRerankingItemRecommender.class);
     private final ItemRecommender baseRecommender;
-    private final int numCandidates;
     private final Rescorer rescorer;
 
     @Inject
-    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, @NumCandidates int numCandidates, Rescorer rescorer) {
+    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, Rescorer rescorer) {
         this.baseRecommender = baseRecommender;
-        this.numCandidates = numCandidates;
         this.rescorer = rescorer;
     }
 
 
     @Override
     protected ResultList recommendWithDetails(long user, int n, @Nullable LongSet candidateItems, @Nullable LongSet exclude) {
-        List<Result> candidates = baseRecommender.recommendWithDetails(user, numCandidates, candidateItems, exclude);
-        //TODO: is there a better option for this?
+        List<Result> candidates = baseRecommender.recommendWithDetails(user, -1, candidateItems, exclude);
         //modifiable copy
         candidates = new ArrayList<>(candidates);
-
         if (n<0) {
             n = candidates.size();
         }
 
-        //TODO: use ResultLists instead of Lists
-        //TODO: is this the best List for the situation?
-
         List<GreedyRerankingResult> results = new ArrayList<>(n);
         for (int i = 0; i<n; i++) {
-            // TODO: I would like to make this a private function for better method decomposition, but then I have to recompute scores.
             Result bestResult = null;
             double bestScore = 0;
             for (Result option : candidates) {
@@ -67,10 +58,13 @@ public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
                     bestScore = score;
                 }
             }
-            candidates.remove(bestResult);
-
-            GreedyRerankingResult result = new GreedyRerankingResult(bestResult.getId(), bestResult.getScore(), i, bestScore);
-            results.add(result);
+            if (bestResult != null) {
+                candidates.remove(bestResult);
+                GreedyRerankingResult result = new GreedyRerankingResult(bestResult.getId(), bestResult.getScore(), i, bestScore);
+                results.add(result);
+            } else {
+                break;
+            }
         }
         return Results.newResultList(results);
     }
