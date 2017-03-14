@@ -4,14 +4,13 @@ import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.inject.Shareable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import java.io.Serializable;
 
 
 @Shareable
-public final class SLIMUpdateParameters implements Serializable {
+public final class SlimUpdateParameters implements Serializable {
     private static final long serialVersionUID = 2L;
     private final double beta;
     private final double lambda;
@@ -20,7 +19,7 @@ public final class SLIMUpdateParameters implements Serializable {
 
 
     @Inject
-    public SLIMUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @Intercept boolean intercept, StoppingCondition stop) {
+    public SlimUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @Intercept boolean intercept, StoppingCondition stop) {
         this.beta = beta;
         this.lambda = lambda;
         this.intercept = intercept;

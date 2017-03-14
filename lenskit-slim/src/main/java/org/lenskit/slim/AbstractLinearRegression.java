@@ -14,17 +14,17 @@ import static org.lenskit.slim.LinearRegressionHelper.addVectors;
 
 
 /**
- * Created by tmc on 2/10/17.
- * minimize 1/2*||a_j - A*w_j||^2 + beta/2*||wj||^2 + lambda*||w_j||
+ * Linear regression which minimize following loss function
+ * 1/2*||a_j - A*w_j||^2 + beta/2*||wj||^2 + lambda*||w_j||
  */
 @LinearRegression
 @DefaultImplementation(CovarianceUpdateCoordDestLinearRegression.class)
-public abstract class LinearRegressionAbstract {
-    protected static final Logger logger = LoggerFactory.getLogger(LinearRegressionAbstract.class);
+public abstract class AbstractLinearRegression {
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractLinearRegression.class);
     protected final SlimUpdateParameters updateParameters;
 
     @Inject
-    public LinearRegressionAbstract(SlimUpdateParameters updateParameters) {
+    public AbstractLinearRegression(SlimUpdateParameters updateParameters) {
         this.updateParameters = updateParameters;
     }
 
@@ -41,7 +41,7 @@ public abstract class LinearRegressionAbstract {
     /**
      * compute residual vector
      * @param labels label vector
-     * @param dataMatrix data matrix
+     * @param dataMatrix column-wise data matrix
      * @param weights weights vector
      * @return residual vector
      */
@@ -104,9 +104,10 @@ public abstract class LinearRegressionAbstract {
 
     /**
      * Compute loss function of elastic regression
-     * @param residuals
-     * @param weights
-     * @return
+     *
+     * @param residuals residual vector of linear regression
+     * @param weights learned weight
+     * @return value of loss function
      */
     public double computeLossFunction(Long2DoubleMap residuals, Long2DoubleMap weights) {
         double beta = updateParameters.getBeta();

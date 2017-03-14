@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -17,14 +16,13 @@ import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
-import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.knn.item.ModelSize;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,15 +102,14 @@ public class NaiveCoordDestLinearRegrTest {
         LenskitConfiguration config = new LenskitConfiguration();
 
         config.bind(ItemScorer.class)
-                .to(SimpleItemItemScorer.class);
-        config.within(SimpleItemItemScorer.class)
-                .bind(LinearRegressionAbstract.class)
-                .to(CovarianceUpdateCoordDestLinearRegression.class);
+                .to(SlimScorer.class);
 
         config.bind(StoppingCondition.class)
                 .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)
                 .to(10);
+        config.set(ModelSize.class)
+                .to(20);
 
         return LenskitRecommenderEngine.build(config, dao);
     }
@@ -159,7 +156,7 @@ public class NaiveCoordDestLinearRegrTest {
 
         // Naive update
         final long startTimeNaive = System.currentTimeMillis();
-        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(10));
+        SlimUpdateParameters parameters = new SlimUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(10));
         NaiveCoordDestLinearRegression model = new NaiveCoordDestLinearRegression(parameters);
         Long2DoubleMap predictedW = model.fit(y, data);
         //Long2DoubleMap predictions = model.predict(data, predictedW);
@@ -207,7 +204,7 @@ public class NaiveCoordDestLinearRegrTest {
         LenskitRecommenderEngine engine = makeEngine();
         try (Recommender rec = engine.createRecommender(dao)) {
             assertThat(rec.getItemScorer(),
-                    instanceOf(SimpleItemItemScorer.class));
+                    instanceOf(SlimScorer.class));
             assertThat(rec.getItemRecommender(),
                     instanceOf(TopNItemRecommender.class));
             Map<Long,Long2DoubleMap> dataTrans = LinearRegressionHelper.transposeMap(data);

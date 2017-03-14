@@ -22,20 +22,14 @@
 
 import org.grouplens.lenskit.iterative.IterationCount
 import org.lenskit.api.ItemScorer
-import org.lenskit.slim.SimpleItemItemScorer
-import org.lenskit.slim.LinearRegressionAbstract
-import org.lenskit.slim.CovarianceUpdateCoordDestLinearRegression
-import org.lenskit.bias.BiasModel
-import org.lenskit.bias.UserItemBiasModel
-import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.funksvd.FunkSVDItemScorer
-import org.lenskit.slim.CovarianceUpdateDescentRuleCoordDestLinearRegression
+import org.lenskit.knn.item.ModelSize
+import org.lenskit.knn.*
 
 dumpGraph {
     output "${config.analysisDir}/slim.dot"
     algorithm {
-        bind ItemScorer to SimpleItemItemScorer
+        bind ItemScorer to SlimScorer
         set IterationCount to 10
-
+        set ModelSize to 20 // which is model size of similarity matrix in knn package.
     }
 }

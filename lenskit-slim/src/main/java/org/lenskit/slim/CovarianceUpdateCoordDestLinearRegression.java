@@ -8,16 +8,15 @@ import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Map;
 
 import static org.lenskit.slim.LinearRegressionHelper.*;
 
 
-public final class CovarianceUpdateCoordDestLinearRegression extends LinearRegressionAbstract {
+public final class CovarianceUpdateCoordDestLinearRegression extends AbstractLinearRegression {
     @Inject
-    public CovarianceUpdateCoordDestLinearRegression(SLIMUpdateParameters parameters) {
+    public CovarianceUpdateCoordDestLinearRegression(SlimUpdateParameters parameters) {
         super(parameters);
     }
 
@@ -53,7 +52,7 @@ public final class CovarianceUpdateCoordDestLinearRegression extends LinearRegre
         Map<Long, Long2DoubleMap> correlationOfColumns = Maps.newHashMap();
         Long2DoubleMap residuals = computeResiduals(labels, trainingDataMatrix, weights);
 
-        double[] loss = new double[2];
+        double[] loss = {0.0, 0.0};
         double lossDiff = Double.POSITIVE_INFINITY;
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
         int k = 0;
@@ -101,46 +100,36 @@ public final class CovarianceUpdateCoordDestLinearRegression extends LinearRegre
                 residuals = updateResiduals(residuals, column, weightToUpdate, weightUpdated);
                 //residuals = computeResiduals(labels, trainingDataMatrix, weights);
                 loss[k%2] = computeLossFunction(residuals, weights);
-                logger.info("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
-                lossDiff = Math.abs(loss[0] - loss[1]);
-
             }
             k++;
+            lossDiff = Math.abs(loss[0] - loss[1]); // compute difference of loss function between two round of coordinate descent updates
+            logger.info("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
         }
         return LongUtils.frozenMap(weights);
     }
 
-    /**
-     * Given pre-computed inner-products matrix
-     * @param labels
-     * @param trainingDataMatrix
-     * @param trainingDataColumnWise
-     * @param covM
-     * @param item
-     * @return
-     */
-    public Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix, Map<Long, Long2DoubleMap> trainingDataColumnWise, Map<Long, Long2DoubleMap> covM, long item) {
+    @Override
+    public Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix, Map<Long, Long2DoubleMap> covM, long item) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
-        LongOpenHashBigSet itemSet = new LongOpenHashBigSet(trainingDataColumnWise.keySet());
+        LongOpenHashBigSet itemSet = new LongOpenHashBigSet(trainingDataMatrix.keySet());
         final double lambda = updateParameters.getLambda();
         final double beta = updateParameters.getBeta();
-        for (long i : itemSet) { weights.put(i, 0.0); }
+        //for (long i : itemSet) { weights.put(i, 0.0); }
 
         Long2DoubleMap residuals = computeResiduals(labels, trainingDataMatrix, weights);
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
-        double[] loss = new double[2];
+        double[] loss = {0.0, 0.0};
         double lossDiff = Double.POSITIVE_INFINITY;
-
         int k = 0;
         while (controller.keepTraining(lossDiff)) {
             for (long j : itemSet) {
-                Long2DoubleMap column = trainingDataColumnWise.get(j);
+                Long2DoubleMap column = trainingDataMatrix.get(j);
                 double dotProdOfXjY;
-                Long2DoubleMap covColumn = covM.get(item);
+                Long2DoubleMap covColumn = covM.get(j);
                 //dotProdOfXjY = covM.getOrDefault(item, new Long2DoubleOpenHashMap()).getOrDefault(j, 0.0);
 
                 if (covColumn == null) { covColumn = new Long2DoubleOpenHashMap(); }
-                dotProdOfXjY = covColumn.get(j);
+                dotProdOfXjY = covColumn.get(item);
                 Long2DoubleMap nonzeroWeights = filterValues(weights, 0.0);
 
                 Long2DoubleMap dotProdsOfXjXk = covM.get(j);
@@ -151,12 +140,14 @@ public final class CovarianceUpdateCoordDestLinearRegression extends LinearRegre
                 weights.put(j, weightUpdated);
                 residuals = updateResiduals(residuals, column, weightToUpdate, weightUpdated);
                 loss[k%2] = computeLossFunction(residuals, weights);
-                //logger.info("loss function reduced to {} and weights is {}", loss[1], weights);
-                lossDiff = Math.abs(loss[0] - loss[1]);
-                k++;
+
             }
+
+            k++;
+            lossDiff = Math.abs(loss[0] - loss[1]);
+            //logger.info("loss function reduced to {} and weights is {}", loss[1], weights);
         }
-        return weights;
+        return LongUtils.frozenMap(weights);
     }
 
 

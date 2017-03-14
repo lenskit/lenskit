@@ -5,8 +5,10 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
+import javax.inject.Inject;
 import java.util.Map;
 
 import static org.lenskit.slim.LinearRegressionHelper.*;
@@ -15,9 +17,10 @@ import static org.lenskit.slim.LinearRegressionHelper.*;
 /**
  * Created by tmc on 2/14/17.
  */
-public class NaiveCoordDestLinearRegression extends LinearRegressionAbstract {
+public class NaiveCoordDestLinearRegression extends AbstractLinearRegression {
 
-    public NaiveCoordDestLinearRegression(SLIMUpdateParameters parameters) {
+    @Inject
+    public NaiveCoordDestLinearRegression(SlimUpdateParameters parameters) {
         super(parameters);
     }
 
@@ -31,7 +34,7 @@ public class NaiveCoordDestLinearRegression extends LinearRegressionAbstract {
     /**
      * Training process of SLIM using naive coordinate descent update
      * @param labels label vector
-     * @param trainingDataMatrix observations matrix row: user ratings for different items, column: item ratings of different users
+     * @param trainingDataMatrix Map of item IDs to item rating vectors.
      * @return weight vectors learned
      */
     @Override
@@ -57,9 +60,15 @@ public class NaiveCoordDestLinearRegression extends LinearRegressionAbstract {
                 loss[k%2] = computeLossFunction(residuals, weights);
                 //logger.info("loss function reduced to {}", loss[0]);
                 lossDiff = Math.abs(loss[0] - loss[1]);
-                k++;
             }
+            k++;
         }
-        return weights;
+        return LongUtils.frozenMap(weights);
     }
+
+    @Override
+    public Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix, Map<Long, Long2DoubleMap> covM, long item) {
+        return fit(labels, trainingDataMatrix);
+    }
+
 }
