@@ -2,13 +2,11 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Map;
 
@@ -23,10 +21,10 @@ import static org.lenskit.slim.LinearRegressionHelper.addVectors;
 @DefaultImplementation(CovarianceUpdateCoordDestLinearRegression.class)
 public abstract class LinearRegressionAbstract {
     protected static final Logger logger = LoggerFactory.getLogger(LinearRegressionAbstract.class);
-    protected final SLIMUpdateParameters updateParameters;
+    protected final SlimUpdateParameters updateParameters;
 
     @Inject
-    public LinearRegressionAbstract(SLIMUpdateParameters updateParameters) {
+    public LinearRegressionAbstract(SlimUpdateParameters updateParameters) {
         this.updateParameters = updateParameters;
     }
 
@@ -54,11 +52,23 @@ public abstract class LinearRegressionAbstract {
 
     /**
      * learning process
+     *
      * @param labels label vector
      * @param trainingDataMatrix observations matrix row: user ratings for different items, column: item ratings of different users
-     * @return weight vector
+     * @return a trained weight vector
      */
     public abstract Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix);
+
+    /**
+     * learning process passed in pre-computed inner-products to speed up learning iterations
+     *
+     * @param labels label vector
+     * @param trainingDataMatrix Map of Item IDs to item rating vectors.
+     * @param covM Map of Item IDs to item-item inner-products vectors
+     * @param item item ID of label vector {@code labels}
+     * @return a trained weight vector
+     */
+    public abstract Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix, Map<Long, Long2DoubleMap> covM, long item);
 
 
     /**

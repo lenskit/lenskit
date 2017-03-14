@@ -22,19 +22,16 @@ public class SimpleItemItemModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Long2DoubleMap itemMeans;
-    private final Map<Long,Long2DoubleMap> neighborhoods;
     private final Map<Long,Long2DoubleMap> innerproducts;
 
 
     /**
      * Create a item-item model
      * @param means item ratings mean
-     * @param nbrhoods a mapping of item id to neighborhoods similarities
      * @param dotproducts a mapping of item id to inner-products of each two items
      */
-    public SimpleItemItemModel(Long2DoubleMap means, Map<Long,Long2DoubleMap> nbrhoods, Map<Long,Long2DoubleMap> dotproducts) {
+    public SimpleItemItemModel(Long2DoubleMap means, Map<Long,Long2DoubleMap> dotproducts) {
         itemMeans = LongUtils.frozenMap(means);
-        neighborhoods = nbrhoods;
         innerproducts = dotproducts;
     }
 

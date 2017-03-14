@@ -58,8 +58,8 @@ public class SimpleItemItemModelProvider implements Provider<SimpleItemItemModel
                 Long2DoubleOpenHashMap ratings = new Long2DoubleOpenHashMap(Ratings.itemRatingVector(itemRatings));
 
                 // Compute and store the item's mean.
-                double mean = Vectors.mean(ratings);
-                itemMeans.put(itemId, mean);
+//                double mean = Vectors.mean(ratings);
+//                itemMeans.put(itemId, mean);
 
                 // Mean center the ratings.
 //                for (Map.Entry<Long, Double> entry : ratings.entrySet()) {
@@ -70,53 +70,37 @@ public class SimpleItemItemModelProvider implements Provider<SimpleItemItemModel
             }
         }
 
-        // Map items to vectors (maps) of item similarities.
-        Map<Long,Long2DoubleMap> itemSimilarities = Maps.newHashMap();
+        // Map items to vectors (maps) of item inner-product, which used to speed up slim learning process.
         Map<Long,Long2DoubleMap> innerProducts = Maps.newHashMap();
-
-        // Ignore nonpositive similarities
         LongOpenHashBigSet itemIdSet = new LongOpenHashBigSet(itemVectors.keySet());
         Iterator<Map.Entry<Long, Long2DoubleMap>> iter = itemVectors.entrySet().iterator();
 
         while (iter.hasNext()) {
             Map.Entry<Long, Long2DoubleMap> entry = iter.next();
-            long itemId = entry.getKey();
+            long temIId = entry.getKey();
             Long2DoubleMap itemIRatings = entry.getValue();
-            itemIdSet.remove(itemId);
-            Long2DoubleMap dotII = innerProducts.get(itemId);
-            if (dotII == null) dotII = new Long2DoubleOpenHashMap();
-            double dotProdII = Vectors.dotProduct(itemIRatings, itemIRatings);
-            dotII.put(itemId, dotProdII);
-            innerProducts.put(itemId, dotII);
+            itemIdSet.remove(temIId);
+//            Long2DoubleMap dotII = innerProducts.get(temIId);
+//            if (dotII == null) dotII = new Long2DoubleOpenHashMap();
+//            double dotProdII = Vectors.dotProduct(itemIRatings, itemIRatings);
+//            dotII.put(temIId, dotProdII);
+//            innerProducts.put(temIId, dotII);
             for (long itemJId : itemIdSet) {
                 Long2DoubleMap itemJRatings = itemVectors.get(itemJId);
-                double numerator = Vectors.dotProduct(itemIRatings, itemJRatings);
-                double denominator = Vectors.euclideanNorm(itemIRatings) * Vectors.euclideanNorm(itemJRatings);
-                double cosineSimilarity = 0.0;
-                if (!Scalars.isZero(denominator)) cosineSimilarity = numerator/denominator;
-                // storing similarities
-                if (cosineSimilarity > 0.0) {
-                    Long2DoubleMap simJI = itemSimilarities.get(itemJId);
-                    Long2DoubleMap simIJ = itemSimilarities.get(itemId);
-                    if (simJI == null) simJI = new Long2DoubleOpenHashMap();
-                    if (simIJ == null) simIJ = new Long2DoubleOpenHashMap();
-                    simJI.put(itemId, cosineSimilarity);
-                    simIJ.put(itemJId, cosineSimilarity);
-                    itemSimilarities.put(itemJId, simJI);
-                    itemSimilarities.put(itemId, simIJ);
-                    // storing interProducts used for SLIM learning
-                    Long2DoubleMap dotJI = innerProducts.get(itemJId);
-                    Long2DoubleMap dotIJ = innerProducts.get(itemId);
-                    if (dotJI == null) dotJI = new Long2DoubleOpenHashMap();
-                    if (dotIJ == null) dotIJ = new Long2DoubleOpenHashMap();
-                    dotJI.put(itemId, numerator);
-                    dotIJ.put(itemJId, numerator);
-                    innerProducts.put(itemJId, dotJI);
-                    innerProducts.put(itemId, dotIJ);
-                }
+                double innerProduct = Vectors.dotProduct(itemIRatings, itemJRatings);
+
+                // storing interProducts used for SLIM learning
+                Long2DoubleMap dotJIs = innerProducts.get(itemJId);
+                Long2DoubleMap dotIJs = innerProducts.get(temIId);
+                if (dotJIs == null) dotJIs = new Long2DoubleOpenHashMap();
+                if (dotIJs == null) dotIJs = new Long2DoubleOpenHashMap();
+                dotJIs.put(temIId, innerProduct);
+                dotIJs.put(itemJId, innerProduct);
+                innerProducts.put(itemJId, dotJIs);
+                innerProducts.put(temIId, dotIJs);
             }
         }
 
-        return new SimpleItemItemModel(LongUtils.frozenMap(itemMeans), itemSimilarities, innerProducts);
+        return new SimpleItemItemModel(itemVectors, innerProducts);
     }
 }
