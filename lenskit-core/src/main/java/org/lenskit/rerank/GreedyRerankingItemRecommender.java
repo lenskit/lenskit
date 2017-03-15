@@ -50,12 +50,12 @@ import java.util.List;
 public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
     private static final Logger logger = LoggerFactory.getLogger(GreedyRerankingItemRecommender.class);
     private final ItemRecommender baseRecommender;
-    private final CandidateItemSelector rescorer;
+    private final CandidateItemSelector selector;
 
     @Inject
-    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, CandidateItemSelector rescorer) {
+    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, CandidateItemSelector selector) {
         this.baseRecommender = baseRecommender;
-        this.rescorer = rescorer;
+        this.selector = selector;
     }
 
 
@@ -70,7 +70,7 @@ public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
 
         List<Result> results = new ArrayList<>(n);
         for (int i = 0; i<n; i++) {
-            Result nextItem = rescorer.nextItem(user, n, results, candidates);
+            Result nextItem = selector.nextItem(user, n, results, candidates);
             if (nextItem == null) {
                 break;
             } else {
