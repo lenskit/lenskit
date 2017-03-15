@@ -31,7 +31,10 @@ public abstract class AbstractScoringCandidateItemSelector implements CandidateI
                 }
             }
         }
-        // TODO: return a new Result type
+
+        if (bestResult != null) {
+            bestResult = new RerankingRescoredResult(bestResult.getId(), bestScore, bestResult.getScore());
+        }
         return bestResult;
     }
 
