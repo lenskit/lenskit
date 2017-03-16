@@ -236,6 +236,9 @@ public class JSONEntityFormat implements EntityFormat {
                     }
 
                     JsonNode fn = field.getValue();
+                    if (fn.isNull()) {
+                        continue; // just skip nulls
+                    }
                     if (attr != null) {
                         eb.setAttribute(attr, mapper.convertValue(fn, attr.getJacksonType()));
                     } else {
