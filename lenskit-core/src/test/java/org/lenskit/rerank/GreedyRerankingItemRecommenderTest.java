@@ -179,4 +179,62 @@ public class GreedyRerankingItemRecommenderTest {
         assertEquals(3, result.get(4).getId());
         assertEquals(1, result.get(5).getId());
     }
+
+    @Test
+    public void testNegativeNMeansRecommendALot() {
+        List<Result> results = new ArrayList<>();
+        results.add(Results.create(0,5));
+        results.add(Results.create(1,1));
+        results.add(Results.create(2,4));
+        results.add(Results.create(3,2));
+        results.add(Results.create(4,3));
+        results.add(Results.create(5,6));
+
+        ResultList rl = Results.newResultList(results);
+
+        ItemRecommender ir = preSeededItemRecommender(rl);
+        CandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+            @Override
+            protected double scoreCandidate(long userId, int n, List<? extends Result> items, Result candidate) {
+                return candidate.getScore();
+            }
+        };
+
+        GreedyRerankingItemRecommender gr = new GreedyRerankingItemRecommender(ir, selector);
+        ResultList result = gr.recommendWithDetails(0, -1, null, null);
+        assertEquals(6, result.size());
+        assertEquals(5, result.get(0).getId());
+        assertEquals(0, result.get(1).getId());
+        assertEquals(2, result.get(2).getId());
+        assertEquals(4, result.get(3).getId());
+        assertEquals(3, result.get(4).getId());
+        assertEquals(1, result.get(5).getId());
+    }
+
+
+
+    @Test
+    public void testZeroNMeansRecommendNothing() {
+        List<Result> results = new ArrayList<>();
+        results.add(Results.create(0,5));
+        results.add(Results.create(1,1));
+        results.add(Results.create(2,4));
+        results.add(Results.create(3,2));
+        results.add(Results.create(4,3));
+        results.add(Results.create(5,6));
+
+        ResultList rl = Results.newResultList(results);
+
+        ItemRecommender ir = preSeededItemRecommender(rl);
+        CandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+            @Override
+            protected double scoreCandidate(long userId, int n, List<? extends Result> items, Result candidate) {
+                return candidate.getScore();
+            }
+        };
+
+        GreedyRerankingItemRecommender gr = new GreedyRerankingItemRecommender(ir, selector);
+        ResultList result = gr.recommendWithDetails(0, 0, null, null);
+        assertEquals(0, result.size());
+    }
 }
