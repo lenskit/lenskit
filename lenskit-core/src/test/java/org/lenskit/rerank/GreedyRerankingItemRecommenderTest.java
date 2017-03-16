@@ -21,7 +21,6 @@
 package org.lenskit.rerank;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.apache.commons.lang3.ObjectUtils;
 import org.junit.Test;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Result;
@@ -36,7 +35,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class GreedyRerankingItemRecommenderTest {
-    public ItemRecommender preSeededItemRecommender(final ResultList results) {
+    private ItemRecommender preSeededItemRecommender(final ResultList results) {
         return new AbstractItemRecommender() {
             @Override
             protected ResultList recommendWithDetails(long user, int n, @Nullable LongSet candidates, @Nullable LongSet exclude) {
@@ -60,7 +59,7 @@ public class GreedyRerankingItemRecommenderTest {
         final ResultList rl = Results.newResultList(results);
 
         ItemRecommender ir = preSeededItemRecommender(rl);
-        CandidateItemSelector selector = new CandidateItemSelector() {
+        GreedyRerankStrategy selector = new GreedyRerankStrategy() {
             boolean calledOnce = false;
             @Nullable
             @Override
@@ -97,7 +96,7 @@ public class GreedyRerankingItemRecommenderTest {
         ResultList rl = Results.newResultList(results);
 
         ItemRecommender ir = preSeededItemRecommender(rl);
-        CandidateItemSelector selector = new AbstractFilteringCandidateItemSelector() {
+        GreedyRerankStrategy selector = new AbstractFilteringGreedyRerankStrategy() {
             @Override
             protected boolean satisfiesConstraint(long userId, int n, List<? extends Result> items, Result candidate) {
                 return (candidate.getId()%2)==0;
@@ -124,7 +123,7 @@ public class GreedyRerankingItemRecommenderTest {
         ResultList rl = Results.newResultList(results);
 
         ItemRecommender ir = preSeededItemRecommender(rl);
-        CandidateItemSelector selector = new CandidateItemSelector() {
+        GreedyRerankStrategy selector = new GreedyRerankStrategy() {
             int expectedSize = 0;
             @Nullable
             @Override
@@ -162,7 +161,7 @@ public class GreedyRerankingItemRecommenderTest {
         ResultList rl = Results.newResultList(results);
 
         ItemRecommender ir = preSeededItemRecommender(rl);
-        CandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+        GreedyRerankStrategy selector = new AbstractScoringGreedyRerankStrategy() {
             @Override
             protected double scoreCandidate(long userId, int n, List<? extends Result> items, Result candidate) {
                 return candidate.getScore();
@@ -193,7 +192,7 @@ public class GreedyRerankingItemRecommenderTest {
         ResultList rl = Results.newResultList(results);
 
         ItemRecommender ir = preSeededItemRecommender(rl);
-        CandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+        GreedyRerankStrategy selector = new AbstractScoringGreedyRerankStrategy() {
             @Override
             protected double scoreCandidate(long userId, int n, List<? extends Result> items, Result candidate) {
                 return candidate.getScore();
@@ -226,7 +225,7 @@ public class GreedyRerankingItemRecommenderTest {
         ResultList rl = Results.newResultList(results);
 
         ItemRecommender ir = preSeededItemRecommender(rl);
-        CandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+        GreedyRerankStrategy selector = new AbstractScoringGreedyRerankStrategy() {
             @Override
             protected double scoreCandidate(long userId, int n, List<? extends Result> items, Result candidate) {
                 return candidate.getScore();

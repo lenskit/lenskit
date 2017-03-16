@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.*;
 
-public class AbstractFilteringCandidateItemSelectorTest {
-    private final AbstractFilteringCandidateItemSelector oddOnly = new AbstractFilteringCandidateItemSelector() {
+public class AbstractFilteringGreedyRerankStrategyTest {
+    private final AbstractFilteringGreedyRerankStrategy oddOnly = new AbstractFilteringGreedyRerankStrategy() {
         @Override
         protected boolean satisfiesConstraint(long userId, int n, List<? extends Result> items, Result candidate) {
             return (candidate.getId()%2) == 0;
@@ -43,7 +43,7 @@ public class AbstractFilteringCandidateItemSelectorTest {
         final List<Result> theItems = new ArrayList<>();
         theItems.add(Results.create(0,0));
 
-        AbstractFilteringCandidateItemSelector selector = new AbstractFilteringCandidateItemSelector() {
+        AbstractFilteringGreedyRerankStrategy selector = new AbstractFilteringGreedyRerankStrategy() {
             @Override
             protected boolean satisfiesConstraint(long userId, int n, List<? extends Result> items, Result candidate) {
                 // variables passed correctly
@@ -60,6 +60,7 @@ public class AbstractFilteringCandidateItemSelectorTest {
         candidates.add(Results.create(3,3));
         candidates.add(Results.create(4,4));
         Result result = selector.nextItem(theUserId, theN, theItems, candidates);
+        assertNotNull(result);
         assertEquals(1, result.getId());
     }
 
@@ -74,6 +75,7 @@ public class AbstractFilteringCandidateItemSelectorTest {
         candidates.add(Results.create(4,4));
 
         Result result = oddOnly.nextItem(0, -1, selected, candidates);
+        assertNotNull(result);
         assertEquals(2, result.getId());
     }
 

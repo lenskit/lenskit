@@ -35,7 +35,7 @@ import java.util.List;
  */
 
 
-public interface CandidateItemSelector {
+public interface GreedyRerankStrategy {
     /**
      * A method to select the next item to be recommended. This method will be called many times in the process of
      * generating recommendations. Therefore this method should consider optimzation options such as only searching a

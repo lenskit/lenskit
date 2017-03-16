@@ -21,21 +21,21 @@
 package org.lenskit.rerank;
 
 import org.lenskit.api.Result;
+import org.lenskit.results.Results;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-//TODO: REVIEW: I'm not in love with this class name.
 /**
- * Abstract class designed to make implementation of a CandidateItemSelector easier.
+ * Abstract class designed to make implementation of a GreedyRerankStrategy easier.
  * Implements a method of selecting the maximum scoring item that satisfies a constraint
  * Has abstract methods for the method of choosing how many items to consider before returning the best candidate.
  * note - While this class does have code for hard constraints, it is not a good option for implementing only a hard
- * constraint, in those cases an {@link AbstractFilteringCandidateItemSelector should be used.
+ * constraint, in those cases an {@link AbstractFilteringGreedyRerankStrategy should be used.
  *
  * @author Daniel Kluver
  */
-public abstract class AbstractScoringCandidateItemSelector implements CandidateItemSelector {
+public abstract class AbstractScoringGreedyRerankStrategy implements GreedyRerankStrategy {
 
     @Nullable
     @Override
@@ -55,7 +55,7 @@ public abstract class AbstractScoringCandidateItemSelector implements CandidateI
         }
 
         if (bestResult != null) {
-            bestResult = new RerankingRescoredResult(bestResult.getId(), bestScore, bestResult.getScore());
+            bestResult = Results.rescore(bestResult, bestScore);
         }
         return bestResult;
     }

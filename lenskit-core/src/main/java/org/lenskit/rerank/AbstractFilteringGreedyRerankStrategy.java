@@ -25,19 +25,17 @@ import org.lenskit.api.Result;
 import javax.annotation.Nullable;
 import java.util.List;
 
-//TODO: REVIEW: I'm not in love with this name.
-
 /**
- * Abstract class designed to make implementation of a CandidateItemSelector easier.
+ * Abstract class designed to make implementation of a GreedyRerankStrategy easier.
  * Implements a method of selecting the first item that satisfies a constraint method.
  * Has abstract methods for the method of choosing how many items to consider before returning the best candidate.
  *
  * If you want items chosen based on optimizing some objective metric (or both an objective and a constraint)
- * see: {@link AbstractScoringCandidateItemSelector}.
+ * see: {@link AbstractScoringGreedyRerankStrategy}.
  *
  * @author Daniel Kluver
  */
-public abstract class AbstractFilteringCandidateItemSelector implements CandidateItemSelector {
+public abstract class AbstractFilteringGreedyRerankStrategy implements GreedyRerankStrategy {
 
     @Nullable
     @Override

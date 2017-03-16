@@ -20,6 +20,8 @@
  */
 package org.lenskit.rerank;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Result;
@@ -50,12 +52,12 @@ import java.util.List;
 public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
     private static final Logger logger = LoggerFactory.getLogger(GreedyRerankingItemRecommender.class);
     private final ItemRecommender baseRecommender;
-    private final CandidateItemSelector selector;
+    private final GreedyRerankStrategy strategy;
 
     @Inject
-    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, CandidateItemSelector selector) {
+    public GreedyRerankingItemRecommender(ItemRecommender baseRecommender, GreedyRerankStrategy strategy) {
         this.baseRecommender = baseRecommender;
-        this.selector = selector;
+        this.strategy = strategy;
     }
 
 
@@ -70,19 +72,16 @@ public class GreedyRerankingItemRecommender extends AbstractItemRecommender {
 
         List<Result> results = new ArrayList<>(n);
         for (int i = 0; i<n; i++) {
-            Result nextItem = selector.nextItem(user, n, results, candidates);
+            final Result nextItem = strategy.nextItem(user, n, results, candidates);
             if (nextItem == null) {
                 break;
             } else {
-                //TODO: REVIEW: there should be an easier way to do this.
-                // Remove the selected item from the list of candidate items.
-                for(Iterator<Result> it = candidates.iterator(); it.hasNext();) {
-                    Result listResult = it.next();
-                    if (listResult.getId() == nextItem.getId()) {
-                        it.remove();
-                        break;
+                Iterables.removeIf(candidates, new Predicate<Result>() {
+                    @Override
+                    public boolean apply(@Nullable Result input) {
+                        return input!= null && input.getId() == nextItem.getId();
                     }
-                }
+                });
                 results.add(nextItem);
             }
         }

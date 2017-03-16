@@ -22,6 +22,7 @@ package org.lenskit.rerank;
 
 import org.junit.Test;
 import org.lenskit.api.Result;
+import org.lenskit.results.RescoredResult;
 import org.lenskit.results.Results;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class AbstractScoringCandidateItemSelectorTest {
+public class AbstractScoringGreedyRerankStrategyTest {
     @Test
     public void testParameterPassingAndMethodCallOrder() {
         final long theUserId = 10;
@@ -37,7 +38,7 @@ public class AbstractScoringCandidateItemSelectorTest {
         final List<Result> theItems = new ArrayList<>();
         theItems.add(Results.create(0,0));
 
-        AbstractScoringCandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+        AbstractScoringGreedyRerankStrategy selector = new AbstractScoringGreedyRerankStrategy() {
             private boolean order = true; // true - we are about to call satisfies constraint
 
             @Override
@@ -69,12 +70,13 @@ public class AbstractScoringCandidateItemSelectorTest {
         candidates.add(Results.create(4,4));
         candidates.add(Results.create(5,5));
         Result result = selector.nextItem(theUserId, theN, theItems, candidates);
+        assertNotNull(result);
         assertEquals(5, result.getId());
     }
 
     @Test
     public void testFiltering() {
-        AbstractScoringCandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+        AbstractScoringGreedyRerankStrategy selector = new AbstractScoringGreedyRerankStrategy() {
             private boolean order = true; // true - we are about to call satisfies constraint
 
             @Override
@@ -107,6 +109,7 @@ public class AbstractScoringCandidateItemSelectorTest {
         candidates.add(Results.create(4,4));
         candidates.add(Results.create(5,5));
         Result result = selector.nextItem(0, -1, theItems, candidates);
+        assertNotNull(result);
         assertEquals(4, result.getId());
 
         candidates = new ArrayList<>();
@@ -118,7 +121,7 @@ public class AbstractScoringCandidateItemSelectorTest {
     }
 
     @Test public void testScoring() {
-        AbstractScoringCandidateItemSelector selector = new AbstractScoringCandidateItemSelector() {
+        AbstractScoringGreedyRerankStrategy selector = new AbstractScoringGreedyRerankStrategy() {
             @Override
             protected double scoreCandidate(long userId, int n, List<? extends Result> items, Result candidate) {
                 return candidate.getId()*candidate.getId();
@@ -133,8 +136,11 @@ public class AbstractScoringCandidateItemSelectorTest {
         candidates.add(Results.create(10,2));
 
         Result result = selector.nextItem(0, -1, selected, candidates);
+        assertNotNull(result);
         assertEquals(10, result.getId());
         assertEquals(100, result.getScore(), 0.000001);
-        assertEquals(2, result.as(RerankingRescoredResult.class).getOriginalScore(), 0.000001);
+        assertNotNull(result.as(RescoredResult.class));
+        assertNotNull(result.as(RescoredResult.class).getOriginalResult());
+        assertEquals(candidates.get(2), result.as(RescoredResult.class).getOriginalResult());
     }
 }
