@@ -102,6 +102,13 @@ public class RecommendEvalTask implements EvalTask {
             task.setOutputFile(Paths.get(base.resolve(outFile)));
         }
 
+        String itemOut = json.path("item_output_file").asText(null);
+        if (itemOut != null) {
+            task.setItemOutputFile(Paths.get(base.resolve(itemOut)));
+        }
+
+        task.setSeparateItems(json.path("separate_items").asBoolean(false));
+
         task.setLabelPrefix(json.path("label_prefix").asText(null));
         task.setListSize(json.path("list_size").asInt(-1));
 
