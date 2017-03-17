@@ -52,9 +52,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10))))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -66,10 +65,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserSampleCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
-        assertThat(cf.method.sampleSize, equalTo(1000))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.sampleUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10), 1000)))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -81,10 +78,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserSampleCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
-        assertThat(cf.method.sampleSize, equalTo(5000))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.sampleUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10), 5000)))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -107,10 +102,8 @@ public class CrossfoldTest {
         String[] args = ["--output-dir", "crossfold", "--holdout-count", 5]
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
-
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(5)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(5))))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -122,9 +115,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.retain(5)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.retain(5))))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -136,9 +128,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdoutFraction(0.2)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdoutFraction(0.2))))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -150,9 +141,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.TIMESTAMP))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.TIMESTAMP, HistoryPartitions.holdout(10))))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -164,9 +154,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10))))
         assertThat(cf.partitionCount, equalTo(10))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
@@ -178,9 +167,8 @@ public class CrossfoldTest {
         Namespace options = parser.parseArgs(args)
         Crossfolder cf = command.configureCrossfolder(options)
 
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.method.order, equalTo(SortOrder.RANDOM))
-        assertThat(cf.method.partition, equalTo(HistoryPartitions.holdout(10)))
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10))))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV_GZIP))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
