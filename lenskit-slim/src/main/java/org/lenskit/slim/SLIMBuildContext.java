@@ -32,11 +32,12 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
+ * Create a data context used to train slim model
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@DefaultProvider(SlimBuildContextProvider.class)
-public class SlimBuildContext implements Serializable {
+@DefaultProvider(SLIMBuildContextProvider.class)
+public class SLIMBuildContext implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Nonnull
@@ -56,8 +57,8 @@ public class SlimBuildContext implements Serializable {
      * @param innerProducts Map of item IDs to inner-products with other item rating vectors
      * @param userItems Map of user IDs to user rated items
      */
-    public SlimBuildContext(@Nonnull Map<Long,Long2DoubleMap> itemRatings,
-                            @Nonnull Map<Long,Long2DoubleMap> innerProducts,
+    public SLIMBuildContext(@Nonnull Long2ObjectMap<Long2DoubleMap> itemRatings,
+                            @Nonnull Long2ObjectMap<Long2DoubleMap> innerProducts,
                             @Nonnull Long2ObjectMap<LongOpenHashBigSet> userItems) {
         itemVectors = itemRatings;
         this.innerProducts = innerProducts;

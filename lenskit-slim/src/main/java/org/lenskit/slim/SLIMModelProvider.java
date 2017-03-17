@@ -20,7 +20,6 @@
  */
 package org.lenskit.slim;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.model.ItemItemModel;
@@ -29,34 +28,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.Map;
 
-
-
-public class SlimModelProvider implements Provider<SlimModel>{
-    private static final Logger logger = LoggerFactory.getLogger(SlimModelProvider.class);
+/**
+ * Slim Model Provider.
+ * Create a map of item Ids to the corresponding weight vector trained
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+public class SLIMModelProvider implements Provider<SLIMModel>{
+    private static final Logger logger = LoggerFactory.getLogger(SLIMModelProvider.class);
 
     private final ItemItemModel itemSimilarityModel;
-    private final SlimBuildContext buildContext;
-    private final AbstractLinearRegression lrModel;
+    private final SLIMBuildContext buildContext;
+    private final SLIMScoringStrategy lrModel;
 
     @Inject
-    public SlimModelProvider(ItemItemModel m,
-                             @Transient SlimBuildContext context,
-                             AbstractLinearRegression regressionModel) {
+    public SLIMModelProvider(ItemItemModel m,
+                             @Transient SLIMBuildContext context,
+                             SLIMScoringStrategy regressionModel) {
         itemSimilarityModel = m;
         buildContext = context;
         lrModel = regressionModel;
     }
 
     @Override
-    public SlimModel get() {
+    public SLIMModel get() {
         Long2ObjectMap<Long2DoubleMap> trainedWeight = new Long2ObjectOpenHashMap<>(1000);
         LongSortedSet items = itemSimilarityModel.getItemUniverse();
         for (long item : items) {
             LongSet neighbors = LongUtils.frozenSet(itemSimilarityModel.getNeighbors(item).keySet());
-            Map<Long,Long2DoubleMap> trainingData = Maps.newHashMap();
-            Map<Long,Long2DoubleMap> innerProducts = Maps.newHashMap();
+            Long2ObjectMap<Long2DoubleMap> trainingData = new Long2ObjectOpenHashMap<>();
+            Long2ObjectMap<Long2DoubleMap> innerProducts = new Long2ObjectOpenHashMap<>();
             Long2DoubleMap labels = LongUtils.frozenMap(buildContext.getItemRatings(item));
             for (long nbrs : neighbors) {
                 trainingData.put(nbrs, LongUtils.frozenMap(buildContext.getItemRatings(nbrs)));
@@ -65,6 +67,6 @@ public class SlimModelProvider implements Provider<SlimModel>{
             Long2DoubleMap weight = lrModel.fit(labels, trainingData, innerProducts, item);
             trainedWeight.put(item, weight);
         }
-        return new SlimModel(trainedWeight);
+        return new SLIMModel(trainedWeight);
     }
 }

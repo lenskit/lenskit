@@ -19,6 +19,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * slim implementation
+ * Sparse Linear Methods(SLIM) for Top-N Recommender implementation
  */
 package org.lenskit.slim;

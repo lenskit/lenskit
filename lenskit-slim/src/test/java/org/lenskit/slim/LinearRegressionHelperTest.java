@@ -21,9 +21,7 @@
 package org.lenskit.slim;
 
 import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
 import org.lenskit.util.math.Scalars;
 import org.lenskit.util.math.Vectors;
@@ -37,7 +35,9 @@ import static org.lenskit.slim.LinearRegressionHelper.transposeMap;
 
 
 /**
- * Created by tmc on 2/19/17.
+ * Helper Class Test
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LinearRegressionHelperTest {
     @Test
@@ -47,7 +47,7 @@ public class LinearRegressionHelperTest {
         temp.put(1, 2.0);
         temp.put(2, 3.0);
         temp.put(3, 4.0);
-        Map<Long, Long2DoubleMap> mapT = Maps.newHashMap();
+        Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
         mapT.put((long)1, temp);
         mapT.put((long)2, temp);
         Map<Long, Long2DoubleMap> map = transposeMap(mapT);

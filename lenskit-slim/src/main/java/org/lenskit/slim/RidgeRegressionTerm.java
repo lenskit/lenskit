@@ -29,6 +29,7 @@ import java.lang.annotation.*;
 
 /**
  * The L2-norm regularization factor (beta) applied in many iterative methods.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Documented
 @DefaultDouble(3)

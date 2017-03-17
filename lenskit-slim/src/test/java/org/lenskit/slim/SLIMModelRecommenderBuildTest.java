@@ -20,14 +20,7 @@
  */
 package org.lenskit.slim;
 
-/**
- * Created by tmc on 2/19/17.
- */
-
-import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -52,60 +45,82 @@ import java.util.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-public class NaiveCoordDestLinearRegrTest {
+
+/**
+ * Build Slim model test.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+public class SLIMModelRecommenderBuildTest {
     private Long2DoubleMap y;
-    private Map<Long, Long2DoubleMap> data;
+    private Long2ObjectMap<Long2DoubleMap> data;
     private Long2DoubleMap weights;
-    final static Logger logger = LoggerFactory.getLogger(org.lenskit.slim.NaiveCoordDestLinearRegrTest.class);
+    final static Logger logger = LoggerFactory.getLogger(SLIMModelRecommenderBuildTest.class);
     private DataAccessObject dao;
-    // create weights
-    static Long2DoubleMap createWeights(int itemIdBound, int maxWeight) {
+
+    /**
+     * create simulated weights which the linear regression tries to learn
+     * @param maxItemId max value of item Id
+     * @param maxWeight max value of simulated weight
+     * @return simulated weight vector
+     */
+    static Long2DoubleMap createWeights(long maxItemId, int maxWeight) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
-        Random r = new Random();
-        for (long w = 0; w < itemIdBound; w++) {
-            int maxW = r.nextInt(maxWeight);
-            weights.put(w, maxW*r.nextDouble());
+        Random rnd = new Random();
+        for (long w = 0; w < maxItemId; w++) {
+            int maxW = rnd.nextInt(maxWeight);
+            weights.put(w, maxW*rnd.nextDouble());
         }
         //logger.info("original weights is {} and size is {}", weights, weights.size());
         return weights;
     }
-    // simulate user-item ratings matrix
-    static Map<Long, Long2DoubleMap> createModel(int itemIdBound, Long2DoubleMap weights) {
-        Random r = new Random();
-        Map<Long, Long2DoubleMap> simulatedData = Maps.newHashMap();
+
+    /**
+     * simulate row view of user-item ratings matrix (a map of user Ids to user ratings) and label vector whose element satisfies equation (Y = X*W + epsilon) epsilon is a sample of Gaussian Distribution N(0, 1)
+     * @param maxItemId max item Id
+     * @param weights weight vector used to compute simulated label vector
+     * @return user-item ratings matrix whose last row is simulated label y
+     */
+    static Long2ObjectMap<Long2DoubleMap> createDataModel(int maxItemId, Long2DoubleMap weights) {
+        Random rndGen = new Random();
+        Long2ObjectMap<Long2DoubleMap> simulatedData = new Long2ObjectOpenHashMap<>();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        int userNum = 20;
-        int maxRatingNum = 10; // each user's max rating number (less than itemIdBound)
-        int userIdBound = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
+        int userNum = 20; // number of total user
+        int maxRatingNum = 10; // each user's max possible rating number (less than maxItemId)
+        int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
 
         int size = 0;
         while (size < userNum) {
-            long userId = r.nextInt(userIdBound);
-            int userRatingNum = r.nextInt(maxRatingNum);
+
+            long userId = rndGen.nextInt(maxUserId); // produce random user Id
+            int userRatingNum = rndGen.nextInt(maxRatingNum); // produce random total rating number of a user's
             Long2DoubleMap userRatings = new Long2DoubleOpenHashMap();
             int i = 0;
             while (i < userRatingNum) {
-                long itemId = r.nextInt(itemIdBound);
-                double rating = ratingRange * r.nextDouble();
+                long itemId = rndGen.nextInt(maxItemId);
+                double rating = ratingRange * rndGen.nextDouble();
                 userRatings.put(itemId, rating);
                 i = userRatings.keySet().size();
             }
-            double label = Vectors.dotProduct(userRatings, weights) + r.nextGaussian();
+
+            double label = Vectors.dotProduct(userRatings, weights) + rndGen.nextGaussian();
             labels.put(userId, label);
             simulatedData.put(userId, userRatings);
             size = simulatedData.keySet().size();
         }
-        simulatedData.put((long)userIdBound, labels);
+        simulatedData.put((long)maxUserId, labels); // put simulated label into last row
         //logger.info("rating matrix is {}", simulatedData);
         return simulatedData;
     }
 
-    public void setup(Map<Long,Long2DoubleMap> data) throws RecommenderBuildException {
+
+    public void setup(Long2ObjectMap<Long2DoubleMap> data) throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<>();
         Iterator<Map.Entry<Long,Long2DoubleMap>> iter = data.entrySet().iterator();
         while (iter.hasNext()) {
+
             Map.Entry<Long,Long2DoubleMap> entry = iter.next();
             long itemId = entry.getKey();
             Long2DoubleMap ratings = entry.getValue();
@@ -122,7 +137,7 @@ public class NaiveCoordDestLinearRegrTest {
         LenskitConfiguration config = new LenskitConfiguration();
 
         config.bind(ItemScorer.class)
-                .to(SlimScorer.class);
+                .to(SLIMScorer.class);
 
         config.bind(StoppingCondition.class)
                 .to(IterationCountStoppingCondition.class);
@@ -137,18 +152,16 @@ public class NaiveCoordDestLinearRegrTest {
     @Before
     public void buildModel() {
         int itemNum = 10;
-        int maxWeight = 50;
+        int maxWeight = 5;
         this.weights = createWeights(itemNum, maxWeight);
-        Map<Long, Long2DoubleMap> temp = Maps.newHashMap(createModel(itemNum, weights));
-        LongOpenHashBigSet userIdSet = new LongOpenHashBigSet(temp.keySet());
+        Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(itemNum, weights));
+        LongOpenHashBigSet userIdSet = new LongOpenHashBigSet(dataWithLabels.keySet());
         long maxUserId = Collections.max(userIdSet);
-        this.y = new Long2DoubleOpenHashMap(temp.get(maxUserId));
-        temp.remove(maxUserId);
-        this.data = Maps.newHashMap(temp);
-        Map<Long, Long2DoubleMap> dataT = LinearRegressionHelper.transposeMap(data);
-        this.data = dataT;
+        y = new Long2DoubleOpenHashMap(dataWithLabels.get(maxUserId));
+        dataWithLabels.remove(maxUserId);
+        data = LinearRegressionHelper.transposeMap(dataWithLabels);
         setup(data);
-        LongOpenHashBigSet itemKeySet = new LongOpenHashBigSet(dataT.keySet());
+        LongOpenHashBigSet itemKeySet = new LongOpenHashBigSet(data.keySet());
         logger.info("item matrix size {} \n max item id is {} \n min item id is {} ",itemKeySet.size64(), Collections.max(itemKeySet), Collections.min(itemKeySet));
     }
 
@@ -176,8 +189,8 @@ public class NaiveCoordDestLinearRegrTest {
 
         // Naive update
         final long startTimeNaive = System.currentTimeMillis();
-        SlimUpdateParameters parameters = new SlimUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(10));
-        NaiveCoordDestLinearRegression model = new NaiveCoordDestLinearRegression(parameters);
+        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(10));
+        NaiveUpdate model = new NaiveUpdate(parameters);
         Long2DoubleMap predictedW = model.fit(y, data);
         //Long2DoubleMap predictions = model.predict(data, predictedW);
         Long2DoubleMap residuals = model.computeResiduals(y, data, predictedW);
@@ -188,7 +201,7 @@ public class NaiveCoordDestLinearRegrTest {
 
         // Covariance update
         final long startTimeCov = System.currentTimeMillis();
-        CovarianceUpdateCoordDestLinearRegression model_Cov = new CovarianceUpdateCoordDestLinearRegression(parameters);
+        CovarianceUpdate model_Cov = new CovarianceUpdate(parameters);
         Long2DoubleMap predictedW_Cov = model_Cov.fit(y, data);
         //Long2DoubleMap predictions = model.predict(data, predictedW);
         Long2DoubleMap residuals_Cov = model_Cov.computeResiduals(y, data, predictedW_Cov);
@@ -224,7 +237,7 @@ public class NaiveCoordDestLinearRegrTest {
         LenskitRecommenderEngine engine = makeEngine();
         try (Recommender rec = engine.createRecommender(dao)) {
             assertThat(rec.getItemScorer(),
-                    instanceOf(SlimScorer.class));
+                    instanceOf(SLIMScorer.class));
             assertThat(rec.getItemRecommender(),
                     instanceOf(TopNItemRecommender.class));
             Map<Long,Long2DoubleMap> dataTrans = LinearRegressionHelper.transposeMap(data);

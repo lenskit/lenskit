@@ -28,6 +28,7 @@ import java.lang.annotation.*;
 
 /**
  * Whether or not including intercept in linear regression.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Documented
 @DefaultBoolean(false)

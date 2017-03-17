@@ -20,7 +20,6 @@
  */
 package org.lenskit.slim;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
@@ -31,8 +30,6 @@ import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.math.Vectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -41,9 +38,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SlimBuildContextProvider implements Provider<SlimBuildContext> {
+public class SLIMBuildContextProvider implements Provider<SLIMBuildContext> {
     private final DataAccessObject dao;
 
     /**
@@ -51,7 +49,7 @@ public class SlimBuildContextProvider implements Provider<SlimBuildContext> {
      * @param dao The data access object.
      */
     @Inject
-    public SlimBuildContextProvider(@Transient DataAccessObject dao) {
+    public SLIMBuildContextProvider(@Transient DataAccessObject dao) {
         this.dao = dao;
     }
 
@@ -60,10 +58,9 @@ public class SlimBuildContextProvider implements Provider<SlimBuildContext> {
      * @return The slimBuildContext.
      */
     @Override
-    public SlimBuildContext get() {
-        Map<Long,Long2DoubleMap> itemVectors = Maps.newHashMap();
+    public SLIMBuildContext get() {
+        Long2ObjectMap<Long2DoubleMap> itemVectors = new Long2ObjectOpenHashMap<>();
         Long2ObjectMap<LongOpenHashBigSet> userItems = new Long2ObjectOpenHashMap<>();
-//        Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
 
         try (ObjectStream<IdBox<List<Rating>>> stream = dao.query(Rating.class)
                                                            .groupBy(CommonAttributes.ITEM_ID)
@@ -86,7 +83,7 @@ public class SlimBuildContextProvider implements Provider<SlimBuildContext> {
         }
 
         // Map items to vectors (maps) of item inner-product, which used to speed up slim learning process.
-        Map<Long,Long2DoubleMap> innerProducts = Maps.newHashMap();
+        Long2ObjectMap<Long2DoubleMap> innerProducts = new Long2ObjectOpenHashMap<>();
         LongOpenHashBigSet itemIdSet = new LongOpenHashBigSet(itemVectors.keySet());
         Iterator<Map.Entry<Long, Long2DoubleMap>> iter = itemVectors.entrySet().iterator();
 
@@ -112,6 +109,6 @@ public class SlimBuildContextProvider implements Provider<SlimBuildContext> {
             }
         }
 
-        return new SlimBuildContext(itemVectors, innerProducts, userItems);
+        return new SLIMBuildContext(itemVectors, innerProducts, userItems);
     }
 }

@@ -22,6 +22,7 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -36,15 +37,16 @@ import static org.lenskit.slim.LinearRegressionHelper.addVectors;
 /**
  * Linear regression which minimize following loss function
  * 1/2*||a_j - A*w_j||^2 + beta/2*||wj||^2 + lambda*||w_j||
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@LinearRegression
-@DefaultImplementation(CovarianceUpdateCoordDestLinearRegression.class)
-public abstract class AbstractLinearRegression {
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractLinearRegression.class);
-    protected final SlimUpdateParameters updateParameters;
+@DefaultImplementation(CovarianceUpdate.class)
+public abstract class SLIMScoringStrategy {
+    protected static final Logger logger = LoggerFactory.getLogger(SLIMScoringStrategy.class);
+    protected final SLIMUpdateParameters updateParameters;
 
     @Inject
-    public AbstractLinearRegression(SlimUpdateParameters updateParameters) {
+    public SLIMScoringStrategy(SLIMUpdateParameters updateParameters) {
         this.updateParameters = updateParameters;
     }
 
@@ -60,12 +62,13 @@ public abstract class AbstractLinearRegression {
 
     /**
      * compute residual vector
+     *
      * @param labels label vector
      * @param dataMatrix column-wise data matrix
      * @param weights weights vector
      * @return residual vector
      */
-    public Long2DoubleMap computeResiduals(Long2DoubleMap labels, Map<Long, Long2DoubleMap> dataMatrix, Long2DoubleMap weights) {
+    public Long2DoubleMap computeResiduals(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> dataMatrix, Long2DoubleMap weights) {
         Long2DoubleMap predictions = predict(dataMatrix, weights);
         return addVectors(labels, Vectors.multiplyScalar(predictions,-1.0));
     }
@@ -77,7 +80,7 @@ public abstract class AbstractLinearRegression {
      * @param trainingDataMatrix observations matrix row: user ratings for different items, column: item ratings of different users
      * @return a trained weight vector
      */
-    public abstract Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix);
+    public abstract Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix);
 
     /**
      * learning process passed in pre-computed inner-products to speed up learning iterations
@@ -88,11 +91,12 @@ public abstract class AbstractLinearRegression {
      * @param item item ID of label vector {@code labels}
      * @return a trained weight vector
      */
-    public abstract Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingDataMatrix, Map<Long, Long2DoubleMap> covM, long item);
+    public abstract Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix, Long2ObjectMap<Long2DoubleMap> covM, long item);
 
 
     /**
-     * optimized computation to update residual after one element of weight vector changed
+     * optimized computation of updating residual after one element of weight vector changed
+     *
      * @param r original residual vector
      * @param column one column of training matrix whose index equal to index of weight that is just updated
      * @param weightToUpdate one element of weight vector before update
@@ -107,11 +111,12 @@ public abstract class AbstractLinearRegression {
 
     /**
      * compute predictions given test data matrix and learned weights
+     *
      * @param testData column-wise data matrix
      * @param weights weight
      * @return prediction vector
      */
-    public Long2DoubleMap predict(Map<Long, Long2DoubleMap> testData, Long2DoubleMap weights) {
+    public Long2DoubleMap predict(Long2ObjectMap<Long2DoubleMap> testData, Long2DoubleMap weights) {
         Long2DoubleMap predictions = new Long2DoubleOpenHashMap();
         for (Map.Entry<Long, Long2DoubleMap> column : testData.entrySet()) {
             long key = column.getKey();

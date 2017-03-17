@@ -20,17 +20,30 @@
  */
 package org.lenskit.slim;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.lenskit.inject.Shareable;
+import org.lenskit.util.collections.LongUtils;
 
-import org.grouplens.grapht.annotation.DefaultImplementation;
+import java.io.Serializable;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
+/**
+ * SLIM model
+ * implement paper SLIM: Sparse Linear Methods for Top-N Recommender Systems
+ */
+@DefaultProvider(SLIMModelProvider.class)
+@Shareable
+public class SLIMModel implements Serializable {
+    private static final long serialVersionUID = 3L;
 
+    private final Long2ObjectMap<Long2DoubleMap> trainedWeights;
 
-@Documented
-@Qualifier
-@DefaultImplementation(CovarianceUpdateCoordDestLinearRegression.class)
-@Target({ElementType.TYPE, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface LinearRegression {
+    public SLIMModel(Long2ObjectMap<Long2DoubleMap> weights) {
+        trainedWeights = weights;
+    }
+
+    public Long2DoubleMap getWeights(long item) {
+        return LongUtils.frozenMap(trainedWeights.get(item));
+    }
 }

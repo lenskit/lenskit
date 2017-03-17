@@ -20,18 +20,15 @@
  */
 package org.lenskit.slim;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.math.Scalars;
-import org.lenskit.util.math.Vectors;
-
-import java.util.Iterator;
 import java.util.Map;
 import static java.lang.Math.abs;
 
 
-/**Several simple vector algebra used by SLIM learning process
- * Created by tmc on 2/10/17.
+/**
+ * Several simple vector algebra used by SLIM learning process
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class LinearRegressionHelper {
     /**
@@ -51,23 +48,19 @@ public final class LinearRegressionHelper {
      * @param matrix
      * @return
      */
-    public static Map<Long, Long2DoubleMap> transposeMap(Map<Long, Long2DoubleMap> matrix) {
-        Map<Long, Long2DoubleMap> mapT = Maps.newHashMap();
-        //Iterator<Map.Entry<Long, Long2DoubleMap>> iter = matrix.entrySet().iterator();
+    public static Long2ObjectMap<Long2DoubleMap> transposeMap(Long2ObjectMap<Long2DoubleMap> matrix) {
+        Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
+
         for (Map.Entry<Long, Long2DoubleMap> rowEntry : matrix.entrySet()) {
             long rowNum = rowEntry.getKey();
             Long2DoubleMap rowValue = rowEntry.getValue();
             for (Map.Entry<Long, Double> entry : rowValue.entrySet()) {
                 long colNum = entry.getKey();
                 double Value = entry.getValue();
-//                Long2DoubleMap colEntry = new Long2DoubleOpenHashMap();
-//                colEntry.put(rowNum, Value);
-//                mapT.putIfAbsent(colNum, colEntry);
-//                mapT.get(colNum).put(rowNum, Value);
-                Long2DoubleMap colEntry = mapT.get(colNum);
-                if (colEntry == null) colEntry = new Long2DoubleOpenHashMap();
-                colEntry.put(rowNum, Value);
-                mapT.put(colNum, colEntry);
+                Long2DoubleMap rowOfMapT = mapT.get(colNum);
+                if (rowOfMapT == null) rowOfMapT = new Long2DoubleOpenHashMap();
+                rowOfMapT.put(rowNum, Value);
+                mapT.put(colNum, rowOfMapT);
             }
         }
         return mapT;

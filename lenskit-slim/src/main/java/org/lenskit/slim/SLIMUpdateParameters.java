@@ -28,9 +28,13 @@ import org.lenskit.inject.Shareable;
 import javax.inject.Inject;
 import java.io.Serializable;
 
-
+/**
+ * Encapsulation of linear regression parameters.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @Shareable
-public final class SlimUpdateParameters implements Serializable {
+public final class SLIMUpdateParameters implements Serializable {
     private static final long serialVersionUID = 2L;
     private final double beta;
     private final double lambda;
@@ -39,7 +43,7 @@ public final class SlimUpdateParameters implements Serializable {
 
 
     @Inject
-    public SlimUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @Intercept boolean intercept, StoppingCondition stop) {
+    public SLIMUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @Intercept boolean intercept, StoppingCondition stop) {
         this.beta = beta;
         this.lambda = lambda;
         this.intercept = intercept;

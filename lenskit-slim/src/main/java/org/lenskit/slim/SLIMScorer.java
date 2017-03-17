@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -37,17 +36,20 @@ import javax.inject.Inject;
 import java.util.*;
 
 /**
+ * SLIM scorer
+ * Set itemScorer to this scorer in recommender configuration
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SlimScorer extends AbstractItemScorer {
-    private static final Logger logger = LoggerFactory.getLogger(SlimScorer.class);
+public class SLIMScorer extends AbstractItemScorer {
+    private static final Logger logger = LoggerFactory.getLogger(SLIMScorer.class);
 
-    protected final SlimModel model;
+    protected final SLIMModel model;
     private final RatingVectorPDAO rvDAO;
 
 
     @Inject
-    public SlimScorer(SlimModel m,
+    public SLIMScorer(SLIMModel m,
                       RatingVectorPDAO dao) {
         model = m;
         rvDAO = dao;
