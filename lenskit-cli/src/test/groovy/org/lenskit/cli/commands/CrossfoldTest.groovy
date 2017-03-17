@@ -60,6 +60,19 @@ public class CrossfoldTest {
     }
 
     @Test
+    public void testConfigureUserPartition() throws ArgumentParserException, IOException {
+        String[] args = ["--output-dir", "crossfold", "--partition-users"]
+        Namespace options = parser.parseArgs(args)
+        Crossfolder cf = command.configureCrossfolder(options)
+
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10))))
+        assertThat(cf.partitionCount, equalTo(5))
+        assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
+        assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
+    }
+
+    @Test
     public void testConfigureUserSample() throws ArgumentParserException, IOException {
         String[] args = ["--output-dir", "crossfold", "--sample-users"]
         Namespace options = parser.parseArgs(args)
@@ -67,6 +80,32 @@ public class CrossfoldTest {
 
         assertThat(cf.method,
                 equalTo(CrossfoldMethods.sampleUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10), 1000)))
+        assertThat(cf.partitionCount, equalTo(5))
+        assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
+        assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
+    }
+
+    @Test
+    public void testConfigureItemPartition() throws ArgumentParserException, IOException {
+        String[] args = ["--output-dir", "crossfold", "--partition-items"]
+        Namespace options = parser.parseArgs(args)
+        Crossfolder cf = command.configureCrossfolder(options)
+
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.partitionItems(HistoryPartitions.holdout(10))))
+        assertThat(cf.partitionCount, equalTo(5))
+        assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
+        assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
+    }
+
+    @Test
+    public void testConfigureItemSample() throws ArgumentParserException, IOException {
+        String[] args = ["--output-dir", "crossfold", "--sample-items"]
+        Namespace options = parser.parseArgs(args)
+        Crossfolder cf = command.configureCrossfolder(options)
+
+        assertThat(cf.method,
+                equalTo(CrossfoldMethods.sampleItems(HistoryPartitions.holdout(10), 1000)))
         assertThat(cf.partitionCount, equalTo(5))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(cf.outputDir, equalTo(Paths.get("crossfold")))
