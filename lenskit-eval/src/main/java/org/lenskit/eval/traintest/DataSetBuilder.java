@@ -28,7 +28,10 @@ import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Builder for generic train-test data sets.
@@ -40,7 +43,6 @@ public class DataSetBuilder implements Builder<DataSet> {
     private StaticDataSource trainingData;
     private StaticDataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<>();
-    private StaticDataSource queryData;
     private UUID isoGroup = new UUID(0, 0);
     private List<EntityType> entityTypes = Lists.newArrayList(CommonTypes.RATING);
 
@@ -65,11 +67,6 @@ public class DataSetBuilder implements Builder<DataSet> {
 
     public DataSetBuilder setTrain(StaticDataSource ds) {
         trainingData = ds;
-        return this;
-    }
-
-    public DataSetBuilder setQuery(StaticDataSource query) {
-        queryData = query;
         return this;
     }
 
@@ -114,6 +111,6 @@ public class DataSetBuilder implements Builder<DataSet> {
     @Override
     public DataSet build() {
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new DataSet(getName(), trainingData, queryData, testData, isoGroup, attributes, entityTypes);
+        return new DataSet(getName(), trainingData, testData, isoGroup, attributes, entityTypes);
     }
 }

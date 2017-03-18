@@ -35,8 +35,6 @@ import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.Rating;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
 import org.lenskit.inject.RecommenderInstantiator;
@@ -246,12 +244,9 @@ class ExperimentJob extends RecursiveAction {
 
     private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
-        LenskitConfiguration extraConfig = new LenskitConfiguration();
+        LenskitConfiguration extraConfig = dataSet.getExtraConfiguration();
+        extraConfig = new LenskitConfiguration(extraConfig);
         extraConfig.addComponent(dao);
-        PreferenceDomain dom = dataSet.getTrainingData().getPreferenceDomain();
-        if (dom != null) {
-            extraConfig.addComponent(dom);
-        }
 
         DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(sharedConfig, extraConfig);
         if (mergePool != null) {

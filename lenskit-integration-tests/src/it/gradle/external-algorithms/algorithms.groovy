@@ -20,14 +20,14 @@
  */
 
 
+import org.grouplens.lenskit.eval.metrics.predict.*
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.data.dao.DataAccessObject
-import org.lenskit.data.entities.CommonTypes
-import org.lenskit.inject.Transient
-import org.lenskit.eval.traintest.QueryData
-import org.grouplens.lenskit.eval.metrics.predict.*
+import org.lenskit.eval.traintest.TestUsers
 import org.lenskit.external.ExternalProcessItemScorerBuilder
+import org.lenskit.inject.Transient
+import it.unimi.dsi.fastutil.longs.LongSet
 
 import javax.inject.Inject
 import javax.inject.Provider
@@ -37,13 +37,13 @@ import javax.inject.Provider
  */
 class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
     DataAccessObject trainDAO
-    DataAccessObject queryDAO
+    LongSet testUsers
 
     @Inject
     public ExternalItemMeanScorerBuilder(@Transient DataAccessObject dao,
-                                         @Transient @QueryData DataAccessObject qdata) {
+                                         @Transient @TestUsers LongSet users) {
         trainDAO = dao
-        queryDAO = qdata
+        testUsers = users
     }
 
     @Override
@@ -56,7 +56,7 @@ class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
                       .setExecutable("python")
                       .addArgument("../item-mean.py")
                       .addArgument("--for-users")
-                      .addUserFileArgument(queryDAO.getEntityIds(CommonTypes.USER))
+                      .addUserFileArgument(testUsers)
                       .addRatingFileArgument(trainDAO)
                       .build()
     }

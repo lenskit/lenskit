@@ -20,20 +20,18 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
-
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * Qualifier to access query data available.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Qualifier for gaining access to the set of test users.  This can be useful for certain
+ * cases where the recommender would like to optimize for only needing to recommend for specific
+ * users; however, use of this is generally discouraged, as it makes algorithm components
+ * dependent on the evaluator.
  */
-@Documented
 @Qualifier
+@Documented
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.METHOD})
-@AllowUnqualifiedMatch
-public @interface QueryData {
+public @interface TestUsers {
 }
