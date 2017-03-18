@@ -25,10 +25,12 @@ import com.google.common.collect.Lists;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.MergePool;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
+import org.lenskit.RecommenderConfigurationException;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
@@ -37,6 +39,7 @@ import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
+import org.lenskit.inject.RecommenderGraphBuilder;
 import org.lenskit.inject.RecommenderInstantiator;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.UncheckedInterruptException;
@@ -244,17 +247,33 @@ class ExperimentJob extends RecursiveAction {
 
     private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
+
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addConfiguration(sharedConfig);
+
         LenskitConfiguration extraConfig = dataSet.getExtraConfiguration();
         extraConfig = new LenskitConfiguration(extraConfig);
         extraConfig.addComponent(dao);
+        rgb.addConfiguration(extraConfig);
 
-        DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(sharedConfig, extraConfig);
+        for (LenskitConfiguration cfg: algorithm.getConfigurations()) {
+            rgb.addConfiguration(cfg);
+        }
+
+        DAGNode<Component, Dependency> cfgGraph;
+        try {
+            cfgGraph = rgb.buildGraph();
+        } catch (ResolutionException e1) {
+            throw new RecommenderConfigurationException("error configuring recommender", e1);
+        }
+
         if (mergePool != null) {
             logger.debug("deduplicating configuration graph");
             synchronized (mergePool) {
                 cfgGraph = mergePool.merge(cfgGraph);
             }
         }
+
         DAGNode<Component, Dependency> graph;
         if (cache == null) {
             logger.debug("Building directly without a cache");
