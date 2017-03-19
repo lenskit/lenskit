@@ -25,12 +25,11 @@ import com.google.common.collect.Lists;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
-import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.MergePool;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
-import org.lenskit.RecommenderConfigurationException;
+import org.lenskit.LenskitRecommenderEngineBuilder;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
@@ -39,8 +38,6 @@ import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
-import org.lenskit.inject.RecommenderGraphBuilder;
-import org.lenskit.inject.RecommenderInstantiator;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.monitor.TrackedJob;
@@ -248,52 +245,15 @@ class ExperimentJob extends RecursiveAction {
     private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
 
-        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-        rgb.addConfiguration(sharedConfig);
-
-        LenskitConfiguration extraConfig = dataSet.getExtraConfiguration();
-        extraConfig = new LenskitConfiguration(extraConfig);
-        extraConfig.addComponent(dao);
-        rgb.addConfiguration(extraConfig);
+        LenskitRecommenderEngineBuilder builder = new EvalEngineBuilder();
+        builder.addConfiguration(sharedConfig);
+        builder.addConfiguration(dataSet.getExtraConfiguration());
 
         for (LenskitConfiguration cfg: algorithm.getConfigurations()) {
-            rgb.addConfiguration(cfg);
+            builder.addConfiguration(cfg);
         }
 
-        DAGNode<Component, Dependency> cfgGraph;
-        try {
-            cfgGraph = rgb.buildGraph();
-        } catch (ResolutionException e1) {
-            throw new RecommenderConfigurationException("error configuring recommender", e1);
-        }
-
-        if (mergePool != null) {
-            logger.debug("deduplicating configuration graph");
-            synchronized (mergePool) {
-                cfgGraph = mergePool.merge(cfgGraph);
-            }
-        }
-
-        DAGNode<Component, Dependency> graph;
-        if (cache == null) {
-            logger.debug("Building directly without a cache");
-            RecommenderInstantiator ri = RecommenderInstantiator.create(cfgGraph);
-            graph = ri.instantiate();
-        } else {
-            logger.debug("Instantiating graph with a cache");
-            try {
-                Set<DAGNode<Component, Dependency>> nodes = GraphtUtils.getShareableNodes(cfgGraph);
-                logger.debug("resolving {} nodes", nodes.size());
-                graph = NodeProcessors.processNodes(cfgGraph, nodes, cache);
-                logger.debug("graph went from {} to {} nodes",
-                             cfgGraph.getReachableNodes().size(),
-                             graph.getReachableNodes().size());
-            } catch (InjectionException e) {
-                logger.error("Error encountered while pre-processing algorithm components for sharing", e);
-                throw new RecommenderBuildException("Pre-processing of algorithm components for sharing failed.", e);
-            }
-        }
-        return new LenskitRecommender(graph);
+        return builder.buildRecommender(dao);
     }
 
     /**
@@ -301,5 +261,46 @@ class ExperimentJob extends RecursiveAction {
      */
     public void execute() {
         compute();
+    }
+
+    /**
+     * Internal reimplementation of the engine builder to support our manipulations.
+     */
+    private class EvalEngineBuilder extends LenskitRecommenderEngineBuilder {
+        @Override
+        protected DAGNode<Component, Dependency> buildRecommenderGraph(DataAccessObject dao) {
+            DAGNode<Component, Dependency> graph = super.buildRecommenderGraph(dao);
+
+            if (mergePool != null) {
+                logger.debug("deduplicating configuration graph");
+                synchronized (mergePool) {
+                    graph = mergePool.merge(graph);
+                }
+            }
+
+            return graph;
+        }
+
+        @Override
+        protected DAGNode<Component, Dependency> instantiateGraph(DAGNode<Component, Dependency> graph) {
+            if (cache == null) {
+                logger.debug("Building directly without a cache");
+                return super.instantiateGraph(graph);
+            } else {
+                logger.debug("Instantiating graph with a cache");
+                try {
+                    Set<DAGNode<Component, Dependency>> nodes = GraphtUtils.getShareableNodes(graph);
+                    logger.debug("resolving {} nodes", nodes.size());
+                    DAGNode<Component, Dependency> newGraph = NodeProcessors.processNodes(graph, nodes, cache);
+                    logger.debug("newGraph went from {} to {} nodes",
+                                 newGraph.getReachableNodes().size(),
+                                 newGraph.getReachableNodes().size());
+                    return newGraph;
+                } catch (InjectionException e) {
+                    logger.error("Error instantiating recommender nodes with cache", e);
+                    throw new RecommenderBuildException("Cached instantiation failed", e);
+                }
+            }
+        }
     }
 }

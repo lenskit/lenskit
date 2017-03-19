@@ -161,7 +161,7 @@ public class LenskitRecommenderEngineBuilder {
         for (Pair<LenskitConfiguration, ModelDisposition> cfg : configurations) {
             rgb.addConfiguration(cfg.getLeft());
         }
-        LenskitConfiguration daoConfig = null;
+        LenskitConfiguration daoConfig;
         if (dao != null) {
             daoConfig = new LenskitConfiguration();
             daoConfig.addComponent(dao);
@@ -183,7 +183,7 @@ public class LenskitRecommenderEngineBuilder {
      * @param graph The recommender graph.
      * @return The instantiated graph.
      */
-    private DAGNode<Component, Dependency> instantiateGraph(DAGNode<Component, Dependency> graph) {
+    protected DAGNode<Component, Dependency> instantiateGraph(DAGNode<Component, Dependency> graph) {
         RecommenderInstantiator inst = RecommenderInstantiator.create(graph);
 
         graph = inst.instantiate();
