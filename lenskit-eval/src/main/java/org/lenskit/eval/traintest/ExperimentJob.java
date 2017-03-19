@@ -29,9 +29,11 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.MergePool;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
+import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.LenskitRecommenderEngineBuilder;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.data.dao.DataAccessObject;
+import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.Entity;
@@ -115,12 +117,15 @@ class ExperimentJob extends RecursiveAction {
 
         logger.debug("fetching training data");
         DataAccessObject trainData = dataSet.getTrainingData().get();
+        logger.debug("fetching runtime data set");
+        StaticDataSource rt = dataSet.getRuntimeData();
+        DataAccessObject runtimeData = rt != null ? rt.get() : null;
         setup.finish();
 
         train.start();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        try (LenskitRecommender rec = buildRecommender(trainData)) {
+        try (LenskitRecommender rec = buildRecommender(trainData, runtimeData)) {
             buildTimer.stop();
             train.finish();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
@@ -242,7 +247,8 @@ class ExperimentJob extends RecursiveAction {
         tracker.finish();
     }
 
-    private LenskitRecommender buildRecommender(DataAccessObject dao) throws RecommenderBuildException {
+    private LenskitRecommender buildRecommender(@Nonnull DataAccessObject train,
+                                                @Nullable DataAccessObject runtime) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
 
         LenskitRecommenderEngineBuilder builder = new EvalEngineBuilder();
@@ -253,7 +259,12 @@ class ExperimentJob extends RecursiveAction {
             builder.addConfiguration(cfg);
         }
 
-        return builder.buildRecommender(dao);
+        if (runtime == null || runtime.equals(train)) {
+            return builder.buildRecommender(train);
+        } else {
+            LenskitRecommenderEngine engine = builder.build(train);
+            return engine.createRecommender(runtime);
+        }
     }
 
     /**
