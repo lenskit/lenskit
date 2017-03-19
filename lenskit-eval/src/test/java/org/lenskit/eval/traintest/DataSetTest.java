@@ -51,6 +51,7 @@ public class DataSetTest {
         assertThat(ds.getName(), equalTo("ut"));
         assertThat(ds.getTrainingData().getName(), equalTo("ut.train"));
         assertThat(ds.getTestData().getName(), equalTo("ut.test"));
+        assertThat(ds.getRuntimeData(), nullValue());
         assertThat(ds.getEntityTypes(),
                    containsInAnyOrder(RATING));
     }
@@ -74,6 +75,7 @@ public class DataSetTest {
         assertThat(ds.getAttributes(), hasEntry("Partition", (Object) 1));
         assertThat(ds.getTrainingData().getName(), equalTo("ut[1].train"));
         assertThat(ds.getTestData().getName(), equalTo("ut[1].test"));
+        assertThat(ds.getRuntimeData(), nullValue());
         assertThat(ds.getEntityTypes(),
                    containsInAnyOrder(RATING));
 
@@ -83,6 +85,7 @@ public class DataSetTest {
         assertThat(ds.getAttributes(), hasEntry("Partition", (Object) 2));
         assertThat(ds.getTrainingData().getName(), equalTo("ut[2].train"));
         assertThat(ds.getTestData().getName(), equalTo("ut[2].test"));
+        assertThat(ds.getRuntimeData(), nullValue());
         assertThat(ds.getEntityTypes(),
                    containsInAnyOrder(RATING));
     }
@@ -117,5 +120,26 @@ public class DataSetTest {
         DataSet ds = dsList.get(0);
         assertThat(ds.getEntityTypes(),
                 containsInAnyOrder(ITEM));
+    }
+
+    @Test
+    public void testRuntimeData() throws IOException {
+        JsonNode node = reader.readTree("{\"name\": \"ut\",\n" +
+                                                "\"train\": {\"file\": \"train-ratings.csv\"},\n" +
+                                                "\"test\": {\"file\": \"test-ratings.csv\"},\n" +
+                                                "\"runtime\": {\"file\": \"rt-ratings.csv\"}\n" +
+                                                "}");
+        URI baseURI = Paths.get("").toUri();
+        List<DataSet> dsList = DataSet.fromJSON(node, baseURI);
+        assertThat(dsList, hasSize(1));
+
+        DataSet ds = dsList.get(0);
+        assertThat(ds.getName(), equalTo("ut"));
+        assertThat(ds.getTrainingData().getName(), equalTo("ut.train"));
+        assertThat(ds.getTestData().getName(), equalTo("ut.test"));
+        assertThat(ds.getRuntimeData(), notNullValue());
+        assertThat(ds.getRuntimeData().getName(), equalTo("ut.runtime"));
+        assertThat(ds.getEntityTypes(),
+                   containsInAnyOrder(RATING));
     }
 }

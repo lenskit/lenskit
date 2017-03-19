@@ -42,6 +42,7 @@ import java.util.UUID;
 public class DataSetBuilder implements Builder<DataSet> {
     private String name;
     private StaticDataSource trainingData;
+    private StaticDataSource runtimeData;
     private StaticDataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<>();
     private UUID isoGroup = new UUID(0, 0);
@@ -70,12 +71,16 @@ public class DataSetBuilder implements Builder<DataSet> {
         return this;
     }
 
+    public DataSetBuilder setRuntime(StaticDataSource ds) {
+        runtimeData = ds;
+        return this;
+    }
+
     public DataSetBuilder setTest(StaticDataSource ds) {
         testData = ds;
         return this;
     }
 
-    // TODO set entity types
     public DataSetBuilder setEntityTypes(List<EntityType> typeList) {
         entityTypes = typeList;
         return this;
@@ -118,6 +123,6 @@ public class DataSetBuilder implements Builder<DataSet> {
                                 .putAll(attrs)
                                 .build();
         }
-        return new DataSet(getName(), trainingData, testData, isoGroup, attrs, entityTypes);
+        return new DataSet(getName(), trainingData, runtimeData, testData, isoGroup, attrs, entityTypes);
     }
 }

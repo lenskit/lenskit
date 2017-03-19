@@ -37,6 +37,7 @@ import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.IOException;
 import java.net.URI;
@@ -53,6 +54,8 @@ public class DataSet {
     private final String name;
     @Nonnull
     private final StaticDataSource trainData;
+    @Nullable
+    private final StaticDataSource runtimeData;
     @Nonnull
     private final StaticDataSource testData;
     @Nonnull
@@ -75,6 +78,7 @@ public class DataSet {
      */
     public DataSet(@Nonnull String name,
                    @Nonnull StaticDataSource train,
+                   @Nullable StaticDataSource rt,
                    @Nonnull StaticDataSource test,
                    @Nonnull UUID grp,
                    Map<String, Object> attrs,
@@ -83,6 +87,7 @@ public class DataSet {
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
         trainData = train;
+        runtimeData = rt;
         testData = test;
         group = grp;
         if (attrs == null) {
@@ -151,6 +156,17 @@ public class DataSet {
     @Nonnull
     public StaticDataSource getTrainingData() {
         return trainData;
+    }
+
+    /**
+     * Get the runtime data set. This is the data that should be available when the recommender is run,
+     * but not when its model is trained.
+     *
+     * @return The runtime data set.
+     */
+    @Nullable
+    public StaticDataSource getRuntimeData() {
+        return runtimeData;
     }
 
     public LongSet getAllItems() {
@@ -325,6 +341,9 @@ public class DataSet {
         String nbase = part >= 0 ? String.format("%s[%d]", name, part) : name;
         dsb.setTrain(loadDataSource(json.get("train"), base, nbase + ".train"));
         dsb.setTest(loadDataSource(json.get("test"), base, nbase + ".test"));
+        if (json.hasNonNull("runtime")) {
+            dsb.setRuntime(loadDataSource(json.get("runtime"), base, nbase + ".runtime"));
+        }
         if (json.has("group")) {
             dsb.setIsolationGroup(UUID.fromString(json.get("group").asText()));
         }
