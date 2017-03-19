@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.Builder;
 import org.lenskit.data.dao.file.StaticDataSource;
@@ -61,7 +62,6 @@ public class DataSetBuilder implements Builder<DataSet> {
      */
     public DataSetBuilder setName(String n) {
         name = n;
-        attributes.put("DataSet", n);
         return this;
     }
 
@@ -111,6 +111,13 @@ public class DataSetBuilder implements Builder<DataSet> {
     @Override
     public DataSet build() {
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new DataSet(getName(), trainingData, testData, isoGroup, attributes, entityTypes);
+        Map<String, Object> attrs = attributes;
+        if (!attrs.containsKey("DataSet")) {
+            attrs = ImmutableMap.<String,Object>builder()
+                                .put("DataSet", getName())
+                                .putAll(attrs)
+                                .build();
+        }
+        return new DataSet(getName(), trainingData, testData, isoGroup, attrs, entityTypes);
     }
 }

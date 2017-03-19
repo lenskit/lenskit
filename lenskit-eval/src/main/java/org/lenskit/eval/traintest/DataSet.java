@@ -273,7 +273,7 @@ public class DataSet {
         }
 
         ImmutableList.Builder<DataSet> finalSets = ImmutableList.builder();
-        boolean isolate = json.has("isolate") && json.get("isolate").asBoolean();
+        boolean isolate = json.path("isolate").asBoolean(false);
         if (isolate) {
             for (DataSet set: sets) {
                 finalSets.add(set.copyBuilder()
@@ -303,9 +303,7 @@ public class DataSet {
 
         JsonNode etNode = json.path("entity_types");
         if (etNode.isArray()) {
-            Iterator<JsonNode> nodeList = etNode.iterator();
-            while(nodeList.hasNext()) {
-                JsonNode node = nodeList.next();
+            for (JsonNode node : etNode) {
                 entityList.add(EntityType.forName(node.asText()));
             }
         } else if (etNode.isTextual()) {
@@ -320,7 +318,9 @@ public class DataSet {
 
         dsb.setEntityTypes(entityList);
         if (part >= 0) {
-            dsb.setAttribute("Partition", part);
+            dsb.setName(String.format("%s[%d]", name, part))
+               .setAttribute("DataSet", name)
+               .setAttribute("Partition", part);
         }
         String nbase = part >= 0 ? String.format("%s[%d]", name, part) : name;
         dsb.setTrain(loadDataSource(json.get("train"), base, nbase + ".train"));

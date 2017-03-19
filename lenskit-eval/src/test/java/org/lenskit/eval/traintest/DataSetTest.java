@@ -30,15 +30,62 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.lenskit.data.entities.CommonTypes.*;
 
-/**
- * Created by kiranthapa on 2/9/17.
- */
 public class DataSetTest {
     private ObjectReader reader = new ObjectMapper().reader();
+
+    @Test
+    public void testBasicConfig() throws IOException {
+        JsonNode node = reader.readTree("{\"name\": \"ut\",\n" +
+                                                "\"train\": {\"file\": \"train-ratings.csv\"},\n" +
+                                                "\"test\": {\"file\": \"test-ratings.csv\"}\n" +
+                                                "}");
+        URI baseURI = Paths.get("").toUri();
+        List<DataSet> dsList = DataSet.fromJSON(node, baseURI);
+        assertThat(dsList, hasSize(1));
+
+        DataSet ds = dsList.get(0);
+        assertThat(ds.getName(), equalTo("ut"));
+        assertThat(ds.getTrainingData().getName(), equalTo("ut.train"));
+        assertThat(ds.getTestData().getName(), equalTo("ut.test"));
+        assertThat(ds.getEntityTypes(),
+                   containsInAnyOrder(RATING));
+    }
+
+    @Test
+    public void testDataSetPartitions() throws IOException {
+        JsonNode node = reader.readTree("{\"name\": \"ut\",\n" +
+                                                "\"datasets\": [\n" +
+                                                "  { \"train\": {\"file\": \"train-ratings-1.csv\"},\n" +
+                                                "    \"test\": {\"file\": \"test-ratings-1.csv\"} },\n" +
+                                                "  { \"train\": {\"file\": \"train-ratings-2.csv\"},\n" +
+                                                "    \"test\": {\"file\": \"test-ratings-2.csv\"} }\n" +
+                                                "]}");
+        URI baseURI = Paths.get("").toUri();
+        List<DataSet> dsList = DataSet.fromJSON(node, baseURI);
+        assertThat(dsList, hasSize(2));
+
+        DataSet ds = dsList.get(0);
+        assertThat(ds.getName(), equalTo("ut[1]"));
+        assertThat(ds.getAttributes(), hasEntry("DataSet", (Object) "ut"));
+        assertThat(ds.getAttributes(), hasEntry("Partition", (Object) 1));
+        assertThat(ds.getTrainingData().getName(), equalTo("ut[1].train"));
+        assertThat(ds.getTestData().getName(), equalTo("ut[1].test"));
+        assertThat(ds.getEntityTypes(),
+                   containsInAnyOrder(RATING));
+
+        ds = dsList.get(1);
+        assertThat(ds.getName(), equalTo("ut[2]"));
+        assertThat(ds.getAttributes(), hasEntry("DataSet", (Object) "ut"));
+        assertThat(ds.getAttributes(), hasEntry("Partition", (Object) 2));
+        assertThat(ds.getTrainingData().getName(), equalTo("ut[2].train"));
+        assertThat(ds.getTestData().getName(), equalTo("ut[2].test"));
+        assertThat(ds.getEntityTypes(),
+                   containsInAnyOrder(RATING));
+    }
 
     @Test
     public void testEntityTypeArray() throws IOException {
@@ -71,21 +118,4 @@ public class DataSetTest {
         assertThat(ds.getEntityTypes(),
                 containsInAnyOrder(ITEM));
     }
-
-    @Test
-    public void testEntityTypeNone() throws IOException {
-        JsonNode node = reader.readTree("{\"name\": \"movie\", \n" +
-                "\"datasets\": [{\n" +
-                "\"train\": {\"file\": \"train-ratings.csv\"},\n" +
-                "\"test\": {\"file\": \"test-ratings.csv\"}\n" +
-                "}]\n" +
-                "}");
-        URI baseURI = Paths.get("").toUri();
-        List<DataSet> dsList = DataSet.fromJSON(node, baseURI);
-
-        DataSet ds = dsList.get(0);
-        assertThat(ds.getEntityTypes(),
-                containsInAnyOrder(RATING));
-    }
-
 }
