@@ -47,14 +47,14 @@ public class NaiveUpdate extends SLIMScoringStrategy {
     }
 
     /**
-     *
-     * Formula (7) (8)
+     * Naive update for one element of weight vector in a circle of coordinate descent
+     * Slight different from formula (7) (8) in order to support non-normalized rating vector
      *
      * @param colXj column of Xj
      * @param weightToUpdate an element of weight vector needs to update
      * @param residuals current residual vector
-     * @param lambda
-     * @param beta
+     * @param lambda L1-Norm Term
+     * @param beta L2-Norm Term
      * @return the updated element of weight vector
      */
     private double updateWeight(Long2DoubleMap colXj, double weightToUpdate, Long2DoubleMap residuals, double lambda, double beta) {
@@ -65,6 +65,7 @@ public class NaiveUpdate extends SLIMScoringStrategy {
 
     /**
      * Training process of SLIM using naive coordinate descent update
+     *
      * @param labels label vector
      * @param trainingDataMatrix Map of item IDs to item rating vectors.
      * @return weight vectors learned

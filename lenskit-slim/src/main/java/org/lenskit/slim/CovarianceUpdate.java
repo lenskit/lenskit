@@ -35,19 +35,22 @@ import static org.lenskit.slim.LinearRegressionHelper.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class CovarianceUpdate extends SLIMScoringStrategy {
+
     @Inject
     public CovarianceUpdate(SLIMUpdateParameters parameters) {
         super(parameters);
     }
+
     /**
-     * Formula (5), (8) and (9)
+     * Covariance update for one element of weight vector in a circle of coordinate descent
+     * Slightly different from formula (5), (8) and (9) in order to support non-normalized rating vectors
      *
      * @param itemXj a vector of training matrix whose index equal to the one of weights that needs to be updated
      * @param dotProdOfXjY first term of formula 9
      * @param dotProdsXjXks dot product vector whose element k is inner-product <x_j, x_k>
      * @param nonzeroWeights weight vector with nonzero value
-     * @param lambda
-     * @param beta
+     * @param lambda L1-norm term
+     * @param beta L2-norm term
      * @return the updated element of weight vector
      */
     public double updateWeight(Long2DoubleMap itemXj, double dotProdOfXjY, Long2DoubleMap dotProdsXjXks, Long2DoubleMap nonzeroWeights, double lambda, double beta) {
@@ -56,6 +59,14 @@ public final class CovarianceUpdate extends SLIMScoringStrategy {
         return softThresholding(firstTerm, lambda) / (norm2OfXj + beta);
     }
 
+    /**
+     * Training process of SLIM using covariance coordinate descent update
+     * Initialize weight to zero as in this case the L1-term and L2-term of loss function become zero,
+     * which means final learned weight should at least make the value of loss function less than the starting value.
+     * @param labels label vector
+     * @param trainingDataMatrix Map of item IDs to item rating vectors.
+     * @return weight vectors learned
+     */
     @Override
     public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
@@ -124,6 +135,18 @@ public final class CovarianceUpdate extends SLIMScoringStrategy {
         return LongUtils.frozenMap(weights);
     }
 
+    /**
+     * Training process of SLIM using covariance update of coordinate descent
+     * Get a learned weight using covariance update (formula (9))
+     * Initialize weight to zero as in this case the L1-term and L2-term become zero in loss function,
+     * which means final learned weight should at least make the value of loss function less than the starting value.
+     *
+     * @param labels label vector
+     * @param trainingDataMatrix Map of Item IDs to item rating vectors.
+     * @param covMatrix Map of Item IDs to item-item inner-products
+     * @param itemYId item ID of label vector (@code labels)
+     * @return weight vector learned
+     */
     @Override
     public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix, Long2ObjectMap<Long2DoubleMap> covMatrix, long itemYId) {
         // initialize training weights to be empty

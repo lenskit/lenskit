@@ -20,18 +20,18 @@
  */
 package org.lenskit.slim;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
-import org.lenskit.util.math.Scalars;
-import org.lenskit.util.math.Vectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.Map;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.lenskit.slim.LinearRegressionHelper.*;
 
-import static org.lenskit.slim.LinearRegressionHelper.transposeMap;
 
 
 /**
@@ -40,123 +40,99 @@ import static org.lenskit.slim.LinearRegressionHelper.transposeMap;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LinearRegressionHelperTest {
-    @Test
-    public void testTransposeMap() {
-        final Logger logger = LoggerFactory.getLogger(org.lenskit.slim.LinearRegressionHelperTest.class);
-        Long2DoubleMap temp = new Long2DoubleOpenHashMap();
-        temp.put(1, 2.0);
-        temp.put(2, 3.0);
-        temp.put(3, 4.0);
-        Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
-        mapT.put((long)1, temp);
-        mapT.put((long)2, temp);
-        Map<Long, Long2DoubleMap> map = transposeMap(mapT);
-        logger.info("transpose matrix is {}, original matrix is {}", map, mapT);
-        LongOpenHashBigSet itemSet = new LongOpenHashBigSet(map.keySet());
-        logger.info("itemSet {}", itemSet);
-    }
 
     @Test
-    public void testHashMap() {
-        final Logger logger = LoggerFactory.getLogger(org.lenskit.slim.LinearRegressionHelperTest.class);
-        Long2DoubleMap map = new Long2DoubleOpenHashMap();
-        map.put(1L, 2.0);
-        map.put(2L, 2.0);
-        for (double v : map.values()) {
-            logger.info("map values set is {}", v);
-        }
-    }
-
-    @Test
-    public void testHashMapRemove() {
-        final Logger logger = LoggerFactory.getLogger(org.lenskit.slim.LinearRegressionHelperTest.class);
+    public void testAddVectors() throws Exception {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
         map.put(1L, 2.0);
         map.put(2L, 3.0);
         map.put(3L, 4.0);
-        Map<Long,Long2DoubleMap> matrix = Maps.newConcurrentMap();
-        for (long i = 1; i < 4; i++) {
-            matrix.put(i, map);
-        }
-        logger.info("matrix is {}", matrix);
-        for (Map.Entry<Long, Long2DoubleMap> entry : matrix.entrySet()) {
-            long itemKey = entry.getKey();
-            Long2DoubleMap itemS = new Long2DoubleOpenHashMap(entry.getValue());
-            itemS.remove(itemKey);
-            matrix.put(itemKey, itemS);
-        }
-        logger.info("after remove matrix is {}", matrix);
+        map.put(5L, 3.0);
+        Long2DoubleMap map1 = new Long2DoubleOpenHashMap();
+        map1.put(2L, 3.0);
+        map1.put(7L, 2.0);
+        map1.put(5L, 4.0);
+        Long2DoubleMap sum = addVectors(map, map1);
+        Long2DoubleMap sumExpected = new Long2DoubleOpenHashMap();
+        sumExpected.put(1L, 2.0);
+        sumExpected.put(2L, 6.0);
+        sumExpected.put(3L, 4.0);
+        sumExpected.put(5L, 7.0);
+        sumExpected.put(7L, 2.0);
+        assertThat(sum.keySet(), containsInAnyOrder(1L,2L,3L,5L,7L));
+        assertThat(sum.values(), containsInAnyOrder(2.0, 3+3.0, 4.0, 3+4.0, 2.0));
+        assertThat(sum, is(sumExpected));
     }
 
     @Test
-    public void testComputeSimilarity() {
-        final Logger logger = LoggerFactory.getLogger(LinearRegressionHelperTest.class);
+    public void testMultiply() throws Exception {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
-        map.put(1L, 0.0);
-        map.put(2L, 1.0);
-        map.put(3L, 0.0);
-        Map<Long,Long2DoubleMap> matrix = Maps.newConcurrentMap();
-        matrix.put(1L, map);
-        map = new Long2DoubleOpenHashMap();
-        map.put(1L, 0.0);
-        map.remove(2L);
-        map.put(3L, Math.sqrt(3.0));
-        matrix.put(2L, map);
-        map = new Long2DoubleOpenHashMap();
-        map.put(1L, 0.0);
-        map.put(2L, 1.0);
-        map.put(3L, Math.sqrt(3.0));
-        matrix.put(3L, map);
-        logger.info("matrix is {}", matrix);
+        map.put(1L, 2.0);
+        map.put(2L, 3.0);
+        map.put(3L, 4.0);
+        map.put(5L, 3.0);
+        Long2DoubleMap map1 = new Long2DoubleOpenHashMap();
+        map1.put(2L, 3.0);
+        map1.put(7L, 2.0);
+        map1.put(5L, 4.0);
+        Long2DoubleMap product = multiply(map, map1);
+        assertThat(product.keySet(), containsInAnyOrder(2L, 5L));
+        assertThat(product.values(), containsInAnyOrder(3.0*3.0,3*4.0));
 
-        Map<Long,Long2DoubleMap> itemSimilarities = Maps.newHashMap();
-        Map<Long,Long2DoubleMap> innerProducts = Maps.newHashMap();
+    }
 
-        // Ignore nonpositive similarities
-        LongOpenHashBigSet itemIdSet = new LongOpenHashBigSet(matrix.keySet());
-        Iterator<Map.Entry<Long, Long2DoubleMap>> iter = matrix.entrySet().iterator();
+    @Test
+    public void testFilterValues() {
+        Long2DoubleMap map = new Long2DoubleOpenHashMap();
+        map.put(1L, 2.0);
+        map.put(2L, 3.0);
+        map.put(3L, 4.0);
+        map.put(5L, 3.0);
+        Long2DoubleMap mapFiltered = filterValues(map, 3.0);
+        assertThat(mapFiltered.keySet(), containsInAnyOrder(1L, 3L));
+        assertThat(mapFiltered.values(), containsInAnyOrder(2.0, 4.0));
+    }
 
-        while (iter.hasNext()) {
-            Map.Entry<Long, Long2DoubleMap> entry = iter.next();
-            long itemId = entry.getKey();
-            Long2DoubleMap itemIRatings = entry.getValue();
-            itemIdSet.remove(itemId);
-            Long2DoubleMap dotII = innerProducts.get(itemId);
-            if (dotII == null) dotII = new Long2DoubleOpenHashMap();
-            double dotProdII = Vectors.dotProduct(itemIRatings, itemIRatings);
-            dotII.put(itemId, dotProdII);
-            innerProducts.put(itemId, dotII);
-            for (long itemJId : itemIdSet) {
-                Long2DoubleMap itemJRatings = matrix.get(itemJId);
-                double numerator = Vectors.dotProduct(itemIRatings, itemJRatings);
-                double denominator = Vectors.euclideanNorm(itemIRatings) * Vectors.euclideanNorm(itemJRatings);
-                double cosineSimilarity = 0.0;
-                if (!Scalars.isZero(denominator)) cosineSimilarity = numerator/denominator;
-                // storing similarities
-                if (cosineSimilarity > 0.0) {
-                    Long2DoubleMap simJI = itemSimilarities.get(itemJId);
-                    Long2DoubleMap simIJ = itemSimilarities.get(itemId);
-                    if (simJI == null) simJI = new Long2DoubleOpenHashMap();
-                    if (simIJ == null) simIJ = new Long2DoubleOpenHashMap();
-                    simJI.put(itemId, cosineSimilarity);
-                    simIJ.put(itemJId, cosineSimilarity);
-                    itemSimilarities.put(itemJId, simJI);
-                    itemSimilarities.put(itemId, simIJ);
-                    // storing interProducts used for SLIM learning
-                    Long2DoubleMap dotJI = innerProducts.get(itemJId);
-                    Long2DoubleMap dotIJ = innerProducts.get(itemId);
-                    if (dotJI == null) dotJI = new Long2DoubleOpenHashMap();
-                    if (dotIJ == null) dotIJ = new Long2DoubleOpenHashMap();
-                    dotJI.put(itemId, numerator);
-                    dotIJ.put(itemJId, numerator);
-                    innerProducts.put(itemJId, dotJI);
-                    innerProducts.put(itemId, dotIJ);
-                }
-            }
-        }
+    @Test
+    public void testTransposeMap() {
+        final Logger logger = LoggerFactory.getLogger(org.lenskit.slim.LinearRegressionHelperTest.class);
+        Long2DoubleMap temp = new Long2DoubleOpenHashMap();
+        temp.put(1L, 2.0);
+        temp.put(2L, 3.0);
+        temp.put(3L, 4.0);
+        Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
+        mapT.put(1L, temp);
+        mapT.put(2L, temp);
+        Long2ObjectMap<Long2DoubleMap> map = transposeMap(mapT);
+        //logger.info("transpose matrix is {}, original matrix is {}", map, mapT);
 
-        logger.info("similarities matrix is {}", itemSimilarities);
-        logger.info("innerProducts matrix is {}", innerProducts);
+        assertThat(mapT.keySet().size(), equalTo(2));
+        assertThat(map.keySet().size(), equalTo(3));
+
+        LongOpenHashBigSet itemSet = new LongOpenHashBigSet(map.keySet());
+
+        assertThat(itemSet, containsInAnyOrder(1L, 3L, 2L));
+        assertThat(mapT.keySet(), containsInAnyOrder(1L, 2L));
+
+        Long2DoubleMap col1 = new Long2DoubleOpenHashMap();
+        col1.put(1L, 2.0);
+        col1.put(2L, 2.0);
+        Long2DoubleMap col2 = new Long2DoubleOpenHashMap();
+        col2.put(1L, 3.0);
+        col2.put(2L, 3.0);
+        Long2DoubleMap col3 = new Long2DoubleOpenHashMap();
+        col3.put(1L, 4.0);
+        col3.put(2L, 4.0);
+
+        assertThat(map.values(), containsInAnyOrder(col1, col2, col3));
+        //logger.info("itemSet {}", itemSet);
+
+        Long2ObjectMap<Long2DoubleMap> mapExpected = new Long2ObjectOpenHashMap<>();
+        mapExpected.put(1L, col1);
+        mapExpected.put(2L, col2);
+        mapExpected.put(3L, col3);
+        assertThat(map, is(mapExpected));
+
     }
 
 }

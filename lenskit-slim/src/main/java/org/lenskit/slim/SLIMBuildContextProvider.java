@@ -38,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * SLIM model build context provider
+ * Build the necessary context for SLIM model
+ * including user-item rating map, item-item inner-products map and users' rated items
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

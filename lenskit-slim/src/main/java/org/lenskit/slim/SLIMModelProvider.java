@@ -32,6 +32,9 @@ import javax.inject.Provider;
 /**
  * Slim Model Provider.
  * Create a map of item Ids to the corresponding weight vector trained
+ * This class inject ItemItemModel of knn package in order to get neighborhood items of the label vector which is also an item.
+ * Injecting ItemItemModel means we could use any kind of similarity strategy to find item-item neighbors,
+ * then use those those neighborhood item vectors to train SLIM model.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -41,6 +44,7 @@ public class SLIMModelProvider implements Provider<SLIMModel>{
     private final ItemItemModel itemSimilarityModel;
     private final SLIMBuildContext buildContext;
     private final SLIMScoringStrategy lrModel;
+
 
     @Inject
     public SLIMModelProvider(ItemItemModel m,

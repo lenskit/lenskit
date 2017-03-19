@@ -31,11 +31,14 @@ import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.api.ResultMap;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.knn.item.ModelSize;
+import org.lenskit.util.collections.CollectionUtils;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +47,11 @@ import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.lenskit.slim.LinearRegressionHelper.*;
 
 
 /**
- * Build Slim model test.
+ * Build Slim model recommender test.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -59,9 +63,9 @@ public class SLIMModelRecommenderBuildTest {
     private DataAccessObject dao;
 
     /**
-     * create simulated weights which the linear regression tries to learn
-     * @param maxItemId max value of item Id
-     * @param maxWeight max value of simulated weight
+     * Create simulated weights which the linear regression tries to learn
+     * @param maxItemId upper bound of item Id
+     * @param maxWeight max possible value of simulated weight
      * @return simulated weight vector
      */
     static Long2DoubleMap createWeights(long maxItemId, int maxWeight) {
@@ -76,7 +80,7 @@ public class SLIMModelRecommenderBuildTest {
     }
 
     /**
-     * simulate row view of user-item ratings matrix (a map of user Ids to user ratings) and label vector whose element satisfies equation (Y = X*W + epsilon) epsilon is a sample of Gaussian Distribution N(0, 1)
+     * Simulate row view of user-item ratings matrix (a map of user Ids to user ratings) and label vector whose element satisfies equation (Y = X*W + epsilon) epsilon is a sample of Gaussian Distribution N(0, 1)
      * @param maxItemId max item Id
      * @param weights weight vector used to compute simulated label vector
      * @return user-item ratings matrix whose last row is simulated label y
@@ -86,7 +90,7 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> simulatedData = new Long2ObjectOpenHashMap<>();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        int userNum = 20; // number of total user
+        int userNum = 200; // number of total user
         int maxRatingNum = 10; // each user's max possible rating number (less than maxItemId)
         int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
@@ -116,7 +120,7 @@ public class SLIMModelRecommenderBuildTest {
     }
 
 
-    public void setup(Long2ObjectMap<Long2DoubleMap> data) throws RecommenderBuildException {
+    private void setup(Long2ObjectMap<Long2DoubleMap> data) throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<>();
         Iterator<Map.Entry<Long,Long2DoubleMap>> iter = data.entrySet().iterator();
         while (iter.hasNext()) {
@@ -136,22 +140,22 @@ public class SLIMModelRecommenderBuildTest {
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
 
+        config.bind(DataAccessObject.class).to(dao);
         config.bind(ItemScorer.class)
                 .to(SLIMScorer.class);
-
         config.bind(StoppingCondition.class)
                 .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)
-                .to(10);
+                .to(15);
         config.set(ModelSize.class)
-                .to(20);
+                .to(0);
 
         return LenskitRecommenderEngine.build(config, dao);
     }
 
     @Before
     public void buildModel() {
-        int itemNum = 10;
+        int itemNum = 100;
         int maxWeight = 5;
         this.weights = createWeights(itemNum, maxWeight);
         Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(itemNum, weights));
@@ -159,7 +163,7 @@ public class SLIMModelRecommenderBuildTest {
         long maxUserId = Collections.max(userIdSet);
         y = new Long2DoubleOpenHashMap(dataWithLabels.get(maxUserId));
         dataWithLabels.remove(maxUserId);
-        data = LinearRegressionHelper.transposeMap(dataWithLabels);
+        data = transposeMap(dataWithLabels);
         setup(data);
         LongOpenHashBigSet itemKeySet = new LongOpenHashBigSet(data.keySet());
         logger.info("item matrix size {} \n max item id is {} \n min item id is {} ",itemKeySet.size64(), Collections.max(itemKeySet), Collections.min(itemKeySet));
@@ -179,58 +183,15 @@ public class SLIMModelRecommenderBuildTest {
     }
 
     @Test
-    public void testData() {
-        int sizeOfData = data.keySet().size();
-        assertThat(sizeOfData, equalTo(10));
+    public void testDataSize() {
+        int itemNum = data.keySet().size();
+        Long2ObjectMap<Long2DoubleMap> dataT = transposeMap(data);
+        int userNum = dataT.keySet().size();
+        assertThat(itemNum, equalTo(10));
+        assertThat(userNum, equalTo(20));
     }
 
-    @Test
-    public void testLinearRegression() {
 
-        // Naive update
-        final long startTimeNaive = System.currentTimeMillis();
-        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(10));
-        NaiveUpdate model = new NaiveUpdate(parameters);
-        Long2DoubleMap predictedW = model.fit(y, data);
-        //Long2DoubleMap predictions = model.predict(data, predictedW);
-        Long2DoubleMap residuals = model.computeResiduals(y, data, predictedW);
-        //double lossFun = model.computeLossFunction(residuals, predictedW);
-        //System.out.println(lossFun);
-        final long endTimeNaive = System.currentTimeMillis();
-
-
-        // Covariance update
-        final long startTimeCov = System.currentTimeMillis();
-        CovarianceUpdate model_Cov = new CovarianceUpdate(parameters);
-        Long2DoubleMap predictedW_Cov = model_Cov.fit(y, data);
-        //Long2DoubleMap predictions = model.predict(data, predictedW);
-        Long2DoubleMap residuals_Cov = model_Cov.computeResiduals(y, data, predictedW_Cov);
-        //double lossFun_Cov = model_Cov.computeLossFunction(residuals_Cov, predictedW_Cov);
-        //System.out.println(lossFun);
-        final long endTimeCov = System.currentTimeMillis();
-        logger.info("running time naive {}", (endTimeNaive - startTimeNaive));
-        logger.info("running time Cov {}", (endTimeCov - startTimeCov));
-
-
-        logger.info("Naive predicted weights is {}", predictedW);
-        Long2DoubleMap weightDiff = LinearRegressionHelper.addVectors(weights, Vectors.multiplyScalar(predictedW, -1.0));
-        double weightDiffNorm = Vectors.euclideanNorm(weightDiff);
-        logger.info("weight difference is {} \n and the norm is {}", weightDiff, weightDiffNorm);
-
-        logger.info("Cov predicted weights is {} \n original weight is {}", predictedW_Cov, weights);
-        Long2DoubleMap weightDiff_Cov = LinearRegressionHelper.addVectors(weights, Vectors.multiplyScalar(predictedW_Cov, -1));
-        double weightDiffNorm_Cov = Vectors.euclideanNorm(weightDiff_Cov);
-        logger.info("Cov update : weight difference is {} \n and the norm is {}", weightDiff_Cov, weightDiffNorm_Cov);
-        Long2DoubleMap resOrig = model_Cov.computeResiduals(y, data, weights);
-        double lossFunOrig = model_Cov.computeLossFunction(resOrig, weights);
-        logger.info("Original loss function is {}", lossFunOrig);
-        Long2DoubleMap resAfter = model_Cov.computeResiduals(y, data, predictedW_Cov);
-        double lossFunAfter = model_Cov.computeLossFunction(resAfter, predictedW_Cov);
-        logger.info("after loss function is {}", lossFunAfter);
-        Long2DoubleMap nonzeroWeigt = LinearRegressionHelper.filterValues(predictedW_Cov, 0.0);
-        logger.info("non-zero weight size {}", nonzeroWeigt.size());
-
-    }
 
     @Test
     public void testRecommender() {
@@ -240,13 +201,20 @@ public class SLIMModelRecommenderBuildTest {
                     instanceOf(SLIMScorer.class));
             assertThat(rec.getItemRecommender(),
                     instanceOf(TopNItemRecommender.class));
-            Map<Long,Long2DoubleMap> dataTrans = LinearRegressionHelper.transposeMap(data);
+            Long2ObjectMap<Long2DoubleMap> dataTrans = transposeMap(data);
             Iterator<Long> iter = dataTrans.keySet().iterator();
             long user = iter.next();
-            rec.getItemScorer().scoreWithDetails(user, new ArrayList<>(data.keySet()));
-            List<Long> recommend = rec.getItemRecommender().recommend(user);
-            logger.info("{}", recommend);
-            logger.info("input data {} and dao is {}",data, dao);
+            //double userMaxRating = Collections.max(dataTrans.get(user).values());
+
+            System.out.println(user);
+            System.out.println(dataTrans.get(user));
+            ResultMap r = rec.getItemScorer().scoreWithDetails(user, new ArrayList<>(data.keySet()));
+
+            System.out.println(r);
+            List<Long> recommendation = rec.getItemRecommender().recommend(user);
+            //System.out.println(recommendation);
+            //logger.info("recommendation for user {} is {}",user, recommend);
+            //logger.info("input data {} and dao is {}",data, dao);
         }
     }
 
