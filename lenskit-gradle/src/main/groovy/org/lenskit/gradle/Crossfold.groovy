@@ -181,8 +181,10 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      * Set the method to use. Can be one of:
      * <ul>
      *     <li>partition-users</li>
-     *     <li>partition-entities</li>
      *     <li>sample-users</li>
+     *     <li>partition-items</li>
+     *     <li>sample-items</li>
+     *     <li>partition-entities</li>
      * </ul>
      * @param m The method
      */

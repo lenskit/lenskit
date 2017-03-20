@@ -22,12 +22,14 @@ package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
@@ -39,12 +41,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
+class GroupedCrossfoldMethod implements CrossfoldMethod {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final EntityType groupType;
+    protected final TypedName<Long> groupAttribute;
+    private final GroupEntitySplitter entitySplitter;
     protected final SortOrder order;
     protected final HistoryPartitionMethod partition;
 
-    UserBasedCrossfoldMethod(SortOrder ord, HistoryPartitionMethod pa) {
+    GroupedCrossfoldMethod(EntityType typ, TypedName<Long> attr, GroupEntitySplitter es, SortOrder ord, HistoryPartitionMethod pa) {
+        groupType = typ;
+        groupAttribute = attr;
+        entitySplitter = es;
         order = ord;
         partition = pa;
     }
@@ -54,11 +63,11 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
         final int count = output.getCount();
         logger.info("splitting {} data from {} to {} partitions by users with method {}",
                     input, input, count, partition);
-        Long2IntMap splits = splitUsers(input.getEntityIds(CommonTypes.USER), count, output.getRandom());
+        Long2IntMap splits = entitySplitter.splitEntities(input.getEntityIds(groupType), count, output.getRandom());
         splits.defaultReturnValue(-1); // unpartitioned users should only be trained
         try (ObjectStream<IdBox<List<Rating>>> userStream = input.query(type)
                                                                  .asType(Rating.class)
-                                                                 .groupBy(CommonAttributes.USER_ID)
+                                                                 .groupBy(groupAttribute)
                                                                  .stream()) {
             for (IdBox<List<Rating>> history : userStream) {
                 int foldNum = splits.get(history.getId());
@@ -86,18 +95,40 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
         }
     }
 
-    /**
-     * Assign users to partitions.
-     * @param users The users to partition.
-     * @param np The number of user sets to build.
-     * @param rng The random number generator.
-     * @return A mapping of users to their test partitions.
-     */
-    protected abstract Long2IntMap splitUsers(LongSet users, int np, Random rng);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GroupedCrossfoldMethod that = (GroupedCrossfoldMethod) o;
+
+        return new EqualsBuilder()
+                .append(groupType, that.groupType)
+                .append(groupAttribute, that.groupAttribute)
+                .append(entitySplitter, that.entitySplitter)
+                .append(order, that.order)
+                .append(partition, that.partition)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(groupType)
+                .append(groupAttribute)
+                .append(entitySplitter)
+                .append(order)
+                .append(partition)
+                .toHashCode();
+    }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("entity", groupType)
+                .append("attribute", groupAttribute)
+                .append("splitter", entitySplitter)
                 .append("order", order)
                 .append("partition", partition)
                 .toString();
