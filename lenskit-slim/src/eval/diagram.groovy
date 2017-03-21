@@ -29,7 +29,7 @@ dumpGraph {
     output "${config.analysisDir}/slim.dot"
     algorithm {
         bind ItemScorer to SlimScorer
-        set IterationCount to 10
+        set IterationCount to 50 // setting to the arithmetic mean of user and item total number might get good weights learned
         set ModelSize to 20 // which is model size of similarity matrix in knn package.
     }
 }

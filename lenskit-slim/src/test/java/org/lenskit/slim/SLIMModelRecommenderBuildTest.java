@@ -27,21 +27,16 @@ import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
+import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.api.ResultMap;
+import org.lenskit.api.*;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+
 import org.lenskit.knn.item.ModelSize;
-import org.lenskit.util.collections.CollectionUtils;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -56,11 +51,13 @@ import static org.lenskit.slim.LinearRegressionHelper.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SLIMModelRecommenderBuildTest {
+    private static final int userNum = 200; // number of total user
+    private static final int itemNum = 100; // upper bound of item id (exclusive)
     private Long2DoubleMap y;
     private Long2ObjectMap<Long2DoubleMap> data;
     private Long2DoubleMap weights;
-    final static Logger logger = LoggerFactory.getLogger(SLIMModelRecommenderBuildTest.class);
     private DataAccessObject dao;
+
 
     /**
      * Create simulated weights which the linear regression tries to learn
@@ -75,6 +72,7 @@ public class SLIMModelRecommenderBuildTest {
             int maxW = rnd.nextInt(maxWeight);
             weights.put(w, maxW*rnd.nextDouble());
         }
+
         //logger.info("original weights is {} and size is {}", weights, weights.size());
         return weights;
     }
@@ -90,7 +88,7 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> simulatedData = new Long2ObjectOpenHashMap<>();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        int userNum = 200; // number of total user
+        //int userNum = 200; // number of total user
         int maxRatingNum = 10; // each user's max possible rating number (less than maxItemId)
         int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
@@ -99,7 +97,7 @@ public class SLIMModelRecommenderBuildTest {
         while (size < userNum) {
 
             long userId = rndGen.nextInt(maxUserId); // produce random user Id
-            int userRatingNum = rndGen.nextInt(maxRatingNum); // produce random total rating number of a user's
+            int userRatingNum = rndGen.nextInt(maxRatingNum) + 1; // produce random total rating number of a user (non-empty)
             Long2DoubleMap userRatings = new Long2DoubleOpenHashMap();
             int i = 0;
             while (i < userRatingNum) {
@@ -137,6 +135,7 @@ public class SLIMModelRecommenderBuildTest {
         dao = source.get();
     }
 
+    @SuppressWarnings("unchecked")
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
 
@@ -148,14 +147,14 @@ public class SLIMModelRecommenderBuildTest {
         config.set(IterationCount.class)
                 .to(15);
         config.set(ModelSize.class)
-                .to(0);
+                .to(30);
 
-        return LenskitRecommenderEngine.build(config, dao);
+        return LenskitRecommenderEngine.build(config);
     }
 
     @Before
     public void buildModel() {
-        int itemNum = 100;
+        //int itemNum = 100;
         int maxWeight = 5;
         this.weights = createWeights(itemNum, maxWeight);
         Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(itemNum, weights));
@@ -165,57 +164,89 @@ public class SLIMModelRecommenderBuildTest {
         dataWithLabels.remove(maxUserId);
         data = transposeMap(dataWithLabels);
         setup(data);
-        LongOpenHashBigSet itemKeySet = new LongOpenHashBigSet(data.keySet());
-        logger.info("item matrix size {} \n max item id is {} \n min item id is {} ",itemKeySet.size64(), Collections.max(itemKeySet), Collections.min(itemKeySet));
     }
 
 
     @Test
     public void testLabels() {
         int sizeOfy = y.size();
-        assertThat(sizeOfy, equalTo(20));
+        assertThat(sizeOfy, equalTo(200));
     }
 
     @Test
     public void testWeights() {
         int sizeOfWeights = weights.size();
-        assertThat(sizeOfWeights, equalTo(10));
+        assertThat(sizeOfWeights, equalTo(100));
     }
 
     @Test
     public void testDataSize() {
-        int itemNum = data.keySet().size();
         Long2ObjectMap<Long2DoubleMap> dataT = transposeMap(data);
         int userNum = dataT.keySet().size();
-        assertThat(itemNum, equalTo(10));
-        assertThat(userNum, equalTo(20));
+        assertThat(userNum, equalTo(200));
     }
 
 
-
     @Test
-    public void testRecommender() {
+    public void testRecommenderBuild() {
         LenskitRecommenderEngine engine = makeEngine();
         try (Recommender rec = engine.createRecommender(dao)) {
             assertThat(rec.getItemScorer(),
                     instanceOf(SLIMScorer.class));
             assertThat(rec.getItemRecommender(),
                     instanceOf(TopNItemRecommender.class));
-            Long2ObjectMap<Long2DoubleMap> dataTrans = transposeMap(data);
-            Iterator<Long> iter = dataTrans.keySet().iterator();
-            long user = iter.next();
-            //double userMaxRating = Collections.max(dataTrans.get(user).values());
-
-            System.out.println(user);
-            System.out.println(dataTrans.get(user));
-            ResultMap r = rec.getItemScorer().scoreWithDetails(user, new ArrayList<>(data.keySet()));
-
-            System.out.println(r);
-            List<Long> recommendation = rec.getItemRecommender().recommend(user);
-            //System.out.println(recommendation);
-            //logger.info("recommendation for user {} is {}",user, recommend);
-            //logger.info("input data {} and dao is {}",data, dao);
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testConfigSeparation() {
+        LenskitRecommenderEngine engine = makeEngine();
+        try (LenskitRecommender rec1 = engine.createRecommender();
+             LenskitRecommender rec2 = engine.createRecommender()) {
+
+            assertThat(rec1.getItemScorer(),
+                    not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(SLIMModel.class),
+                    allOf(not(nullValue()),
+                            sameInstance(rec2.get(SLIMModel.class))));
+        }
+    }
+
+    @Test
+    public void testSLIMScorer() {
+        LenskitRecommenderEngine engine = makeEngine();
+        Long2ObjectMap<Long2DoubleMap> dataTrans = transposeMap(data);
+        Iterator<Long> iter = dataTrans.keySet().iterator();
+        long user = iter.next();
+        try (Recommender rec = engine.createRecommender(dao)) {
+            ItemScorer scorer = rec.getItemScorer();
+            assertThat(scorer, notNullValue());
+            ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(data.keySet()));
+            for (long item : data.keySet()) {
+                Result r = details.get(item);
+                assertThat(r, notNullValue());
+            }
+
+        }
+
+    }
+
+    @Test
+    public void testRecommender() {
+        LenskitRecommenderEngine engine = makeEngine();
+        Long2ObjectMap<Long2DoubleMap> dataTrans = transposeMap(data);
+        Iterator<Long> iter = dataTrans.keySet().iterator();
+        long existingUserId = iter.next();
+        int notRatedItemSize = itemNum - dataTrans.get(existingUserId).keySet().size();
+        long nonExistingUserId = Collections.max(dataTrans.keySet()) + 1;
+        try (Recommender rec = engine.createRecommender(dao)) {
+            List<Long> existingUserRec = rec.getItemRecommender().recommend(existingUserId);
+            List<Long> nonExistingUserRec = rec.getItemRecommender().recommend(nonExistingUserId);
+            assertThat(existingUserRec, hasSize(notRatedItemSize));
+            assertThat(nonExistingUserRec, hasSize(itemNum));
+        }
+
     }
 
 }

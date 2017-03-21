@@ -22,10 +22,13 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
 import javax.inject.Inject;
+
+import java.io.Serializable;
 
 import static org.lenskit.slim.LinearRegressionHelper.*;
 
@@ -34,7 +37,9 @@ import static org.lenskit.slim.LinearRegressionHelper.*;
  * Implementation of Paper: Regularization Paths for Generalized Linear Models via Coordinate Descent
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class CovarianceUpdate extends SLIMScoringStrategy {
+@Shareable
+public final class CovarianceUpdate extends SLIMScoringStrategy implements Serializable {
+    private static final long serialVersionUID = 4L;
 
     @Inject
     public CovarianceUpdate(SLIMUpdateParameters parameters) {
@@ -70,7 +75,6 @@ public final class CovarianceUpdate extends SLIMScoringStrategy {
     @Override
     public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
-        LongOpenHashBigSet itemSet = new LongOpenHashBigSet(trainingDataMatrix.keySet());
         final double lambda = updateParameters.getLambda();
         final double beta = updateParameters.getBeta();
 
@@ -85,7 +89,9 @@ public final class CovarianceUpdate extends SLIMScoringStrategy {
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
         int k = 0;
         while (controller.keepTraining(lossDiff)) {
-            for (long j : itemSet) {
+            LongIterator items = trainingDataMatrix.keySet().iterator();
+            while (items.hasNext()) {
+                long j = items.nextLong();
                 Long2DoubleMap itemXj = trainingDataMatrix.get(j);
                 double dotProdOfXjY;
 
@@ -117,7 +123,6 @@ public final class CovarianceUpdate extends SLIMScoringStrategy {
                     innerProdsOfXs.put(j, dotProdsOfXjXks);
                 }
 
-                //Long2DoubleMap dotProdsOfXjXk = new Long2DoubleOpenHashMap(correlationOfColumns.get(j));
                 Long2DoubleMap dotProdsOfXjXks = innerProdsOfXs.get(j);
                 nonzeroWeights.remove(j);
 
@@ -141,10 +146,10 @@ public final class CovarianceUpdate extends SLIMScoringStrategy {
      * Initialize weight to zero as in this case the L1-term and L2-term become zero in loss function,
      * which means final learned weight should at least make the value of loss function less than the starting value.
      *
-     * @param labels label vector
+     * @param labels label vector which is one column of rating matrix (Map of all item IDs to item rating vectors)
      * @param trainingDataMatrix Map of Item IDs to item rating vectors.
      * @param covMatrix Map of Item IDs to item-item inner-products
-     * @param itemYId item ID of label vector (@code labels)
+     * @param itemYId item ID of label vector {@code labels}
      * @return weight vector learned
      */
     @Override

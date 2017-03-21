@@ -44,7 +44,11 @@ public final class LinearRegressionHelper {
     }
 
     /**
-     * transpose of matrix
+     * Transpose of matrix
+     * Convert a row view of rating matrix to a column view and vice versa
+     * After conversion, the key of empty row/column in the input matrix will be eliminated in the transpose matrix.
+     * So calling transposeMap(transposeMap(X)).keySet() may not equal to X.keySet() unless X has no mapping of key to empty Long2Double map.
+     *
      * @param matrix
      * @return
      */

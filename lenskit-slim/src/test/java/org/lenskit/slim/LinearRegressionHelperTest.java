@@ -95,7 +95,7 @@ public class LinearRegressionHelperTest {
 
     @Test
     public void testTransposeMap() {
-        final Logger logger = LoggerFactory.getLogger(org.lenskit.slim.LinearRegressionHelperTest.class);
+//        final Logger logger = LoggerFactory.getLogger(org.lenskit.slim.LinearRegressionHelperTest.class);
         Long2DoubleMap temp = new Long2DoubleOpenHashMap();
         temp.put(1L, 2.0);
         temp.put(2L, 3.0);

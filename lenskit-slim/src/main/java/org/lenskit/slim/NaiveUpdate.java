@@ -20,12 +20,9 @@
  */
 package org.lenskit.slim;
 
-
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
@@ -39,7 +36,8 @@ import static org.lenskit.slim.LinearRegressionHelper.*;
  * Implementation of Paper: Regularization Paths for Generalized Linear Models via Coordinate Descent
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NaiveUpdate extends SLIMScoringStrategy {
+@Shareable
+public final class NaiveUpdate extends SLIMScoringStrategy {
 
     @Inject
     public NaiveUpdate(SLIMUpdateParameters parameters) {
@@ -73,7 +71,7 @@ public class NaiveUpdate extends SLIMScoringStrategy {
     @Override
     public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
-        LongOpenHashBigSet itemSet = new LongOpenHashBigSet(trainingDataMatrix.keySet());
+
         final double lambda = updateParameters.getLambda();
         final double beta = updateParameters.getBeta();
 
@@ -84,7 +82,9 @@ public class NaiveUpdate extends SLIMScoringStrategy {
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
         int k = 0;
         while (controller.keepTraining(lossDiff)) {
-            for (long j : itemSet) {
+            LongIterator items = trainingDataMatrix.keySet().iterator();
+            while (items.hasNext()) {
+                long j = items.nextLong();
                 Long2DoubleMap column = trainingDataMatrix.get(j);
                 double weightToUpdate = weights.get(j);
                 double weightUpdated = updateWeight(column, weightToUpdate, residuals, lambda, beta);
