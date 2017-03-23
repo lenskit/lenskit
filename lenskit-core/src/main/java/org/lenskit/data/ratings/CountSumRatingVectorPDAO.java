@@ -26,17 +26,16 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
-import org.lenskit.util.IdBox;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.util.List;
 
 /**
- * Rating vector DAO that counts entities appearing for a user.
+ * Rating vector DAO that sums the `count` attributes for entities.
  */
 @ThreadSafe
-public class EntityCountRatingVectorPDAO extends AbstractRatingVectorPDAO {
+public class CountSumRatingVectorPDAO extends AbstractRatingVectorPDAO {
     private final EntityType type;
 
     /**
@@ -47,7 +46,7 @@ public class EntityCountRatingVectorPDAO extends AbstractRatingVectorPDAO {
      *             of times an item ID appears for a given user ID.
      */
     @Inject
-    public EntityCountRatingVectorPDAO(DataAccessObject dao, @InteractionEntityType EntityType type) {
+    public CountSumRatingVectorPDAO(DataAccessObject dao, @InteractionEntityType EntityType type) {
         super(dao);
         this.type = type;
     }
@@ -59,12 +58,13 @@ public class EntityCountRatingVectorPDAO extends AbstractRatingVectorPDAO {
 
     @Override
     protected Long2DoubleMap makeVector(List<Entity> entities) {
-        Long2DoubleMap counts = new Long2DoubleOpenHashMap();
+        Long2DoubleOpenHashMap counts = new Long2DoubleOpenHashMap();
         counts.defaultReturnValue(0);
 
         for (Entity e: entities) {
             long item = e.getLong(CommonAttributes.ITEM_ID);
-            counts.put(item, counts.get(item) + 1);
+            int count = e.getInteger(CommonAttributes.COUNT);
+            counts.addTo(item, count);
         }
 
         return counts;
