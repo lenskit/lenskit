@@ -230,6 +230,7 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
     }
 
     private DataAccessObject makeDAO() throws IOException {
+        logger.info("creating DAO for {}", name);
         Set<EntityType> types = new HashSet<>();
 
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
