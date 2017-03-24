@@ -185,7 +185,7 @@ public class TextEntitySource implements EntitySource, Describable {
         while (header.size() < headerLines) {
             String line = lines.readObject();
             if (line == null) {
-                IOException ex = new IOException(String.format("expected %d header lines, found %d", headerLines, header.size()));
+                IOException ex = new IOException(String.format("%s: expected %d header lines, found %d", sourceURL, headerLines, header.size()));
                 try {
                     lines.close();
                 } catch (Throwable th) {
