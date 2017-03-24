@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.lenskit.util.TypeUtils;
+import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
@@ -377,7 +378,13 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             for (TypedName column: fileColumns) {
                 String value = tokenizer.nextToken();
                 if (value != null && column != null) {
-                    builder.setAttribute(column, column.parseString(value));
+                    Object parsed;
+                    try {
+                         parsed = column.parseString(value);
+                    } catch (IllegalArgumentException e) {
+                        throw new DataAccessException("line " + lineNo + ": error parsing column " + column, e);
+                    }
+                    builder.setAttribute(column, parsed);
                 }
             }
 
