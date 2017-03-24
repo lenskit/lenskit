@@ -77,7 +77,7 @@ public class TrainTest implements Command {
             TrainTestExperiment experiment = TrainTestExperiment.load(specFile.toPath());
             experiment.execute();
         } catch (IOException e) {
-            throw new LenskitCommandException("could not load spec file");
+            throw new LenskitCommandException("could not load spec file", e);
         } catch (EvaluationException e) {
             throw new LenskitCommandException("error running LensKit experiment", e);
         } finally {
