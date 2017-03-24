@@ -115,11 +115,15 @@ class ExperimentJob extends RecursiveAction {
                                                     dataSet, algorithm);
         RowBuilder outputRow = globalOutput.getLayout().newRowBuilder();
 
-        logger.debug("fetching training data");
+        logger.info("fetching training data");
         DataAccessObject trainData = dataSet.getTrainingData().get();
-        logger.debug("fetching runtime data set");
+
         StaticDataSource rt = dataSet.getRuntimeData();
-        DataAccessObject runtimeData = rt != null ? rt.get() : null;
+        DataAccessObject runtimeData = null;
+        if (rt != null) {
+            logger.info("fetching runtime data");
+            runtimeData = rt.get();
+        }
         setup.finish();
 
         train.start();
@@ -161,6 +165,7 @@ class ExperimentJob extends RecursiveAction {
                                                     .start();
 
             List<EntityType> entityTypes = dataSet.getEntityTypes();
+            logger.info("using entity types {} for test data", entityTypes);
 
             for (Entity user: testData.query(CommonTypes.USER).get()) {
                 if (Thread.interrupted()) {

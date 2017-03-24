@@ -30,6 +30,7 @@ import org.slf4j.Logger;
  */
 public class StatusLogger {
     private final Logger logger;
+    private int nrunning = 0;
 
     /**
      * Construct a new status logger writing to a logger.
@@ -46,9 +47,9 @@ public class StatusLogger {
 
         if (job.getType().equals(ExperimentJob.JOB_TYPE)) {
             assert parent != null;
+            nrunning += 1;
             logger.info("started eval job {} of {}: {}",
-                        parent.getChildrenFinished() + parent.getChildrenRunning(),
-                        parent.getChildCount(), job.getDescription());
+                        nrunning, parent.getChildCount(), job.getDescription());
         } else if (parent != null && parent.getType().equals(ExperimentJob.JOB_TYPE)) {
             logger.info("started task: {}", job);
         } else {
