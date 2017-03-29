@@ -66,14 +66,14 @@ task fetchData(group: 'prep') {
     outputs.dir mlDataDir
     // don't download if we're running offline
     onlyIf { !gradle.startParameter.isOffline() }
-}
-fetchData << {
-    logger.lifecycle "These tests make use of the MovieLens 100K data set from GroupLens Research.  Use of this data set is restricted to non-commercial purposes and is only permitted in accordance with the license terms.  More information is available at <http://grouplens.org/datasets/movielens>."
-    mkdir buildDir
-    ant {
-        get src: mlDataURL, dest: mlDataFile, skipexisting: true
-        unzip(src: mlDataFile, dest: mlDataDir) {
-            mapper type: 'flatten'
+    doLast {
+        logger.lifecycle "These tests make use of the MovieLens 100K data set from GroupLens Research.  Use of this data set is restricted to non-commercial purposes and is only permitted in accordance with the license terms.  More information is available at <http://grouplens.org/datasets/movielens>."
+        mkdir buildDir
+        ant {
+            get src: mlDataURL, dest: mlDataFile, skipexisting: true
+            unzip(src: mlDataFile, dest: mlDataDir) {
+                mapper type: 'flatten'
+            }
         }
     }
 }

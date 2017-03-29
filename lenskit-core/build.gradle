@@ -81,11 +81,11 @@ task versionInfo {
     }
     outputs.file versionFile
     inputs.property 'version', version
-}
-versionInfo << {
-    def vf = file(versionFile)
-    mkdir vf.parentFile
-    vf.text = "lenskit.version=$version\n"
+    doLast {
+        def vf = file(versionFile)
+        mkdir vf.parentFile
+        vf.text = "lenskit.version=$version\n"
+    }
 }
 classes.dependsOn versionInfo
 
