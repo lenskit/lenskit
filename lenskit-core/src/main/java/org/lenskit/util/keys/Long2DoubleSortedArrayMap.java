@@ -185,7 +185,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
      * @return The key at position {@code i}.
      */
     public long getKeyByIndex(int i) {
-        return keys.getKey(i);
+        return keys.getKey(i + keys.getLowerBound());
     }
 
     /**
@@ -194,7 +194,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
      * @return The value at position {@code i}.
      */
     public double getValueByIndex(int i) {
-        return values[i];
+        return values[i + keys.getLowerBound()];
     }
 
     @Override
@@ -202,12 +202,12 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         return null; // natural ordering
     }
 
-    private Long2DoubleSortedMap createSubMap(int lb, int ub) {
+    private Long2DoubleSortedArrayMap createSubMap(int lb, int ub) {
         return new Long2DoubleSortedArrayMap(keys.subIndex(lb, ub), values);
     }
 
     @Override
-    public Long2DoubleSortedMap subMap(long from, long to) {
+    public Long2DoubleSortedArrayMap subMap(long from, long to) {
         int startIdx = keys.findLowerBound(from); // include 'from'
         int endIdx = keys.findLowerBound(to); // lower bound so we don't include 'to'
         return createSubMap(startIdx, endIdx);
@@ -218,7 +218,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
      * @param toKeep The set of keys to keep.
      * @return A copy of this map containing only those keys that appear in {@code keys}.
      */
-    public Long2DoubleSortedMap subMap(LongSet toKeep) {
+    public Long2DoubleSortedArrayMap subMap(LongSet toKeep) {
         if (toKeep == keySet()) {
             return this;
         }
@@ -230,7 +230,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
     }
 
-    private Long2DoubleSortedMap slowSubMap(LongSet toKeep) {
+    private Long2DoubleSortedArrayMap slowSubMap(LongSet toKeep) {
         LongSortedSet kept = LongUtils.setIntersect(keySet(), toKeep);
         double[] nvs = new double[kept.size()];
         int i = keys.getLowerBound();
@@ -248,7 +248,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         return wrap(SortedKeyIndex.fromCollection(kept), nvs);
     }
 
-    private Long2DoubleSortedMap fastSubMap(LongSortedArraySet toKeep) {
+    private Long2DoubleSortedArrayMap fastSubMap(LongSortedArraySet toKeep) {
         SortedKeyIndex oks = toKeep.getIndex();
         int tn = size();
         int on = oks.size();
