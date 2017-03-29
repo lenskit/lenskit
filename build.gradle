@@ -100,6 +100,9 @@ allprojects { project ->
     configurations.all { cfg ->
         def resolve = task("resolve${cfg.name.capitalize()}") {
             description "Resolve dependencies in the $cfg.name configuration."
+            onlyIf {
+                cfg.canBeResolved
+            }
             doLast {
                 logger.info 'resolving {}#{}', project.path, cfg.name
                 def result = cfg.resolvedConfiguration
