@@ -51,7 +51,7 @@ dependencies {
     testRuntime project(':lenskit-cli')
 
     renjin project(':lenskit-test')
-    renjin group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2124'
+    renjin group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2348'
 }
 
 // These tests require the MovieLens data set - arrange to download it
