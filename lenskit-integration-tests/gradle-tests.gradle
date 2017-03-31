@@ -75,6 +75,15 @@ file('src/it/gradle').eachDir { testDir ->
                 mlDataDir: mlDataDir,
                 ratingsFile: "$mlDataDir/u.data"
         ]
+        def props = new Properties()
+        if (file("$testDir/gradle.properties").exists()) {
+            file("$testDir/gradle.properties").withReader { r ->
+                props.load(r)
+            }
+            if (props.getProperty("org.gradle.parallel") == 'true') {
+                startParameter.setParallelProjectExecutionEnabled(true)
+            }
+        }
         dir = workDir
         buildFile = "$workDir/build.gradle"
         tasks = ['check']

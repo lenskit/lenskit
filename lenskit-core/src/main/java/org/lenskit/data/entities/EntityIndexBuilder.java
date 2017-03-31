@@ -45,7 +45,7 @@ public abstract class EntityIndexBuilder {
      */
     @SuppressWarnings("unchecked")
     public static EntityIndexBuilder create(TypedName<?> name) {
-        if (name.getType().equals(Long.class)) {
+        if (name.getRawType().equals(Long.class)) {
             return new LongEntityIndexBuilder((TypedName<Long>) name);
         } else {
             return new GenericEntityIndexBuilder(name);

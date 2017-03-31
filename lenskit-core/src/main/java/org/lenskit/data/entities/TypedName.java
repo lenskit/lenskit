@@ -30,10 +30,9 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.util.TypeUtils;
 import org.joda.convert.FromStringConverter;
-import org.joda.convert.StringConvert;
-import org.joda.convert.StringConverter;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.io.*;
 
@@ -52,7 +51,11 @@ public final class TypedName<T> implements Serializable {
     private final String name;
     private final TypeToken<T> type;
     private transient volatile int hashCode;
+    @Nullable
     private transient volatile FromStringConverter converter;
+    @Nullable
+    private transient volatile Class<? super T> rawType;
+    @Nullable
     private transient volatile JavaType javaType;
 
     private TypedName(String n, TypeToken<T> t) {
@@ -88,7 +91,11 @@ public final class TypedName<T> implements Serializable {
      */
     @Nonnull
     public Class<? super T> getRawType() {
-        return type.getRawType();
+        Class<? super T> rt = rawType;
+        if (rt == null) {
+            rawType = rt = type.getRawType();
+        }
+        return rt;
     }
 
     /**
@@ -112,7 +119,7 @@ public final class TypedName<T> implements Serializable {
         if (cvt == null) {
             converter = cvt = TypeUtils.lookupFromStringConverter(type);
         }
-        return (T) cvt.convertFromString(type.getRawType(), value);
+        return (T) cvt.convertFromString(getRawType(), value);
     }
 
     @Override
@@ -144,8 +151,8 @@ public final class TypedName<T> implements Serializable {
     @Override
     public String toString() {
         String tname;
-        if (ClassUtils.isPrimitiveWrapper(type.getRawType())) {
-            tname = ClassUtils.wrapperToPrimitive(type.getRawType()).getName();
+        if (ClassUtils.isPrimitiveWrapper(getRawType())) {
+            tname = ClassUtils.wrapperToPrimitive(getRawType()).getName();
         } else {
             tname = type.toString();
         }

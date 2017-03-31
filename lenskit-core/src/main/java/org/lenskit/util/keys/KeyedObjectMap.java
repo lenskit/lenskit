@@ -245,6 +245,11 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         }
 
         @Override
+        public boolean contains(long k) {
+            return containsKey(k);
+        }
+
+        @Override
         public LongBidirectionalIterator iterator(long l) {
             throw new UnsupportedOperationException();
         }

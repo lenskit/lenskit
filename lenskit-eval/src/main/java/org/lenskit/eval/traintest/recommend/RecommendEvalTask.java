@@ -489,10 +489,12 @@ public class RecommendEvalTask implements EvalTask {
             ResultList results = null;
             LongList items = null;
             if (useDetails) {
+                logger.debug("generating {} detailed recommendations for user {}", n, testUser.getUser());
                 results = itemRecommender.recommendWithDetails(testUser.getUserId(), n,
                                                                candidates, excludes);
             } else {
                 // no one needs details, save time collecting them
+                logger.debug("generating {} recommendations for user {}", n, testUser.getUser());
                 items = LongUtils.asLongList(itemRecommender.recommend(testUser.getUserId(), n,
                                                                        candidates, excludes));
             }
@@ -565,7 +567,9 @@ public class RecommendEvalTask implements EvalTask {
         @Nonnull
         @Override
         public Map<String, Object> measureUser(TestUser testUser) {
-            for (Entity te: testUser.getTestHistory()) {
+            List<Entity> history = testUser.getTestHistory();
+            logger.debug("analyzing for user {} with {} test items", testUser.getUserId(), history.size());
+            for (Entity te: history) {
                 TestUserBuilder tub = new TestUserBuilder();
                 tub.setUserId(testUser.getUserId())
                    .setTrainHistory(testUser.getTrainHistory())
@@ -577,6 +581,8 @@ public class RecommendEvalTask implements EvalTask {
                 int n = getListSize();
                 ResultList results = null;
                 LongList items = null;
+                logger.debug("generating recommendations for user {}, item {}",
+                             testUser.getUserId(), te.maybeGet(CommonAttributes.ITEM_ID));
                 if (useDetails) {
                     results = itemRecommender.recommendWithDetails(tu2.getUserId(), n,
                                                                    candidates, excludes);

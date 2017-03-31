@@ -1,0 +1,76 @@
+buildscript {
+    repositories {
+        maven {
+            url project.testRepoURI
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.lenskit:lenskit-gradle:$project.lenskitVersion"
+        classpath "org.hamcrest:hamcrest-library:1.3"
+    }
+}
+
+import org.lenskit.gradle.*
+import static org.hamcrest.Matchers.*
+import static org.hamcrest.MatcherAssert.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+apply from: 'common.gradle'
+
+dependencies {
+    runtime 'org.hamcrest:hamcrest-library:1.3'
+    runtime "org.lenskit:lenskit-test:$project.lenskitVersion"
+    testRuntime 'com.xlson.groovycsv:groovycsv:1.0'
+}
+
+task crossfold(type: Crossfold) {
+    input textFile {
+        file ratingsFile
+        delimiter "\t"
+    }
+    outputFormat "CSV_GZIP"
+    partitionCount 5
+    userPartitionMethod holdout(5)
+    includeTimestamps false
+}
+
+task trainTest1(type: TrainTest) {
+    maxMemory '256m'
+    dataSet crossfold
+
+    outputFile "$buildDir/results1.csv"
+    userOutputFile "$buildDir/user-results1.csv"
+
+    algorithm 'Baseline', 'baseline.groovy'
+    predict {
+        metric 'coverage'
+        metric 'rmse'
+    }
+}
+
+task trainTest2(type: TrainTest) {
+    maxMemory '256m'
+    dataSet crossfold
+
+    outputFile "$buildDir/results2.csv"
+    userOutputFile "$buildDir/user-results2.csv"
+
+    algorithm 'Baseline', 'baseline.groovy'
+    predict {
+        metric 'coverage'
+        metric 'rmse'
+    }
+}
+
+check {
+    dependsOn trainTest1, trainTest2
+
+    doLast {
+        assertThat("result 1 file exists",
+                   file("$buildDir/results1.csv").exists())
+        assertThat("result 2 file exists",
+                file("$buildDir/results2.csv").exists())
+    }
+}
