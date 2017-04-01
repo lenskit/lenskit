@@ -190,7 +190,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      */
     public void method(String m) {
         // accept partition-ratings for backwards compatibility
-        if (!(m =~ /^(?i:partition[_-](users|ratings|entities)|sample[_-]users)$/)) {
+        if (!(m =~ /^(?i:partition[_-](users|ratings|entities|items)|sample[_-](users|items))$/)) {
             throw new IllegalArgumentException("invalid partition method " + m)
         }
         method = m.replaceAll('_', '-').toLowerCase()
