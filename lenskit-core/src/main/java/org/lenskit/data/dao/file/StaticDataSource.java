@@ -28,6 +28,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Monitor;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.grouplens.lenskit.util.io.LKFileUtils;
@@ -37,7 +38,9 @@ import org.lenskit.data.dao.EntityCollectionDAOBuilder;
 import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
+import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.parallel.Blockers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +67,8 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
     private List<EntitySource> sources;
     private ListMultimap<EntityType, TypedName<?>> indexedAttributes;
     private Set<EntityDerivation> derivations = Sets.newLinkedHashSet();
-    private transient volatile SoftReference<DataAccessObject> cachedDao;
+    private final Monitor monitor = new Monitor();
+    private volatile SoftReference<DataAccessObject> cachedDao;
 
     /**
      * Construct a new data layout object.
@@ -188,7 +192,12 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         SoftReference<DataAccessObject> cache = cachedDao;
         DataAccessObject dao = cache != null ? cache.get() : null;
         if (dao == null) {
-            synchronized (this) {
+            try {
+                Blockers.enterMonitor(monitor);
+            } catch (InterruptedException e) {
+                throw new UncheckedInterruptException(e);
+            }
+            try {
                 // did someone else make a DAO?
                 cache = cachedDao;
                 dao = cache != null ? cache.get() : null;
@@ -200,6 +209,8 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
                         throw new DataAccessException("cannot load data", e);
                     }
                 }
+            } finally {
+                monitor.leave();
             }
         }
 
