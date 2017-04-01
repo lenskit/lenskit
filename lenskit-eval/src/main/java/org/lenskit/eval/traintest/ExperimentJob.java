@@ -129,18 +129,17 @@ class ExperimentJob extends RecursiveAction {
         train.start();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        try (LenskitRecommender rec = buildRecommender(trainData, runtimeData)) {
+        LenskitRecommenderEngine engine = buildRecommenderEngine(trainData);
+        try (LenskitRecommender rec = buildRecommender(engine, trainData, runtimeData)) {
             buildTimer.stop();
             train.finish();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
             logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
-            RowBuilder userRow = userOutput.getLayout().newRowBuilder();
-
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
             for (EvalTask task : experiment.getTasks()) {
-                ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, rec);
+                ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, engine);
                 if (ce != null) {
                     accumulators.add(ce);
                 } else {
@@ -172,6 +171,7 @@ class ExperimentJob extends RecursiveAction {
                     throw new EvaluationException("eval job interrupted");
                 }
                 long uid = user.getId();
+                RowBuilder userRow = userOutput.getLayout().newRowBuilder();
                 userRow.add("User", uid);
 
                 List<Entity> userTrainHistory = new ArrayList<>();
@@ -189,7 +189,6 @@ class ExperimentJob extends RecursiveAction {
                             .get();
 
                     userTestHistory.addAll(testHistory);
-
                 }
 
                 TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
@@ -197,7 +196,7 @@ class ExperimentJob extends RecursiveAction {
                 Stopwatch userTimer = Stopwatch.createStarted();
 
                 for (ConditionEvaluator eval : accumulators) {
-                    Map<String, Object> ures = eval.measureUser(testUser);
+                    Map<String, Object> ures = eval.measureUser(rec, testUser);
                     userRow.addAll(ures);
                 }
                 userTimer.stop();
@@ -252,8 +251,7 @@ class ExperimentJob extends RecursiveAction {
         tracker.finish();
     }
 
-    private LenskitRecommender buildRecommender(@Nonnull DataAccessObject train,
-                                                @Nullable DataAccessObject runtime) throws RecommenderBuildException {
+    private LenskitRecommenderEngine buildRecommenderEngine(DataAccessObject train) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
 
         LenskitRecommenderEngineBuilder builder = new EvalEngineBuilder();
@@ -264,12 +262,16 @@ class ExperimentJob extends RecursiveAction {
             builder.addConfiguration(cfg);
         }
 
-        if (runtime == null || runtime.equals(train)) {
-            return builder.buildRecommender(train);
-        } else {
-            LenskitRecommenderEngine engine = builder.build(train);
-            return engine.createRecommender(runtime);
+        return builder.build(train);
+    }
+
+    private LenskitRecommender buildRecommender(LenskitRecommenderEngine engine,
+                                                @Nonnull DataAccessObject train,
+                                                @Nullable DataAccessObject runtime) throws RecommenderBuildException {
+        if (runtime == null) {
+            runtime = train;
         }
+        return engine.createRecommender(runtime);
     }
 
     /**

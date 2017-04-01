@@ -21,20 +21,24 @@
 package org.lenskit.eval.traintest;
 
 
+import org.lenskit.api.Recommender;
+
 import javax.annotation.Nonnull;
 import java.util.Map;
 
 /**
- * Measures the performance of a single experimental condition.
+ * Measures the performance of a single experimental condition.  Condition evaluators must be thread-safe, allowing
+ * multiple users to be measured in parallel.
  */
 public interface ConditionEvaluator {
     /**
      * Measure the performance for a single user.
+     * @param rec The recommender to use.
      * @param testUser The user to test.
      * @return The per-user performance measurements.
      */
     @Nonnull
-    Map<String,Object> measureUser(TestUser testUser);
+    Map<String,Object> measureUser(Recommender rec, TestUser testUser);
 
     /**
      * Finish measuring the performance for the algorithm and data set.

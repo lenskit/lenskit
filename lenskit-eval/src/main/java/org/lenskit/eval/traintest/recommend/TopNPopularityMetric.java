@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -56,22 +57,24 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, Recommender recommender) {
-        LenskitRecommender lkrec = (LenskitRecommender) recommender;
-        RatingSummary sum = lkrec.get(RatingSummary.class);
-        return new Context(sum);
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Context();
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, LongList recs, Context context) {
-        if (recs == null || recs.isEmpty()) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recs, Context context) {
+        RatingSummary summary = null;
+        if (rec instanceof LenskitRecommender) {
+            summary = ((LenskitRecommender) rec).get(RatingSummary.class);
+        }
+        if (recs == null || recs.isEmpty() || summary == null) {
             return MetricResult.empty();
         }
         double pop = 0;
         LongIterator iter = recs.iterator();
         while (iter.hasNext()) {
-            pop += context.summary.getItemRatingCount(iter.nextLong());
+            pop += summary.getItemRatingCount(iter.nextLong());
         }
         pop = pop / recs.size();
 
@@ -95,11 +98,9 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
     }
     
     public class Context {
-        final RatingSummary summary;
         final MeanAccumulator mean = new MeanAccumulator();
 
-        public Context(RatingSummary sum) {
-            this.summary = sum;
+        public Context() {
         }
     }
 }

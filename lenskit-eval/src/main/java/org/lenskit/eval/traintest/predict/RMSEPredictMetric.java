@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -51,7 +52,7 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return new Context();
     }
 

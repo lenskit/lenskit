@@ -21,7 +21,7 @@
 package org.lenskit.eval.traintest.metrics;
 
 import com.google.common.collect.ImmutableList;
-import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * experimental condition (algorithm / data set pair), the evaluator will do the following:
  *
  * <ol>
- * <li>Create a context for the experiment using {@link #createContext(AlgorithmInstance, DataSet, Recommender)}.</li>
+ * <li>Create a context for the experiment using {@link #createContext(AlgorithmInstance, DataSet, RecommenderEngine)}.</li>
  * <li>Measure each user or result with the appropriate method.
  * <li>Output the result of each user or result measurement to appropriate output file (if active).</li>
  * <li>Obtain the aggregate results from this metric with {@link #getAggregateMeasurements(Object)} and add them
@@ -55,7 +55,7 @@ import java.util.Set;
  * also contain additional relevant information, such as anything needed from the algorithm and
  * data set for the measurements, or additional output tables for recording extra data.
  *
- *  * Metrics themselves are generally stateless, with all state contained in the context.  In this
+ * Metrics themselves are generally stateless, with all state contained in the context.  In this
  * case, there is a single instance of the metric, or an instance per parameterization.
  *
  * Metrics may be used from multiple threads.  LensKit may use multiple threads with
@@ -105,13 +105,13 @@ public abstract class Metric<X> {
      *
      * @param algorithm The algorithm.
      * @param dataSet   The data set.
-     * @param recommender The LensKit recommender, if applicable.  This can be null for an external
-     *                    algorithm that does not provide a LensKit recommender.
+     * @param engine    The LensKit recommender engine, if applicable.  This can be null for an external
+     *                  algorithm that does not provide a LensKit recommender.
      * @return The accumulator.  This will be passed to the individual measurement methods. If
      * the metric does need to accumulate any results, this method can return {@code null}.
      */
     @Nullable
-    public X createContext(AlgorithmInstance algorithm, DataSet dataSet, Recommender recommender) {
+    public X createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return null;
     }
 

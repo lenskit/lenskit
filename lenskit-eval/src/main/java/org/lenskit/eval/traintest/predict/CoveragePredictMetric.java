@@ -20,6 +20,7 @@
  */
 package org.lenskit.eval.traintest.predict;
 
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -49,7 +50,7 @@ public class CoveragePredictMetric extends PredictMetric<CoveragePredictMetric.C
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return new Context();
     }
 

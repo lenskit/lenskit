@@ -30,10 +30,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
+import org.lenskit.api.*;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.eval.traintest.*;
@@ -395,15 +392,10 @@ public class RecommendEvalTask implements EvalTask {
     }
 
     @Override
-    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
+    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine rec) {
         Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
         TableWriter recTable = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
         LongSortedArraySet items = LongUtils.packedSet(dataSet.getAllItems());
-        ItemRecommender irec = rec.getItemRecommender();
-        if (irec == null) {
-            logger.warn("algorithm {} has no item recommender", algorithm);
-            return null;
-        }
 
         // we need details to write recommendation output
         boolean useDetails = recTable != null;
@@ -418,10 +410,10 @@ public class RecommendEvalTask implements EvalTask {
 
         if (separateItems) {
             TableWriter itemTable = experimentOutputLayout.prefixTable(itemOutputTable, dataSet, algorithm);
-            return new SeparateTopNConditionEvaluator(recTable, itemTable, rec, irec, contexts, items, useDetails);
+            return new SeparateTopNConditionEvaluator(recTable, itemTable, contexts, items, useDetails);
         } else {
             assert itemOutputTable == null;
-            return new BatchedTopNConditionEvaluator(recTable, rec, irec, contexts, items, useDetails);
+            return new BatchedTopNConditionEvaluator(recTable, contexts, items, useDetails);
         }
     }
 
@@ -439,13 +431,13 @@ public class RecommendEvalTask implements EvalTask {
         }
 
         @Nonnull
-        public MetricResult measureUser(TestUser user, int n, ResultList recommendations) {
-            return metric.measureUser(user, n, recommendations, context);
+        public MetricResult measureUser(Recommender rec, TestUser user, int n, ResultList recommendations) {
+            return metric.measureUser(rec, user, n, recommendations, context);
         }
 
         @Nonnull
-        public MetricResult measureUser(TestUser user, int n, LongList recommendations) {
-            return ((ListOnlyTopNMetric<X>) metric).measureUser(user, n, recommendations, context);
+        public MetricResult measureUser(Recommender rec, TestUser user, int n, LongList recommendations) {
+            return ((ListOnlyTopNMetric<X>) metric).measureUser(rec, user, n, recommendations, context);
         }
 
         @Nonnull
@@ -456,25 +448,21 @@ public class RecommendEvalTask implements EvalTask {
         /**
          * Create a new metric context. Indirected through this method to help the type checker.
          */
-        public static <X> MetricContext<X> create(TopNMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
-            X ctx = metric.createContext(algorithm, dataSet, rec);
+        public static <X> MetricContext<X> create(TopNMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+            X ctx = metric.createContext(algorithm, dataSet, engine);
             return new MetricContext<>(metric, ctx);
         }
     }
 
     class BatchedTopNConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
-        private final Recommender recommender;
-        private final ItemRecommender itemRecommender;
         private final List<MetricContext<?>> predictMetricContexts;
         private final LongSortedArraySet allItems;
         private final boolean useDetails;
 
-        public BatchedTopNConditionEvaluator(TableWriter tw, Recommender rec, ItemRecommender irec,
+        public BatchedTopNConditionEvaluator(TableWriter tw,
                                              List<MetricContext<?>> mcs, LongSortedArraySet items, boolean details) {
             writer = tw;
-            recommender = rec;
-            itemRecommender = irec;
             predictMetricContexts = mcs;
             allItems = items;
             useDetails = details;
@@ -482,7 +470,13 @@ public class RecommendEvalTask implements EvalTask {
 
         @Nonnull
         @Override
-        public Map<String, Object> measureUser(TestUser testUser) {
+        public Map<String, Object> measureUser(Recommender recommender, TestUser testUser) {
+            ItemRecommender irec = recommender.getItemRecommender();
+            if (irec == null) {
+                logger.debug("recommender cannot produce recommendations");
+                return Collections.emptyMap();
+            }
+
             LongSet candidates = getCandidateSelector().selectItems(allItems, recommender, testUser);
             LongSet excludes = getExcludeSelector().selectItems(allItems, recommender, testUser);
             int n = getListSize();
@@ -490,13 +484,13 @@ public class RecommendEvalTask implements EvalTask {
             LongList items = null;
             if (useDetails) {
                 logger.debug("generating {} detailed recommendations for user {}", n, testUser.getUser());
-                results = itemRecommender.recommendWithDetails(testUser.getUserId(), n,
-                                                               candidates, excludes);
+                results = irec.recommendWithDetails(testUser.getUserId(), n,
+                                                    candidates, excludes);
             } else {
                 // no one needs details, save time collecting them
                 logger.debug("generating {} recommendations for user {}", n, testUser.getUser());
-                items = LongUtils.asLongList(itemRecommender.recommend(testUser.getUserId(), n,
-                                                                       candidates, excludes));
+                items = LongUtils.asLongList(irec.recommend(testUser.getUserId(), n,
+                                                            candidates, excludes));
             }
 
             // Measure the user results
@@ -504,9 +498,9 @@ public class RecommendEvalTask implements EvalTask {
             for (MetricContext<?> mc: predictMetricContexts) {
                 MetricResult res;
                 if (useDetails) {
-                    res = mc.measureUser(testUser, n, results);
+                    res = mc.measureUser(recommender, testUser, n, results);
                 } else {
-                    res = mc.measureUser(testUser, n, items);
+                    res = mc.measureUser(recommender, testUser, n, items);
                 }
                 row.putAll(res.withPrefix(getLabelPrefix())
                               .getValues());
@@ -546,19 +540,14 @@ public class RecommendEvalTask implements EvalTask {
     class SeparateTopNConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
         private final TableWriter itemWriter;
-        private final Recommender recommender;
-        private final ItemRecommender itemRecommender;
         private final List<MetricContext<?>> predictMetricContexts;
         private final LongSortedArraySet allItems;
         private final boolean useDetails;
 
         public SeparateTopNConditionEvaluator(@Nullable TableWriter tw, @Nullable TableWriter itw,
-                                              Recommender rec, ItemRecommender irec,
                                               List<MetricContext<?>> mcs, LongSortedArraySet items, boolean details) {
             writer = tw;
             itemWriter = itw;
-            recommender = rec;
-            itemRecommender = irec;
             predictMetricContexts = mcs;
             allItems = items;
             useDetails = details;
@@ -566,7 +555,13 @@ public class RecommendEvalTask implements EvalTask {
 
         @Nonnull
         @Override
-        public Map<String, Object> measureUser(TestUser testUser) {
+        public Map<String, Object> measureUser(Recommender recommender, TestUser testUser) {
+            ItemRecommender itemRecommender = recommender.getItemRecommender();
+            if (itemRecommender == null) {
+                logger.debug("recommender cannot produce recommendations");
+                return Collections.emptyMap();
+            }
+
             List<Entity> history = testUser.getTestHistory();
             logger.debug("analyzing for user {} with {} test items", testUser.getUserId(), history.size());
             for (Entity te: history) {
@@ -600,9 +595,9 @@ public class RecommendEvalTask implements EvalTask {
                 for (MetricContext<?> mc: predictMetricContexts) {
                     MetricResult res;
                     if (useDetails) {
-                        res = mc.measureUser(tu2, n, results);
+                        res = mc.measureUser(recommender, tu2, n, results);
                     } else {
-                        res = mc.measureUser(tu2, n, items);
+                        res = mc.measureUser(recommender, tu2, n, items);
                     }
                     if (il != null) {
                         for (Map.Entry<String, Object> rv : res.getValues().entrySet()) {

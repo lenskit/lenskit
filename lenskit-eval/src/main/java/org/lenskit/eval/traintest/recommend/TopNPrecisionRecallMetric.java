@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -87,10 +88,10 @@ public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionR
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, LongList recs, Context context) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recs, Context context) {
         int tp = 0;
 
-        LongSet items = goodItems.selectItems(context.universe, context.recommender, user);
+        LongSet items = goodItems.selectItems(context.universe, rec, user);
 
         LongIterator iter = recs.iterator();
         while (iter.hasNext()) {
@@ -113,8 +114,8 @@ public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionR
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
-        return new Context(dataSet.getAllItems(), recommender);
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine rec) {
+        return new Context(dataSet.getAllItems());
     }
 
     @Nonnull
@@ -149,14 +150,12 @@ public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionR
 
     public static class Context {
         final LongSet universe;
-        final Recommender recommender;
         double totalPrecision = 0;
         double totalRecall = 0;
         int nusers = 0;
 
-        public Context(LongSet items, Recommender recommender) {
+        public Context(LongSet items) {
             universe = items;
-            this.recommender = recommender;
         }
 
         private void addUser(double prec, double rec) {
