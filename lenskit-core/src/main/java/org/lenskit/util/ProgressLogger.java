@@ -25,6 +25,7 @@ import com.google.common.base.Stopwatch;
 import org.slf4j.Logger;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility class for logging progress of some long-running process.
@@ -37,7 +38,7 @@ public class ProgressLogger {
     private int period = 100;
     private int prevN;
     private long prevMicros;
-    private int ndone = 0;
+    private AtomicInteger ndone = new AtomicInteger(0);
     private BatchedMeanSmoother smoother = new BatchedMeanSmoother(0);
 
     ProgressLogger(Logger log) {
@@ -108,11 +109,11 @@ public class ProgressLogger {
      */
     public void advance() {
         Preconditions.checkState(timer.isRunning(), "progress logger not running");
-        ndone += 1;
+        int n = ndone.incrementAndGet();
         if (logger.isTraceEnabled()) {
-            logger.trace("finished {} of {} items", ndone, total);
+            logger.trace("finished {} of {} items", n, total);
         }
-        if (ndone % period == 0) {
+        if (n % period == 0) {
             logProgress();
         }
     }
@@ -120,11 +121,12 @@ public class ProgressLogger {
     /**
      * Log the current progress to the logger.
      */
-    public void logProgress() {
+    public synchronized void logProgress() {
         long micros = timer.elapsed(TimeUnit.MICROSECONDS);
         long elapsed = micros - prevMicros;
         prevMicros = micros;
         double time = elapsed * 0.000001;
+        int ndone = this.ndone.get();
         int n = ndone - prevN;
         prevN = ndone;
         smoother.addBatch(n, time);
@@ -148,6 +150,7 @@ public class ProgressLogger {
      */
     public double finish() {
         timer.stop();
+        int ndone = this.ndone.get();
         if (ndone < total) {
             logger.warn("{}: only performed {} of {} actions", label, ndone, total);
         }
