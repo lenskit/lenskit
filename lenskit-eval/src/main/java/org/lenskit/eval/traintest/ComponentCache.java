@@ -108,8 +108,10 @@ class ComponentCache implements NodeProcessor {
     @Override
     public DAGNode<Component, Dependency> processNode(@Nonnull DAGNode<Component, Dependency> node,
                                                       @Nonnull DAGNode<Component, Dependency> original) throws InjectionException {
+        logger.debug("resolving node {}", node);
         // We only want to process shareable nodes.
         if (!GraphtUtils.isShareable(node)) {
+            logger.debug("node {} is not shareable", node);
             return node;
         }
 

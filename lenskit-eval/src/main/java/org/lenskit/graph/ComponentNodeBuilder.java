@@ -205,12 +205,13 @@ class ComponentNodeBuilder implements Builder<GVNode> {
     }
 
     static String shortClassName(Class<?> type) {
+        Package pkg = type.getPackage();
         if (ClassUtils.isPrimitiveOrWrapper(type)) {
             if (!type.isPrimitive()) {
                 type = ClassUtils.wrapperToPrimitive(type);
             }
             return type.getName();
-        } else if (type.getPackage().equals(Package.getPackage("java.lang"))) {
+        } else if (pkg == null || pkg.equals(Package.getPackage("java.lang"))) {
             return type.getSimpleName();
         } else {
             String[] words = type.getName().split(" ");
