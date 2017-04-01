@@ -53,6 +53,15 @@ task checkPythonInstall {
     }
 }
 
+task graphExternal(type: JavaExec) {
+    classpath configurations.runtime
+    main 'org.lenskit.cli.Main'
+    args 'graph'
+    args '-t', 'svg'
+    args '-o', 'external-algorithm.svg'
+    args 'external-algorithm.groovy'
+}
+
 task crossfold(type: Crossfold) {
     dependsOn checkPythonInstall
     onlyIf {
@@ -71,16 +80,21 @@ task crossfold(type: Crossfold) {
 
 task trainTest(type: TrainTest) {
     dependsOn checkPythonInstall
+    mustRunAfter graphExternal
     onlyIf {
         checkPythonInstall.isValid
     }
+
+    logFile 'evaluate.log'
+    logFileLevel 'DEBUG'
 
     maxMemory '256m'
     dataSet crossfold
     cacheDirectory 'cache'
     outputFile 'results.csv'
     userOutputFile 'users.csv'
-    algorithm 'algorithms.groovy'
+    algorithm 'Baseline', 'internal-algorithm.groovy'
+    algorithm 'External', 'external-algorithm.groovy'
     predict {
         outputFile 'predictions.csv'
         metric 'coverage'
@@ -88,6 +102,7 @@ task trainTest(type: TrainTest) {
     }
 }
 
+check.dependsOn graphExternal
 verifyR.dependsOn trainTest
 verifyR.doFirst {
     File resultsFile = file("results.csv")

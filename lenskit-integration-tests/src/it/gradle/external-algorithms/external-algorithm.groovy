@@ -19,35 +19,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-
-import org.grouplens.lenskit.eval.metrics.predict.*
 import org.lenskit.api.ItemScorer
-import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.basic.PrecomputedItemScorer
 import org.lenskit.data.dao.DataAccessObject
 import org.lenskit.eval.traintest.TestUsers
 import org.lenskit.external.ExternalProcessItemScorerBuilder
 import org.lenskit.inject.Transient
 import it.unimi.dsi.fastutil.longs.LongSet
 
+import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Provider
 
 /**
  * Shim class to run item-mean.py to build an ItemScorer.
  */
-class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
+class ExternalItemMeanScorerBuilder implements Provider<PrecomputedItemScorer> {
     DataAccessObject trainDAO
     LongSet testUsers
 
     @Inject
-    public ExternalItemMeanScorerBuilder(@Transient DataAccessObject dao,
-                                         @Transient @TestUsers LongSet users) {
+    ExternalItemMeanScorerBuilder(@Transient DataAccessObject dao,
+                                  @Transient @TestUsers @Nullable LongSet users) {
         trainDAO = dao
         testUsers = users
     }
 
     @Override
-    ItemScorer get() {
+    PrecomputedItemScorer get() {
         def wrk = new File("external-scratch")
         wrk.mkdirs()
         def builder = new ExternalProcessItemScorerBuilder()
@@ -66,9 +65,5 @@ class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
     command "python", "item-mean.py", "{TRAIN_DATA}", "{TEST_DATA}", "{OUTPUT}"
     workDir config.scriptDir
 } */ // FIXME support external algorithms more cleanly
-algorithm("Baseline") {
-    bind ItemScorer to ItemMeanRatingItemScorer
-}
-algorithm("External") {
-    bind ItemScorer toProvider ExternalItemMeanScorerBuilder
-}
+bind ItemScorer toProvider ExternalItemMeanScorerBuilder
+
