@@ -65,7 +65,7 @@ public final class TypedName<T> implements Serializable {
 
     /**
      * Get the underlying name.
-     * @return The name.
+     * @return The name. This is guaranteed to be an interned string (see {@link String#intern()}).
      */
     @Nonnull
     public String getName() {
