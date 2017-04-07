@@ -22,13 +22,18 @@ package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.junit.Test;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.EntityFactory;
+import org.lenskit.data.entities.NoSuchAttributeException;
+import org.lenskit.data.entities.TypedName;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RatingTest {
     @Test
@@ -165,5 +170,68 @@ public class RatingTest {
         assertThat(urv.get(3), closeTo(4.5, 1.0e-6));
         assertThat(urv.get(2), closeTo(2.3, 1.0e-6));
         assertThat(urv.containsKey(5), equalTo(false));
+    }
+
+    @Test
+    public void testRatingEntity() {
+        EntityFactory fac = new EntityFactory();
+        Rating r = fac.rating(42, 37, 3.5, 10);
+        assertThat(r.getId(), equalTo(1L));
+        assertThat(r.getUserId(), equalTo(42L));
+        assertThat(r.getItemId(), equalTo(37L));
+        assertThat(r.getValue(), equalTo(3.5));
+        assertThat(r.getTimestamp(), equalTo(10L));
+
+        assertThat(r.getLong(CommonAttributes.ENTITY_ID), equalTo(1L));
+        assertThat(r.getLong(CommonAttributes.USER_ID), equalTo(42L));
+        assertThat(r.getLong(CommonAttributes.ITEM_ID), equalTo(37L));
+        assertThat(r.getDouble(CommonAttributes.RATING), equalTo(3.5));
+        assertThat(r.getLong(CommonAttributes.TIMESTAMP), equalTo(10L));
+
+        assertThat(r.get(CommonAttributes.ENTITY_ID), equalTo(1L));
+        assertThat(r.get(CommonAttributes.USER_ID), equalTo(42L));
+        assertThat(r.get(CommonAttributes.ITEM_ID), equalTo(37L));
+        assertThat(r.get(CommonAttributes.RATING), equalTo(3.5));
+        assertThat(r.get(CommonAttributes.TIMESTAMP), equalTo(10L));
+
+        assertThat(r.get("id"), equalTo(1L));
+        assertThat(r.get("user"), equalTo(42L));
+        assertThat(r.get("item"), equalTo(37L));
+        assertThat(r.get("rating"), equalTo(3.5));
+        assertThat(r.get("timestamp"), equalTo(10L));
+
+        assertThat(r.hasAttribute("id"), equalTo(true));
+        assertThat(r.hasAttribute("user"), equalTo(true));
+        assertThat(r.hasAttribute("item"), equalTo(true));
+        assertThat(r.hasAttribute("rating"), equalTo(true));
+        assertThat(r.hasAttribute("timestamp"), equalTo(true));
+        assertThat(r.hasAttribute("wombat"), equalTo(false));
+    }
+
+    @Test
+    public void testRatingEntityBadAttr() {
+        EntityFactory fac = new EntityFactory();
+        Rating r = fac.rating(42, 37, 3.5, 10);
+
+        try {
+            r.get(TypedName.create("rating", long.class));
+            fail("get with bad attribute should throw");
+        } catch (Throwable th) {
+            assertThat(th, instanceOf(IllegalArgumentException.class));
+        }
+
+        try {
+            r.getLong(TypedName.create("rating", long.class));
+            fail("get with bad attribute type should throw");
+        } catch (Throwable th) {
+            assertThat(th, instanceOf(IllegalArgumentException.class));
+        }
+
+        try {
+            r.get("foobat");
+            fail("get with missing attribute should throw");
+        } catch (Throwable th) {
+            assertThat(th, instanceOf(NoSuchAttributeException.class));
+        }
     }
 }
