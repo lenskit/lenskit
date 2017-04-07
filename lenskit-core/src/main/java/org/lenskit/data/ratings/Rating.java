@@ -32,10 +32,9 @@ import java.util.Set;
  * A user rating an item. A rating is an expression of preference, in the form of a real-valued rating, for an item by
  * a user.  Ratings are also used to represent un-rate events, if the system supports them; these are represented by
  * a rating value of {@link Double#NaN}.
- * <p>
+ *
  * To create a rating, use {@link RatingBuilder} or the factory methods {@link #create(long, long, double, long)},
  * {@link #create(long, long, double)}, and {@link #createUnrate(long, long, long)}.
- * </p>
  *
  * @compat Public
  */
