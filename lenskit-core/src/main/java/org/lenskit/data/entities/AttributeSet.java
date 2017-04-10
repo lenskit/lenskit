@@ -20,6 +20,8 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Iterators;
 
 import java.util.*;
@@ -28,6 +30,8 @@ import java.util.*;
  * A set of attributes.  Attributes are mapped to positions.
  */
 public class AttributeSet extends AbstractSet<TypedName<?>> {
+    private static final Interner<AttributeSet> setCache = Interners.newWeakInterner();
+
     // Typed names are always interned, so we can use == to compare them.
     private final TypedName<?>[] names;
     private transient Set<String> nameSet;
@@ -51,7 +55,7 @@ public class AttributeSet extends AbstractSet<TypedName<?>> {
      * @return The attribute set.
      */
     public static AttributeSet create(List<? extends TypedName<?>> names) {
-        return new AttributeSet(names.toArray(new TypedName[names.size()]));
+        return setCache.intern(new AttributeSet(names.toArray(new TypedName[names.size()])));
     }
 
     /**
@@ -89,6 +93,15 @@ public class AttributeSet extends AbstractSet<TypedName<?>> {
             }
         }
         return -1;
+    }
+
+    /**
+     * Get the type name for an attribute by index.
+     * @param idx The attribute index.
+     * @return The type name.
+     */
+    public TypedName<?> getAttribute(int idx) {
+        return names[idx];
     }
 
     @Override

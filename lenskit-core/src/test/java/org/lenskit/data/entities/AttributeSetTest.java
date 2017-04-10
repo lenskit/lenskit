@@ -22,8 +22,7 @@ package org.lenskit.data.entities;
 
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -60,5 +59,16 @@ public class AttributeSetTest {
                    equalTo(true));
         assertThat(attrs.nameSet().contains("foo"),
                    equalTo(false));
+    }
+
+    @Test
+    public void testInernCache() {
+        AttributeSet attrs = AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                 CommonAttributes.USER_ID,
+                                                 CommonAttributes.ITEM_ID);
+        AttributeSet a2 = AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                              CommonAttributes.USER_ID,
+                                              CommonAttributes.ITEM_ID);
+        assertThat(a2, sameInstance(attrs));
     }
 }
