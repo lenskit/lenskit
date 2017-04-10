@@ -62,7 +62,7 @@ public class AttributeSetTest {
     }
 
     @Test
-    public void testInernCache() {
+    public void testInternCache() {
         AttributeSet attrs = AttributeSet.create(CommonAttributes.ENTITY_ID,
                                                  CommonAttributes.USER_ID,
                                                  CommonAttributes.ITEM_ID);
@@ -70,5 +70,13 @@ public class AttributeSetTest {
                                               CommonAttributes.USER_ID,
                                               CommonAttributes.ITEM_ID);
         assertThat(a2, sameInstance(attrs));
+    }
+
+    @Test
+    public void testMultiple() {
+        AttributeSet attrs = AttributeSet.create(TypedName.create("abbr", String.class),
+                                                 CommonAttributes.ENTITY_ID,
+                                                 CommonAttributes.USER_ID);
+        assertThat(attrs.nameSet(), contains("id", "abbr", "user"));
     }
 }

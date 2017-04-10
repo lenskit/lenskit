@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterators;
@@ -55,7 +56,18 @@ public class AttributeSet extends AbstractSet<TypedName<?>> {
      * @return The attribute set.
      */
     public static AttributeSet create(List<? extends TypedName<?>> names) {
-        return setCache.intern(new AttributeSet(names.toArray(new TypedName[names.size()])));
+        Preconditions.checkArgument(names.size() > 0, "no attribute names");
+        TypedName[] arr = names.toArray(new TypedName[names.size()]);
+        if (arr[0] != CommonAttributes.ENTITY_ID) {
+            int iidx = names.indexOf(CommonAttributes.ENTITY_ID);
+            if (iidx >= 0) {
+                TypedName n = arr[0];
+                arr[0] = arr[iidx];
+                arr[iidx] = n;
+                assert arr[0] == CommonAttributes.ENTITY_ID;
+            }
+        }
+        return setCache.intern(new AttributeSet(arr));
     }
 
     /**
