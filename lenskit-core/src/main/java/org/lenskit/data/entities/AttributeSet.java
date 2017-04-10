@@ -22,10 +22,7 @@ package org.lenskit.data.entities;
 
 import com.google.common.collect.Iterators;
 
-import java.util.AbstractSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A set of attributes.  Attributes are mapped to positions.
@@ -45,7 +42,16 @@ public class AttributeSet extends AbstractSet<TypedName<?>> {
      * @return The attribute set.
      */
     public static AttributeSet create(TypedName<?>... names) {
-        return new AttributeSet(names);
+        return create(Arrays.asList(names));
+    }
+
+    /**
+     * Create a new attribute set.
+     * @param names The list of attributes.
+     * @return The attribute set.
+     */
+    public static AttributeSet create(List<? extends TypedName<?>> names) {
+        return new AttributeSet(names.toArray(new TypedName[names.size()]));
     }
 
     /**
