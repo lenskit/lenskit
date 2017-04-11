@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -40,7 +39,7 @@ import java.util.Set;
  */
 @BuiltBy(RatingBuilder.class)
 @DefaultEntityType("rating")
-public final class Rating extends AbstractEntity implements Preference, Serializable {
+public class Rating extends AbstractBeanEntity implements Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
     private static final Set<TypedName<?>> FULL_ATTR_NAMES =
@@ -58,14 +57,12 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
     private final long user;
     private final long item;
     private final double value;
-    private final long timestamp;
 
-    Rating(long eid, long uid, long iid, double v, long time) {
+    Rating(long eid, long uid, long iid, double v) {
         super(CommonTypes.RATING, eid);
         user = uid;
         item = iid;
         value = v;
-        timestamp = time;
     }
 
     /**
@@ -117,7 +114,7 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
      */
     @Deprecated
     public static Rating createUnrate(long uid, long iid, long ts) {
-        return new Rating(-1, uid, iid, Double.NaN, ts);
+        return new WithTimestamp(-1, uid, iid, Double.NaN, ts);
     }
 
     /**
@@ -129,17 +126,19 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
     }
 
     @Override
+    @EntityAttribute("user")
     public long getUserId() {
         return user;
     }
 
     @Override
+    @EntityAttribute("item")
     public long getItemId() {
         return item;
     }
 
     public long getTimestamp() {
-        return timestamp;
+        return -1;
     }
 
     /**
@@ -160,84 +159,9 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
      *
      * @return double The rating value, or {@link Double#NaN} if the rating has no value.
      */
+    @EntityAttribute("rating")
     public double getValue() {
         return value;
-    }
-
-    @Override
-    public Set<TypedName<?>> getTypedAttributeNames() {
-        return timestamp >= 0 ? FULL_ATTR_NAMES : NOTIME_ATTR_NAMES;
-    }
-
-    @Override
-    public boolean hasAttribute(String name) {
-        switch (name) {
-        case "id":
-        case "user":
-        case "item":
-        case "rating":
-            return true;
-        case "timestamp":
-            return timestamp > -1;
-        default:
-            return false;
-        }
-    }
-
-    @Nullable
-    @Override
-    public Object maybeGet(String attr) {
-        switch (attr) {
-        case "id":
-            return id;
-        case "user":
-            return user;
-        case "item":
-            return item;
-        case "rating":
-            return value;
-        case "timestamp":
-            return timestamp >= 0 ? timestamp : null;
-        default:
-            return null;
-        }
-    }
-
-    @Override
-    public long getLong(TypedName<Long> name) {
-        switch (name.getName()) {
-            case "id":
-                return id;
-            case "user":
-                return user;
-            case "item":
-                return item;
-            case "timestamp":
-                if (timestamp >= 0) {
-                    return timestamp;
-                } else {
-                    throw new NoSuchAttributeException(name.toString());
-                }
-            case "rating":
-                throw new IllegalArgumentException("rating is not a long");
-            default:
-                throw new NoSuchAttributeException(name.toString());
-        }
-    }
-
-    @Override
-    public double getDouble(TypedName<Double> name) {
-        switch (name.getName()) {
-            case "rating":
-                return value;
-            case "id":
-            case "user":
-            case "item":
-            case "timestamp":
-                throw new IllegalArgumentException("invalid type for " + name);
-            default:
-                throw new NoSuchAttributeException(name.toString());
-        }
     }
 
     /**
@@ -248,7 +172,7 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
         RatingBuilder rb = new RatingBuilder();
         rb.setUserId(user)
           .setItemId(item)
-          .setTimestamp(timestamp);
+          .setTimestamp(getTimestamp());
         double v = getValue();
         if (!Double.isNaN(v)) {
             rb.setRating(v);
@@ -265,10 +189,25 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
             return new EqualsBuilder().append(user, r.user)
                                       .append(item, r.item)
                                       .append(value, r.value)
-                                      .append(timestamp, r.timestamp)
+                                      .append(getTimestamp(), r.getTimestamp())
                                       .isEquals();
         } else {
             return super.equals(obj);
+        }
+    }
+
+    static class WithTimestamp extends Rating {
+        private final long timestamp;
+
+        WithTimestamp(long id, long user, long item, double val, long ts) {
+            super(id, user, item, val);
+            timestamp = ts;
+        }
+
+        @Override
+        @EntityAttribute("timestamp")
+        public long getTimestamp() {
+            return timestamp;
         }
     }
 }

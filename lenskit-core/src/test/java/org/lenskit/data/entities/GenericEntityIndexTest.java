@@ -47,6 +47,7 @@ public class GenericEntityIndexTest {
         bld.add(rating);
         EntityIndex index = bld.build();
         assertThat(index, notNullValue());
+        assertThat(index.getEntities(10L), hasSize(1));
         assertThat(index.getEntities(10L), contains(rating));
         assertThat(index.getEntities(11L), hasSize(0));
     }

@@ -256,6 +256,10 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
             }
             id = idGenerator.incrementAndGet();
         }
-        return new Rating(id, userId, itemId, rating, timestamp);
+        if (timestamp >= 0) {
+            return new Rating.WithTimestamp(id, userId, itemId, rating, timestamp);
+        } else {
+            return new Rating(id, userId, itemId, rating);
+        }
     }
 }
