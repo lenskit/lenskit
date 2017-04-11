@@ -44,17 +44,16 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
     private static final Set<TypedName<?>> FULL_ATTR_NAMES =
-            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
-                                          CommonAttributes.USER_ID,
-                                          CommonAttributes.ITEM_ID,
-                                          CommonAttributes.RATING,
-                                          CommonAttributes.TIMESTAMP);
+            ImmutableSet.of(CommonAttributes.ENTITY_ID,
+                            CommonAttributes.USER_ID,
+                            CommonAttributes.ITEM_ID,
+                            CommonAttributes.RATING,
+                            CommonAttributes.TIMESTAMP);
     private static final Set<TypedName<?>> NOTIME_ATTR_NAMES =
-            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
-                                          CommonAttributes.USER_ID,
-                                          CommonAttributes.ITEM_ID,
-                                          CommonAttributes.RATING);
-
+            ImmutableSet.of(CommonAttributes.ENTITY_ID,
+                            CommonAttributes.USER_ID,
+                            CommonAttributes.ITEM_ID,
+                            CommonAttributes.RATING);
 
     private final long user;
     private final long item;

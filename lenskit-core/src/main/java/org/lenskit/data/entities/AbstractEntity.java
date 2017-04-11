@@ -47,6 +47,7 @@ public abstract class AbstractEntity implements Entity, Describable {
     }
 
     @Override
+    @EntityAttribute("id")
     public long getId() {
         return id;
     }
