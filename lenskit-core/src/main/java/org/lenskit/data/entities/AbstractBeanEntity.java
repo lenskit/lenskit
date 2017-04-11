@@ -47,6 +47,11 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         return attributes.nameSet().contains(name);
     }
 
+    @Override
+    public boolean hasAttribute(TypedName<?> name) {
+        return attributes.contains(name);
+    }
+
     @Nullable
     @Override
     public Object maybeGet(String attr) {
@@ -66,7 +71,7 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     @Nullable
     @Override
     public <T> T maybeGet(TypedName<T> name) {
-        int idx = attributes.lookup(name);
+        int idx = attributes.lookup(name, true);
         if (idx >= 0) {
             MethodHandle mh = methods.get(idx);
             try {
@@ -76,6 +81,66 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
             }
         } else {
             return null;
+        }
+    }
+
+    @Override
+    public long getLong(TypedName<Long> name) {
+        int idx = attributes.lookup(name);
+        if (idx >= 0) {
+            MethodHandle mh = methods.get(idx);
+            try {
+                return (long) mh.invoke(this);
+            } catch (Throwable t) {
+                throw Throwables.propagate(t);
+            }
+        } else {
+            throw new NoSuchAttributeException(name.toString());
+        }
+    }
+
+    @Override
+    public double getDouble(TypedName<Double> name) {
+        int idx = attributes.lookup(name);
+        if (idx >= 0) {
+            MethodHandle mh = methods.get(idx);
+            try {
+                return (double) mh.invoke(this);
+            } catch (Throwable t) {
+                throw Throwables.propagate(t);
+            }
+        } else {
+            throw new NoSuchAttributeException(name.toString());
+        }
+    }
+
+    @Override
+    public int getInteger(TypedName<Integer> name) {
+        int idx = attributes.lookup(name);
+        if (idx >= 0) {
+            MethodHandle mh = methods.get(idx);
+            try {
+                return (int) mh.invoke(this);
+            } catch (Throwable t) {
+                throw Throwables.propagate(t);
+            }
+        } else {
+            throw new NoSuchAttributeException(name.toString());
+        }
+    }
+
+    @Override
+    public boolean getBoolean(TypedName<Boolean> name) {
+        int idx = attributes.lookup(name);
+        if (idx >= 0) {
+            MethodHandle mh = methods.get(idx);
+            try {
+                return (boolean) mh.invoke(this);
+            } catch (Throwable t) {
+                throw Throwables.propagate(t);
+            }
+        } else {
+            throw new NoSuchAttributeException(name.toString());
         }
     }
 
@@ -92,9 +157,10 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
             EntityAttribute annot = m.getAnnotation(EntityAttribute.class);
             if (annot != null) {
                 try {
+                    m.setAccessible(true);
                     attrs.put(annot.value(), lookup.unreflect(m));
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException("cannot access " + m);
+                    throw new RuntimeException("cannot access " + m, e);
                 }
                 names.add(TypedName.create(annot.value(), TypeToken.of(m.getGenericReturnType())));
             }
@@ -106,6 +172,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
             mhlb.add(attrs.get(name));
         }
 
-        return Pair.of(aset, mhlb.build());
+        res = Pair.of(aset, mhlb.build());
+        cache.put(type, res);
+        return res;
     }
 }

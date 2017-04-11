@@ -77,14 +77,29 @@ public class AttributeSet extends AbstractSet<TypedName<?>> {
      * differentiated with -1 for no attribute, -2 for type mismatch.
      */
     public int lookup(TypedName<?> name) {
+        return lookup(name, false);
+    }
+
+    /**
+     * Look up an attribute.
+     * @param name The attribute.
+     * @param matchSubclasses If true, then attributes whose types are subclasses of `name`'s type will also match.
+     * @return The attribute's index, or a negative value if it does not exist.  Nonexistence is further
+     * differentiated with -1 for no attribute, -2 for type mismatch.
+     */
+    public int lookup(TypedName<?> name, boolean matchSubclasses) {
         // Linear search with interned objects is faster for short lists
         for (int i = 0; i < names.length; i++) {
             TypedName<?> n = names[i];
             if (n == name) {
                 return i;
             } else if (n.getName() == name.getName()) {
-                // FIXME Handle typecasting
-                return -2;
+                if (matchSubclasses && n.getType().isSubtypeOf(name.getType())) {
+                    return i;
+                } else {
+                    // FIXME Handle typecasting
+                    return -2;
+                }
             }
         }
         return -1;
