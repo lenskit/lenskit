@@ -1,13 +1,11 @@
 package org.lenskit.data.entities;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,18 +14,18 @@ import java.util.concurrent.ConcurrentHashMap;
  * Abstract entity implementation that uses bean methods.
  */
 public abstract class AbstractBeanEntity extends AbstractEntity {
-    private static final ConcurrentHashMap<Class<? extends AbstractBeanEntity>, Pair<AttributeSet,ImmutableList<MethodHandle>>> cache =
+    private static final ConcurrentHashMap<Class<? extends AbstractBeanEntity>, Pair<AttributeSet,ImmutableList<Method>>> cache =
             new ConcurrentHashMap<>();
 
     protected final AttributeSet attributes;
-    protected final ImmutableList<MethodHandle> methods;
+    protected final ImmutableList<Method> methods;
 
     /**
      * Construct a bean entity.
      */
     protected AbstractBeanEntity(EntityType typ, long id) {
         super(typ, id);
-        Pair<AttributeSet,ImmutableList<MethodHandle>> res = lookupAttrs(getClass());
+        Pair<AttributeSet,ImmutableList<Method>> res = lookupAttrs(getClass());
         attributes = res.getLeft();
         methods = res.getRight();
     }
@@ -57,11 +55,11 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public Object maybeGet(String attr) {
         int idx = attributes.lookup(attr);
         if (idx >= 0) {
-            MethodHandle mh = methods.get(idx);
+            Method mh = methods.get(idx);
             try {
                 return mh.invoke(this);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Error invoking " + mh, e);
             }
         } else {
             return null;
@@ -73,11 +71,11 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public <T> T maybeGet(TypedName<T> name) {
         int idx = attributes.lookup(name, true);
         if (idx >= 0) {
-            MethodHandle mh = methods.get(idx);
+            Method mh = methods.get(idx);
             try {
                 return (T) mh.invoke(this);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Error invoking " + mh, e);
             }
         } else {
             return null;
@@ -88,11 +86,11 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public long getLong(TypedName<Long> name) {
         int idx = attributes.lookup(name);
         if (idx >= 0) {
-            MethodHandle mh = methods.get(idx);
+            Method mh = methods.get(idx);
             try {
                 return (long) mh.invoke(this);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Error invoking " + mh, e);
             }
         } else {
             throw new NoSuchAttributeException(name.toString());
@@ -103,11 +101,11 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public double getDouble(TypedName<Double> name) {
         int idx = attributes.lookup(name);
         if (idx >= 0) {
-            MethodHandle mh = methods.get(idx);
+            Method mh = methods.get(idx);
             try {
                 return (double) mh.invoke(this);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Error invoking " + mh, e);
             }
         } else {
             throw new NoSuchAttributeException(name.toString());
@@ -118,11 +116,11 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public int getInteger(TypedName<Integer> name) {
         int idx = attributes.lookup(name);
         if (idx >= 0) {
-            MethodHandle mh = methods.get(idx);
+            Method mh = methods.get(idx);
             try {
                 return (int) mh.invoke(this);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Error invoking " + mh, e);
             }
         } else {
             throw new NoSuchAttributeException(name.toString());
@@ -133,41 +131,36 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public boolean getBoolean(TypedName<Boolean> name) {
         int idx = attributes.lookup(name);
         if (idx >= 0) {
-            MethodHandle mh = methods.get(idx);
+            Method mh = methods.get(idx);
             try {
                 return (boolean) mh.invoke(this);
-            } catch (Throwable t) {
-                throw Throwables.propagate(t);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("Error invoking " + mh, e);
             }
         } else {
             throw new NoSuchAttributeException(name.toString());
         }
     }
 
-    private static Pair<AttributeSet, ImmutableList<MethodHandle>> lookupAttrs(Class<? extends AbstractBeanEntity> type) {
-        Pair<AttributeSet, ImmutableList<MethodHandle>> res = cache.get(type);
+    private static Pair<AttributeSet, ImmutableList<Method>> lookupAttrs(Class<? extends AbstractBeanEntity> type) {
+        Pair<AttributeSet, ImmutableList<Method>> res = cache.get(type);
         if (res != null) {
             return res;
         }
 
-        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
-        Map<String,MethodHandle> attrs = new HashMap<>();
+        Map<String,Method> attrs = new HashMap<>();
         List<TypedName<?>> names = new ArrayList<>();
         for (Method m: type.getMethods()) {
             EntityAttribute annot = m.getAnnotation(EntityAttribute.class);
             if (annot != null) {
-                try {
-                    m.setAccessible(true);
-                    attrs.put(annot.value(), lookup.unreflect(m));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("cannot access " + m, e);
-                }
+                m.setAccessible(true);
+                attrs.put(annot.value(), m);
                 names.add(TypedName.create(annot.value(), TypeToken.of(m.getGenericReturnType())));
             }
         }
 
         AttributeSet aset = AttributeSet.create(names);
-        ImmutableList.Builder<MethodHandle> mhlb = ImmutableList.builder();
+        ImmutableList.Builder<Method> mhlb = ImmutableList.builder();
         for (String name: aset.nameSet()) {
             mhlb.add(attrs.get(name));
         }
