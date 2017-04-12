@@ -20,6 +20,7 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
+import org.lenskit.api.Recommender;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Metric;
@@ -70,13 +71,14 @@ public abstract class TopNMetric<X> extends Metric<X> {
 
     /**
      * Measure a single result.  The result may come from either prediction or recommendation.
+     * @param rec The recommender used to recommend for this user.
      * @param user The user's test data.
      * @param targetLength The intended length of the recommendation list.
      * @param recommendations The user's recommendations.
      * @return A list of fields to add to the result's output.
      */
     @Nonnull
-    public abstract MetricResult measureUser(TestUser user,
+    public abstract MetricResult measureUser(Recommender rec, TestUser user,
                                              int targetLength, ResultList recommendations,
                                              X context);
 }

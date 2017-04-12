@@ -32,6 +32,7 @@ import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.collections.SortedListAccumulator;
+import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +40,8 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Score items with user-user collaborative filtering.
@@ -134,7 +135,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
 
-        Long2ObjectMap<SortedListAccumulator<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
+        Long2ObjectOpenHashMap<SortedListAccumulator<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
         for (LongIterator iter = items.iterator(); iter.hasNext();) {
             long item = iter.nextLong();
             heaps.put(item, SortedListAccumulator.decreasing(neighborhoodSize,
@@ -143,7 +144,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
 
         for (Neighbor nbr: neighborFinder.getCandidateNeighbors(user, items)) {
             // TODO consider optimizing
-            for (Long2DoubleMap.Entry e: nbr.vector.long2DoubleEntrySet()) {
+            for (Long2DoubleMap.Entry e: Vectors.fastEntries(nbr.vector)) {
                 final long item = e.getLongKey();
                 SortedListAccumulator<Neighbor> heap = heaps.get(item);
                 if (heap != null) {
@@ -152,8 +153,11 @@ public class UserUserItemScorer extends AbstractItemScorer {
             }
         }
         Long2ObjectMap<List<Neighbor>> neighbors = new Long2ObjectOpenHashMap<>();
-        for (Map.Entry<Long,SortedListAccumulator<Neighbor>> me: heaps.entrySet()) {
-            neighbors.put(me.getKey(), me.getValue().finish());
+        Iterator<Long2ObjectMap.Entry<SortedListAccumulator<Neighbor>>> hiter =
+                heaps.long2ObjectEntrySet().fastIterator();
+        while (hiter.hasNext()) {
+            Long2ObjectMap.Entry<SortedListAccumulator<Neighbor>> me = hiter.next();
+            neighbors.put(me.getLongKey(), me.getValue().finish());
         }
         return neighbors;
     }

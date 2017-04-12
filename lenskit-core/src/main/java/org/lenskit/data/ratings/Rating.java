@@ -205,6 +205,43 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
         }
     }
 
+    @Override
+    public long getLong(TypedName<Long> name) {
+        switch (name.getName()) {
+            case "id":
+                return id;
+            case "user":
+                return user;
+            case "item":
+                return item;
+            case "timestamp":
+                if (timestamp >= 0) {
+                    return timestamp;
+                } else {
+                    throw new NoSuchAttributeException(name.toString());
+                }
+            case "rating":
+                throw new IllegalArgumentException("rating is not a long");
+            default:
+                throw new NoSuchAttributeException(name.toString());
+        }
+    }
+
+    @Override
+    public double getDouble(TypedName<Double> name) {
+        switch (name.getName()) {
+            case "rating":
+                return value;
+            case "id":
+            case "user":
+            case "item":
+            case "timestamp":
+                throw new IllegalArgumentException("invalid type for " + name);
+            default:
+                throw new NoSuchAttributeException(name.toString());
+        }
+    }
+
     /**
      * Create a new rating builder that will build a copy of this rating.
      * @return A rating builder initialized with the contents of this rating.

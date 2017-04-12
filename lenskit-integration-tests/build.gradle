@@ -94,7 +94,7 @@ task processMLData(group: 'prep', type: JavaExec) {
 test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
-    maxHeapSize = '384m';
+    maxHeapSize = '1g';
     testLogging {
         events = ["passed", "failed", "started", "skipped"]
     }

@@ -47,18 +47,18 @@ class TopNMRRMetricTest {
     }
 
     @Before
-    public void createMetric() {
+    void createMetric() {
         metric = new TopNMRRMetric(ItemSelector.fixed(3, 7, 9, 42), null)
 
-        accum = new TopNMRRMetric.Context(universe, null)
+        accum = new TopNMRRMetric.Context(universe)
     }
 
     @Test
-    public void testEmptyRank() {
+    void testEmptyRank() {
         def user = TestUser.newBuilder()
                            .setUserId(42)
                            .build()
-        def result = metric.measureUser(user, -1, Results.newResultList([]), accum)
+        def result = metric.measureUser(null, user, -1, Results.newResultList([]), accum)
         assertThat result.rank, nullValue()
         assertThat result.recipRank, equalTo(0.0d)
         def agg = metric.getAggregateMeasurements(accum)
@@ -66,11 +66,11 @@ class TopNMRRMetricTest {
     }
 
     @Test
-    public void testFirstRank() {
+    void testFirstRank() {
         def user = TestUser.newBuilder()
                                .build()
         def recs = Results.newResultList(Results.create(3, 3.5))
-        def result = metric.measureUser(user, -1, recs, accum)
+        def result = metric.measureUser(null, user, -1, recs, accum)
         assertThat result.rank, equalTo(1)
         assertThat result.recipRank, closeTo(1.0)
         def agg = metric.getAggregateMeasurements(accum)
@@ -78,12 +78,12 @@ class TopNMRRMetricTest {
     }
 
     @Test
-    public void testSecondRank() {
+    void testSecondRank() {
         def user = TestUser.newBuilder()
                           .build()
         def recs = Results.newResultList([Results.create(5, 4.0),
                                           Results.create(3, 3.5)])
-        def result = metric.measureUser(user, -1, recs, accum)
+        def result = metric.measureUser(null, user, -1, recs, accum)
         assertThat result.rank, equalTo(2)
         assertThat result.recipRank, closeTo(0.5)
         def agg = metric.getAggregateMeasurements(accum)
@@ -91,12 +91,12 @@ class TopNMRRMetricTest {
     }
 
     @Test
-    public void testNoRank() {
+    void testNoRank() {
         def user = TestUser.newBuilder()
                            .build()
         def recs = Results.newResultList([Results.create(5, 4.0),
                                           Results.create(10, 3.5)])
-        def result = metric.measureUser(user, -1, recs, accum)
+        def result = metric.measureUser(null, user, -1, recs, accum)
         assertThat result.rank, nullValue()
         assertThat result.recipRank, equalTo(0.0d)
         def agg = metric.getAggregateMeasurements(accum)
@@ -104,7 +104,7 @@ class TopNMRRMetricTest {
     }
 
     @Test
-    public void testLowRank() {
+    void testLowRank() {
         def rng = new Random()
         // get 19 bad items
         def recs = (11..29).collect { Results.create(it, rng.nextDouble()) }
@@ -112,7 +112,7 @@ class TopNMRRMetricTest {
         recs << Results.create(42, Math.E)
         def user = TestUser.newBuilder()
                            .build()
-        def result = metric.measureUser(user, -1, Results.newResultList(recs), accum)
+        def result = metric.measureUser(null, user, -1, Results.newResultList(recs), accum)
         assertThat result.rank, equalTo(20)
         assertThat result.recipRank, closeTo(0.05)
         def agg = metric.getAggregateMeasurements(accum)
@@ -120,7 +120,7 @@ class TopNMRRMetricTest {
     }
 
     @Test
-    public void testMixed() {
+    void testMixed() {
         def rng = new Random()
         // get 19 bad items
         def recs = (11..29).collect { Results.create(it, rng.nextDouble()) }
@@ -128,11 +128,11 @@ class TopNMRRMetricTest {
         recs << Results.create(42, Math.E)
         def u1 = TestUser.newBuilder()
                          .build()
-        metric.measureUser(u1, -1, Results.newResultList(recs), accum)
+        metric.measureUser(null, u1, -1, Results.newResultList(recs), accum)
         def u2 = TestUser.newBuilder()
                          .build()
         def r2 = Results.newResultList([Results.create(5, 3.5)])
-        metric.measureUser(u2, -1, r2, accum)
+        metric.measureUser(null, u2, -1, r2, accum)
 
         def agg = metric.getAggregateMeasurements(accum)
         // MRR should average 0.05 and 0
@@ -141,7 +141,7 @@ class TopNMRRMetricTest {
     }
 
     @Test
-    public void testConfigure() {
+    void testConfigure() {
         def jsb = new JsonBuilder()
         jsb {
             type 'mrr'

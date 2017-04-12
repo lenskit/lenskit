@@ -18,32 +18,41 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.traintest;
+package org.lenskit.util.parallel;
 
+import com.google.common.util.concurrent.Monitor;
 
-import org.lenskit.api.Recommender;
-
-import javax.annotation.Nonnull;
-import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 
 /**
- * Measures the performance of a single experimental condition.  Condition evaluators must be thread-safe, allowing
- * multiple users to be measured in parallel.
+ * Utility classes for blocking computations.
  */
-public interface ConditionEvaluator {
+public class Blockers {
     /**
-     * Measure the performance for a single user.
-     * @param rec The recommender to use.
-     * @param testUser The user to test.
-     * @return The per-user performance measurements.
+     * Enter a monitor, releasing coordinating with the fork-join pool.
+     * @param m The monitor to enter.
      */
-    @Nonnull
-    Map<String,Object> measureUser(Recommender rec, TestUser testUser);
+    public static void enterMonitor(Monitor m) throws InterruptedException {
+        ForkJoinPool.managedBlock(new MonitorBlocker(m));
+    }
 
-    /**
-     * Finish measuring the performance for the algorithm and data set.
-     * @return The aggregate performance measurements.
-     */
-    @Nonnull
-    Map<String,Object> finish();
+    private static class MonitorBlocker implements ForkJoinPool.ManagedBlocker {
+        private final Monitor monitor;
+
+        public MonitorBlocker(Monitor m) {
+            monitor = m;
+        }
+
+        @Override
+        public boolean block() throws InterruptedException {
+            if (!monitor.isOccupiedByCurrentThread())
+                monitor.enter();
+            return true;
+        }
+
+        @Override
+        public boolean isReleasable() {
+            return monitor.isOccupiedByCurrentThread() || monitor.tryEnter();
+        }
+    }
 }

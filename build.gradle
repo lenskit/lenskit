@@ -42,7 +42,7 @@ apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
 
-ext.guavaVersion = '19.0'
+ext.guavaVersion = '21.0'
 
 configurations {
     allDeps // collect all external dependencies of all modules
@@ -124,8 +124,8 @@ task reportTests(type: TestReport) {
 
 subprojects {
     apply plugin: 'java'
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 
     sourceSets.all { ss ->
         // generate resources & classes to same dir

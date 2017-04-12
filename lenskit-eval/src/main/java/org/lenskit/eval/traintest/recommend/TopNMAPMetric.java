@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -90,8 +91,8 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
-        return new Context(dataSet.getAllItems(), recommender);
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Context(dataSet.getAllItems(), engine);
     }
 
     @Nonnull
@@ -102,8 +103,8 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, LongList recs, Context context) {
-        LongSet good = goodItems.selectItems(context.universe, context.recommender, user);
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recs, Context context) {
+        LongSet good = goodItems.selectItems(context.universe, rec, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
             return new UserResult(0);
@@ -158,12 +159,12 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
 
     public static class Context {
         private final LongSet universe;
-        private final Recommender recommender;
+        private final RecommenderEngine recommenderEngine;
         private final MeanAccumulator allMean = new MeanAccumulator();
 
-        Context(LongSet universe, Recommender recommender) {
+        Context(LongSet universe, RecommenderEngine engine) {
             this.universe = universe;
-            this.recommender = recommender;
+            recommenderEngine = engine;
         }
 
         void addUser(UserResult ur) {

@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Copyright 2010-2014 Regents of the University of Minnesota and contributors
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -18,32 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.traintest;
 
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
 
-import org.lenskit.api.Recommender;
-
-import javax.annotation.Nonnull;
-import java.util.Map;
-
-/**
- * Measures the performance of a single experimental condition.  Condition evaluators must be thread-safe, allowing
- * multiple users to be measured in parallel.
- */
-public interface ConditionEvaluator {
-    /**
-     * Measure the performance for a single user.
-     * @param rec The recommender to use.
-     * @param testUser The user to test.
-     * @return The per-user performance measurements.
-     */
-    @Nonnull
-    Map<String,Object> measureUser(Recommender rec, TestUser testUser);
-
-    /**
-     * Finish measuring the performance for the algorithm and data set.
-     * @return The aggregate performance measurements.
-     */
-    @Nonnull
-    Map<String,Object> finish();
-}
+bind ItemScorer to ItemMeanRatingItemScorer

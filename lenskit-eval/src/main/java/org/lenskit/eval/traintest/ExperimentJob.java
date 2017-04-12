@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * Individual job evaluating a single experimental condition.
@@ -119,28 +120,23 @@ class ExperimentJob extends RecursiveAction {
         DataAccessObject trainData = dataSet.getTrainingData().get();
 
         StaticDataSource rt = dataSet.getRuntimeData();
-        DataAccessObject runtimeData = null;
-        if (rt != null) {
-            logger.info("fetching runtime data");
-            runtimeData = rt.get();
-        }
+        DataAccessObject runtimeData = rt != null ? rt.get() : null;
         setup.finish();
 
         train.start();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        try (LenskitRecommender rec = buildRecommender(trainData, runtimeData)) {
+        LenskitRecommenderEngine engine = buildRecommenderEngine(trainData);
+        try {
             buildTimer.stop();
             train.finish();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
             logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
-            RowBuilder userRow = userOutput.getLayout().newRowBuilder();
-
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
             for (EvalTask task : experiment.getTasks()) {
-                ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, rec);
+                ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, engine);
                 if (ce != null) {
                     accumulators.add(ce);
                 } else {
@@ -166,55 +162,62 @@ class ExperimentJob extends RecursiveAction {
 
             List<EntityType> entityTypes = dataSet.getEntityTypes();
             logger.info("using entity types {} for test data", entityTypes);
-
-            for (Entity user: testData.query(CommonTypes.USER).get()) {
-                if (Thread.interrupted()) {
-                    throw new EvaluationException("eval job interrupted");
-                }
-                long uid = user.getId();
-                userRow.add("User", uid);
-
-                List<Entity> userTrainHistory = new ArrayList<>();
-                List<Entity> userTestHistory = new ArrayList<>();
-
-                for (EntityType entityType: entityTypes) {
-                    List<Entity> trainHistory = trainData.query(entityType)
-                            .withAttribute(CommonAttributes.USER_ID, uid)
-                            .get();
-
-                    userTrainHistory.addAll(trainHistory);
-
-                    List<Entity> testHistory = testData.query(entityType)
-                            .withAttribute(CommonAttributes.USER_ID, uid)
-                            .get();
-
-                    userTestHistory.addAll(testHistory);
-
-                }
-
-                TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
-
-                Stopwatch userTimer = Stopwatch.createStarted();
-
-                for (ConditionEvaluator eval : accumulators) {
-                    Map<String, Object> ures = eval.measureUser(testUser);
-                    userRow.addAll(ures);
-                }
-                userTimer.stop();
-
-                userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-                try {
-                    userOutput.writeRow(userRow.buildList());
-                    userOutput.flush();
-                } catch (IOException e) {
-                    throw new EvaluationException("error writing user row", e);
-                }
-                userRow.clear();
-
-                test.finishStep();
-                progress.advance();
+            List<Entity> users = testData.query(CommonTypes.USER).get();
+            Stream<Entity> userStream;
+            if (inForkJoinPool()) {
+                // parallelism is enabled
+                userStream = users.parallelStream();
+            } else {
+                // not parallel, so don't parallelize
+                userStream = users.stream();
             }
 
+            userStream.forEach((user) -> {
+                try (LenskitRecommender rec = buildRecommender(engine, trainData, runtimeData)) {
+                    long uid = user.getId();
+                    RowBuilder userRow = userOutput.getLayout().newRowBuilder();
+                    userRow.add("User", uid);
+
+                    List<Entity> userTrainHistory = new ArrayList<>();
+                    List<Entity> userTestHistory = new ArrayList<>();
+
+                    for (EntityType entityType : entityTypes) {
+                        List<Entity> trainHistory = trainData.query(entityType)
+                                                             .withAttribute(CommonAttributes.USER_ID, uid)
+                                                             .get();
+
+                        userTrainHistory.addAll(trainHistory);
+
+                        List<Entity> testHistory = testData.query(entityType)
+                                                           .withAttribute(CommonAttributes.USER_ID, uid)
+                                                           .get();
+
+                        userTestHistory.addAll(testHistory);
+                    }
+
+                    TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
+
+                    Stopwatch userTimer = Stopwatch.createStarted();
+
+                    for (ConditionEvaluator eval : accumulators) {
+                        Map<String, Object> ures = eval.measureUser(rec, testUser);
+                        userRow.addAll(ures);
+                    }
+                    userTimer.stop();
+
+                    userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+                    try {
+                        userOutput.writeRow(userRow.buildList());
+                        userOutput.flush();
+                    } catch (IOException e) {
+                        throw new EvaluationException("error writing user row", e);
+                    }
+                    userRow.clear();
+
+                    test.finishStep();
+                    progress.advance();
+                }
+            });
 
             test.finish();
             progress.finish();
@@ -252,8 +255,7 @@ class ExperimentJob extends RecursiveAction {
         tracker.finish();
     }
 
-    private LenskitRecommender buildRecommender(@Nonnull DataAccessObject train,
-                                                @Nullable DataAccessObject runtime) throws RecommenderBuildException {
+    private LenskitRecommenderEngine buildRecommenderEngine(DataAccessObject train) throws RecommenderBuildException {
         logger.debug("Starting recommender build");
 
         LenskitRecommenderEngineBuilder builder = new EvalEngineBuilder();
@@ -264,12 +266,16 @@ class ExperimentJob extends RecursiveAction {
             builder.addConfiguration(cfg);
         }
 
-        if (runtime == null || runtime.equals(train)) {
-            return builder.buildRecommender(train);
-        } else {
-            LenskitRecommenderEngine engine = builder.build(train);
-            return engine.createRecommender(runtime);
+        return builder.build(train);
+    }
+
+    private LenskitRecommender buildRecommender(LenskitRecommenderEngine engine,
+                                                @Nonnull DataAccessObject train,
+                                                @Nullable DataAccessObject runtime) throws RecommenderBuildException {
+        if (runtime == null) {
+            runtime = train;
         }
+        return engine.createRecommender(runtime);
     }
 
     /**

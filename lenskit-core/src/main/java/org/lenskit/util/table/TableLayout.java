@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
+@Immutable
 public class TableLayout {
     private final List<String> names;
     private final Object2IntMap<String> indexes;

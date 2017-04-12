@@ -210,7 +210,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      * Build the item scorer.
      * @return An item scorer that will return the scores provided by the external algorithm.
      */
-    public ItemScorer build() {
+    public PrecomputedItemScorer build() {
         Preconditions.checkState(executable != null, "no executable specified");
         List<String> command = Lists.newArrayList();
         command.add(executable);

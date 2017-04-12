@@ -29,10 +29,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.api.RatingPredictor;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultMap;
+import org.lenskit.api.*;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
@@ -211,21 +208,16 @@ public class PredictEvalTask implements EvalTask {
     }
 
     @Override
-    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
+    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
         TableWriter tlb = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
-        RatingPredictor pred = rec.getRatingPredictor();
-        if (pred == null) {
-            logger.warn("algorithm {} has no rating predictor", algorithm);
-            return null;
-        }
 
         List<MetricContext<?>> predictContexts = new ArrayList<>(predictMetrics.size());
         for (PredictMetric<?> metric: predictMetrics) {
-            predictContexts.add(MetricContext.create(metric, algorithm, dataSet, rec));
+            predictContexts.add(MetricContext.create(metric, algorithm, dataSet, engine));
         }
 
-        return new PredictConditionEvaluator(tlb, pred, predictContexts);
+        return new PredictConditionEvaluator(tlb, predictContexts);
     }
 
     static class MetricContext<X> {
@@ -250,26 +242,29 @@ public class PredictEvalTask implements EvalTask {
         /**
          * Create a new metric context. Indirected through this method to help the type checker.
          */
-        public static <X> MetricContext<X> create(PredictMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
-            X ctx = metric.createContext(algorithm, dataSet, rec);
+        public static <X> MetricContext<X> create(PredictMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+            X ctx = metric.createContext(algorithm, dataSet, engine);
             return new MetricContext<>(metric, ctx);
         }
     }
 
     class PredictConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
-        private final RatingPredictor predictor;
         private final List<MetricContext<?>> predictMetricContexts;
 
-        public PredictConditionEvaluator(TableWriter tw, RatingPredictor pred, List<MetricContext<?>> mcs) {
+        public PredictConditionEvaluator(TableWriter tw, List<MetricContext<?>> mcs) {
             writer = tw;
-            predictor = pred;
             predictMetricContexts = mcs;
         }
 
         @Nonnull
         @Override
-        public Map<String, Object> measureUser(TestUser testUser) {
+        public Map<String, Object> measureUser(Recommender recommender, TestUser testUser) {
+            RatingPredictor predictor = recommender.getRatingPredictor();
+            if (predictor == null) {
+                logger.debug("recommender cannot predict ratings");
+                return Collections.emptyMap();
+            }
             Long2DoubleMap ratings = testUser.getTestRatings();
             ResultMap results = predictor.predictWithDetails(testUser.getUserId(), ratings.keySet());
 
