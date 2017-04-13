@@ -140,12 +140,20 @@ public class RatingBuilder extends AbstractBeanEntityBuilder implements Builder<
         return this;
     }
 
+    /**
+     * Clear the item ID.
+     * @return The builder (for chaining).
+     */
     @EntityAttributeClearer("item")
     public RatingBuilder clearItemId() {
         hasItemId = false;
         return this;
     }
 
+    /**
+     * Clear the user ID.
+     * @return The builder (for chaining).
+     */
     @EntityAttributeClearer("user")
     public RatingBuilder clearUserId() {
         hasUserId = false;
@@ -162,10 +170,7 @@ public class RatingBuilder extends AbstractBeanEntityBuilder implements Builder<
 
     /**
      * Set the rating value.
-     * <p>
-     * In order to prevent computation errors from producing unintended unrate events, this method cannot be used to
-     * create an unrate event.  Instead, use {@link #clearRating()}.
-     * </p>
+     *
      * @param r The rating value.
      * @return The builder (for chaining).
      */
@@ -180,22 +185,13 @@ public class RatingBuilder extends AbstractBeanEntityBuilder implements Builder<
     }
 
     /**
-     * Clear the rating value (so this builder builds unrate events).
+     * Clear the rating value.
      * @return The builder (for chaining).
      */
     @EntityAttributeClearer("rating")
     public RatingBuilder clearRating() {
         hasRating = false;
         return this;
-    }
-
-    /**
-     * Query whether this builder has a rating.
-     * @return {@code true} if the builder has a rating, {@code false} if it will produce unrate
-     * events.
-     */
-    public boolean hasRating() {
-        return hasRating;
     }
 
     /**

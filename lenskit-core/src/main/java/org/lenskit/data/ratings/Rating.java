@@ -20,20 +20,17 @@
  */
 package org.lenskit.data.ratings;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * A user rating an item. A rating is an expression of preference, in the form of a real-valued rating, for an item by
  * a user.  Ratings are also used to represent un-rate events, if the system supports them; these are represented by
  * a rating value of {@link Double#NaN}.
  *
- * To create a rating, use {@link RatingBuilder} or the factory methods {@link #create(long, long, double, long)},
- * {@link #create(long, long, double)}, and {@link #createUnrate(long, long, long)}.
+ * To create a rating, use {@link RatingBuilder}.  The {@link #newBuilder()} method will create a rating builder.
  *
  * @compat Public
  */
@@ -42,17 +39,6 @@ import java.util.Set;
 public class Rating extends AbstractBeanEntity implements Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
-    private static final Set<TypedName<?>> FULL_ATTR_NAMES =
-            ImmutableSet.of(CommonAttributes.ENTITY_ID,
-                            CommonAttributes.USER_ID,
-                            CommonAttributes.ITEM_ID,
-                            CommonAttributes.RATING,
-                            CommonAttributes.TIMESTAMP);
-    private static final Set<TypedName<?>> NOTIME_ATTR_NAMES =
-            ImmutableSet.of(CommonAttributes.ENTITY_ID,
-                            CommonAttributes.USER_ID,
-                            CommonAttributes.ITEM_ID,
-                            CommonAttributes.RATING);
 
     private final long user;
     private final long item;
@@ -82,10 +68,6 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
 
     /**
      * Create a new rating object.
-     * <p>
-     * In order to prevent computation errors from producing unintended unrate events, this method cannot be used to
-     * create an unrate event.  Instead, use {@link #createUnrate(long, long, long)}.
-     * </p>
      *
      * @param uid The user ID.
      * @param iid The item ID.
@@ -97,24 +79,7 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
      */
     @Deprecated
     public static Rating create(long uid, long iid, double rating, long ts) {
-        if (Double.isNaN(rating)) {
-            throw new IllegalArgumentException("rating is not a number");
-        }
         return factory.rating(uid, iid, rating, ts);
-    }
-
-    /**
-     * Create a an unrate object.
-     *
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param ts The timestamp.
-     * @return The new rating object.
-     * @deprecated Unrates have gone away.
-     */
-    @Deprecated
-    public static Rating createUnrate(long uid, long iid, long ts) {
-        return new WithTimestamp(-1, uid, iid, Double.NaN, ts);
     }
 
     /**
@@ -141,19 +106,6 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
         return -1;
     }
 
-    /**
-     * Query whether this rating has a value. Ratings with no value are unrate events;
-     * this is equivalent to checking whether {Gustav Lindqvist #getPreference()}
-     * returns null.
-     *  
-     * @return {code true} if there is a rating (the preference is non-null).
-     * @deprecated Unrates have gone away.
-     */
-    @Deprecated
-    public boolean hasValue() {
-        return !Double.isNaN(value);
-    }
-    
     /**
      * Get the rating value.
      *

@@ -101,14 +101,13 @@ public final class Ratings {
             assert ids.size() == values.size();
             long id = dimension.getId(rs[i]);
             // advance to the last one
+            // TODO Simplify code to not have duplicate ratings
             while (i < rs.length - 1 && dimension.getId(rs[i+1]) == id) {
                 i++;
             }
             Rating r = rs[i];
-            if (r.hasValue()) {
-                ids.add(id);
-                values.add(r.getValue());
-            }
+            ids.add(id);
+            values.add(r.getValue());
         }
 
         SortedKeyIndex idx = SortedKeyIndex.fromCollection(ids);

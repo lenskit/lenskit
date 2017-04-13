@@ -280,9 +280,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                  ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
                 for (Rating r: ratings) {
                     writer.printf("%d,%d,", r.getUserId(), r.getItemId());
-                    if (r.hasValue()) {
-                        writer.print(r.getValue());
-                    }
+                    writer.print(r.getValue());
                     writer.print(",");
                     long ts = r.getTimestamp();
                     if (ts >= 0) {

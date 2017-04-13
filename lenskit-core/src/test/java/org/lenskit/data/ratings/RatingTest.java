@@ -39,14 +39,7 @@ public class RatingTest {
     @Test
     public void testGetValueOfRating() {
         Rating rating = Rating.create(1, 2, 3.0, 3);
-        assertThat(rating.hasValue(), equalTo(true));
         assertThat(rating.getValue(), equalTo(3.0));
-    }
-    
-    @Test
-    public void testGetValueOfUnrate() {
-        Rating rating = Rating.createUnrate(1, 3, 5);
-        assertThat(rating.hasValue(), equalTo(false));
     }
 
     @Test
@@ -69,13 +62,10 @@ public class RatingTest {
         Rating r1 = Rating.create(1, 2, 3.0, 0);
         Rating r1a = Rating.create(1, 2, 3.0, 0);
         Rating r2 = Rating.create(1, 3, 2.5, 1);
-        Rating rn = Rating.createUnrate(1, 2, 0);
         assertThat(r1, equalTo(r1));
         assertThat(r1a, equalTo(r1));
         assertThat(r2, not(equalTo(r1)));
         assertThat(r1, not(equalTo(r2)));
-        assertThat(rn, not(equalTo(r1)));
-        assertThat(r1, not(equalTo(rn)));
     }
 
     @Test
@@ -130,22 +120,6 @@ public class RatingTest {
         assertThat(urv.get(3), closeTo(4.5, 1.0e-6));
         assertThat(urv.get(5), closeTo(3.7, 1.0e-6));
         assertThat(urv.containsKey(1), equalTo(false));
-    }
-
-    @Test
-    public void testURVRatingsRmv() {
-        List<Rating> ratings = new ArrayList<>();
-        ratings.add(Rating.create(1, 2, 3.0, 3));
-        ratings.add(Rating.create(1, 5, 2.3, 5));
-        ratings.add(Rating.createUnrate(1, 2, 7));
-        ratings.add(Rating.create(1, 3, 4.5, 8));
-        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
-        assertThat(urv.isEmpty(), equalTo(false));
-        assertThat(urv.size(), equalTo(2));
-        assertThat(urv.get(3), closeTo(4.5, 1.0e-6));
-        assertThat(urv.get(5), closeTo(2.3, 1.0e-6));
-        assertThat(urv.containsKey(1), equalTo(false));
-        assertThat(urv.containsKey(2), equalTo(false));
     }
 
     @Test
