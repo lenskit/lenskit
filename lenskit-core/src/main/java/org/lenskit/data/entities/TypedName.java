@@ -28,7 +28,7 @@ import com.google.common.collect.Interners;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.grouplens.lenskit.util.TypeUtils;
+import org.lenskit.util.TypeUtils;
 import org.joda.convert.FromStringConverter;
 
 import javax.annotation.Nonnull;

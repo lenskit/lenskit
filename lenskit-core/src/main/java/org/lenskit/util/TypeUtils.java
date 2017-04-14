@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.lenskit.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeParameter;
@@ -27,7 +27,6 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.joda.convert.FromStringConverter;
 import org.joda.convert.StringConvert;
-import org.lenskit.util.Text;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

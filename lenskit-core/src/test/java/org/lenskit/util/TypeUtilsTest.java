@@ -18,12 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.lenskit.util;
 
 import com.google.common.reflect.TypeToken;
 import org.joda.convert.FromStringConverter;
 import org.junit.Test;
-import org.lenskit.util.Text;
 
 import java.io.File;
 import java.util.Collection;
@@ -31,15 +30,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
-import static org.grouplens.lenskit.util.TypeUtils.*;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.lenskit.util.TypeUtils.*;
 
-/**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
 public class TypeUtilsTest {
 
     @Test
