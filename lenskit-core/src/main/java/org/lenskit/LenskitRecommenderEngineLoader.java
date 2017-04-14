@@ -30,7 +30,7 @@ import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.util.ClassLoaderContext;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
+import org.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.RecommenderGraphBuilder;
