@@ -20,11 +20,14 @@
  */
 package org.lenskit.data.dao.file;
 
+import org.lenskit.data.entities.AttributeSet;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityBuilder;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +51,15 @@ public interface EntitySource {
     Set<EntityType> getTypes();
 
     /**
+     * Get this entity source's layout, if one is available.  A source has a layout if it produces a single entity
+     * type with a known set of attributes.
+     *
+     * @return The layout, or `null` if this source does not know its layout.
+     */
+    @Nullable
+    Layout getLayout();
+
+    /**
      * Get the data from this entity source.
      * @return The data from the entity source.
      */
@@ -59,4 +71,37 @@ public interface EntitySource {
      */
     @Nonnull
     Map<String,Object> getMetadata();
+
+    /**
+     * The layout of an entity source.
+     */
+    class Layout {
+        private final EntityType entityType;
+        private final AttributeSet attributes;
+        private final Class<? extends EntityBuilder> entityBuilder;
+
+        /**
+         * Construct an entity source layout.
+         * @param et The entity type.
+         * @param attrs The attributes.
+         * @param eb The entity builder class.
+         */
+        public Layout(EntityType et, AttributeSet attrs, Class<? extends EntityBuilder> eb) {
+            entityType = et;
+            attributes = attrs;
+            entityBuilder = eb;
+        }
+
+        public EntityType getEntityType() {
+            return entityType;
+        }
+
+        public AttributeSet getAttributes() {
+            return attributes;
+        }
+
+        public Class<? extends EntityBuilder> getEntityBuilder() {
+            return entityBuilder;
+        }
+    }
 }

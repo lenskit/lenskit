@@ -56,6 +56,16 @@ public class TextEntitySourceTest {
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
         assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+
+        EntitySource.Layout layout = src.getLayout();
+        assertThat(layout, notNullValue());
+        assertThat(layout.getEntityType(), equalTo(CommonTypes.RATING));
+        assertThat(layout.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.USER_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.RATING,
+                                      CommonAttributes.TIMESTAMP));
     }
 
     @Test
@@ -132,6 +142,9 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(CommonTypes.ITEM));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.getEntityBuilder(), equalTo((Class) BasicEntityBuilder.class));
+
+        assertThat(src.getLayout(),
+                   nullValue());
     }
 
     @Test
@@ -224,6 +237,14 @@ public class TextEntitySourceTest {
                                                 "  \"rating\": \"rating\"\n" +
                                                 "}}");
         TextEntitySource fr = TextEntitySource.fromJSON("test", node, baseURI);
+        EntitySource.Layout layout = fr.getLayout();
+        assertThat(layout, notNullValue());
+        assertThat(layout.getEntityType(), equalTo(CommonTypes.RATING));
+        assertThat(layout.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.USER_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.RATING));
 
         try (ObjectStream<Entity> stream = fr.openStream()) {
             Entity first = stream.readObject();
