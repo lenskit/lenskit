@@ -18,43 +18,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
+package org.lenskit.data.store;
 
-import com.google.common.collect.ImmutableList;
-import org.lenskit.util.IdBox;
-import org.lenskit.util.keys.KeyedObjectMap;
+import com.google.common.collect.ImmutableListMultimap;
+import org.lenskit.data.entities.Entity;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Generic implementation of the entity index.
  */
-class LongEntityIndex implements EntityIndex {
-    private final KeyedObjectMap<IdBox<ImmutableList<Entity>>> entityLists;
+class GenericEntityIndex implements EntityIndex {
+    private ImmutableListMultimap<Object,Entity> entities;
 
-    LongEntityIndex(KeyedObjectMap<IdBox<ImmutableList<Entity>>> lists) {
-        entityLists = lists;
+    GenericEntityIndex(ImmutableListMultimap<Object,Entity> data) {
+        entities = data;
     }
 
     @Nonnull
     @Override
     public List<Entity> getEntities(@Nonnull Object value) {
-        if (!(value instanceof Long)) {
-            return Collections.emptyList();
-        }
-        long key = (Long) value;
-        return getEntities(key);
-    }
-
-    @Nonnull
-    public List<Entity> getEntities(long key) {
-        IdBox<ImmutableList<Entity>> box = entityLists.get(key);
-        if (box == null) {
-            return Collections.emptyList();
-        } else {
-            return box.getValue();
-        }
+        return entities.get(value);
     }
 }

@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.store.EntityCollection;
+import org.lenskit.data.store.EntityCollectionBuilder;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.*;

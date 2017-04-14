@@ -18,26 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
+package org.lenskit.data.store;
 
-import com.google.common.collect.ImmutableListMultimap;
+import org.lenskit.data.entities.Entity;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Generic implementation of the entity index.
+ * An index to look up entities by attribute value.
+ *
+ * @see EntityIndexBuilder
  */
-class GenericEntityIndex implements EntityIndex {
-    private ImmutableListMultimap<Object,Entity> entities;
-
-    GenericEntityIndex(ImmutableListMultimap<Object,Entity> data) {
-        entities = data;
-    }
-
+interface EntityIndex {
+    /**
+     * Get the entities with the associated attribute value.
+     * @param value The attribute value.
+     * @return The list of entities.
+     */
     @Nonnull
-    @Override
-    public List<Entity> getEntities(@Nonnull Object value) {
-        return entities.get(value);
-    }
+    List<Entity> getEntities(@Nonnull Object value);
 }
