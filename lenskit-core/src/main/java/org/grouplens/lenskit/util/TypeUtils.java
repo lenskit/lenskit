@@ -28,6 +28,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.joda.convert.FromStringConverter;
 import org.joda.convert.StringConvert;
+import org.lenskit.util.Text;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.ParameterizedType;
@@ -167,6 +168,9 @@ public class TypeUtils {
         case "real":
         case "Double":
             return TypeToken.of(Double.class);
+        case "text":
+        case "Text":
+            return TypeToken.of(Text.class);
         default:
             try {
                 return TypeToken.of(ClassUtils.getClass(type));

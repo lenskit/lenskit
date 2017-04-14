@@ -23,6 +23,7 @@ package org.grouplens.lenskit.util;
 import com.google.common.reflect.TypeToken;
 import org.joda.convert.FromStringConverter;
 import org.junit.Test;
+import org.lenskit.util.Text;
 
 import java.io.File;
 import java.util.Collection;
@@ -51,6 +52,14 @@ public class TypeUtilsTest {
         //assertTrue(closure.contains(Object.class));
         assertFalse(closure.contains(List.class));
         assertFalse(closure.contains(null));
+    }
+
+    @Test
+    public void testResolveTextType() {
+        assertThat(resolveTypeName("text"),
+                   equalTo((TypeToken) TypeToken.of(Text.class)));
+        assertThat(resolveTypeName("Text"),
+                   equalTo((TypeToken) TypeToken.of(Text.class)));
     }
 
     @Test
