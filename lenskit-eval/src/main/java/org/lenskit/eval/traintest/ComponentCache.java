@@ -32,7 +32,6 @@ import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.grapht.reflect.Satisfactions;
-import org.grouplens.lenskit.util.io.*;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeInstantiator;
 import org.lenskit.inject.NodeProcessor;
