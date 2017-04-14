@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.util.math.MeanAccumulator;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;

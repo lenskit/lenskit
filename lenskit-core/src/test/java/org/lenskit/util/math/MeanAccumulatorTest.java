@@ -18,10 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.statistics;
+package org.lenskit.util.math;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.lenskit.util.math.MeanAccumulator;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

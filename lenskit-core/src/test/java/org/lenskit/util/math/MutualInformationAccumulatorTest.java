@@ -18,12 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.statistics;
+package org.lenskit.util.math;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.math.MutualInformationAccumulator;
 
 import static org.junit.Assert.assertThat;
 

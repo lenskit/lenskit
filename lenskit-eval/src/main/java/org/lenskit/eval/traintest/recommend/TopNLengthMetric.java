@@ -21,7 +21,7 @@
 package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.util.math.MeanAccumulator;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;

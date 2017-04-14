@@ -22,7 +22,7 @@ package org.lenskit.eval.traintest.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.util.math.MeanAccumulator;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.eval.traintest.TestUser;
