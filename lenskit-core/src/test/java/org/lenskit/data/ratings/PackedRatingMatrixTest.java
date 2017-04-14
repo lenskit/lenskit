@@ -24,7 +24,6 @@ import com.google.common.base.Equivalence;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
-import org.grouplens.lenskit.util.Functional;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
@@ -162,7 +161,7 @@ public class PackedRatingMatrixTest {
         Collection<RatingMatrixEntry> ratings = snap.getUserRatings(1);
         Equivalence<Preference> eq = Ratings.preferenceEquivalence();
         assertThat(ratings, hasSize(4));
-        assertThat(Iterables.transform(ratings, Functional.equivWrap(eq)),
+        assertThat(Iterables.transform(ratings, eq::wrap),
                    containsInAnyOrder(eq.wrap(entry(1, 7, 4)),
                                       eq.wrap(entry(1, 8, 5)),
                                       eq.wrap(entry(1, 9, 3)),
@@ -173,7 +172,7 @@ public class PackedRatingMatrixTest {
 
         ratings = snap.getUserRatings(3);
         assertEquals(4, ratings.size());
-        assertThat(Iterables.transform(ratings, Functional.equivWrap(eq)),
+        assertThat(Iterables.transform(ratings, eq::wrap),
                    containsInAnyOrder(eq.wrap(entry(3, 7, 3)),
                                       eq.wrap(entry(3, 8, 3)),
                                       eq.wrap(entry(3, 9, 4)),
@@ -181,7 +180,7 @@ public class PackedRatingMatrixTest {
 
         ratings = snap.getUserRatings(4);
         assertEquals(5, ratings.size());
-        assertThat(Iterables.transform(ratings, Functional.equivWrap(eq)),
+        assertThat(Iterables.transform(ratings, eq::wrap),
                    containsInAnyOrder(eq.wrap(entry(4, 7, 4)),
                                       eq.wrap(entry(4, 8, 2)),
                                       eq.wrap(entry(4, 9, 5)),
@@ -190,19 +189,19 @@ public class PackedRatingMatrixTest {
 
         ratings = snap.getUserRatings(5);
         assertEquals(2, ratings.size());
-        assertThat(Iterables.transform(ratings, Functional.equivWrap(eq)),
+        assertThat(Iterables.transform(ratings, eq::wrap),
                    containsInAnyOrder(eq.wrap(entry(5, 7, 3)),
                                       eq.wrap(entry(5, 8, 5))));
 
         ratings = snap.getUserRatings(6);
         assertEquals(2, ratings.size());
-        assertThat(Iterables.transform(ratings, Functional.equivWrap(eq)),
+        assertThat(Iterables.transform(ratings, eq::wrap),
                    containsInAnyOrder(eq.wrap(entry(6, 7, 5)),
                                       eq.wrap(entry(6, 8, 5))));
 
         ratings = snap.getUserRatings(7);
         assertEquals(3, ratings.size());
-        assertThat(Iterables.transform(ratings, Functional.equivWrap(eq)),
+        assertThat(Iterables.transform(ratings, eq::wrap),
                    containsInAnyOrder(eq.wrap(entry(7, 8, 2)),
                                       eq.wrap(entry(7, 9, 3)),
                                       eq.wrap(entry(7, 10, 4))));

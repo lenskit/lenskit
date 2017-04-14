@@ -20,16 +20,16 @@
  */
 package org.grouplens.lenskit.util.io;
 
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.hash.HashCode;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-import org.grouplens.lenskit.util.Functional;
+import com.google.common.hash.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -119,13 +119,26 @@ public final class Descriptions {
                 ((Describable) obj).describeTo(description);
             } else if (obj instanceof Serializable) {
                 logger.debug("describing {} by hashing its serialization", obj);
-                HashCode hash = Hashing.sha1().hashObject(obj, Functional.serializeFunnel());
+                HashCode hash = Hashing.sha1().hashObject(obj, SerializeFunnel.INSTANCE);
                 description.putField("hash", hash.toString());
             } else {
                 logger.warn("object {} not describable or serializable, using nondeterministic key",
                             obj);
                 UUID key = RANDOM_KEY_MAP.getUnchecked(obj);
                 description.putField("_uuid", key.toString());
+            }
+        }
+    }
+
+    private static enum SerializeFunnel implements Funnel<Object> {
+        INSTANCE;
+
+        @Override
+        public void funnel(Object from, PrimitiveSink into) {
+            try (ObjectOutputStream out = new ObjectOutputStream(Funnels.asOutputStream(into))) {
+                out.writeObject(from);
+            } catch (IOException ex) {
+                throw Throwables.propagate(ex);
             }
         }
     }
