@@ -24,7 +24,7 @@ package org.lenskit.data.entities;
  * Builder for {@linkplain EntityIndex entity indexes}.  These builders are *destructive*: their {@link #build()}
  * method will destroy the builder's internal state to free memory.
  */
-public abstract class EntityIndexBuilder {
+abstract class EntityIndexBuilder {
     /**
      * Add an entity to the index.
      * @param e The entity to add.

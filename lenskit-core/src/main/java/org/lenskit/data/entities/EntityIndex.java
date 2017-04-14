@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @see EntityIndexBuilder
  */
-public interface EntityIndex {
+interface EntityIndex {
     /**
      * Get the entities with the associated attribute value.
      * @param value The attribute value.
