@@ -18,11 +18,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.collections;
+package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
+import org.lenskit.util.collections.CompactableLongArrayList;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
