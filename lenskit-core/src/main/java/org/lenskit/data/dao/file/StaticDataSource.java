@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Monitor;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;

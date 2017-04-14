@@ -29,7 +29,7 @@ import org.grouplens.grapht.reflect.Qualifiers;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.data.dao.DataAccessObject;

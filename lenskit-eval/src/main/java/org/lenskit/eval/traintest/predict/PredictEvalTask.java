@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.api.*;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;

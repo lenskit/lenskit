@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.io;
+package org.lenskit.util.io;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteSource;
@@ -27,7 +27,6 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.lenskit.util.io.CompressedByteSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
