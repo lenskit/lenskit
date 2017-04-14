@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
@@ -30,7 +29,6 @@ import org.joda.convert.FromStringConverter;
 import org.joda.convert.StringConvert;
 import org.lenskit.util.Text;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -42,36 +40,6 @@ import java.util.*;
  */
 public class TypeUtils {
     private TypeUtils() {
-    }
-
-    /**
-     * Build the set of types implemented by the objects' classes. This includes
-     * all supertypes which are themselves subclasses of <var>parent</var>.  The
-     * resulting set is the set of all subclasses of <var>parent</var> such that
-     * there exists some object in <var>objects</var> assignable to one of them.
-     *
-     * @param objects A collection of objects.  This iterable may be fast (returning a modified
-     *                version of the same object).
-     * @param parent  The parent type of interest.
-     * @return The set of types applicable to objects in <var>objects</var>.
-     */
-    public static <T> Set<Class<? extends T>> findTypes(Iterable<? extends T> objects, Class<T> parent) {
-        // Build a set of all object classes in use
-        Set<Class<?>> objTypes = new HashSet<>();
-        for (T obj: objects) {
-            objTypes.add(obj.getClass());
-        }
-
-        // accumulate all classes reachable from an object type that are subtypes of parent
-        Set<Class<? extends T>> allTypes = new HashSet<>();
-        for (Class<?> t : objTypes) {
-            for (Class<?> type: typeClosure(t)) {
-                if (parent.isAssignableFrom(type)) {
-                    allTypes.add(type.asSubclass(parent));
-                }
-            }
-        }
-        return allTypes;
     }
 
     /**
@@ -94,21 +62,6 @@ public class TypeUtils {
         }
 
         return supertypes;
-    }
-
-    /**
-     * A predicate that accepts classes which are subtypes of (assignable to) the parent class.
-     * @param parent The parent class.
-     * @return A predicate that returns {@code true} when applied to a subtype of {@code parent}.
-     *         That is, it implements {@code paret.isAssignableFrom(type)}.
-     */
-    public static Predicate<Class<?>> subtypePredicate(final Class<?> parent) {
-        return new Predicate<Class<?>>() {
-            @Override
-            public boolean apply(@Nullable Class<?> input) {
-                return parent.isAssignableFrom(input);
-            }
-        };
     }
 
     /**
