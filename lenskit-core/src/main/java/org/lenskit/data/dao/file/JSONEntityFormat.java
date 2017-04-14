@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.grouplens.lenskit.util.TypeUtils;
+import org.lenskit.util.TypeUtils;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;

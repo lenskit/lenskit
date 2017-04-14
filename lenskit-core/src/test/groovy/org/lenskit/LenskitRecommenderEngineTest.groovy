@@ -27,7 +27,7 @@ import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
-import org.grouplens.lenskit.util.io.CompressionMode
+import org.lenskit.util.io.CompressionMode
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test

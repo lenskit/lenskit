@@ -21,7 +21,6 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Vectors;
 
@@ -35,8 +34,6 @@ import java.io.Serializable;
 @Shareable
 public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Serializable {
     private static final long serialVersionUID = 1L;
-    public static final Symbol NEIGHBORHOOD_WEIGHT_SYMBOL =
-            Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodWeight");
 
     @Override
     public void score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores, ItemItemScoreAccumulator accum) {

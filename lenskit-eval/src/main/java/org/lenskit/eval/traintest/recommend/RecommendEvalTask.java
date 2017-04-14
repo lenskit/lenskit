@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.api.*;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;

@@ -24,8 +24,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.util.io.Describable;
-import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;

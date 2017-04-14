@@ -27,7 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.*;

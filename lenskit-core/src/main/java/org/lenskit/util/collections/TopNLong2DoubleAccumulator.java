@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CompactableLongArrayList;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 /**

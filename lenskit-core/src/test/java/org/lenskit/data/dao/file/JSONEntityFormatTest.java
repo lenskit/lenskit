@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.reflect.TypeToken;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.util.TypeUtils;
+import org.lenskit.util.TypeUtils;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
