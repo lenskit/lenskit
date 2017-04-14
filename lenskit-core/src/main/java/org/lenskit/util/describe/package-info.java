@@ -18,18 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.io;
-
 /**
- * Describe an object to a {@link AbstractDescriptionWriter}.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * The 'describer' framework.
  */
-public interface Describer<T> {
-    /**
-     * Write a description of an object to a description writer.
-     * @param obj The object to describe.
-     * @param description The description writer.
-     */
-    void describe(T obj, DescriptionWriter description);
-}
+package org.lenskit.util.describe;

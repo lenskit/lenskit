@@ -37,6 +37,7 @@ import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeInstantiator;
 import org.lenskit.inject.NodeProcessor;
 import org.lenskit.util.UncheckedInterruptException;
+import org.lenskit.util.describe.*;
 import org.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.lenskit.util.io.StagedWrite;
 import org.lenskit.util.parallel.Blockers;

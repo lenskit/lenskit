@@ -18,28 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.io;
+package org.lenskit.util.describe;
 
 /**
- * Objects supporting persistent descriptions of their identity.  Components implementing this
- * interface can write information about their identity to a description, suitable for hashing, etc.
- * Unlike serialization, this is not reversible; objects are expected to write enough information to
- * uniquely identify themselves in a persistent fashion, but not necessarily to reconstruct
- * themselves.
- * <p>
- * Describable objects will generally be immutable. If they are not, they should write their current
- * description.
+ * Describe an object to a {@link AbstractDescriptionWriter}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
  */
-public interface Describable {
+public interface Describer<T> {
     /**
-     * Write this class's description to a sink. Anything relevant to this object's identity should
-     * be digested; the idea is that, barring hash collisions, two objects with the same digest are
-     * equivalent.  Used for things like deterministically generating cache file names.
-     *
-     * @param writer The description writer to use.
+     * Write a description of an object to a description writer.
+     * @param obj The object to describe.
+     * @param description The description writer.
      */
-    void describeTo(DescriptionWriter writer);
+    void describe(T obj, DescriptionWriter description);
 }

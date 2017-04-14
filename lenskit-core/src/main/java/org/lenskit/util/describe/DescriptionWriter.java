@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.io;
+package org.lenskit.util.describe;
 
 /**
  * Accumulate a description of an object (or objects).  Object descriptions should reflect the
@@ -66,7 +66,7 @@ public interface DescriptionWriter {
     /**
      * Put an object field into the description.
      * @param name The field name. It cannot begin with an underscore.
-     * @param value The field value.  It is described with {@link org.grouplens.lenskit.util.io.Descriptions#defaultDescriber()}}.
+     * @param value The field value.  It is described with {@link Descriptions#defaultDescriber()}}.
      */
     DescriptionWriter putField(String name, Object value);
 
@@ -92,7 +92,7 @@ public interface DescriptionWriter {
     /**
      * Put an object field into the description.
      * @param name The field name. It cannot begin with an underscore.
-     * @param value The field value.  If it implements {@link org.grouplens.lenskit.util.io.Describable}, then it is asked to write
+     * @param value The field value.  If it implements {@link Describable}, then it is asked to write
      *              its description; otherwise, some default behavior is used.
      * @param describer A describer to describe the value.
      */
