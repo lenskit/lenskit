@@ -28,9 +28,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.lenskit.util.TypeUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
+import org.lenskit.util.TypeUtils;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,8 +134,27 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * Get the entity builder class.
      * @return The entity builder class.
      */
+    @Override
     public Class<? extends EntityBuilder> getEntityBuilder() {
         return entityBuilder;
+    }
+
+    @Nullable
+    @Override
+    public AttributeSet getAttributes() {
+        List<TypedName<?>> names = new ArrayList<>();
+        names.add(CommonAttributes.ENTITY_ID);
+        if (columns != null) {
+            columns.stream()
+                   .filter(n -> n != CommonAttributes.ENTITY_ID)
+                   .forEach(names::add);
+        } else if (labeledColumns != null) {
+            labeledColumns.values()
+                          .stream()
+                          .filter(n -> n != CommonAttributes.ENTITY_ID)
+                          .forEach(names::add);
+        }
+        return AttributeSet.create(names);
     }
 
     /**
