@@ -20,43 +20,24 @@
  */
 package org.lenskit.data.store;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.hash.HashCode;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.Attribute;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.util.describe.Describable;
-import org.lenskit.util.describe.DescriptionWriter;
-import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.util.AbstractCollection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A collection of entities of a single type.  This collection augments the `Collection` interface with logic for
  * different kinds of (possibly optimized) entity searches.
  */
-public class EntityCollection extends AbstractCollection<Entity> implements Serializable, Describable {
-    private static long serialVersionUID = 1L;
-    private final EntityType type;
-    private final KeyedObjectMap<Entity> store;
-    private final Map<String, EntityIndex> indexes;
-    private final String contentHash;
-
-    EntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes, HashCode hash) {
-        this.type = type;
-        store = entities;
-        indexes = idxes;
-        contentHash = hash.toString();
-    }
+public abstract class EntityCollection extends AbstractCollection<Entity> implements Describable {
+    EntityCollection() {}
 
     /**
      * Create a new entity collection builder.
@@ -70,13 +51,9 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
      * Get the type of entity stored in this collection.
      * @return The entity type this collection stores.
      */
-    public EntityType getType() {
-        return type;
-    }
+    public abstract EntityType getType();
 
-    public LongSet idSet() {
-        return store.keySet();
-    }
+    public abstract LongSet idSet();
 
     /**
      * Look up an entity by ID.
@@ -84,9 +61,7 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
      * @return The entity, or `null` if no such entity exists.
      */
     @Nullable
-    public Entity lookup(long id) {
-        return store.get(id);
-    }
+    public abstract Entity lookup(long id);
 
     /**
      * Find entities by attribute.
@@ -95,9 +70,7 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
      * @return A list of entities for which attribute `name` has value `value`.
      */
     @Nonnull
-    public <T> List<Entity> find(TypedName<T> name, T value) {
-        return find(name.getName(), value);
-    }
+    public abstract <T> List<Entity> find(TypedName<T> name, T value);
 
     /**
      * Find entities with an attribute.
@@ -106,9 +79,7 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
      * @return A list of entities with the specified attribute.
      */
     @Nonnull
-    public <T> List<Entity> find(Attribute<T> attr) {
-        return find(attr.getTypedName(), attr.getValue());
-    }
+    public abstract <T> List<Entity> find(Attribute<T> attr);
 
     /**
      * Find entities by attribute.
@@ -117,39 +88,5 @@ public class EntityCollection extends AbstractCollection<Entity> implements Seri
      * @return A list of entities for which attribute `name` has value `value`.
      */
     @Nonnull
-    public List<Entity> find(String name, Object value) {
-        Preconditions.checkNotNull(name, "attribute name");
-        Preconditions.checkNotNull(value, "attribute value");
-
-        EntityIndex index = indexes.get(name);
-        if (index != null) {
-            return index.getEntities(value);
-        }
-
-        // no index, go ahead and search
-        ImmutableList.Builder<Entity> results = ImmutableList.builder();
-        for (Entity e: store) {
-            if (value.equals(e.maybeGet(name))) {
-                results.add(e);
-            }
-        }
-        return results.build();
-    }
-
-    @Nonnull
-    @Override
-    public Iterator<Entity> iterator() {
-        return store.iterator();
-    }
-
-    @Override
-    public int size() {
-        return store.size();
-    }
-
-    @Override
-    public void describeTo(DescriptionWriter writer) {
-        writer.putField("size", store.size());
-        writer.putField("contentHash", contentHash);
-    }
+    public abstract List<Entity> find(String name, Object value);
 }

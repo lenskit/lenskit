@@ -47,9 +47,9 @@ public class EntityCollectionTest {
 
     @Test
     public void testAddEntity() {
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER)
-                                              .add(Entities.create(CommonTypes.USER, 42))
-                                              .build();
+        BasicEntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER)
+                                                   .add(Entities.create(CommonTypes.USER, 42))
+                                                   .build();
         assertThat(ec.size(), equalTo(1));
         assertThat(ec.lookup(42),
                    equalTo(Entities.create(CommonTypes.USER, 42)));
@@ -70,9 +70,9 @@ public class EntityCollectionTest {
                                 .setAttribute(CommonAttributes.ITEM_ID, 203L)
                                 .setAttribute(CommonAttributes.RATING, 3.5)
                                 .build();
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
-                                              .add(rating)
-                                              .build();
+        BasicEntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+                                                   .add(rating)
+                                                   .build();
         assertThat(ec.getType(), equalTo(CommonTypes.RATING));
         assertThat(ec.size(), equalTo(1));
         assertThat(ec.lookup(37),
@@ -93,10 +93,10 @@ public class EntityCollectionTest {
                                 .setAttribute(CommonAttributes.ITEM_ID, 203L)
                                 .setAttribute(CommonAttributes.RATING, 3.5)
                                 .build();
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
-                                              .addIndex(CommonAttributes.USER_ID)
-                                              .add(rating)
-                                              .build();
+        BasicEntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+                                                   .addIndex(CommonAttributes.USER_ID)
+                                                   .add(rating)
+                                                   .build();
         assertThat(ec.getType(), equalTo(CommonTypes.RATING));
         assertThat(ec.size(), equalTo(1));
         assertThat(ec.lookup(37),
@@ -117,10 +117,10 @@ public class EntityCollectionTest {
                                 .setAttribute(CommonAttributes.ITEM_ID, 203L)
                                 .setAttribute(CommonAttributes.RATING, 3.5)
                                 .build();
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
-                                              .add(rating)
-                                              .addIndex(CommonAttributes.USER_ID)
-                                              .build();
+        BasicEntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+                                                   .add(rating)
+                                                   .addIndex(CommonAttributes.USER_ID)
+                                                   .build();
         assertThat(ec.getType(), equalTo(CommonTypes.RATING));
         assertThat(ec.size(), equalTo(1));
         assertThat(ec.lookup(37),

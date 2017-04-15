@@ -150,7 +150,7 @@ public class EntityCollectionBuilder {
      * Build the entity collection.
      * @return The collection of entities.
      */
-    public EntityCollection build() {
+    public BasicEntityCollection build() {
         Preconditions.checkState(store != null, "build() already called");
         ImmutableMap.Builder<String,EntityIndex> indexes = ImmutableMap.builder();
         for (Map.Entry<String,EntityIndexBuilder> e: indexBuilders.entrySet()) {
@@ -162,6 +162,6 @@ public class EntityCollectionBuilder {
                      map.size(), type, idxMap.size());
         store = null;
         indexBuilders = null;
-        return new EntityCollection(type, map, idxMap, hasher.hash());
+        return new BasicEntityCollection(type, map, idxMap, hasher.hash());
     }
 }
