@@ -143,7 +143,7 @@ abstract class IntShard extends Shard {
 
         @Override
         int getInt(int idx) {
-            return delegate.get(idx);
+            return delegate.getShort(idx);
         }
 
         @Override

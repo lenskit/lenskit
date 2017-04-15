@@ -26,10 +26,7 @@ import java.util.BitSet;
 /**
  * An object shard.
  */
-class LongShard extends Shard {
-    private long[] data = new long[SHARD_SIZE];
-    private BitSet mask;
-    private int size = 0;
+abstract class LongShard extends Shard {
 
     private LongShard() {}
 
@@ -38,7 +35,7 @@ class LongShard extends Shard {
      * @return The shard.
      */
     static LongShard create() {
-        return new LongShard();
+        return new WrapShort();
     }
 
     /**
@@ -46,23 +43,19 @@ class LongShard extends Shard {
      * @return The shard.
      */
     static LongShard createFull() {
-        return new LongShard();
+        return new Impl();
     }
 
     @Override
     Long get(int idx) {
-        assert idx >= 0 && idx < size;
-        if (mask == null || mask.get(idx)) {
-            return getLong(idx);
-        } else {
+        if (isNull(idx)) {
             return null;
+        } else {
+            return getLong(idx);
         }
     }
 
-    long getLong(int idx) {
-        assert idx >= 0 && idx < size;
-        return data[idx];
-    }
+    abstract long getLong(int idx);
 
     @Override
     void put(int idx, Object value) {
@@ -75,55 +68,191 @@ class LongShard extends Shard {
         }
     }
 
-    void clear(int idx) {
-        assert idx >= 0 && idx < data.length;
-        if (idx >= size) {
-            size = idx + 1;
+    abstract void clear(int idx);
+
+    abstract void put(int idx, long value);
+
+    private void copyFrom(LongShard src) {
+        int n = src.size();
+        for (int i = 0; i < n; i++) {
+            if (src.isNull(i)) {
+                clear(i);
+            } else {
+                put(i, src.getLong(i));
+            }
         }
-        if (mask == null) {
-            mask = new BitSet(SHARD_SIZE);
-            mask.set(0, size);
-        }
-        mask.clear(idx);
     }
 
-    void put(int idx, long value) {
-        assert idx >= 0 && idx < data.length;
-        if (idx >= size) {
-            if (idx > size && mask == null) {
+    private static class Impl extends LongShard {
+
+        private long[] data = new long[SHARD_SIZE];
+        private BitSet mask;
+        private int size = 0;
+
+        @Override
+        long getLong(int idx) {
+            assert idx >= 0 && idx < size;
+            return data[idx];
+        }
+
+        @Override
+        void clear(int idx) {
+            assert idx >= 0 && idx < data.length;
+            if (idx >= size) {
+                size = idx + 1;
+            }
+            if (mask == null) {
                 mask = new BitSet(SHARD_SIZE);
                 mask.set(0, size);
             }
-            size = idx + 1;
+            mask.clear(idx);
         }
-        data[idx] = value;
-        if (mask != null) {
-            mask.set(idx);
+
+        @Override
+        void put(int idx, long value) {
+            assert idx >= 0 && idx < data.length;
+            if (idx >= size) {
+                if (idx > size && mask == null) {
+                    mask = new BitSet(SHARD_SIZE);
+                    mask.set(0, size);
+                }
+                size = idx + 1;
+            }
+            data[idx] = value;
+            if (mask != null) {
+                mask.set(idx);
+            }
+        }
+
+        @Override
+        boolean isNull(int idx) {
+            assert idx >= 0 && idx < size;
+            return mask != null && !mask.get(idx);
+        }
+
+        @Override
+        Shard adapt(Object obj) {
+            if (obj instanceof Long) {
+                return this;
+            } else {
+                throw new IllegalArgumentException("cannot store obj in long");
+            }
+        }
+
+        @Override
+        int size() {
+            return size;
+        }
+
+        @Override
+        void compact() {
+            data = Arrays.copyOf(data, size);
         }
     }
 
-    @Override
-    boolean isNull(int idx) {
-        assert idx >= 0 && idx < size;
-        return mask != null && !mask.get(idx);
-    }
+    private static class WrapShort extends LongShard {
+        private ShortShard delegate = ShortShard.create();
 
-    @Override
-    Shard adapt(Object obj) {
-        if (obj instanceof Long) {
-            return this;
-        } else {
-            throw new IllegalArgumentException("cannot store obj in long");
+        @Override
+        long getLong(int idx) {
+            return delegate.getShort(idx);
+        }
+
+        @Override
+        boolean isNull(int idx) {
+            return delegate.isNull(idx);
+        }
+
+        @Override
+        LongShard adapt(Object obj) {
+            if (obj instanceof Long) {
+                long val = (Long) obj;
+                if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
+                    return this;
+                } else if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
+                    LongShard lsh = new WrapInt();
+                    lsh.copyFrom(this);
+                    return lsh;
+                } else {
+                    LongShard lsh = createFull();
+                    lsh.copyFrom(this);
+                    return lsh;
+                }
+            } else {
+                throw new IllegalArgumentException("cannot store " + obj + " in int shard");
+            }
+        }
+
+        @Override
+        void clear(int idx) {
+            delegate.clear(idx);
+        }
+
+        @Override
+        void put(int idx, long value) {
+            assert value >= Short.MIN_VALUE && value <= Short.MAX_VALUE;
+            delegate.put(idx, (short) value);
+        }
+
+        @Override
+        int size() {
+            return delegate.size();
+        }
+
+        @Override
+        void compact() {
+            delegate.compact();
         }
     }
 
-    @Override
-    int size() {
-        return size;
-    }
+    private static class WrapInt extends LongShard {
+        private IntShard delegate = IntShard.createFull();
 
-    @Override
-    void compact() {
-        data = Arrays.copyOf(data, size);
+        @Override
+        long getLong(int idx) {
+            return delegate.getInt(idx);
+        }
+
+        @Override
+        boolean isNull(int idx) {
+            return delegate.isNull(idx);
+        }
+
+        @Override
+        LongShard adapt(Object obj) {
+            if (obj instanceof Long) {
+                long val = (Long) obj;
+                if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
+                    return this;
+                } else {
+                    LongShard lsh = createFull();
+                    lsh.copyFrom(this);
+                    return lsh;
+                }
+            } else {
+                throw new IllegalArgumentException("cannot store " + obj + " in int shard");
+            }
+        }
+
+        @Override
+        void clear(int idx) {
+            delegate.clear(idx);
+        }
+
+        @Override
+        void put(int idx, long value) {
+            assert value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE;
+            delegate.put(idx, (int) value);
+        }
+
+        @Override
+        int size() {
+            return delegate.size();
+        }
+
+        @Override
+        void compact() {
+            delegate.compact();
+        }
     }
 }
