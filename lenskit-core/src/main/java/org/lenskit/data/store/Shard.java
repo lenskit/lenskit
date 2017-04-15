@@ -30,6 +30,7 @@ abstract class Shard {
      * Get the value at an index in the shard.
      * @param idx The index.
      * @return The value, or `null`.
+     * @throws IndexOutOfBoundsException if `idx` is not a valid index.
      */
     abstract Object get(int idx);
 
@@ -41,10 +42,16 @@ abstract class Shard {
     abstract void put(int idx, Object value);
 
     /**
+     * Query whether a specified value is null.
+     * @param idx The index to query.
+     * @return `true` if the value at `idx` is `null` (or unset).
+     */
+    abstract boolean isNull(int idx);
+
+    /**
      * Adapt this shard to be able to hold an object.
      * @param obj The object to store.
      * @return This shard, if it can hold the object, or a new shard that can.
-     * @throws IllegalArgumentException if it is impossible to adapt this shard to the appropriate type.
      */
     abstract Shard adapt(Object obj);
 

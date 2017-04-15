@@ -38,6 +38,7 @@ public class ObjectShardTest {
         shard.put(0, "foo");
         assertThat(shard.size(), equalTo(1));
         assertThat(shard.get(0), equalTo("foo"));
+        assertThat(shard.isNull(0), equalTo(false));
     }
 
     @Test
@@ -46,5 +47,8 @@ public class ObjectShardTest {
         shard.put(5, "foo");
         assertThat(shard.size(), equalTo(6));
         assertThat(shard.get(5), equalTo("foo"));
+        assertThat(shard.isNull(0), equalTo(true));
+        assertThat(shard.isNull(4), equalTo(true));
+        assertThat(shard.isNull(5), equalTo(false));
     }
 }

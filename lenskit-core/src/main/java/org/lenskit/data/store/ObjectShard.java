@@ -45,6 +45,12 @@ class ObjectShard extends Shard {
     }
 
     @Override
+    boolean isNull(int idx) {
+        assert idx >= 0 && idx < size;
+        return data[idx] == null;
+    }
+
+    @Override
     Shard adapt(Object obj) {
         return this;
     }
