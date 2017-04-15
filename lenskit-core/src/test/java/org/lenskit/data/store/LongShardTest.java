@@ -24,30 +24,30 @@ import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
-public class ObjectShardTest {
+public class LongShardTest {
     @Test
     public void testInitialState() {
-        ObjectShard shard = new ObjectShard();
+        LongShard shard = LongShard.create();
         assertThat(shard.size(), equalTo(0));
     }
 
     @Test
     public void testAddObject() {
-        ObjectShard shard = new ObjectShard();
-        shard.put(0, "foo");
+        LongShard shard = LongShard.create();
+        shard.put(0, 42L);
         assertThat(shard.size(), equalTo(1));
-        assertThat(shard.get(0), equalTo("foo"));
+        assertThat(shard.get(0), equalTo(42L));
         assertThat(shard.isNull(0), equalTo(false));
     }
 
     @Test
     public void testAddObjectLater() {
-        ObjectShard shard = new ObjectShard();
-        shard.put(5, "foo");
+        LongShard shard = LongShard.create();
+        shard.put(5, 42L);
         assertThat(shard.size(), equalTo(6));
-        assertThat(shard.get(5), equalTo("foo"));
+        assertThat(shard.get(5), equalTo(42L));
         assertThat(shard.isNull(0), equalTo(true));
         assertThat(shard.isNull(4), equalTo(true));
         assertThat(shard.isNull(5), equalTo(false));
@@ -55,7 +55,7 @@ public class ObjectShardTest {
 
     @Test
     public void testClearObject() {
-        ObjectShard shard = new ObjectShard();
+        LongShard shard = LongShard.create();
         shard.put(0, 42L);
         shard.put(1, 39L);
         shard.put(0, null);
