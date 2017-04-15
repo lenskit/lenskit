@@ -132,7 +132,7 @@ abstract class LongShard extends Shard {
 
         @Override
         Shard adapt(Object obj) {
-            if (obj instanceof Long) {
+            if (obj instanceof Long || obj == null) {
                 return this;
             } else {
                 throw new IllegalArgumentException("cannot store obj in long");
@@ -165,7 +165,9 @@ abstract class LongShard extends Shard {
 
         @Override
         LongShard adapt(Object obj) {
-            if (obj instanceof Long) {
+            if (obj == null) {
+                return this;
+            } else if (obj instanceof Long) {
                 long val = (Long) obj;
                 if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
                     return this;
@@ -220,7 +222,9 @@ abstract class LongShard extends Shard {
 
         @Override
         LongShard adapt(Object obj) {
-            if (obj instanceof Long) {
+            if (obj == null) {
+                return this;
+            }if (obj instanceof Long) {
                 long val = (Long) obj;
                 if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
                     return this;

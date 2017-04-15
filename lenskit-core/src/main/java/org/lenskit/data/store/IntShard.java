@@ -120,7 +120,7 @@ abstract class IntShard extends Shard {
 
         @Override
         IntShard adapt(Object obj) {
-            if (obj instanceof Integer) {
+            if (obj == null || obj instanceof Integer) {
                 return this;
             } else {
                 throw new IllegalArgumentException("cannot store obj in int");
@@ -153,7 +153,9 @@ abstract class IntShard extends Shard {
 
         @Override
         IntShard adapt(Object obj) {
-            if (obj instanceof Integer) {
+            if (obj == null) {
+                return this;
+            } else if (obj instanceof Integer) {
                 int val = (Integer) obj;
                 if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
                     return this;

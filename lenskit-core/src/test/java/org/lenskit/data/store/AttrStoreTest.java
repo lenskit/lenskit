@@ -21,6 +21,7 @@
 package org.lenskit.data.store;
 
 import org.junit.Test;
+import org.omg.CORBA.LongLongSeqHelper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,10 +138,90 @@ public class AttrStoreTest {
     }
 
     @Test
-    public void testAddABunch() {
+    public void testAddABunchOfStrings() {
         for (List<String> strings: someLists(nullsAnd(strings(), 20),
                                              integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
             AttrStoreBuilder asb = new AttrStoreBuilder();
+            strings.forEach(asb::add);
+            assertThat(asb.size(), equalTo(strings.size()));
+            AttrStore store = asb.build();
+            assertThat(store.size(), equalTo(strings.size()));
+            assertThat(IntStream.range(0, strings.size())
+                                .mapToObj(store::get)
+                                .collect(Collectors.toList()),
+                       contains(strings.toArray()));
+        }
+    }
+
+    @Test
+    public void testAddABunchOfInts() {
+        for (List<Integer> strings: someLists(nullsAnd(integers(), 20),
+                                              integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
+            AttrStoreBuilder asb = new AttrStoreBuilder(IntShard::create);
+            strings.forEach(asb::add);
+            assertThat(asb.size(), equalTo(strings.size()));
+            AttrStore store = asb.build();
+            assertThat(store.size(), equalTo(strings.size()));
+            assertThat(IntStream.range(0, strings.size())
+                                .mapToObj(store::get)
+                                .collect(Collectors.toList()),
+                       contains(strings.toArray()));
+        }
+    }
+
+    @Test
+    public void testAddABunchOfSmallInts() {
+        for (List<Integer> strings: someLists(nullsAnd(integers(Short.MIN_VALUE, Short.MAX_VALUE), 20),
+                                              integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
+            AttrStoreBuilder asb = new AttrStoreBuilder(IntShard::create);
+            strings.forEach(asb::add);
+            assertThat(asb.size(), equalTo(strings.size()));
+            AttrStore store = asb.build();
+            assertThat(store.size(), equalTo(strings.size()));
+            assertThat(IntStream.range(0, strings.size())
+                                .mapToObj(store::get)
+                                .collect(Collectors.toList()),
+                       contains(strings.toArray()));
+        }
+    }
+
+    @Test
+    public void testAddABunchOfLongs() {
+        for (List<Long> strings: someLists(nullsAnd(longs(), 20),
+                                              integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
+            AttrStoreBuilder asb = new AttrStoreBuilder(LongShard::create);
+            strings.forEach(asb::add);
+            assertThat(asb.size(), equalTo(strings.size()));
+            AttrStore store = asb.build();
+            assertThat(store.size(), equalTo(strings.size()));
+            assertThat(IntStream.range(0, strings.size())
+                                .mapToObj(store::get)
+                                .collect(Collectors.toList()),
+                       contains(strings.toArray()));
+        }
+    }
+
+    @Test
+    public void testAddABunchOfSmallLongs() {
+        for (List<Long> strings: someLists(nullsAnd(longs(Short.MIN_VALUE, Short.MAX_VALUE), 20),
+                                              integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
+            AttrStoreBuilder asb = new AttrStoreBuilder(LongShard::create);
+            strings.forEach(asb::add);
+            assertThat(asb.size(), equalTo(strings.size()));
+            AttrStore store = asb.build();
+            assertThat(store.size(), equalTo(strings.size()));
+            assertThat(IntStream.range(0, strings.size())
+                                .mapToObj(store::get)
+                                .collect(Collectors.toList()),
+                       contains(strings.toArray()));
+        }
+    }
+
+    @Test
+    public void testAddABunchOfMediumLongs() {
+        for (List<Long> strings: someLists(nullsAnd(longs(Integer.MIN_VALUE, Integer.MAX_VALUE), 20),
+                                           integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
+            AttrStoreBuilder asb = new AttrStoreBuilder(LongShard::create);
             strings.forEach(asb::add);
             assertThat(asb.size(), equalTo(strings.size()));
             AttrStore store = asb.build();
