@@ -29,13 +29,13 @@ import static org.junit.Assert.assertThat;
 public class IntShardTest {
     @Test
     public void testInitialState() {
-        IntShard shard = IntShard.create();
+        IntShard shard = IntShard.createFull();
         assertThat(shard.size(), equalTo(0));
     }
 
     @Test
     public void testAddObject() {
-        IntShard shard = IntShard.create();
+        IntShard shard = IntShard.createFull();
         shard.put(0, 42);
         assertThat(shard.size(), equalTo(1));
         assertThat(shard.get(0), equalTo(42));
@@ -44,7 +44,7 @@ public class IntShardTest {
 
     @Test
     public void testAddObjectLater() {
-        IntShard shard = IntShard.create();
+        IntShard shard = IntShard.createFull();
         shard.put(5, 42);
         assertThat(shard.size(), equalTo(6));
         assertThat(shard.get(5), equalTo(42));
@@ -55,6 +55,45 @@ public class IntShardTest {
 
     @Test
     public void testClearObject() {
+        IntShard shard = IntShard.createFull();
+        shard.put(0, 42);
+        shard.put(1, 39);
+        shard.put(0, null);
+        assertThat(shard.size(), equalTo(2));
+        assertThat(shard.get(0), nullValue());
+        assertThat(shard.isNull(0), equalTo(true));
+        assertThat(shard.get(1), equalTo(39));
+        assertThat(shard.isNull(1), equalTo(false));
+    }
+
+    @Test
+    public void testWrapInitialState() {
+        IntShard shard = IntShard.create();
+        assertThat(shard.size(), equalTo(0));
+    }
+
+    @Test
+    public void testWrapAddObject() {
+        IntShard shard = IntShard.create();
+        shard.put(0, 42);
+        assertThat(shard.size(), equalTo(1));
+        assertThat(shard.get(0), equalTo(42));
+        assertThat(shard.isNull(0), equalTo(false));
+    }
+
+    @Test
+    public void testWrapAddObjectLater() {
+        IntShard shard = IntShard.create();
+        shard.put(5, 42);
+        assertThat(shard.size(), equalTo(6));
+        assertThat(shard.get(5), equalTo(42));
+        assertThat(shard.isNull(0), equalTo(true));
+        assertThat(shard.isNull(4), equalTo(true));
+        assertThat(shard.isNull(5), equalTo(false));
+    }
+
+    @Test
+    public void testWrapClearObject() {
         IntShard shard = IntShard.create();
         shard.put(0, 42);
         shard.put(1, 39);
@@ -63,6 +102,19 @@ public class IntShardTest {
         assertThat(shard.get(0), nullValue());
         assertThat(shard.isNull(0), equalTo(true));
         assertThat(shard.get(1), equalTo(39));
+        assertThat(shard.isNull(1), equalTo(false));
+    }
+
+    @Test
+    public void testAdaptUpgrade() {
+        Shard shard = IntShard.create();
+        shard.put(0, 42);
+        shard = shard.adapt(Short.MAX_VALUE + 10);
+        shard.put(1, Short.MAX_VALUE + 10);
+        assertThat(shard.size(), equalTo(2));
+        assertThat(shard.get(0), equalTo(42));
+        assertThat(shard.isNull(0), equalTo(false));
+        assertThat(shard.get(1), equalTo(Short.MAX_VALUE + 10));
         assertThat(shard.isNull(1), equalTo(false));
     }
 }

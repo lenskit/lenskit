@@ -29,13 +29,13 @@ import static org.junit.Assert.assertThat;
 public class LongShardTest {
     @Test
     public void testInitialState() {
-        LongShard shard = LongShard.create();
+        LongShard shard = LongShard.createFull();
         assertThat(shard.size(), equalTo(0));
     }
 
     @Test
     public void testAddObject() {
-        LongShard shard = LongShard.create();
+        LongShard shard = LongShard.createFull();
         shard.put(0, 42L);
         assertThat(shard.size(), equalTo(1));
         assertThat(shard.get(0), equalTo(42L));
@@ -44,7 +44,7 @@ public class LongShardTest {
 
     @Test
     public void testAddObjectLater() {
-        LongShard shard = LongShard.create();
+        LongShard shard = LongShard.createFull();
         shard.put(5, 42L);
         assertThat(shard.size(), equalTo(6));
         assertThat(shard.get(5), equalTo(42L));
@@ -55,7 +55,7 @@ public class LongShardTest {
 
     @Test
     public void testClearObject() {
-        LongShard shard = LongShard.create();
+        LongShard shard = LongShard.createFull();
         shard.put(0, 42L);
         shard.put(1, 39L);
         shard.put(0, null);

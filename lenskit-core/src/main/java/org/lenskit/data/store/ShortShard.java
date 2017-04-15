@@ -98,7 +98,7 @@ class ShortShard extends Shard {
 
     @Override
     Shard adapt(Object obj) {
-        if (obj instanceof Long) {
+        if (obj instanceof Short) {
             return this;
         } else {
             throw new IllegalArgumentException("cannot store obj in short");

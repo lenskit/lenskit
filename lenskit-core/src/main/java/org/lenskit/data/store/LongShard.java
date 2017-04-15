@@ -33,7 +33,19 @@ class LongShard extends Shard {
 
     private LongShard() {}
 
+    /**
+     * Create a new shard that may wrap a more compact storage.
+     * @return The shard.
+     */
     static LongShard create() {
+        return new LongShard();
+    }
+
+    /**
+     * Create a new shard.
+     * @return The shard.
+     */
+    static LongShard createFull() {
         return new LongShard();
     }
 
