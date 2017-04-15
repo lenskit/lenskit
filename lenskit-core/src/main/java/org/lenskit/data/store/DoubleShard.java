@@ -26,28 +26,28 @@ import java.util.BitSet;
 /**
  * An object shard.
  */
-class ShortShard extends Shard {
-    private short[] data = new short[SHARD_SIZE];
+class DoubleShard extends Shard {
+    private double[] data = new double[SHARD_SIZE];
     private BitSet mask;
     private int size = 0;
 
-    private ShortShard() {}
+    private DoubleShard() {}
 
-    static ShortShard create() {
-        return new ShortShard();
+    static DoubleShard create() {
+        return new DoubleShard();
     }
 
     @Override
-    Short get(int idx) {
+    Double get(int idx) {
         assert idx >= 0 && idx < size;
         if (mask == null || mask.get(idx)) {
-            return getShort(idx);
+            return getDouble(idx);
         } else {
             return null;
         }
     }
 
-    short getShort(int idx) {
+    double getDouble(int idx) {
         assert idx >= 0 && idx < size;
         return data[idx];
     }
@@ -56,8 +56,8 @@ class ShortShard extends Shard {
     void put(int idx, Object value) {
         if (value == null) {
             clear(idx);
-        } else if (value instanceof Short) {
-            put(idx, ((Short) value).shortValue());
+        } else if (value instanceof Double) {
+            put(idx, ((Double) value).doubleValue());
         } else {
             throw new IllegalArgumentException("invalid value " + value);
         }
@@ -75,7 +75,7 @@ class ShortShard extends Shard {
         mask.clear(idx);
     }
 
-    void put(int idx, short value) {
+    void put(int idx, double value) {
         assert idx >= 0 && idx < data.length;
         if (idx >= size) {
             if (idx > size && mask == null) {
@@ -98,10 +98,10 @@ class ShortShard extends Shard {
 
     @Override
     Shard adapt(Object obj) {
-        if (obj instanceof Short || obj == null) {
+        if (obj instanceof Double || obj == null) {
             return this;
         } else {
-            throw new IllegalArgumentException("cannot store obj in short");
+            throw new IllegalArgumentException("cannot store obj in double");
         }
     }
 

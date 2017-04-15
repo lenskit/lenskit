@@ -232,4 +232,20 @@ public class AttrStoreTest {
                        contains(strings.toArray()));
         }
     }
+
+    @Test
+    public void testAddABunchOfDoubles() {
+        for (List<Double> strings: someLists(nullsAnd(doubles(), 20),
+                                             integers(2 * Shard.SHARD_SIZE + 20, 10 * Shard.SHARD_SIZE))) {
+            AttrStoreBuilder asb = new AttrStoreBuilder(DoubleShard::create);
+            strings.forEach(asb::add);
+            assertThat(asb.size(), equalTo(strings.size()));
+            AttrStore store = asb.build();
+            assertThat(store.size(), equalTo(strings.size()));
+            assertThat(IntStream.range(0, strings.size())
+                                .mapToObj(store::get)
+                                .collect(Collectors.toList()),
+                       contains(strings.toArray()));
+        }
+    }
 }
