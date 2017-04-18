@@ -23,7 +23,10 @@ package org.lenskit.data.dao;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.lenskit.data.entities.*;
+import org.lenskit.data.entities.Entities;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.store.EntityCollection;
 import org.lenskit.data.store.EntityCollectionBuilder;
 
@@ -93,7 +96,7 @@ public class EntityCollectionDAOBuilder {
             lastBuilder = entitySets.get(type);
             last = type;
             if (lastBuilder == null) {
-                lastBuilder = new EntityCollectionBuilder(type);
+                lastBuilder = EntityCollection.newBuilder(type);
                 for (TypedName<?> name: defaultIndexes) {
                     lastBuilder.addIndex(name);
                 }

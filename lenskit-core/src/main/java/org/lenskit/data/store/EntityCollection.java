@@ -44,7 +44,7 @@ public abstract class EntityCollection extends AbstractCollection<Entity> implem
      * @return The builder.
      */
     public static EntityCollectionBuilder newBuilder(EntityType type) {
-        return new EntityCollectionBuilder(type);
+        return new MapEntityCollectionBuilder(type);
     }
 
     /**

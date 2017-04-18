@@ -38,14 +38,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-class BasicEntityCollection extends EntityCollection implements Serializable {
+class MapEntityCollection extends EntityCollection implements Serializable {
     private static long serialVersionUID = 1L;
     private final EntityType type;
     private final KeyedObjectMap<Entity> store;
     private final Map<String, EntityIndex> indexes;
     private final String contentHash;
 
-    BasicEntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes, HashCode hash) {
+    MapEntityCollection(EntityType type, KeyedObjectMap<Entity> entities, Map<String,EntityIndex> idxes, HashCode hash) {
         this.type = type;
         store = entities;
         indexes = idxes;
