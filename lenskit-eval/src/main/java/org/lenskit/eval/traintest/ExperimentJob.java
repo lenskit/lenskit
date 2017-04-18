@@ -22,6 +22,7 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import net.jcip.annotations.ThreadSafe;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
@@ -58,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -172,52 +174,8 @@ class ExperimentJob extends RecursiveAction {
                 userStream = users.stream();
             }
 
-            userStream.forEach((user) -> {
-                try (LenskitRecommender rec = buildRecommender(engine, trainData, runtimeData)) {
-                    long uid = user.getId();
-                    RowBuilder userRow = userOutput.getLayout().newRowBuilder();
-                    userRow.add("User", uid);
-
-                    List<Entity> userTrainHistory = new ArrayList<>();
-                    List<Entity> userTestHistory = new ArrayList<>();
-
-                    for (EntityType entityType : entityTypes) {
-                        List<Entity> trainHistory = trainData.query(entityType)
-                                                             .withAttribute(CommonAttributes.USER_ID, uid)
-                                                             .get();
-
-                        userTrainHistory.addAll(trainHistory);
-
-                        List<Entity> testHistory = testData.query(entityType)
-                                                           .withAttribute(CommonAttributes.USER_ID, uid)
-                                                           .get();
-
-                        userTestHistory.addAll(testHistory);
-                    }
-
-                    TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
-
-                    Stopwatch userTimer = Stopwatch.createStarted();
-
-                    for (ConditionEvaluator eval : accumulators) {
-                        Map<String, Object> ures = eval.measureUser(rec, testUser);
-                        userRow.addAll(ures);
-                    }
-                    userTimer.stop();
-
-                    userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-                    try {
-                        userOutput.writeRow(userRow.buildList());
-                        userOutput.flush();
-                    } catch (IOException e) {
-                        throw new EvaluationException("error writing user row", e);
-                    }
-                    userRow.clear();
-
-                    test.finishStep();
-                    progress.advance();
-                }
-            });
+            UserEvaluator eval = new UserEvaluator(test, userOutput, trainData, runtimeData, engine, accumulators, testData, progress, entityTypes);
+            userStream.forEach(eval);
 
             test.finish();
             progress.finish();
@@ -225,8 +183,8 @@ class ExperimentJob extends RecursiveAction {
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
             outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
             outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-            for (ConditionEvaluator eval : accumulators) {
-                outputRow.addAll(eval.finish());
+            for (ConditionEvaluator ce : accumulators) {
+                outputRow.addAll(ce.finish());
             }
         } catch (UncheckedInterruptException ex) {
             try {
@@ -322,6 +280,79 @@ class ExperimentJob extends RecursiveAction {
                     logger.error("Error instantiating recommender nodes with cache", e);
                     throw new RecommenderBuildException("Cached instantiation failed", e);
                 }
+            }
+        }
+    }
+
+    @ThreadSafe
+    private class UserEvaluator implements Consumer<Entity> {
+        private TrackedJob test;
+        private TableWriter userOutput;
+        private DataAccessObject trainData;
+        private DataAccessObject runtimeData;
+        private LenskitRecommenderEngine engine;
+        private List<ConditionEvaluator> accumulators;
+        private DataAccessObject testData;
+        private ProgressLogger progress;
+        private List<EntityType> entityTypes;
+
+        public UserEvaluator(TrackedJob test, TableWriter userOutput, DataAccessObject trainData, DataAccessObject runtimeData, LenskitRecommenderEngine engine, List<ConditionEvaluator> accumulators, DataAccessObject testData, ProgressLogger progress, List<EntityType> entityTypes) {
+            this.test = test;
+            this.userOutput = userOutput;
+            this.trainData = trainData;
+            this.runtimeData = runtimeData;
+            this.engine = engine;
+            this.accumulators = accumulators;
+            this.testData = testData;
+            this.progress = progress;
+            this.entityTypes = entityTypes;
+        }
+
+        @Override
+        public void accept(Entity user) {
+            try (LenskitRecommender rec = buildRecommender(engine, trainData, runtimeData)) {
+                long uid = user.getId();
+                RowBuilder userRow = userOutput.getLayout().newRowBuilder();
+                userRow.add("User", uid);
+
+                List<Entity> userTrainHistory = new ArrayList<>();
+                List<Entity> userTestHistory = new ArrayList<>();
+
+                for (EntityType entityType : entityTypes) {
+                    List<Entity> trainHistory = trainData.query(entityType)
+                                                         .withAttribute(CommonAttributes.USER_ID, uid)
+                                                         .get();
+
+                    userTrainHistory.addAll(trainHistory);
+
+                    List<Entity> testHistory = testData.query(entityType)
+                                                       .withAttribute(CommonAttributes.USER_ID, uid)
+                                                       .get();
+
+                    userTestHistory.addAll(testHistory);
+                }
+
+                TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
+
+                Stopwatch userTimer = Stopwatch.createStarted();
+
+                for (ConditionEvaluator eval : accumulators) {
+                    Map<String, Object> ures = eval.measureUser(rec, testUser);
+                    userRow.addAll(ures);
+                }
+                userTimer.stop();
+
+                userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+                try {
+                    userOutput.writeRow(userRow.buildList());
+                    userOutput.flush();
+                } catch (IOException e) {
+                    throw new EvaluationException("error writing user row", e);
+                }
+                userRow.clear();
+
+                test.finishStep();
+                progress.advance();
             }
         }
     }
