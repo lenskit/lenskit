@@ -599,6 +599,7 @@ public class TrainTestExperiment {
         if (json.has("thread_count")) {
             exp.setThreadCount(json.get("thread_count").asInt(1));
         }
+        exp.setParallelTasks(json.path("parallel_tasks").asInt(0));
         if (json.has("share_model_components")) {
             exp.setShareModelComponents(json.get("share_model_components").asBoolean());
         }
