@@ -28,7 +28,15 @@ import com.google.common.collect.Iterators;
 import java.util.*;
 
 /**
- * A set of attributes.  Attributes are mapped to positions.
+ * A set of attributes.  Attributes are mapped to positions.  If {@link CommonAttributes#ENTITY_ID} is in the
+ * set, it is always at position 0.
+ *
+ * This class exists for two reasons:
+ *
+ * - To share space for storing attribute names - including the list of attribute names - between multiple
+ * entities with the same set of attributes.
+ * - To speed up lookups; microbenchmarks have found that linear search with object identity is faster than
+ * hashtable lookups for small maps, and entities do not tend to have very many attributes.
  */
 public class AttributeSet extends AbstractSet<TypedName<?>> {
     private static final Interner<AttributeSet> setCache = Interners.newWeakInterner();
