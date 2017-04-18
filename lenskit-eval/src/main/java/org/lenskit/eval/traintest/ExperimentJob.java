@@ -104,8 +104,33 @@ class ExperimentJob extends RecursiveAction {
 
     @Override
     protected void compute() {
-        tracker.start();
+        try {
+            tracker.start();
+            doEvaluate();
+        } catch (UncheckedInterruptException ex) {
+            try {
+                logger.info("evaluation of {} on {} interrupted", algorithm, dataSet);
+                tracker.fail(ex);
+            } catch (Throwable th) {
+                ex.addSuppressed(th);
+            }
+            throw ex;
+        } catch (Throwable th) {
+            try {
+                logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
+                tracker.fail(th);
+            } catch (Throwable th2) {
+                th.addSuppressed(th2);
+            }
+            throw th;
+        }
+        tracker.finish();
+    }
 
+    /**
+     * Inner helper to control the evaluation.
+     */
+    private void doEvaluate() {
         TrackedJob setup = tracker.makeChild(SETUP_JOB_TYPE);
         TrackedJob train = tracker.makeChild(TRAIN_JOB_TYPE);
         TrackedJob test = tracker.makeChild(TEST_JOB_TYPE);
@@ -129,79 +154,61 @@ class ExperimentJob extends RecursiveAction {
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
         LenskitRecommenderEngine engine = buildRecommenderEngine(trainData);
-        try {
-            buildTimer.stop();
-            train.finish();
-            logger.info("Built {} in {}", algorithm.getName(), buildTimer);
-            logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
+        buildTimer.stop();
+        train.finish();
+        logger.info("Built {} in {}", algorithm.getName(), buildTimer);
+        logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
-            List<ConditionEvaluator> accumulators = Lists.newArrayList();
+        List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
-            for (EvalTask task : experiment.getTasks()) {
-                ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, engine);
-                if (ce != null) {
-                    accumulators.add(ce);
-                } else {
-                    logger.warn("Could not instantiate task {} for algorithm {} on data set {}",
-                                task, algorithm, dataSet);
-                }
-            }
-
-            DataAccessObject testData = dataSet.getTestData().get();
-
-            Stopwatch testTimer = Stopwatch.createStarted();
-
-            final NumberFormat pctFormat = NumberFormat.getPercentInstance();
-            pctFormat.setMaximumFractionDigits(2);
-            pctFormat.setMinimumFractionDigits(2);
-            final int nusers = testData.query(CommonTypes.USER).count();
-            test.start(nusers);
-            logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
-            ProgressLogger progress = ProgressLogger.create(logger)
-                                                    .setCount(nusers)
-                                                    .setLabel("testing users")
-                                                    .start();
-
-            List<EntityType> entityTypes = dataSet.getEntityTypes();
-            logger.info("using entity types {} for test data", entityTypes);
-            List<Entity> users = testData.query(CommonTypes.USER).get();
-            Stream<Entity> userStream;
-            if (inForkJoinPool()) {
-                // parallelism is enabled
-                userStream = users.parallelStream();
+        for (EvalTask task : experiment.getTasks()) {
+            ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, engine);
+            if (ce != null) {
+                accumulators.add(ce);
             } else {
-                // not parallel, so don't parallelize
-                userStream = users.stream();
+                logger.warn("Could not instantiate task {} for algorithm {} on data set {}",
+                            task, algorithm, dataSet);
             }
+        }
 
-            UserEvaluator eval = new UserEvaluator(test, userOutput, trainData, runtimeData, engine, accumulators, testData, progress, entityTypes);
-            userStream.forEach(eval);
+        DataAccessObject testData = dataSet.getTestData().get();
 
-            test.finish();
-            progress.finish();
-            testTimer.stop();
-            logger.info("Tested {} in {}", algorithm.getName(), testTimer);
-            outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-            outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-            for (ConditionEvaluator ce : accumulators) {
-                outputRow.addAll(ce.finish());
-            }
-        } catch (UncheckedInterruptException ex) {
-            try {
-                logger.info("evaluation of {} on {} interrupted", algorithm, dataSet);
-                tracker.fail(ex);
-            } catch (Throwable th) {
-                ex.addSuppressed(th);
-            }
-            throw ex;
-        } catch (Throwable th) {
-            try {
-                logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
-                tracker.fail(th);
-            } catch (Throwable th2) {
-                th.addSuppressed(th2);
-            }
-            throw th;
+        Stopwatch testTimer = Stopwatch.createStarted();
+
+        final NumberFormat pctFormat = NumberFormat.getPercentInstance();
+        pctFormat.setMaximumFractionDigits(2);
+        pctFormat.setMinimumFractionDigits(2);
+        final int nusers = testData.query(CommonTypes.USER).count();
+        test.start(nusers);
+        logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
+        ProgressLogger progress = ProgressLogger.create(logger)
+                                                .setCount(nusers)
+                                                .setLabel("testing users")
+                                                .start();
+
+        List<EntityType> entityTypes = dataSet.getEntityTypes();
+        logger.info("using entity types {} for test data", entityTypes);
+        List<Entity> users = testData.query(CommonTypes.USER).get();
+        Stream<Entity> userStream;
+        if (inForkJoinPool()) {
+            // parallelism is enabled
+            userStream = users.parallelStream();
+        } else {
+            // not parallel, so don't parallelize
+            userStream = users.stream();
+        }
+
+        UserEvaluator eval = new UserEvaluator(test, userOutput, trainData, runtimeData, engine, accumulators, testData, progress, entityTypes);
+        userStream.forEach(eval);
+
+        test.finish();
+        progress.finish();
+        testTimer.stop();
+        logger.info("Tested {} in {}", algorithm.getName(), testTimer);
+        outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+        outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+        for (ConditionEvaluator ce : accumulators) {
+            outputRow.addAll(ce.finish());
         }
 
         try {
@@ -210,7 +217,6 @@ class ExperimentJob extends RecursiveAction {
         } catch (IOException e) {
             throw new EvaluationException("error writing output row", e);
         }
-        tracker.finish();
     }
 
     private LenskitRecommenderEngine buildRecommenderEngine(DataAccessObject train) throws RecommenderBuildException {
