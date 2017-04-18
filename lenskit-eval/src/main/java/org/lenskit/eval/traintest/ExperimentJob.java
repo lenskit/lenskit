@@ -44,6 +44,7 @@ import org.lenskit.inject.NodeProcessors;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.monitor.TrackedJob;
+import org.lenskit.util.parallel.Blockers;
 import org.lenskit.util.table.RowBuilder;
 import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -85,6 +87,7 @@ class ExperimentJob extends RecursiveAction {
     private final ComponentCache cache;
     private final MergePool<Component, Dependency> mergePool;
     private final TrackedJob tracker;
+    private final Semaphore limitSemaphore;
 
     ExperimentJob(TrainTestExperiment exp,
                   @Nonnull AlgorithmInstance algo,
@@ -92,7 +95,7 @@ class ExperimentJob extends RecursiveAction {
                   LenskitConfiguration shared,
                   @Nullable ComponentCache cache,
                   @Nullable MergePool<Component, Dependency> pool,
-                  TrackedJob tj) {
+                  TrackedJob tj, @Nullable Semaphore limit) {
         experiment = exp;
         algorithm = algo;
         dataSet = ds;
@@ -100,13 +103,22 @@ class ExperimentJob extends RecursiveAction {
         this.cache = cache;
         mergePool = pool;
         tracker = tj;
+        limitSemaphore = limit;
     }
 
     @Override
     protected void compute() {
+        if (limitSemaphore != null) {
+            try {
+                Blockers.acquireSemaphore(limitSemaphore);
+            } catch (InterruptedException e) {
+                throw new UncheckedInterruptException(e);
+            }
+        }
         try {
             tracker.start();
             doEvaluate();
+            tracker.finish();
         } catch (UncheckedInterruptException ex) {
             try {
                 logger.info("evaluation of {} on {} interrupted", algorithm, dataSet);
@@ -123,8 +135,11 @@ class ExperimentJob extends RecursiveAction {
                 th.addSuppressed(th2);
             }
             throw th;
+        } finally {
+            if (limitSemaphore != null) {
+                limitSemaphore.release();
+            }
         }
-        tracker.finish();
     }
 
     /**
