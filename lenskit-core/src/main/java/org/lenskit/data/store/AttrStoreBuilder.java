@@ -20,8 +20,6 @@
  */
 package org.lenskit.data.store;
 
-import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -97,7 +95,7 @@ class AttrStoreBuilder {
      * @return The value at position `idx`, or `null` if there is no value.
      */
     Object get(int idx) {
-        Preconditions.checkElementIndex(idx, size, "value index");
+        assert idx >= 0 && idx < size;
         int si = idx / Shard.SHARD_SIZE;
         int vi = idx % Shard.SHARD_SIZE;
         return shards.get(si).get(vi);
@@ -110,7 +108,28 @@ class AttrStoreBuilder {
      * @param j The second index.
      */
     void swap(int i, int j) {
-        throw new UnsupportedOperationException();
+        int si = i / Shard.SHARD_SIZE;
+        int vi = i % Shard.SHARD_SIZE;
+        int sj = j / Shard.SHARD_SIZE;
+        int vj = j % Shard.SHARD_SIZE;
+
+        Shard shi = shards.get(si);
+        Shard shj = shards.get(sj);
+
+        Object valI = shi.get(vi);
+        Object valJ = shj.get(vj);
+
+        Shard shi2 = shi.adapt(valJ);
+        if (shi2 != shi) {
+            shards.set(si, shi2);
+        }
+        Shard shj2 = shj.adapt(valI);
+        if (shj2 != shj) {
+            shards.set(sj, shj2);
+        }
+
+        shi2.put(vi, valJ);
+        shj2.put(vj, valI);
     }
 
     /**

@@ -21,39 +21,26 @@
 package org.lenskit.data.store;
 
 import org.junit.Test;
-import org.omg.CORBA.LongLongSeqHelper;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static net.java.quickcheck.generator.CombinedGenerators.nullsAnd;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static net.java.quickcheck.generator.CombinedGeneratorsIterables.*;
-import static net.java.quickcheck.generator.Generators.*;
+import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someLists;
 import static net.java.quickcheck.generator.PrimitiveGenerators.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class AttrStoreTest {
     @Test
     public void testEmpty() {
         AttrStoreBuilder asb = new AttrStoreBuilder();
         assertThat(asb.size(), equalTo(0));
-        try {
-            asb.get(0);
-            fail("getting from empty builder should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
 
         AttrStore store = asb.build();
         assertThat(store.size(), equalTo(0));
-        try {
-            store.get(0);
-            fail("getting from empty store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
     }
 
     @Test
@@ -62,22 +49,10 @@ public class AttrStoreTest {
         asb.add("heffalump");
         assertThat(asb.size(), equalTo(1));
         assertThat(asb.get(0), equalTo("heffalump"));
-        try {
-            asb.get(1);
-            fail("getting bad value from store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
 
         AttrStore store = asb.build();
         assertThat(store.size(), equalTo(1));
         assertThat(store.get(0), equalTo("heffalump"));
-        try {
-            store.get(1);
-            fail("getting bad value from store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
     }
 
     @Test
@@ -88,23 +63,11 @@ public class AttrStoreTest {
         assertThat(asb.size(), equalTo(2));
         assertThat(asb.get(0), equalTo("heffalump"));
         assertThat(asb.get(1), equalTo("woozle"));
-        try {
-            asb.get(2);
-            fail("getting bad value from store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
 
         AttrStore store = asb.build();
         assertThat(store.size(), equalTo(2));
         assertThat(store.get(0), equalTo("heffalump"));
         assertThat(store.get(1), equalTo("woozle"));
-        try {
-            store.get(2);
-            fail("getting bad value from store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
     }
 
     @Test
@@ -117,24 +80,12 @@ public class AttrStoreTest {
         assertThat(asb.get(0), equalTo("heffalump"));
         assertThat(asb.get(1), nullValue());
         assertThat(asb.get(2), equalTo("woozle"));
-        try {
-            asb.get(3);
-            fail("getting bad value from store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
 
         AttrStore store = asb.build();
         assertThat(store.size(), equalTo(3));
         assertThat(store.get(0), equalTo("heffalump"));
         assertThat(store.get(1), nullValue());
         assertThat(store.get(2), equalTo("woozle"));
-        try {
-            store.get(3);
-            fail("getting bad value from store should fail");
-        } catch (Throwable th) {
-            assertThat(th, instanceOf(IndexOutOfBoundsException.class));
-        }
     }
 
     @Test
@@ -247,5 +198,87 @@ public class AttrStoreTest {
                                 .collect(Collectors.toList()),
                        contains(strings.toArray()));
         }
+    }
+
+    @Test
+    public void testSwap() {
+        AttrStoreBuilder asb = new AttrStoreBuilder();
+        asb.add("foo");
+        asb.add("bar");
+        asb.swap(0, 1);
+        assertThat(asb.get(0), equalTo("bar"));
+        assertThat(asb.get(1), equalTo("foo"));
+
+        AttrStore as = asb.build();
+        assertThat(as.get(0), equalTo("bar"));
+        assertThat(as.get(1), equalTo("foo"));
+    }
+
+    @Test
+    public void testSwapSkip() {
+        AttrStoreBuilder asb = new AttrStoreBuilder();
+        asb.add("foo");
+        asb.skip();
+        asb.swap(0, 1);
+        assertThat(asb.get(0), nullValue());
+        assertThat(asb.get(1), equalTo("foo"));
+
+        AttrStore as = asb.build();
+        assertThat(as.get(0), nullValue());
+        assertThat(as.get(1), equalTo("foo"));
+    }
+
+    @Test
+    public void testSwapAcrossShards() {
+        AttrStoreBuilder asb = new AttrStoreBuilder();
+        for (int i = 0; i < Shard.SHARD_SIZE + 50; i++) {
+            asb.add(Integer.toString(i));
+        }
+
+        asb.swap(0, Shard.SHARD_SIZE + 2);
+        assertThat(asb.get(0), equalTo(Integer.toString(Shard.SHARD_SIZE + 2)));
+        assertThat(asb.get(Shard.SHARD_SIZE + 2), equalTo("0"));
+
+        AttrStore as = asb.build();
+        assertThat(as.get(0), equalTo(Integer.toString(Shard.SHARD_SIZE + 2)));
+        assertThat(as.get(Shard.SHARD_SIZE + 2), equalTo("0"));
+    }
+
+    @Test
+    public void testSwapAndUpgrade() {
+        AttrStoreBuilder asb = new AttrStoreBuilder(LongShard::create);
+        for (long i = 0; i < Shard.SHARD_SIZE; i++) {
+            asb.add(i);
+        }
+        for (long i = 0; i < 50; i++) {
+            asb.add(Integer.MAX_VALUE + i);
+        }
+
+        asb.swap(0, Shard.SHARD_SIZE + 2);
+        assertThat(asb.get(0), equalTo(Integer.MAX_VALUE + 2L));
+        assertThat(asb.get(Shard.SHARD_SIZE + 2), equalTo(0L));
+
+        AttrStore as = asb.build();
+        assertThat(as.get(0), equalTo(Integer.MAX_VALUE + 2L));
+        assertThat(as.get(Shard.SHARD_SIZE + 2), equalTo(0L));
+    }
+
+    @Test
+    public void testSwapAndUpgradeReverse() {
+        AttrStoreBuilder asb = new AttrStoreBuilder(LongShard::create);
+        for (long i = 0; i < Shard.SHARD_SIZE; i++) {
+            asb.add(i);
+        }
+        for (long i = 0; i < 50; i++) {
+            asb.add(Integer.MAX_VALUE + i);
+        }
+
+        asb.swap(Shard.SHARD_SIZE + 2, 0);
+        assertThat(asb.get(0), equalTo(Integer.MAX_VALUE + 2L));
+        assertThat(asb.get(Shard.SHARD_SIZE + 2), equalTo(0L));
+
+        AttrStore as = asb.build();
+        assertThat(as.get(0), equalTo(Integer.MAX_VALUE + 2L));
+        assertThat(as.get(Shard.SHARD_SIZE + 2), equalTo(0L));
     }
 }
