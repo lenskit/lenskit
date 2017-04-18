@@ -21,11 +21,7 @@
 package org.lenskit.data.store;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
-import org.lenskit.util.describe.Describable;
+import org.lenskit.data.entities.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,7 +32,7 @@ import java.util.List;
  * A collection of entities of a single type.  This collection augments the `Collection` interface with logic for
  * different kinds of (possibly optimized) entity searches.
  */
-public abstract class EntityCollection extends AbstractCollection<Entity> implements Describable {
+public abstract class EntityCollection extends AbstractCollection<Entity> {
     EntityCollection() {}
 
     /**
@@ -45,6 +41,16 @@ public abstract class EntityCollection extends AbstractCollection<Entity> implem
      */
     public static EntityCollectionBuilder newBuilder(EntityType type) {
         return new MapEntityCollectionBuilder(type);
+    }
+
+    /**
+     * Create a new packed entity collection builder.
+     * @param type The entity type.
+     * @param attrs The attributes to store.
+     * @return An entity collection builder.
+     */
+    public static EntityCollectionBuilder newBuilder(EntityType type, AttributeSet attrs) {
+        return new PackedEntityCollectionBuilder(type, attrs);
     }
 
     /**

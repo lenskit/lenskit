@@ -71,9 +71,15 @@ class AttrStore {
      * @return The value at position `idx`, or `null` if there is no value.
      */
     Object get(int idx) {
-        Preconditions.checkElementIndex(idx, totalSize, "value index");
+        assert idx >= 0 && idx < totalSize;
         int si = idx / Shard.SHARD_SIZE;
         int vi = idx % Shard.SHARD_SIZE;
         return shards.get(si).get(vi);
+    }
+
+    boolean isNull(int idx) {
+        int si = idx / Shard.SHARD_SIZE;
+        int vi = idx % Shard.SHARD_SIZE;
+        return shards.get(si).isNull(vi);
     }
 }

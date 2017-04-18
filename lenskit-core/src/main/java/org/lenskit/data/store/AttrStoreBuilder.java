@@ -29,9 +29,8 @@ import java.util.function.Supplier;
  */
 class AttrStoreBuilder {
     private final Supplier<Shard> shardFactory;
-    private List<Shard> shards = new ArrayList<>();
-    private int size;
-    private int currentShard;
+    List<Shard> shards = new ArrayList<>();
+    int size;
 
     AttrStoreBuilder() {
         this(ObjectShard::new);

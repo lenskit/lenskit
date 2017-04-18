@@ -95,5 +95,5 @@ public abstract class EntityCollectionBuilder {
      * Build the entity collection.
      * @return The collection of entities.
      */
-    public abstract MapEntityCollection build();
+    public abstract EntityCollection build();
 }

@@ -22,22 +22,20 @@ package org.lenskit.data.store;
 
 import com.google.common.collect.Lists;
 import org.junit.Test;
-import org.lenskit.data.entities.CommonAttributes;
-import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.*;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  *
  * Created by MichaelEkstrand on 6/18/2016.
  */
-public class MapEntityCollectionTest {
+public class PackedEntityCollectionTest {
     @Test
     public void testEmptyBuilder() {
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER)
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER,
+                                                          AttributeSet.create(CommonAttributes.ENTITY_ID))
                                               .build();
         assertThat(ec.size(), equalTo(0));
         assertThat(ec.lookup(42), nullValue());
@@ -47,7 +45,8 @@ public class MapEntityCollectionTest {
 
     @Test
     public void testAddEntity() {
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER)
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER,
+                                                          AttributeSet.create(CommonAttributes.ENTITY_ID))
                                               .add(Entities.create(CommonTypes.USER, 42))
                                               .build();
         assertThat(ec.size(), equalTo(1));
@@ -70,11 +69,16 @@ public class MapEntityCollectionTest {
                                 .setAttribute(CommonAttributes.ITEM_ID, 203L)
                                 .setAttribute(CommonAttributes.RATING, 3.5)
                                 .build();
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING,
+                                                          AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                              CommonAttributes.USER_ID,
+                                                                              CommonAttributes.ITEM_ID,
+                                                                              CommonAttributes.RATING))
                                               .add(rating)
                                               .build();
         assertThat(ec.getType(), equalTo(CommonTypes.RATING));
         assertThat(ec.size(), equalTo(1));
+//        assertThat(ec.lookup(37), instanceOf(Rating.class));
         assertThat(ec.lookup(37),
                    equalTo(rating));
         assertThat(Lists.newArrayList(ec),
@@ -93,7 +97,11 @@ public class MapEntityCollectionTest {
                                 .setAttribute(CommonAttributes.ITEM_ID, 203L)
                                 .setAttribute(CommonAttributes.RATING, 3.5)
                                 .build();
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING,
+                                                          AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                              CommonAttributes.USER_ID,
+                                                                              CommonAttributes.ITEM_ID,
+                                                                              CommonAttributes.RATING))
                                               .addIndex(CommonAttributes.USER_ID)
                                               .add(rating)
                                               .build();
@@ -117,7 +125,11 @@ public class MapEntityCollectionTest {
                                 .setAttribute(CommonAttributes.ITEM_ID, 203L)
                                 .setAttribute(CommonAttributes.RATING, 3.5)
                                 .build();
-        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING)
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING,
+                                                          AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                              CommonAttributes.USER_ID,
+                                                                              CommonAttributes.ITEM_ID,
+                                                                              CommonAttributes.RATING))
                                               .add(rating)
                                               .addIndex(CommonAttributes.USER_ID)
                                               .build();

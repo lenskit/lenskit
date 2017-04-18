@@ -28,6 +28,7 @@ import org.lenskit.data.entities.Attribute;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
+import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.keys.KeyedObjectMap;
 
@@ -38,7 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-class MapEntityCollection extends EntityCollection implements Serializable {
+class MapEntityCollection extends EntityCollection implements Serializable, Describable {
     private static long serialVersionUID = 1L;
     private final EntityType type;
     private final KeyedObjectMap<Entity> store;
