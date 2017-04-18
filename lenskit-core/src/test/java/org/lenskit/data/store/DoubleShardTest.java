@@ -22,9 +22,8 @@ package org.lenskit.data.store;
 
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class DoubleShardTest {
     @Test
@@ -36,9 +35,9 @@ public class DoubleShardTest {
     @Test
     public void testAddObject() {
         DoubleShard shard = DoubleShard.create();
-        shard.put(0, (short) 3.5);
+        shard.put(0, 3.5);
         assertThat(shard.size(), equalTo(1));
-        assertThat(shard.get(0), equalTo((short) 3.5));
+        assertThat(shard.get(0), equalTo(3.5));
         assertThat(shard.isNull(0), equalTo(false));
     }
 
