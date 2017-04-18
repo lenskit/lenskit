@@ -73,4 +73,41 @@ public class BlockersTest {
         });
     }
 
+    @Test
+    public void testAcquireSem() {
+        Semaphore sem = new Semaphore(2);
+        ForkJoinPool.commonPool().invoke(new RecursiveAction() {
+            AtomicInteger running = new AtomicInteger();
+
+            @Override
+            protected void compute() {
+                List<RecursiveAction> actions = new ArrayList<>();
+                for (int i = 0; i < 6; i++) {
+                    actions.add(new RecursiveAction() {
+                        @Override
+                        protected void compute() {
+                            try {
+                                Blockers.acquireSemaphore(sem);
+                                try {
+                                    int n = running.incrementAndGet();
+                                    assertThat(n, greaterThan(0));
+                                    assertThat(n, lessThanOrEqualTo(2));
+                                    Thread.sleep(100);
+                                    running.decrementAndGet();
+                                } finally {
+                                    sem.release();
+                                }
+                            } catch (InterruptedException e) {
+                                throw new UncheckedInterruptException(e);
+                            }
+                        }
+                    });
+                }
+                invokeAll(actions);
+                for (RecursiveAction action: actions) {
+                    action.join();
+                }
+            }
+        });
+    }
 }
