@@ -23,10 +23,7 @@ package org.lenskit.data.dao;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
+import org.lenskit.data.entities.*;
 import org.lenskit.data.store.EntityCollection;
 import org.lenskit.data.store.EntityCollectionBuilder;
 
@@ -40,10 +37,26 @@ import java.util.*;
 @NotThreadSafe
 public class EntityCollectionDAOBuilder {
     private List<TypedName<Long>> defaultIndexes = new ArrayList<>();
-    private Map<EntityType, EntityCollectionBuilder> entitySets = new HashMap<>();
+    private Map<EntityType, EntityCollectionBuilder> entitySets = new IdentityHashMap<>();
     // remember the last builder used as a fast path
     private EntityCollectionBuilder lastBuilder = null;
     private EntityType last = null;
+
+    /**
+     * Set a layout for an entity type.  A layout limits the possible attributes of entities of that type, but can
+     * result in more efficient storage.
+     * @param et The entity type.
+     * @param attributes The set of known attributes.
+     * @return The builder (for chaining).
+     * @throws IllegalStateException if the specified entity type already has a layout or entities.
+     */
+    public EntityCollectionDAOBuilder addEntityLayout(EntityType et, AttributeSet attributes) {
+        if (entitySets.containsKey(et)) {
+            throw new IllegalStateException("layout or entities already added for " + et);
+        }
+        entitySets.put(et, EntityCollection.newBuilder(et, attributes));
+        return this;
+    }
 
     /**
      * Index entities by an attribute.

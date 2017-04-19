@@ -23,14 +23,16 @@ package org.lenskit.data.dao;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStreams;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.lenskit.data.entities.CommonTypes.RATING;
 
 public class EntityCollectionDAOTest {
@@ -301,5 +303,28 @@ public class EntityCollectionDAOTest {
         assertThat(results,
                    containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(0))),
                                       IdBox.create(67L, ImmutableList.of(entities.get(1)))));
+    }
+
+    @Test
+    public void testAddEntityLayout() {
+        EntityCollectionDAOBuilder b = EntityCollectionDAO.newBuilder();
+        b.addEntityLayout(Rating.ENTITY_TYPE, Rating.ATTRIBUTES);
+        Rating r = Rating.newBuilder()
+                         .setId(42)
+                         .setUserId(100)
+                         .setItemId(50)
+                         .setRating(3.5)
+                         .setTimestamp(1034801)
+                         .build();
+        b.addEntity(r);
+        EntityCollectionDAO dao = b.build();
+        assertThat(dao.getEntityIds(CommonTypes.RATING), contains(42L));
+        assertThat(dao.streamEntities(CommonTypes.RATING)
+                      .stream()
+                      .collect(Collectors.toList()),
+                   contains(r));
+        assertThat(dao.query(Rating.class)
+                      .get(),
+                   contains(r));
     }
 }

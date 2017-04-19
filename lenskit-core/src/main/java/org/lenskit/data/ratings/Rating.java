@@ -23,6 +23,7 @@ package org.lenskit.data.ratings;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
 
+import javax.accessibility.AccessibleTextSequence;
 import java.io.Serializable;
 
 /**
@@ -39,6 +40,12 @@ import java.io.Serializable;
 public class Rating extends AbstractBeanEntity implements Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
+    public static final EntityType ENTITY_TYPE = CommonTypes.RATING;
+    public static final AttributeSet ATTRIBUTES = AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                      CommonAttributes.USER_ID,
+                                                                      CommonAttributes.ITEM_ID,
+                                                                      CommonAttributes.RATING,
+                                                                      CommonAttributes.TIMESTAMP);
 
     private final long user;
     private final long item;
