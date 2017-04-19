@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.tuple.Pair;
@@ -80,6 +81,7 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
                                                    return Attribute.create((TypedName) attributes.getAttribute(i), val);
                                                }
                                            })
+                                           .filter(Predicates.notNull())
                                            .iterator();
             }
 

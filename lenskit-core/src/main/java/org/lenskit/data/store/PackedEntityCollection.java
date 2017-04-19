@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
@@ -186,6 +187,7 @@ class PackedEntityCollection extends EntityCollection {
                                                        return Attribute.create((TypedName) attributes.getAttribute(i), val);
                                                    }
                                                })
+                                               .filter(Predicates.notNull())
                                                .iterator();
                 }
 

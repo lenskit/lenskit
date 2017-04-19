@@ -20,12 +20,15 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.base.Predicates;
+
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 /**
@@ -59,13 +62,17 @@ class BasicEntity extends AbstractEntity {
             public Iterator<Attribute<?>> iterator() {
                 return (Iterator) IntStream.range(0, attributeNames.size())
                                            .mapToObj(i -> {
-                                               Object val = attributeValues[i];
+                                               if (i == 0) {
+                                                   return Attribute.create(CommonAttributes.ENTITY_ID, getId());
+                                               }
+                                               Object val = attributeValues[i-1];
                                                if (val == null) {
                                                    return null;
                                                } else {
                                                    return Attribute.create((TypedName) attributeNames.getAttribute(i), val);
                                                }
                                            })
+                                           .filter(Predicates.notNull())
                                            .iterator();
             }
 
