@@ -20,8 +20,11 @@
  */
 package org.lenskit.util.io;
 
+import com.google.common.collect.Streams;
+
 import javax.annotation.CheckForNull;
 import java.io.Closeable;
+import java.util.stream.Stream;
 
 /**
  * A stream of objects read from somewhere.
@@ -49,4 +52,12 @@ public interface ObjectStream<T> extends Iterable<T>, Closeable {
      */
     @Override
     void close();
+
+    /**
+     * Make a Java stream.
+     * @return The Java stream.  This is *not* guaranteed to be the same object as the object stream!
+     */
+    default Stream<T> stream() {
+        return Streams.stream(iterator());
+    }
 }
