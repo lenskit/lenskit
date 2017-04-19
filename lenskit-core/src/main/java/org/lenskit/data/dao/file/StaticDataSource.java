@@ -29,9 +29,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Monitor;
-import org.lenskit.util.describe.Describable;
-import org.lenskit.util.describe.DescriptionWriter;
-import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
@@ -39,6 +36,9 @@ import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.lenskit.util.UncheckedInterruptException;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.parallel.Blockers;
 import org.slf4j.Logger;
@@ -245,6 +245,12 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         Set<EntityType> types = new HashSet<>();
 
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
+        for (EntitySource source: sources) {
+            EntitySource.Layout sl = source.getLayout();
+            if (sl != null) {
+                builder.addEntityLayout(sl.getEntityType(), sl.getAttributes());
+            }
+        }
         builder.addDefaultIndex(CommonAttributes.USER_ID);
         builder.addDefaultIndex(CommonAttributes.ITEM_ID);
         for (Map.Entry<EntityType,TypedName<?>> iae: indexedAttributes.entries()) {
