@@ -54,7 +54,11 @@ public class EntityCollectionDAOBuilder {
         if (entitySets.containsKey(et)) {
             throw new IllegalStateException("layout or entities already added for " + et);
         }
-        entitySets.put(et, EntityCollection.newBuilder(et, attributes));
+        EntityCollectionBuilder ecb = EntityCollection.newBuilder(et, attributes);
+        for (TypedName<?> name: defaultIndexes) {
+            ecb.addIndex(name);
+        }
+        entitySets.put(et, ecb);
         return this;
     }
 
