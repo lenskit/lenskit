@@ -36,7 +36,9 @@ import java.util.stream.Stream;
  * Utility methods for streams.
  *
  * @compat Public
+ * @deprecated Use {@link Stream} methods instead of this class's methods.
  */
+@Deprecated
 public final class ObjectStreams {
     private ObjectStreams() {
     }
