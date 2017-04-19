@@ -22,7 +22,11 @@ package org.lenskit.data.entities;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.util.AbstractCollection;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * Implementation of an entity backed by a basic set of attributes.
@@ -46,6 +50,30 @@ class BasicEntity extends AbstractEntity {
     @Override
     public Set<TypedName<?>> getTypedAttributeNames() {
         return attributeNames;
+    }
+
+    @Override
+    public Collection<Attribute<?>> getAttributes() {
+        return new AbstractCollection<Attribute<?>>() {
+            @Override
+            public Iterator<Attribute<?>> iterator() {
+                return (Iterator) IntStream.range(0, attributeNames.size())
+                                           .mapToObj(i -> {
+                                               Object val = attributeValues[i];
+                                               if (val == null) {
+                                                   return null;
+                                               } else {
+                                                   return Attribute.create((TypedName) attributeNames.getAttribute(i), val);
+                                               }
+                                           })
+                                           .iterator();
+            }
+
+            @Override
+            public int size() {
+                return attributeNames.size();
+            }
+        };
     }
 
     @Override

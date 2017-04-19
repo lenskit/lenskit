@@ -31,10 +31,7 @@ import org.lenskit.util.BinarySearch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -173,6 +170,30 @@ class PackedEntityCollection extends EntityCollection {
             }
 
             return attributes;
+        }
+
+        @Override
+        public Collection<Attribute<?>> getAttributes() {
+            return new AbstractCollection<Attribute<?>>() {
+                @Override
+                public Iterator<Attribute<?>> iterator() {
+                    return (Iterator) IntStream.range(0, attributes.size())
+                                               .mapToObj(i -> {
+                                                   Object val = attrStores[i].get(position);
+                                                   if (val == null) {
+                                                       return null;
+                                                   } else {
+                                                       return Attribute.create((TypedName) attributes.getAttribute(i), val);
+                                                   }
+                                               })
+                                               .iterator();
+                }
+
+                @Override
+                public int size() {
+                    return attributes.size();
+                }
+            };
         }
 
         @Override

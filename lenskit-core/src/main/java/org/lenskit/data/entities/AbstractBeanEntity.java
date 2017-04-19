@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 
 /**
  * Abstract entity implementation that uses bean methods.
@@ -58,6 +59,35 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     @Override
     public Set<String> getAttributeNames() {
         return attributes.nameSet();
+    }
+
+    @Override
+    public Collection<Attribute<?>> getAttributes() {
+        return new AbstractCollection<Attribute<?>>() {
+            @Override
+            public Iterator<Attribute<?>> iterator() {
+                return (Iterator) IntStream.range(0, attributes.size())
+                                           .mapToObj(i -> {
+                                               Object val = null;
+                                               try {
+                                                   val = methods.get(i).invoke(AbstractBeanEntity.this);
+                                               } catch (IllegalAccessException | InvocationTargetException e) {
+                                                   throw new RuntimeException("cannot invoke method", e);
+                                               }
+                                               if (val == null) {
+                                                   return null;
+                                               } else {
+                                                   return Attribute.create((TypedName) attributes.getAttribute(i), val);
+                                               }
+                                           })
+                                           .iterator();
+            }
+
+            @Override
+            public int size() {
+                return attributes.size();
+            }
+        };
     }
 
     @Override
