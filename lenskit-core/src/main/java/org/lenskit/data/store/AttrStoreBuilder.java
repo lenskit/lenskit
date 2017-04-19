@@ -142,4 +142,13 @@ class AttrStoreBuilder {
         }
         return new AttrStore(shards, size);
     }
+
+    /**
+     * Build a temp version of the attribute store.  It does not perform compacting cleanups.
+     *
+     * @return The attribute store.
+     */
+    AttrStore tempBuild() {
+        return new AttrStore(shards, size);
+    }
 }

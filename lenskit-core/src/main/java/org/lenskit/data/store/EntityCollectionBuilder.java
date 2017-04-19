@@ -89,7 +89,7 @@ public abstract class EntityCollectionBuilder {
      * Get a view of the entities added, for iteration and re-processing.
      * @return The view of entities added.
      */
-    public abstract Collection<Entity> entities();
+    public abstract Iterable<Entity> entities();
 
     /**
      * Build the entity collection.

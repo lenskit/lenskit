@@ -20,7 +20,6 @@
  */
 package org.lenskit.data.store;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;

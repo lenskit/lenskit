@@ -28,8 +28,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
 
-import java.util.Collection;
-
 /**
  * Entity collection builder packing data into shards.
  */
@@ -38,6 +36,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     private final AttributeSet attributes;
     private final LongAttrStoreBuilder idStore;
     private final AttrStoreBuilder[] storeBuilders;
+    private final PackIndex.Builder[] indexBuilders;
     private LongSet ids = null;
     private boolean isSorted = true;
     private int size = 0;
@@ -52,6 +51,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
         attributes = attrs;
         int n = attrs.size();
         storeBuilders = new AttrStoreBuilder[n];
+        indexBuilders = new PackIndex.Builder[n];
         idStore = new LongAttrStoreBuilder();
         storeBuilders[0] = idStore;
         for (int i = 1; i < n; i++) {
@@ -71,13 +71,37 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     }
 
     @Override
-    public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
+    public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute)
+    {
+        int pos = attributes.lookup(attribute);
+        if (pos < 0) {
+            throw new IllegalArgumentException("no such attribute " + attribute);
+        }
+        addIndex(pos);
         return this;
     }
 
     @Override
     public EntityCollectionBuilder addIndex(String attrName) {
+        int pos = attributes.lookup(attrName);
+        if (pos < 0) {
+            throw new IllegalArgumentException("no such attribute " + attrName);
+        }
+        addIndex(pos);
         return this;
+    }
+
+    private void addIndex(int aidx) {
+        TypedName<?> tn = attributes.getAttribute(aidx);
+        PackIndex.Builder builder;
+        if (tn.getRawType().equals(Long.class)) {
+            indexBuilders[aidx] = builder = new PackIndex.LongBuilder();
+        } else {
+            indexBuilders[aidx] = builder = new PackIndex.GenericBuilder();
+        }
+        for (int i = 0; i < size; i++) {
+            builder.add(storeBuilders[aidx].get(i), i);
+        }
     }
 
     @Override
@@ -113,6 +137,9 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             if (ap >= 0) {
                 storeBuilders[ap].add(a.getValue());
             }
+            if (indexBuilders[ap] != null) {
+                indexBuilders[ap].add(a.getValue(), size);
+            }
         }
         size += 1;
         lastEntityId = id;
@@ -128,8 +155,13 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     }
 
     @Override
-    public Collection<Entity> entities() {
-        return null;
+    public Iterable<Entity> entities() {
+        AttrStore[] stores = new AttrStore[storeBuilders.length];
+        for (int i = 0; i < stores.length; i++) {
+            stores[i] = storeBuilders[i].build();
+        }
+        // the packed collection is not fully functional! But it will be iterable.
+        return new PackedEntityCollection(entityType, attributes, stores, new PackIndex[indexBuilders.length]);
     }
 
     @Override
@@ -138,10 +170,14 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             throw new IllegalStateException("cannot yet support unsorted builds");
         }
         AttrStore[] stores = new AttrStore[storeBuilders.length];
+        PackIndex[] indexes = new PackIndex[indexBuilders.length];
         for (int i = 0; i < stores.length; i++) {
             stores[i] = storeBuilders[i].build();
+            if (indexBuilders[i] != null) {
+                indexes[i] = indexBuilders[i].build();
+            }
         }
-        return new PackedEntityCollection(entityType, attributes, stores);
+        return new PackedEntityCollection(entityType, attributes, stores, indexes);
     }
 
     private class IdSearch extends BinarySearch {

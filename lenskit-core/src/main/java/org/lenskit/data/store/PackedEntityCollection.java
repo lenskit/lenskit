@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSet;
@@ -47,13 +48,15 @@ class PackedEntityCollection extends EntityCollection {
     private final AttributeSet attributes;
     private final LongAttrStore idStore;
     private final AttrStore[] attrStores;
+    private final PackIndex[] indexes;
     private final int size;
     private ConcurrentHashMap<Integer,AttributeSet> attrSets = new ConcurrentHashMap<>();
 
-    PackedEntityCollection(EntityType et, AttributeSet attrs, AttrStore[] stores) {
+    PackedEntityCollection(EntityType et, AttributeSet attrs, AttrStore[] stores, PackIndex[] idxes) {
         entityType = et;
         attributes = attrs;
         attrStores = stores;
+        indexes = idxes;
         idStore = (LongAttrStore) stores[0];
         size = idStore.size();
     }
@@ -82,8 +85,21 @@ class PackedEntityCollection extends EntityCollection {
     @Nonnull
     @Override
     public <T> List<Entity> find(TypedName<T> name, T value) {
-        return stream().filter(e -> value.equals(e.maybeGet(name)))
-                       .collect(Collectors.toList());
+        int idx = attributes.lookup(name);
+        if (idx < 0) {
+            return ImmutableList.of();
+        }
+
+        PackIndex index = indexes[idx];
+        if (index != null) {
+            return index.getPositions(value)
+                        .stream()
+                        .map(IndirectEntity::new)
+                        .collect(Collectors.toList());
+        } else {
+            return stream().filter(e -> value.equals(e.maybeGet(name)))
+                           .collect(Collectors.toList());
+        }
     }
 
     @Nonnull
@@ -95,8 +111,21 @@ class PackedEntityCollection extends EntityCollection {
     @Nonnull
     @Override
     public List<Entity> find(String name, Object value) {
-        return stream().filter(e -> value.equals(e.maybeGet(name)))
-                       .collect(Collectors.toList());
+        int idx = attributes.lookup(name);
+        if (idx < 0) {
+            return ImmutableList.of();
+        }
+
+        PackIndex index = indexes[idx];
+        if (index != null) {
+            return index.getPositions(value)
+                        .stream()
+                        .map(IndirectEntity::new)
+                        .collect(Collectors.toList());
+        } else {
+            return stream().filter(e -> value.equals(e.maybeGet(name)))
+                           .collect(Collectors.toList());
+        }
     }
 
     public Stream<Entity> stream() {
