@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import javax.annotation.WillClose;
 import javax.annotation.WillCloseWhenClosed;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for streams.
@@ -52,6 +53,20 @@ public final class ObjectStreams {
      */
     public static <T> ObjectStream<T> wrap(Iterator<? extends T> iterator) {
         return new IteratorObjectStream<>(iterator);
+    }
+
+    /**
+     * Wrap a Java stream in an object stream.
+     *
+     * The stream may not contain `null`. This property is checked lazily; the object stream will not fail
+     * until the `null` would be returned.
+     *
+     * @param <T>      The type of data to return.
+     * @param stream   A stream to wrap
+     * @return An object stream returning the elements of the stream.
+     */
+    public static <T> ObjectStream<T> wrap(Stream<? extends T> stream) {
+        return new IteratorObjectStream<>(stream.iterator());
     }
 
     /**
@@ -88,26 +103,26 @@ public final class ObjectStreams {
      * stream to be of the target type.
      *
      * @param <T>    The type of value in the stream.
-     * @param stream The source stream.
+     * @param source The source stream.
      * @param type   The type to filter.
      * @return An object stream returning all elements in <var>stream</var> which are
      *         instances of type <var>type</var>.
      */
-    public static <T> ObjectStream<T> filter(@WillCloseWhenClosed final ObjectStream<?> stream, final Class<T> type) {
+    public static <T> ObjectStream<T> filter(@WillCloseWhenClosed final ObjectStream<?> source, final Class<T> type) {
         return new AbstractObjectStream<T>() {
             @SuppressWarnings("unchecked")
             @Override
             public T readObject() {
-                Object obj = stream.readObject();
+                Object obj = source.readObject();
                 while (obj != null && !type.isInstance(obj)) {
-                    obj = stream.readObject();
+                    obj = source.readObject();
                 }
                 return type.cast(obj);
             }
 
             @Override
             public void close() {
-                stream.close();
+                source.close();
             }
         };
     }

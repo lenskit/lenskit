@@ -320,7 +320,6 @@ public class EntityCollectionDAOTest {
         EntityCollectionDAO dao = b.build();
         assertThat(dao.getEntityIds(CommonTypes.RATING), contains(42L));
         assertThat(dao.streamEntities(CommonTypes.RATING)
-                      .stream()
                       .collect(Collectors.toList()),
                    contains(r));
         assertThat(dao.query(Rating.class)
