@@ -23,6 +23,7 @@ package org.lenskit.data.store;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.ratings.Rating;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -143,5 +144,19 @@ public class PackedEntityCollectionTest {
                    contains(rating));
         assertThat(ec.find(CommonAttributes.ITEM_ID, 10L),
                    hasSize(0));
+    }
+
+    @Test
+    public void testWithMissingAttribute() {
+        Rating r = Rating.newBuilder()
+                         .setId(42)
+                         .setUserId(100)
+                         .setItemId(50)
+                         .setRating(3.5)
+                         .build();
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING, Rating.ATTRIBUTES)
+                                              .add(r)
+                                              .build();
+        assertThat(ec, contains(r));
     }
 }

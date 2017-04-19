@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -47,6 +48,7 @@ class PackedEntityCollection extends EntityCollection {
     private final LongAttrStore idStore;
     private final AttrStore[] attrStores;
     private final int size;
+    private ConcurrentHashMap<Integer,AttributeSet> attrSets = new ConcurrentHashMap<>();
 
     PackedEntityCollection(EntityType et, AttributeSet attrs, AttrStore[] stores) {
         entityType = et;
@@ -122,15 +124,23 @@ class PackedEntityCollection extends EntityCollection {
 
         @Override
         public Set<TypedName<?>> getTypedAttributeNames() {
-            boolean missing = false;
+            int missing = 0;
             int na = attributes.size();
-            for (int i = 0; !missing && i < na; i++) {
+            for (int i = 0; i < na; i++) {
                 if (attrStores[i].isNull(position)) {
-                    missing = true;
+                    missing |= 1 << i;
                 }
             }
-            if (missing) {
-                throw new IllegalStateException("oops");
+            if (missing != 0) {
+                AttributeSet set = attrSets.get(missing);
+                if (set == null) {
+                    set = AttributeSet.create(IntStream.range(0, na)
+                                                       .filter(i -> !attrStores[i].isNull(position))
+                                                       .mapToObj(attributes::getAttribute)
+                                                       .collect(Collectors.toList()));
+                    attrSets.put(missing, set);
+                }
+                return set;
             }
 
             return attributes;

@@ -45,6 +45,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
 
     PackedEntityCollectionBuilder(EntityType et, AttributeSet attrs) {
         Preconditions.checkArgument(attrs.size() > 0, "attribute set is emtpy");
+        Preconditions.checkArgument(attrs.size() < 32, "cannot have more than 31 attributes");
         Preconditions.checkArgument(attrs.getAttribute(0) == CommonAttributes.ENTITY_ID,
                                     "attribute set does not contain entity ID attribute");
         entityType = et;
