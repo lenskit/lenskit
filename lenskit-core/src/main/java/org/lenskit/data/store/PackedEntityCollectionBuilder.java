@@ -71,23 +71,20 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     }
 
     @Override
-    public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute)
-    {
+    public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
         int pos = attributes.lookup(attribute);
-        if (pos < 0) {
-            throw new IllegalArgumentException("no such attribute " + attribute);
+        if (pos >= 0) {
+            addIndex(pos);
         }
-        addIndex(pos);
         return this;
     }
 
     @Override
     public EntityCollectionBuilder addIndex(String attrName) {
         int pos = attributes.lookup(attrName);
-        if (pos < 0) {
-            throw new IllegalArgumentException("no such attribute " + attrName);
+        if (pos >= 0) {
+            addIndex(pos);
         }
-        addIndex(pos);
         return this;
     }
 
