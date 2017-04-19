@@ -23,6 +23,9 @@ package org.lenskit.data.store;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Longs;
 import com.google.common.reflect.TypeToken;
+import it.unimi.dsi.fastutil.Arrays;
+import it.unimi.dsi.fastutil.Swapper;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.*;
@@ -36,7 +39,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     private final AttributeSet attributes;
     private final LongAttrStoreBuilder idStore;
     private final AttrStoreBuilder[] storeBuilders;
-    private final PackIndex.Builder[] indexBuilders;
+    private boolean needIndex[];
     private LongSet ids = null;
     private boolean isSorted = true;
     private int size = 0;
@@ -51,7 +54,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
         attributes = attrs;
         int n = attrs.size();
         storeBuilders = new AttrStoreBuilder[n];
-        indexBuilders = new PackIndex.Builder[n];
+        needIndex = new boolean[n];
         idStore = new LongAttrStoreBuilder();
         storeBuilders[0] = idStore;
         for (int i = 1; i < n; i++) {
@@ -74,7 +77,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
         int pos = attributes.lookup(attribute);
         if (pos >= 0) {
-            addIndex(pos);
+            needIndex[pos] = true;
         }
         return this;
     }
@@ -83,22 +86,23 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     public EntityCollectionBuilder addIndex(String attrName) {
         int pos = attributes.lookup(attrName);
         if (pos >= 0) {
-            addIndex(pos);
+            needIndex[pos] = true;
         }
         return this;
     }
 
-    private void addIndex(int aidx) {
+    private PackIndex buildIndex(int aidx) {
         TypedName<?> tn = attributes.getAttribute(aidx);
         PackIndex.Builder builder;
         if (tn.getRawType().equals(Long.class)) {
-            indexBuilders[aidx] = builder = new PackIndex.LongBuilder();
+            builder = new PackIndex.LongBuilder();
         } else {
-            indexBuilders[aidx] = builder = new PackIndex.GenericBuilder();
+            builder = new PackIndex.GenericBuilder();
         }
         for (int i = 0; i < size; i++) {
             builder.add(storeBuilders[aidx].get(i), i);
         }
+        return builder.build();
     }
 
     @Override
@@ -134,9 +138,6 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             if (ap >= 0) {
                 storeBuilders[ap].add(a.getValue());
             }
-            if (indexBuilders[ap] != null) {
-                indexBuilders[ap].add(a.getValue(), size);
-            }
         }
         size += 1;
         lastEntityId = id;
@@ -158,20 +159,20 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             stores[i] = storeBuilders[i].build();
         }
         // the packed collection is not fully functional! But it will be iterable.
-        return new PackedEntityCollection(entityType, attributes, stores, new PackIndex[indexBuilders.length]);
+        return new PackedEntityCollection(entityType, attributes, stores, new PackIndex[attributes.size()]);
     }
 
     @Override
     public EntityCollection build() {
         if (!isSorted) {
-            throw new IllegalStateException("cannot yet support unsorted builds");
+            Arrays.quickSort(0, size, new IdComparator(), new SortSwap());
         }
         AttrStore[] stores = new AttrStore[storeBuilders.length];
-        PackIndex[] indexes = new PackIndex[indexBuilders.length];
+        PackIndex[] indexes = new PackIndex[needIndex.length];
         for (int i = 0; i < stores.length; i++) {
             stores[i] = storeBuilders[i].build();
-            if (indexBuilders[i] != null) {
-                indexes[i] = indexBuilders[i].build();
+            if (needIndex[i]) {
+                indexes[i] = buildIndex(i);
             }
         }
         return new PackedEntityCollection(entityType, attributes, stores, indexes);
@@ -187,6 +188,22 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
         @Override
         protected int test(int pos) {
             return Longs.compare(targetId, idStore.getLong(pos));
+        }
+    }
+
+    private class IdComparator extends AbstractIntComparator {
+        @Override
+        public int compare(int k1, int k2) {
+            return Longs.compare(idStore.getLong(k1), idStore.getLong(k2));
+        }
+    }
+
+    private class SortSwap implements Swapper {
+        @Override
+        public void swap(int a, int b) {
+            for (AttrStoreBuilder asb: storeBuilders) {
+                asb.swap(a, b);
+            }
         }
     }
 }
