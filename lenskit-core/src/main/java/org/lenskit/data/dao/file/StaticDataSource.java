@@ -24,10 +24,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.util.concurrent.Monitor;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
@@ -245,12 +242,21 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         Set<EntityType> types = new HashSet<>();
 
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
+        SetMultimap<EntityType, EntitySource.Layout> layouts = HashMultimap.create();
         for (EntitySource source: sources) {
-            EntitySource.Layout sl = source.getLayout();
-            if (sl != null) {
-                builder.addEntityLayout(sl.getEntityType(), sl.getAttributes());
+            for (EntityType et: source.getTypes()) {
+                layouts.put(et, source.getLayout());
             }
         }
+        for (Map.Entry<EntityType, Collection<EntitySource.Layout>> e: layouts.asMap().entrySet()) {
+            EntitySource.Layout layout = null;
+            layout = Iterables.getFirst(e.getValue(), null);
+            if (layout != null && e.getValue().size() > 1) {
+                assert layout.getEntityType() == e.getKey();
+                builder.addEntityLayout(layout.getEntityType(), layout.getAttributes());
+            }
+        }
+
         builder.addDefaultIndex(CommonAttributes.USER_ID);
         builder.addDefaultIndex(CommonAttributes.ITEM_ID);
         for (Map.Entry<EntityType,TypedName<?>> iae: indexedAttributes.entries()) {
