@@ -22,6 +22,9 @@ package org.lenskit.data.store;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSet;
@@ -29,6 +32,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,13 +46,14 @@ import java.util.stream.Stream;
 /**
  * Packed implementation of the entity collection class.
  */
-class PackedEntityCollection extends EntityCollection {
+class PackedEntityCollection extends EntityCollection implements Describable {
     private final EntityType entityType;
     private final AttributeSet attributes;
     private final LongAttrStore idStore;
     private final AttrStore[] attrStores;
     private final PackIndex[] indexes;
     private final int size;
+    private transient HashCode contentHash;
     private ConcurrentHashMap<Integer,AttributeSet> attrSets = new ConcurrentHashMap<>();
 
     PackedEntityCollection(EntityType et, AttributeSet attrs, AttrStore[] stores, PackIndex[] idxes) {
@@ -139,6 +145,23 @@ class PackedEntityCollection extends EntityCollection {
     @Override
     public int size() {
         return idStore.size();
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("entity_count", size);
+        writer.putList("attributes", attributes);
+        if (contentHash == null) {
+            Hasher hash = Hashing.md5().newHasher();
+            for (int i = 0; i < size; i++) {
+                hash.putLong(idStore.getLong(i));
+                for (int j = 1; j < attributes.size(); j++) {
+                    hash.putInt(Objects.hashCode(attrStores[j].get(i)));
+                }
+            }
+            contentHash = hash.hash();
+        }
+        writer.putField("content_hash", contentHash);
     }
 
     private class IndirectEntity extends AbstractEntity {
