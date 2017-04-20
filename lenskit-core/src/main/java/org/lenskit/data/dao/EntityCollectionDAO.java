@@ -158,12 +158,6 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
         }
 
         // we must sort; need to make list ourselves since makeList lists are immutable
-        ArrayList<E> list;
-        try {
-            list = Lists.newArrayList(stream);
-        } finally {
-            stream.close();
-        }
         Ordering<Entity> ord = null;
         for (SortKey k: sort) {
             if (ord == null) {
@@ -172,8 +166,12 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
                 ord = ord.compound(k.ordering());
             }
         }
-        Collections.sort(list, ord);
-        return ObjectStreams.wrap(list);
+        assert ord != null;
+        try {
+            return ObjectStreams.wrap(ord.immutableSortedCopy(stream));
+        } finally {
+            stream.close();
+        }
     }
 
     @Override
