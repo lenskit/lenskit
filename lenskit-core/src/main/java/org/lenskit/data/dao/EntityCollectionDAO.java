@@ -144,7 +144,16 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
         ObjectStream<E> stream =
                 ObjectStreams.transform(baseStream, Entities.projection(query.getViewType()));
         List<SortKey> sort = query.getSortKeys();
-        if (sort.isEmpty()) {
+        List<SortKey> dataKeys = data.getSortKeys();
+        // already sorted if sort is a prefix of data keys
+        boolean alreadyInOrder = sort.size() <= dataKeys.size();
+        for (int i = 0; alreadyInOrder && i < sort.size(); i++) {
+            if (!sort.get(i).equals(dataKeys.get(i))) {
+                // oops, we want to sort by sth that isn't pre-sorted.
+                alreadyInOrder = false;
+            }
+        }
+        if (alreadyInOrder) {
             return stream;
         }
 

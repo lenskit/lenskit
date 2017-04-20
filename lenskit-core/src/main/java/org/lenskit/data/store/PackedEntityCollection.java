@@ -30,10 +30,12 @@ import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.dao.SortKey;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
+import org.omg.CORBA.IMP_LIMIT;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -130,6 +132,11 @@ class PackedEntityCollection extends EntityCollection implements Describable {
             return stream().filter(e -> value.equals(e.maybeGet(name)))
                            .collect(Collectors.toList());
         }
+    }
+
+    @Override
+    public List<SortKey> getSortKeys() {
+        return ImmutableList.of(SortKey.create(CommonAttributes.ENTITY_ID));
     }
 
     public Stream<Entity> stream() {

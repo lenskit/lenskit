@@ -20,7 +20,9 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.dao.SortKey;
 import org.lenskit.data.entities.*;
 
 import javax.annotation.Nonnull;
@@ -95,4 +97,12 @@ public abstract class EntityCollection extends AbstractCollection<Entity> {
      */
     @Nonnull
     public abstract List<Entity> find(String name, Object value);
+
+    /**
+     * Get the sort keys, if this collection stores attributes in sorted order.
+     * @return The sort keys.
+     */
+    public List<SortKey> getSortKeys() {
+        return ImmutableList.of();
+    }
 }
