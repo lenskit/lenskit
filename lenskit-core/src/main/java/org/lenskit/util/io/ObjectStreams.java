@@ -29,16 +29,16 @@ import com.google.common.collect.Lists;
 
 import javax.annotation.WillClose;
 import javax.annotation.WillCloseWhenClosed;
+import java.io.Closeable;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 /**
  * Utility methods for streams.
  *
  * @compat Public
- * @deprecated Use {@link Stream} methods instead of this class's methods.
  */
-@Deprecated
 public final class ObjectStreams {
     private ObjectStreams() {
     }
@@ -69,6 +69,22 @@ public final class ObjectStreams {
      */
     public static <T> ObjectStream<T> wrap(Stream<? extends T> stream) {
         return new IteratorObjectStream<>(stream.iterator());
+    }
+
+    /**
+     * Wrap a Java stream in an object stream.
+     *
+     * The stream may not contain `null`. This property is checked lazily; the object stream will not fail
+     * until the `null` would be returned.
+     *
+     * @param <T>      The type of data to return.
+     * @param stream   A stream to wrap
+     * @param root     The 'root stream', which will be closed when the resulting stream is closed.
+     * @return An object stream returning the elements of the stream.
+     */
+    public static <T> ObjectStream<T> wrap(Stream<? extends T> stream,
+                                           @WillCloseWhenClosed Closeable root) {
+        return new IteratorObjectStream<>(stream.iterator(), root);
     }
 
     /**
@@ -155,7 +171,9 @@ public final class ObjectStreams {
      * @param objectStream   The source stream
      * @param function A function to apply to each row in the stream.  It will be applied to each value at most once.
      * @return A new stream iterating the results of <var>function</var>.
+     * @deprecated Use {@link ObjectStream#map(java.util.function.Function)}, possibly with {@link #wrap(Stream, Closeable)}.
      */
+    @Deprecated
     public static <S, T> ObjectStream<T> transform(@WillCloseWhenClosed ObjectStream<S> objectStream, Function<? super S, ? extends T> function) {
         return new TransformedObjectStream<>(objectStream, function);
     }
@@ -176,8 +194,10 @@ public final class ObjectStreams {
      * @param <T>    The type of item in the object stream.
      * @param objectStream The object stream.
      * @return A new list containing the elements of the object stream.
+     * @deprecated Use {@link ObjectStream#collect(Collector)}.
      */
     @SuppressWarnings("PMD.LooseCoupling")
+    @Deprecated
     public static <T> List<T> makeList(@WillClose ObjectStream<? extends T> objectStream) {
         List<T> result = null;
         try {
@@ -201,8 +221,10 @@ public final class ObjectStreams {
      *
      * @param objectStream The object stream.
      * @return The number of items in the stream.
+     * @deprecated Use {@link ObjectStream#collect(Collector)}.
      */
     @SuppressWarnings("PMD.LooseCoupling")
+    @Deprecated
     public static int count(@WillClose ObjectStream<?> objectStream) {
         try {
             if (objectStream instanceof IteratorObjectStream) {
@@ -232,9 +254,11 @@ public final class ObjectStreams {
      * @param objectStream The object stream to sort.
      * @param comp   The comparator to use to sort the object stream.
      * @return An object stream iterating over the sorted results.
+     * @deprecated Use {@link ObjectStream#sorted(Comparator)}, possibly with {@link #wrap(Stream, Closeable)}.
      */
+    @Deprecated
     public static <T> ObjectStream<T> sort(@WillClose ObjectStream<T> objectStream,
-                                     Comparator<? super T> comp) {
+                                           Comparator<? super T> comp) {
         ArrayList<T> list;
         try {
             list = Lists.newArrayList(objectStream);

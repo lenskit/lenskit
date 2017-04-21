@@ -208,14 +208,7 @@ public final class Entities {
         if (viewClass.equals(Entity.class)) {
             return (Function) Functions.identity();
         } else {
-            return new Function<Entity, E>() {
-                @Nullable
-                @Override
-                public E apply(@Nullable Entity input) {
-                    assert input != null;
-                    return project(input, viewClass);
-                }
-            };
+            return n -> project(n, viewClass);
         }
     }
 
