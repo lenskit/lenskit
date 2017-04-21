@@ -32,12 +32,12 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.util.io.CompressionMode;
-import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
+import org.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.monitor.TrackedJob;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
@@ -58,6 +58,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Semaphore;
 
 /**
  * Sets up and runs train-test evaluations.  This class can be used directly, but it will usually be controlled from
@@ -87,7 +88,8 @@ public class TrainTestExperiment {
     private Path userOutputFile;
     private Path cacheDir;
     private boolean shareModelComponents = true;
-    private int threadCount = 1;
+    private int threadCount = 0;
+    private int parallelTasks = 0;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -281,6 +283,27 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Get the number of evaluation tasks to permit to run in parallel.  Reducing this can be useful for reducing
+     * the memory use of LensKit.
+     *
+     * @return The number of evaluation tasks to allow to run in parallel, or 0 if there is no limit.
+     */
+    public int getParallelTasks() {
+        return parallelTasks;
+    }
+
+    /**
+     * Set the number of parallel experiment tasks to run.  If 0 (the default), then up to {@link #getThreadCount()}
+     * jobs can run in parallel.  This can be reduced to reduce memory use (by having fewer models in memory); the
+     * extra threads may still be used to speed up individual evaluations.
+     *
+     * @param pt The number of tasks to run in parallel, or 0 to have no limit.
+     */
+    public void setParallelTasks(int pt) {
+        parallelTasks = pt;
+    }
+
+    /**
      * Get the class loader for this experiment.
      * @return The class loader that will be used.
      */
@@ -471,6 +494,10 @@ public class TrainTestExperiment {
             cache = new ComponentCache(cacheDir, classLoader);
         }
         Map<UUID,TaskGroup> groups = new HashMap<>();
+        Semaphore limit = null;
+        if (parallelTasks > 0) {
+            limit = new Semaphore(parallelTasks);
+        }
 
         // set up the roots
         LenskitConfiguration config = new LenskitConfiguration();
@@ -495,7 +522,7 @@ public class TrainTestExperiment {
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
                 TrackedJob j = tracker.makeChild(ExperimentJob.JOB_TYPE, "evaluate " + ai + " on " + ds);
-                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j);
+                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j, limit);
                 allJobs.add(job);
                 group.addTask(job);
             }
@@ -572,6 +599,7 @@ public class TrainTestExperiment {
         if (json.has("thread_count")) {
             exp.setThreadCount(json.get("thread_count").asInt(1));
         }
+        exp.setParallelTasks(json.path("parallel_tasks").asInt(0));
         if (json.has("share_model_components")) {
             exp.setShareModelComponents(json.get("share_model_components").asBoolean());
         }

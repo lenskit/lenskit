@@ -60,6 +60,11 @@ class TrainTest extends LenskitTask implements GradleUtils {
     def int threadCount
 
     /**
+     * Then number of parallel tasks to allow.
+     */
+    def int parallelTasks = 0
+
+    /**
      * Configure whether the evaluator should share model components between algorithms.
      */
     def boolean shareModelComponents = true
@@ -203,6 +208,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
                     user_output_file      : makeUrl(getUserOutputFile(), getSpecFile()),
                     cache_directory       : makeUrl(getCacheDirectory(), getSpecFile()),
                     thread_count          : getThreadCount(),
+                    parallel_tasks        : getParallelTasks(),
                     share_model_components: getShareModelComponents()]
         json.datasets = dataSets.collect {it.call()}
         json.algorithms = algorithms.collectEntries {k, v ->

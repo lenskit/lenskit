@@ -23,6 +23,7 @@ package org.lenskit.util.parallel;
 import com.google.common.util.concurrent.Monitor;
 
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Semaphore;
 
 /**
  * Utility classes for blocking computations.
@@ -34,6 +35,14 @@ public class Blockers {
      */
     public static void enterMonitor(Monitor m) throws InterruptedException {
         ForkJoinPool.managedBlock(new MonitorBlocker(m));
+    }
+
+    /**
+     * Acquire a semaphore, coordinating with the fork-join pool if one is running.
+     * @param s The semaphore to acquire.
+     */
+    public static void acquireSemaphore(Semaphore s) throws InterruptedException {
+        ForkJoinPool.managedBlock(new SemaphoreBlocker(s));
     }
 
     private static class MonitorBlocker implements ForkJoinPool.ManagedBlocker {
@@ -53,6 +62,31 @@ public class Blockers {
         @Override
         public boolean isReleasable() {
             return monitor.isOccupiedByCurrentThread() || monitor.tryEnter();
+        }
+    }
+
+    private static class SemaphoreBlocker implements ForkJoinPool.ManagedBlocker {
+        private final Semaphore semaphore;
+        private boolean acquired = false;
+
+        public SemaphoreBlocker(Semaphore s) {
+            semaphore = s;
+        }
+
+        @Override
+        public boolean block() throws InterruptedException {
+            // wait for the semaphore to be available
+            if (!acquired) {
+                semaphore.acquire();
+                acquired = true;
+            }
+            return acquired;
+        }
+
+        @Override
+        public boolean isReleasable() {
+            // can release if we have the semaphore, or if we can immediately acquire it
+            return acquired || (acquired = semaphore.tryAcquire());
         }
     }
 }
