@@ -133,7 +133,6 @@ subprojects {
     }
 
     // don't package until testing
-    jar.mustRunAfter 'test'
     tasks.matching({it.name == 'uploadArchives'}).each { task ->
         task.mustRunAfter check
     }
