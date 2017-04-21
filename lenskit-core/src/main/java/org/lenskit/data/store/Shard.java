@@ -20,6 +20,9 @@
  */
 package org.lenskit.data.store;
 
+/**
+ * A chunk of data for an attribute store.
+ */
 abstract class Shard {
     /* We want shard sizes to be a power of 2. Then we can strength-reduce the transformations.
      * We must manually strength-reduce because HotSpot doesn't do it.
