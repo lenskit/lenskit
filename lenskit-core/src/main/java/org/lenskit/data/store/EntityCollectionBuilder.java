@@ -23,9 +23,6 @@ package org.lenskit.data.store;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.TypedName;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 /**
  * Created by MichaelEkstrand on 4/18/2017.
  */
@@ -63,27 +60,6 @@ public abstract class EntityCollectionBuilder {
      * @return The builder (for chaining).
      */
     public abstract EntityCollectionBuilder add(Entity e, boolean replace);
-
-    /**
-     * Add multiple entities to the collection.
-     * @param entities The entity to add.
-     * @return The builder (for chaining).
-     */
-    public EntityCollectionBuilder addAll(Entity... entities) {
-        return addAll(Arrays.asList(entities));
-    }
-
-    /**
-     * Add multiple entities to the collection.
-     * @param entities The entity to add.
-     * @return The builder (for chaining).
-     */
-    public EntityCollectionBuilder addAll(Iterable<Entity> entities) {
-        for (Entity e: entities) {
-            add(e);
-        }
-        return this;
-    }
 
     /**
      * Get a view of the entities added, for iteration and re-processing.
