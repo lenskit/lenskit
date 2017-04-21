@@ -156,7 +156,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     public Iterable<Entity> entities() {
         AttrStore[] stores = new AttrStore[storeBuilders.length];
         for (int i = 0; i < stores.length; i++) {
-            stores[i] = storeBuilders[i].build();
+            stores[i] = storeBuilders[i].tempBuild();
         }
         // the packed collection is not fully functional! But it will be iterable.
         return new PackedEntityCollection(entityType, attributes, stores, new PackIndex[attributes.size()]);
