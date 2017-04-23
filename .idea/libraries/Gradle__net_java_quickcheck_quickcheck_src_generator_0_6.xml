@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: net.java.quickcheck:quickcheck-src-generator:0.6">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.quickcheck/quickcheck-src-generator/0.6/f4ab8db5d37ddeb1650233f3fc102dc5c6fea9c8/quickcheck-src-generator-0.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.quickcheck/quickcheck-src-generator/0.6/33f8e7fe7cb7692c9790e7c758cf629cb6ed40a9/quickcheck-src-generator-0.6-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

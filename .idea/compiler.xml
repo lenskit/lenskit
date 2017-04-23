@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <resourceExtensions />
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+      <entry name="!?*.form" />
+      <entry name="!?*.class" />
+      <entry name="!?*.groovy" />
+      <entry name="!?*.scala" />
+      <entry name="!?*.flex" />
+      <entry name="!?*.kt" />
+      <entry name="!?*.clj" />
+      <entry name="!?*.aj" />
+    </wildcardResourcePatterns>
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="false">
+        <processorPath useClasspath="true" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="buildSrc_main" target="1.8" />
+      <module name="buildSrc_test" target="1.8" />
+      <module name="lenskit-all_main" target="1.7" />
+      <module name="lenskit-all_test" target="1.7" />
+      <module name="lenskit-api_main" target="1.7" />
+      <module name="lenskit-api_test" target="1.7" />
+      <module name="lenskit-cli_main" target="1.7" />
+      <module name="lenskit-cli_test" target="1.7" />
+      <module name="lenskit-core_main" target="1.7" />
+      <module name="lenskit-core_test" target="1.7" />
+      <module name="lenskit-eval_main" target="1.7" />
+      <module name="lenskit-eval_test" target="1.7" />
+      <module name="lenskit-gradle_main" target="1.7" />
+      <module name="lenskit-gradle_test" target="1.7" />
+      <module name="lenskit-groovy_main" target="1.7" />
+      <module name="lenskit-groovy_test" target="1.7" />
+      <module name="lenskit-integration-tests_main" target="1.7" />
+      <module name="lenskit-integration-tests_test" target="1.7" />
+      <module name="lenskit-knn_main" target="1.7" />
+      <module name="lenskit-knn_test" target="1.7" />
+      <module name="lenskit-predict_main" target="1.7" />
+      <module name="lenskit-predict_test" target="1.7" />
+      <module name="lenskit-slopeone_main" target="1.7" />
+      <module name="lenskit-slopeone_test" target="1.7" />
+      <module name="lenskit-svd_main" target="1.7" />
+      <module name="lenskit-svd_test" target="1.7" />
+      <module name="lenskit-test_main" target="1.7" />
+      <module name="lenskit-test_test" target="1.7" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

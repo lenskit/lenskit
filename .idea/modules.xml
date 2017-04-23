@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/buildSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/buildSrc_main.iml" filepath="$PROJECT_DIR$/.idea/modules/buildSrc_main.iml" group="buildSrc" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/buildSrc_test.iml" filepath="$PROJECT_DIR$/.idea/modules/buildSrc_test.iml" group="buildSrc" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-all/lenskit-all.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-all/lenskit-all.iml" group="lenskit-all" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-all/lenskit-all_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-all/lenskit-all_main.iml" group="lenskit-all" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-all/lenskit-all_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-all/lenskit-all_test.iml" group="lenskit-all" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-api/lenskit-api.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-api/lenskit-api.iml" group="lenskit-api" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-api/lenskit-api_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-api/lenskit-api_main.iml" group="lenskit-api" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-api/lenskit-api_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-api/lenskit-api_test.iml" group="lenskit-api" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-cli/lenskit-cli.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-cli/lenskit-cli.iml" group="lenskit-cli" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-cli/lenskit-cli_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-cli/lenskit-cli_main.iml" group="lenskit-cli" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-cli/lenskit-cli_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-cli/lenskit-cli_test.iml" group="lenskit-cli" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-core/lenskit-core.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-core/lenskit-core.iml" group="lenskit-core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-core/lenskit-core_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-core/lenskit-core_main.iml" group="lenskit-core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-core/lenskit-core_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-core/lenskit-core_test.iml" group="lenskit-core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-eval/lenskit-eval.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-eval/lenskit-eval.iml" group="lenskit-eval" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-eval/lenskit-eval_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-eval/lenskit-eval_main.iml" group="lenskit-eval" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-eval/lenskit-eval_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-eval/lenskit-eval_test.iml" group="lenskit-eval" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-gradle/lenskit-gradle.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-gradle/lenskit-gradle.iml" group="lenskit-gradle" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-gradle/lenskit-gradle_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-gradle/lenskit-gradle_main.iml" group="lenskit-gradle" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-gradle/lenskit-gradle_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-gradle/lenskit-gradle_test.iml" group="lenskit-gradle" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-groovy/lenskit-groovy.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-groovy/lenskit-groovy.iml" group="lenskit-groovy" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-groovy/lenskit-groovy_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-groovy/lenskit-groovy_main.iml" group="lenskit-groovy" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-groovy/lenskit-groovy_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-groovy/lenskit-groovy_test.iml" group="lenskit-groovy" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-integration-tests/lenskit-integration-tests.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-integration-tests/lenskit-integration-tests.iml" group="lenskit-integration-tests" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-integration-tests/lenskit-integration-tests_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-integration-tests/lenskit-integration-tests_main.iml" group="lenskit-integration-tests" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-integration-tests/lenskit-integration-tests_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-integration-tests/lenskit-integration-tests_test.iml" group="lenskit-integration-tests" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-knn/lenskit-knn.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-knn/lenskit-knn.iml" group="lenskit-knn" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-knn/lenskit-knn_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-knn/lenskit-knn_main.iml" group="lenskit-knn" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-knn/lenskit-knn_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-knn/lenskit-knn_test.iml" group="lenskit-knn" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-predict/lenskit-predict.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-predict/lenskit-predict.iml" group="lenskit-predict" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-predict/lenskit-predict_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-predict/lenskit-predict_main.iml" group="lenskit-predict" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-predict/lenskit-predict_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-predict/lenskit-predict_test.iml" group="lenskit-predict" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-slopeone/lenskit-slopeone.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-slopeone/lenskit-slopeone.iml" group="lenskit-slopeone" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-slopeone/lenskit-slopeone_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-slopeone/lenskit-slopeone_main.iml" group="lenskit-slopeone" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-slopeone/lenskit-slopeone_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-slopeone/lenskit-slopeone_test.iml" group="lenskit-slopeone" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-svd/lenskit-svd.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-svd/lenskit-svd.iml" group="lenskit-svd" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-svd/lenskit-svd_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-svd/lenskit-svd_main.iml" group="lenskit-svd" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-svd/lenskit-svd_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-svd/lenskit-svd_test.iml" group="lenskit-svd" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-test/lenskit-test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-test/lenskit-test.iml" group="lenskit-test" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-test/lenskit-test_main.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-test/lenskit-test_main.iml" group="lenskit-test" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lenskit-test/lenskit-test_test.iml" filepath="$PROJECT_DIR$/.idea/modules/lenskit-test/lenskit-test_test.iml" group="lenskit-test" />
+    </modules>
+  </component>
+</project>
