@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.dao.SortKey;
@@ -52,6 +53,8 @@ public abstract class EntityCollection extends AbstractCollection<Entity> {
      * @return An entity collection builder.
      */
     public static EntityCollectionBuilder newBuilder(EntityType type, AttributeSet attrs) {
+        Preconditions.checkArgument(attrs.lookup(CommonAttributes.ENTITY_ID) == 0,
+                                    "could not find entity ID in: %s", attrs);
         return new PackedEntityCollectionBuilder(type, attrs);
     }
 

@@ -41,4 +41,9 @@ class LongAttrStoreBuilder extends AttrStoreBuilder {
         }
         return new LongAttrStore(shards, size);
     }
+
+    @Override
+    AttrStore tempBuild() {
+        return new LongAttrStore(shards, size);
+    }
 }

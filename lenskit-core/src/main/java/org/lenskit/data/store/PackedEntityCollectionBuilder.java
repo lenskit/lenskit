@@ -61,7 +61,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             TypedName<?> attr = attrs.getAttribute(i);
             AttrStoreBuilder asb;
             if (attr.getType().equals(TypeToken.of(Long.class))) {
-                asb = new AttrStoreBuilder(LongShard::create);
+                asb = new LongAttrStoreBuilder();
             } else if (attr.getType().equals(TypeToken.of(Integer.class))) {
                 asb = new AttrStoreBuilder(IntShard::create);
             } else if (attr.getType().equals(TypeToken.of(Double.class))) {
