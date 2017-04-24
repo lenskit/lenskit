@@ -423,9 +423,7 @@ public class TrainTestExperiment {
     }
 
     public ExperimentOutputLayout getOutputLayout() {
-        if (outputLayout == null) {
-            throw new IllegalStateException("experiment not started");
-        }
+        Preconditions.checkState(outputLayout != null, "experiment is not started");
         return outputLayout;
     }
 
@@ -537,9 +535,8 @@ public class TrainTestExperiment {
         } else {
             root = FluentIterable.from(groups.values()).first().orNull();
         }
-        if (root == null) {
-            throw new IllegalStateException("no jobs defined");
-        }
+
+        Preconditions.checkState(root != null, "no jobs defined");
         rootJob = root;
     }
 
