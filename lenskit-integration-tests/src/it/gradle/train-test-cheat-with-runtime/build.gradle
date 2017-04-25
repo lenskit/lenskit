@@ -43,6 +43,7 @@ task crossfold(type: Crossfold) {
             def testf = file("$outputDirectory/part0${i+1}.test.yaml")
             def trainY = parser.load(trainf.text)
             def testY = parser.load(testf.text)
+            testY.base_id = 100 * 1000 * 1000
             trainY << testY
             def rtf = file("$outputDirectory/part0${i+1}.runtime.yaml")
             rtf.text = parser.dump(trainY)
