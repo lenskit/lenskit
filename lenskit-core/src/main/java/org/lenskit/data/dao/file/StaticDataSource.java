@@ -244,6 +244,8 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
         SetMultimap<EntityType, EntitySource.Layout> layouts = HashMultimap.create();
         for (EntitySource source: sources) {
+            logger.debug("source {} declares types {} and layout {}",
+                         source, source.getTypes(), source.getLayout());
             for (EntityType et: source.getTypes()) {
                 layouts.put(et, source.getLayout());
             }
@@ -251,9 +253,12 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         for (Map.Entry<EntityType, Collection<EntitySource.Layout>> e: layouts.asMap().entrySet()) {
             EntitySource.Layout layout = null;
             layout = Iterables.getFirst(e.getValue(), null);
-            if (layout != null && e.getValue().size() > 1) {
+            if (layout != null && e.getValue().size() == 1) {
                 assert layout.getEntityType() == e.getKey();
+                logger.info("using static layout {}", layout);
                 builder.addEntityLayout(layout.getEntityType(), layout.getAttributes());
+            } else {
+                logger.debug("found {} layouts for entity type {}", e.getValue().size(), e.getKey());
             }
         }
 

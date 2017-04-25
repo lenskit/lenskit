@@ -22,6 +22,7 @@ package org.lenskit.data.dao.file;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.lenskit.data.entities.AttributeSet;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityBuilder;
@@ -104,6 +105,14 @@ public interface EntitySource {
 
         public Class<? extends EntityBuilder> getEntityBuilder() {
             return entityBuilder;
+        }
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this)
+                    .append("type", entityType)
+                    .append("attributes", attributes)
+                    .build();
         }
 
         @Override

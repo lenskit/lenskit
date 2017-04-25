@@ -30,11 +30,14 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Entity collection builder packing data into shards.
  */
 class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(PackedEntityCollectionBuilder.class);
     private final EntityType entityType;
     private final AttributeSet attributes;
     private final LongAttrStoreBuilder idStore;
@@ -61,12 +64,16 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             TypedName<?> attr = attrs.getAttribute(i);
             AttrStoreBuilder asb;
             if (attr.getType().equals(TypeToken.of(Long.class))) {
+                logger.debug("{}: storing  long column {}", et, attr.getName());
                 asb = new LongAttrStoreBuilder();
             } else if (attr.getType().equals(TypeToken.of(Integer.class))) {
+                logger.debug("{}: storing int column {}", et, attr.getName());
                 asb = new AttrStoreBuilder(IntShard::create);
             } else if (attr.getType().equals(TypeToken.of(Double.class))) {
+                logger.debug("{}: storing double column {}", et, attr.getName());
                 asb = new AttrStoreBuilder(DoubleShard::create);
             } else {
+                logger.debug("{}: storing object column {}", et, attr);
                 asb = new AttrStoreBuilder(ObjectShard::new);
             }
             storeBuilders[i] = asb;
@@ -93,6 +100,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
 
     private PackIndex buildIndex(int aidx) {
         TypedName<?> tn = attributes.getAttribute(aidx);
+        logger.debug("indexing column {} of {}", tn, entityType);
         PackIndex.Builder builder;
         if (tn.getRawType().equals(Long.class)) {
             builder = new PackIndex.LongBuilder();
