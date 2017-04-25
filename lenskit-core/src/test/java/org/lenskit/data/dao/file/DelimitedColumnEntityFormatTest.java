@@ -75,6 +75,38 @@ public class DelimitedColumnEntityFormatTest {
     }
 
     @Test
+    public void testParseLineWithBaseId() {
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setDelimiter(",");
+        format.setBaseId(42);
+
+        EntityType pcType = EntityType.forName("pop_count");
+        format.setEntityType(pcType);
+        format.addColumn(CommonAttributes.ITEM_ID);
+        format.addColumn(CommonAttributes.COUNT);
+        assertThat(format.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.COUNT));
+
+        LineEntityParser parser = format.makeParser(Collections.<String>emptyList());
+        assertThat(parser, notNullValue());
+
+        Entity pc = parser.parse("42,10");
+        assertThat(pc, notNullValue());
+        assertThat(pc.getId(), equalTo(43L));
+        assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(42L));
+        assertThat(pc.get(CommonAttributes.COUNT), equalTo(10));
+
+        // make sure the ID (row count) advances
+        pc = parser.parse("78,2");
+        assertThat(pc, notNullValue());
+        assertThat(pc.getId(), equalTo(44L));
+        assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(78L));
+        assertThat(pc.get(CommonAttributes.COUNT), equalTo(2));
+    }
+
+    @Test
     public void testHeaderParseLine() {
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
         format.setDelimiter(",");

@@ -48,6 +48,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     private String delimiter = "\t";
     private int headerLines;
     private boolean readHeader;
+    private long baseId;
     private EntityType entityType = EntityType.forName("rating");
     private Class<? extends EntityBuilder> entityBuilder = BasicEntityBuilder.class;
     private InstanceFactory<EntityBuilder> builderFactory;
@@ -102,6 +103,23 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      */
     boolean usesHeader() {
         return readHeader;
+    }
+
+    /**
+     * Get the base entity ID for this source.
+     * @return The base entity ID.
+     */
+    public long getBaseId() {
+        return baseId;
+    }
+
+    /**
+     * Set the base entity ID for this source.  If an entity column is not defined, then the line number will
+     * be added to this value to obtain a synthetic ID.
+     * @param base The base entity ID.
+     */
+    public void setBaseId(long base) {
+        baseId = base;
     }
 
     /**
@@ -250,6 +268,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         json.put("format", "delimited");
         json.put("delimiter", delimiter);
         json.put("entity_type", entityType.getName());
+        json.put("base_id", getBaseId());
         if (readHeader) {
             json.put("header", true);
         } else if (headerLines > 0) {
@@ -308,6 +327,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             format.setHeaderLines(header.asInt());
             logger.debug("{}: skipping {} header lines", format.getHeaderLines());
         }
+        format.setBaseId(json.path("base_id").asLong(0));
 
         String eTypeName = json.path("entity_type").asText("rating").toLowerCase();
         EntityType etype = EntityType.forName(eTypeName);
@@ -390,7 +410,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             lineNo += 1;
 
             EntityBuilder builder = newEntityBuilder()
-                    .setId(lineNo);
+                    .setId(lineNo + baseId);
 
             // since ID is already set, a subsequent ID column will properly override
 

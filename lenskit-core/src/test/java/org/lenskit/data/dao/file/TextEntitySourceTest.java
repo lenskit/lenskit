@@ -35,7 +35,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class TextEntitySourceTest {
     private ObjectReader reader = new ObjectMapper().reader();
@@ -80,6 +80,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
+        assertThat(format.getBaseId(), equalTo(0L));
         assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
@@ -125,6 +126,20 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(2));
         assertThat(format.usesHeader(), equalTo(false));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+    }
+
+    @Test
+    public void testBaseIdConfig() throws IOException {
+        JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"base_id\": 100}");
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
+        assertThat(fr, notNullValue());
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
+        assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
+        DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
+        assertThat(format.getDelimiter(), equalTo("\t"));
+        assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
+        assertThat(format.getBaseId(), equalTo(100L));
         assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
