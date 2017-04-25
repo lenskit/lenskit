@@ -149,7 +149,7 @@ public class EntityCollectionDAOBuilder {
     /**
      * Derive bare entities from the values in another type of entity.  This method only consults the entities added
      * so far, so it should be called *after* all other calls to {@link #addEntity(Entity)} and friends.  If an entity
-     * has already been added with the same type and ID as one of the derived entites, it is kept instead of the derived
+     * has already been added with the same type and ID as one of the derived entities, it is kept instead of the derived
      * entity.
      *
      * @param derived The derived entity type.
@@ -164,7 +164,11 @@ public class EntityCollectionDAOBuilder {
             return this;
         }
 
-        EntityCollectionBuilder ecb = findBuilder(derived);
+        EntityCollectionBuilder ecb = entitySets.get(derived);
+        if (ecb == null) {
+            ecb = EntityCollection.newBareBuilder(derived);
+            entitySets.put(derived, ecb);
+        }
         for (Entity e: src.entities()) {
             if (e.hasAttribute(attr)) {
                 long key = e.getLong(attr);
