@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -139,11 +140,14 @@ public class AlgorithmInstance {
         sb.append("Algorithm(")
           .append(getName())
           .append(")");
-        if (!attributes.isEmpty()) {
+
+        Map<String, Object> subAttrs = new LinkedHashMap<>(attributes);
+        subAttrs.remove("Algorithm");
+        if (!subAttrs.isEmpty()) {
             sb.append("[");
             Joiner.on(", ")
                   .withKeyValueSeparator("=")
-                  .appendTo(sb, attributes);
+                  .appendTo(sb, subAttrs);
             sb.append("]");
         }
         return sb.toString();
