@@ -24,8 +24,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.Locale;
 
@@ -36,6 +38,8 @@ import java.util.Locale;
  *
  * Type names are *case-insensitive*, and are normalized to lowercase in the {@linkplain Locale#ROOT root locale}.
  */
+@Shareable
+@Immutable
 public final class EntityType implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Interner<EntityType> TYPE_CACHE = Interners.newStrongInterner();
