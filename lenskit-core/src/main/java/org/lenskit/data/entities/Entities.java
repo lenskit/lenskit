@@ -123,14 +123,6 @@ public final class Entities {
         return ID_KEY_EX;
     }
 
-    /**
-     * Function that extracts an entity's type.
-     * @return A function that extracts an entity's type.
-     */
-    public static Function<Entity,EntityType> extractType() {
-        return EntityTypeFunc.INSTANCE;
-    }
-
     public static <T> Function<Entity,T> attributeValueFunction(final TypedName<T> name) {
         return new Function<Entity, T>() {
             @Nullable
@@ -231,15 +223,4 @@ public final class Entities {
 
     private static Ordering<Entity> ID_ORDER = new IdOrder();
     private static KeyExtractor<Entity> ID_KEY_EX = new IdKeyEx();
-
-    private static enum EntityTypeFunc implements Function<Entity,EntityType> {
-        INSTANCE;
-
-        @Nullable
-        @Override
-        public EntityType apply(@Nullable Entity input) {
-            Preconditions.checkNotNull(input);
-            return input.getType();
-        }
-    }
 }
