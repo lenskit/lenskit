@@ -26,6 +26,7 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -37,7 +38,6 @@ import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
-import org.omg.CORBA.IMP_LIMIT;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -100,10 +100,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
 
         PackIndex index = indexes[idx];
         if (index != null) {
-            return index.getPositions(value)
-                        .stream()
-                        .map(IndirectEntity::new)
-                        .collect(Collectors.toList());
+            return new EntityList(index.getPositions(value));
         } else {
             return stream().filter(e -> value.equals(e.maybeGet(name)))
                            .collect(Collectors.toList());
@@ -126,10 +123,8 @@ class PackedEntityCollection extends EntityCollection implements Describable {
 
         PackIndex index = indexes[idx];
         if (index != null) {
-            return index.getPositions(value)
-                        .stream()
-                        .map(IndirectEntity::new)
-                        .collect(Collectors.toList());
+            IntList positions = index.getPositions(value);
+            return new EntityList(positions);
         } else {
             return stream().filter(e -> value.equals(e.maybeGet(name)))
                            .collect(Collectors.toList());
@@ -255,6 +250,45 @@ class PackedEntityCollection extends EntityCollection implements Describable {
         public Object maybeGet(String attr) {
             int ap = attributes.lookup(attr);
             return ap >= 0 ? attrStores[ap].get(position) : null;
+        }
+
+        @Nullable
+        @Override
+        public <T> T maybeGet(TypedName<T> name) {
+            int ap = attributes.lookup(name);
+            return ap >= 0 ? (T) name.getRawType().cast(attrStores[ap].get(position)) : null;
+        }
+
+        @Override
+        public long getLong(TypedName<Long> name) {
+            int ap = attributes.lookup(name);
+            if (ap < 0) {
+                throw new NoSuchAttributeException(name.toString());
+            }
+            AttrStore as = attrStores[ap];
+            if (as.isNull(position)) {
+                throw new NoSuchElementException(name.toString());
+            }
+            assert as instanceof LongAttrStore;
+            return ((LongAttrStore) as).getLong(position);
+        }
+    }
+
+    private class EntityList extends AbstractList<Entity> {
+        private final IntList positions;
+
+        EntityList(IntList pss) {
+            positions = pss;
+        }
+
+        @Override
+        public Entity get(int index) {
+            return new IndirectEntity(positions.get(index));
+        }
+
+        @Override
+        public int size() {
+            return positions.size();
         }
     }
 
