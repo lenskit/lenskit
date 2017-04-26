@@ -20,11 +20,22 @@
  */
 package org.lenskit.data.store;
 
-/**
- * Created by michaelekstrand on 4/15/2017.
- */
 abstract class Shard {
-    static final int SHARD_SIZE = 2048;
+    /* We want shard sizes to be a power of 2. Then we can strength-reduce the transformations.
+     * We must manually strength-reduce because HotSpot doesn't do it.
+     * This results in a small but measurable performance boost.
+     */
+    static final int SHARD_SIZE_POWER = 12;
+    static final int SHARD_SIZE = 1 << SHARD_SIZE_POWER;
+    static final int SHARD_MASK = SHARD_SIZE - 1;
+
+    static int indexOfShard(int idx) {
+        return idx >>> SHARD_SIZE_POWER;
+    }
+
+    static int indexWithinShard(int idx) {
+        return idx & SHARD_MASK;
+    }
 
     /**
      * Get the value at an index in the shard.

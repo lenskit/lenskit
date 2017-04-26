@@ -20,24 +20,32 @@
  */
 package org.lenskit.data.store;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import org.junit.Test;
 
-/**
- * Long-specialized attribute store.
- */
-class LongAttrStore extends AttrStore {
-    List<LongShard> longShards;
+import static net.java.quickcheck.generator.PrimitiveGeneratorsIterables.someIntegers;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
-    LongAttrStore(List<Shard> shards, int total) {
-        super(shards, total);
-        longShards = shards.stream()
-                           .map(s -> (LongShard) s)
-                           .collect(Collectors.toList());
+public class ShardTest {
+    @Test
+    public void testShardSize() {
+        assertThat(Shard.SHARD_SIZE,
+                   equalTo(4096));
     }
 
-    long getLong(int idx) {
-        return longShards.get(Shard.indexOfShard(idx))
-                         .getLong(Shard.indexWithinShard(idx));
+    @Test
+    public void testIndexOfShard() {
+        for (int i: someIntegers(0)) {
+            assertThat(Shard.indexOfShard(i),
+                       equalTo(i / Shard.SHARD_SIZE));
+        }
+    }
+
+    @Test
+    public void testIndexWithinShard() {
+        for (int i: someIntegers(0)) {
+            assertThat(Shard.indexWithinShard(i),
+                       equalTo(i % Shard.SHARD_SIZE));
+        }
     }
 }

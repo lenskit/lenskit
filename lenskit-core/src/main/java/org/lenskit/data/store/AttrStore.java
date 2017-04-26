@@ -71,14 +71,13 @@ class AttrStore {
      */
     Object get(int idx) {
         assert idx >= 0 && idx < totalSize;
-        int si = idx / Shard.SHARD_SIZE;
-        int vi = idx % Shard.SHARD_SIZE;
-        return shards.get(si).get(vi);
+        return shards.get(Shard.indexOfShard(idx))
+                     .get(Shard.indexWithinShard(idx));
     }
 
     boolean isNull(int idx) {
-        int si = idx / Shard.SHARD_SIZE;
-        int vi = idx % Shard.SHARD_SIZE;
-        return shards.get(si).isNull(vi);
+        assert idx >= 0 && idx < totalSize;
+        return shards.get(Shard.indexOfShard(idx))
+                     .isNull(Shard.indexWithinShard(idx));
     }
 }

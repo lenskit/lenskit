@@ -54,8 +54,8 @@ class AttrStoreBuilder {
      */
     void skip() {
         int nexti = size;
-        int si = nexti / Shard.SHARD_SIZE;
-        int vi = nexti % Shard.SHARD_SIZE;
+        int si = Shard.indexOfShard(nexti);
+        int vi = Shard.indexWithinShard(nexti);
         if (si >= shards.size()) {
             shards.add(shardFactory.get());
         }
@@ -70,8 +70,8 @@ class AttrStoreBuilder {
      */
     void add(Object val) {
         int nexti = size;
-        int si = nexti / Shard.SHARD_SIZE;
-        int vi = nexti % Shard.SHARD_SIZE;
+        int si = Shard.indexOfShard(nexti);
+        int vi = Shard.indexWithinShard(nexti);
         Shard shard;
         if (si < shards.size()) {
             shard = shards.get(si);
@@ -95,8 +95,8 @@ class AttrStoreBuilder {
      */
     Object get(int idx) {
         assert idx >= 0 && idx < size;
-        int si = idx / Shard.SHARD_SIZE;
-        int vi = idx % Shard.SHARD_SIZE;
+        int si = Shard.indexOfShard(idx);
+        int vi = Shard.indexWithinShard(idx);
         return shards.get(si).get(vi);
     }
 
@@ -107,10 +107,10 @@ class AttrStoreBuilder {
      * @param j The second index.
      */
     void swap(int i, int j) {
-        int si = i / Shard.SHARD_SIZE;
-        int vi = i % Shard.SHARD_SIZE;
-        int sj = j / Shard.SHARD_SIZE;
-        int vj = j % Shard.SHARD_SIZE;
+        int si = Shard.indexOfShard(i);
+        int vi = Shard.indexWithinShard(i);
+        int sj = Shard.indexOfShard(j);
+        int vj = Shard.indexWithinShard(j);
 
         Shard shi = shards.get(si);
         Shard shj = shards.get(sj);
