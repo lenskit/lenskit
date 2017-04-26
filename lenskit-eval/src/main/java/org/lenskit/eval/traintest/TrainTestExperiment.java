@@ -489,6 +489,11 @@ public class TrainTestExperiment {
         allJobs = new ArrayList<>();
         TrackedJob tracker = new TrackedJob(JOB_TYPE);
         tracker.getEventBus().register(new StatusLogger(logger));
+        try {
+            tracker.getEventBus().register(new WebAppListener());
+        }catch (Exception e){
+            //Failed to create web app listener
+        }
         ComponentCache cache = null;
         if (shareModelComponents) {
             cache = new ComponentCache(cacheDir, classLoader);
