@@ -198,7 +198,9 @@ class ExperimentJob extends RecursiveAction {
         logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
         ProgressLogger progress = ProgressLogger.create(logger)
                                                 .setCount(nusers)
-                                                .setLabel("testing users")
+                                                .setLabel(String.format("testing users from %s on %s",
+                                                                            algorithm.getName(),
+                                                                            dataSet.getName()))
                                                 .start();
 
         List<EntityType> entityTypes = dataSet.getEntityTypes();
