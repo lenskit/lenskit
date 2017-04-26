@@ -30,6 +30,8 @@ import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.lenskit.data.dao.SortKey;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
@@ -152,6 +154,14 @@ class PackedEntityCollection extends EntityCollection implements Describable {
     @Override
     public int size() {
         return idStore.size();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("type", entityType)
+                .append("entities", size)
+                .build();
     }
 
     @Override

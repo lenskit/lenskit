@@ -20,9 +20,16 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.lenskit.data.entities.*;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.keys.LongSortedArraySet;
 
 import javax.annotation.Nonnull;
@@ -34,13 +41,17 @@ import java.util.List;
 /**
  * A bare entity collection that stores ID-only entities.
  */
-class BareEntityCollection extends EntityCollection {
+class BareEntityCollection extends EntityCollection implements Describable {
     private final EntityType entityType;
     private final LongSortedArraySet idSet;
+    private final HashCode contentHash;
 
     BareEntityCollection(EntityType et, LongSortedArraySet ids) {
         entityType = et;
         idSet = ids;
+        Hasher hash = Hashing.md5().newHasher();
+        idSet.forEach(hash::putLong);
+        contentHash = hash.hash();
     }
 
     @Override
@@ -100,6 +111,21 @@ class BareEntityCollection extends EntityCollection {
     @Override
     public int size() {
         return idSet.size();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("type", entityType)
+                .append("size", idSet.size())
+                .build();
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("type", entityType)
+              .putField("size", idSet.size())
+              .putField("hash", contentHash.toString());
     }
 
     static class EntityIterator implements Iterator<Entity> {
