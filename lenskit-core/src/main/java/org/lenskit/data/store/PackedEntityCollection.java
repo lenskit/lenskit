@@ -20,7 +20,6 @@
  */
 package org.lenskit.data.store;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
@@ -213,17 +212,35 @@ class PackedEntityCollection extends EntityCollection implements Describable {
             return new AbstractCollection<Attribute<?>>() {
                 @Override
                 public Iterator<Attribute<?>> iterator() {
-                    return (Iterator) IntStream.range(0, attributes.size())
-                                               .mapToObj(i -> {
-                                                   Object val = attrStores[i].get(position);
-                                                   if (val == null) {
-                                                       return null;
-                                                   } else {
-                                                       return Attribute.create((TypedName) attributes.getAttribute(i), val);
-                                                   }
-                                               })
-                                               .filter(Predicates.notNull())
-                                               .iterator();
+                    return new Iterator<Attribute<?>>() {
+                        int i = 0;
+                        boolean advanced = false;
+
+                        @Override
+                        public boolean hasNext() {
+                            if (!advanced) {
+                                while (i < attrStores.length && attrStores[i].isNull(position)) {
+                                    i++;
+                                }
+                                advanced = true;
+                            }
+                            return i < attrStores.length;
+                        }
+
+                        @Override
+                        public Attribute<?> next() {
+                            if (hasNext()) {
+                                Object val = attrStores[i].get(position);
+                                assert val != null;
+                                TypedName t = attributes.getAttribute(i);
+                                i += 1;
+                                advanced = false;
+                                return Attribute.create(t, val);
+                            } else {
+                                throw new NoSuchElementException();
+                            }
+                        }
+                    };
                 }
 
                 @Override
