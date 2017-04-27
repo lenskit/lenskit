@@ -155,7 +155,7 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
         }
     }
 
-    static class WithTimestamp extends Rating {
+    public static class WithTimestamp extends Rating {
         private final long timestamp;
 
         WithTimestamp(long id, long user, long item, double val, long ts) {

@@ -23,11 +23,38 @@ package org.lenskit.util.reflect;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * Dynamic class loader for loading new classes.
  */
 public class DynamicClassLoader extends ClassLoader {
+    private static final Logger logger = LoggerFactory.getLogger(DynamicClassLoader.class);
+    private static final Path DEBUG_DIR;
+
+    static {
+        String prop = System.getProperty("lenskit.codegen.debugDir", null);
+        if (prop == null) {
+            DEBUG_DIR = null;
+        } else {
+            logger.info("emitting generated classes to {}", prop);
+            DEBUG_DIR = Paths.get(prop);
+            try {
+                Files.createDirectories(DEBUG_DIR);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+    }
+
     public DynamicClassLoader() {
         super(ClassLoaders.inferDefault());
     }
@@ -40,7 +67,24 @@ public class DynamicClassLoader extends ClassLoader {
         ClassWriter cw = new ClassWriter(0);
         def.accept(cw);
         byte[] bytes = cw.toByteArray();
+        if (DEBUG_DIR != null) {
+            logger.debug("writing class {}", def.name);
+            try {
+                Path fn = DEBUG_DIR.resolve(def.name + ".class");
+                Files.createDirectories(fn.getParent());
+                Files.write(fn, bytes);
+            } catch (IOException e) {
+                logger.error("error writing class file " + def.name, e);
+            }
+        }
         String name = def.name.replace('/', '.');
-        return defineClass(name, bytes, 0, bytes.length);
+        logger.debug("defining class {} (internal name {})", name, def.name);
+        try {
+            Class<?> cls = defineClass(name, bytes, 0, bytes.length);
+            logger.debug("defined class {}", cls);
+            return cls;
+        } catch (ClassFormatError e) {
+            throw new IllegalArgumentException("Format error in class " + name, e);
+        }
     }
 }

@@ -23,6 +23,7 @@ package org.lenskit.util.reflect;
 import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Type.getInternalName;
 
@@ -59,6 +60,30 @@ public class CGUtils {
         } else {
             method.visitTypeInsn(CHECKCAST, getInternalName(type));
             return 0;
+        }
+    }
+
+    /**
+     * Emit instructions that adapt the current stack contents to `Object`.
+     * @param method The method.
+     * @param type The type of the current stack contents, possibly primitive.
+     */
+    public static void adaptFromType(MethodVisitor method, Class<?> type) {
+        if (type.isPrimitive()) {
+            if (type.equals(long.class)) {
+                method.visitMethodInsn(INVOKESTATIC, "java/lang/Long",
+                                       "valueOf", "(J)Ljava/lang/Long;", false);
+            } else if (type.equals(int.class)) {
+                method.visitMethodInsn(INVOKESTATIC, "java/lang/Integer",
+                                       "valueOf", "(I)Ljava/lang/Integer;", false);
+            } else if (type.equals(double.class)) {
+                method.visitMethodInsn(INVOKESTATIC, "java/lang/Double",
+                                       "valueOf", "(D)Ljava/lang/Double;", false);
+            } else {
+                throw new IllegalArgumentException("type " + type + " not yet supported");
+            }
+        } else {
+            /* object type is object */
         }
     }
 }
