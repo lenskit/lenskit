@@ -24,7 +24,8 @@ import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.lenskit.util.reflect.CGUtils;
 import org.lenskit.util.reflect.DynamicClassLoader;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -186,8 +187,11 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         ctor.exceptions = Collections.emptyList();
         ctor.maxLocals = 2;
         ctor.maxStack = 2;
+        // load instance ('this')
         ctor.visitVarInsn(ALOAD, 0);
+        // load the attribute
         ctor.visitVarInsn(ALOAD, 1);
+        // invoke superclass constructor with attribute
         ctor.visitMethodInsn(INVOKESPECIAL, getInternalName(AttrMethod.class),
                              "<init>", ctor.desc, false);
         ctor.visitInsn(RETURN);
@@ -204,10 +208,15 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         setter.exceptions = Collections.emptyList();
         setter.maxLocals = 3;
         setter.maxStack = 2;
+        // load target object
         setter.visitVarInsn(ALOAD, 1);
+        // cast target object
         setter.visitTypeInsn(CHECKCAST, getInternalName(type));
+        // load attribute value
         setter.visitVarInsn(ALOAD, 2);
+        // convert attribute value if necessary
         setter.maxStack += CGUtils.adaptToType(setter, smethod.getParameterTypes()[0]);
+        // call real setter
         setter.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
                                smethod.getName(), getMethodDescriptor(smethod),
                                false);
@@ -225,15 +234,20 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         clearer.maxLocals = 2;
         clearer.maxStack = 1;
         if (cmethod != null) {
+            // load target object
             clearer.visitVarInsn(ALOAD, 1);
+            // cast to target object type
             clearer.visitTypeInsn(CHECKCAST, getInternalName(type));
+            // call clearer method
             clearer.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
                                     cmethod.getName(), getMethodDescriptor(cmethod),
                                     false);
             clearer.visitInsn(RETURN);
         } else if (!smethod.getParameterTypes()[0].isPrimitive()) {
+            // load target object & cast to type
             clearer.visitVarInsn(ALOAD, 1);
             clearer.visitTypeInsn(CHECKCAST, getInternalName(type));
+            // load null and call setter
             clearer.visitInsn(ACONST_NULL);
             clearer.maxStack = 2;
             clearer.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
@@ -241,6 +255,7 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
                                     false);
             clearer.visitInsn(RETURN);
         } else {
+            // no clearer and primitive method, throw unsupported operation exception
             clearer.maxStack = 2;
             clearer.visitTypeInsn(NEW, "java/lang/UnsupportedOperationException");
             clearer.visitInsn(DUP);

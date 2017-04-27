@@ -267,7 +267,9 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         cn.exceptions = Collections.emptyList();
         cn.maxStack = 1;
         cn.maxLocals = 1;
+        // load the instance
         cn.visitVarInsn(ALOAD, 0);
+        // call superclass constructor
         cn.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(BeanAttributeGetter.class),
                            "<init>", "()V", false);
         cn.visitInsn(RETURN);
@@ -285,10 +287,14 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         gn.maxLocals = 2;
         gn.maxStack = 1 + rt.getSize();
         gn.visitCode();
+        // load the target object from parameter
         gn.visitVarInsn(ALOAD, 1);
+        // cast to target object type
         gn.visitTypeInsn(CHECKCAST, Type.getInternalName(type));
+        // call target object method
         gn.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(type),
                            getter.getName(), Type.getMethodDescriptor(getter), false);
+        // convert from primitive to object if necessary
         CGUtils.adaptFromType(gn, getter.getReturnType());
         gn.visitInsn(ARETURN);
         return gn;
