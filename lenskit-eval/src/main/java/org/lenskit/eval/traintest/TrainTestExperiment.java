@@ -36,8 +36,8 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
-import org.lenskit.util.io.CompressionMode;
-import org.lenskit.util.io.LKFileUtils;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.monitor.TrackedJob;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
@@ -527,7 +527,7 @@ public class TrainTestExperiment {
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
                 TrackedJob j = tracker.makeChild(ExperimentJob.JOB_TYPE, "evaluate " + ai + " on " + ds);
-                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j, limit);
+                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j);
                 allJobs.add(job);
                 group.addTask(job);
             }
