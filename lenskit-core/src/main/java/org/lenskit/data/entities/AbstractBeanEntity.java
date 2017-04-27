@@ -24,7 +24,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
-import org.apache.commons.lang3.tuple.Pair;
 import org.lenskit.util.reflect.CGUtils;
 import org.lenskit.util.reflect.DynamicClassLoader;
 import org.objectweb.asm.Type;
@@ -47,32 +46,31 @@ import static org.objectweb.asm.Opcodes.*;
  * Abstract entity implementation that uses bean methods.
  */
 public abstract class AbstractBeanEntity extends AbstractEntity {
-    private static final ConcurrentMap<Class<? extends AbstractBeanEntity>, Pair<AttributeSet,ImmutableList<Function<Object,Object>>>> cache =
+    private static final ConcurrentMap<Class<? extends AbstractBeanEntity>, BeanEntityLayout> cache =
             new ConcurrentHashMap<>();
 
-    protected final AttributeSet attributes;
-    protected final ImmutableList<Function<Object,Object>> methods;
+    private final BeanEntityLayout layout;
 
     /**
      * Construct a bean entity.
+     *
+     * @param bel The layout (from {@link #makeLayout(Class)}).
+     * @param typ The entity type
+     * @param id The entity ID.
      */
-    protected AbstractBeanEntity(EntityType typ, long id) {
+    protected AbstractBeanEntity(BeanEntityLayout bel, EntityType typ, long id) {
         super(typ, id);
-        Pair<AttributeSet, ImmutableList<Function<Object, Object>>> res = lookupAttrs(getClass());
-        attributes = res.getLeft();
-        methods = res.getRight();
+        layout = bel;
     }
-
-
 
     @Override
     public Set<TypedName<?>> getTypedAttributeNames() {
-        return attributes;
+        return layout.attributes;
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        return attributes.nameSet();
+        return layout.attributes.nameSet();
     }
 
     @Override
@@ -80,13 +78,13 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         return new AbstractCollection<Attribute<?>>() {
             @Override
             public Iterator<Attribute<?>> iterator() {
-                return (Iterator) IntStream.range(0, attributes.size())
+                return (Iterator) IntStream.range(0, layout.attributes.size())
                                            .mapToObj(i -> {
-                                               Object val = methods.get(i).apply(AbstractBeanEntity.this);
+                                               Object val = layout.getters.get(i).apply(AbstractBeanEntity.this);
                                                if (val == null) {
                                                    return null;
                                                } else {
-                                                   return Attribute.create((TypedName) attributes.getAttribute(i), val);
+                                                   return Attribute.create((TypedName) layout.attributes.getAttribute(i), val);
                                                }
                                            })
                                            .filter(Predicates.notNull())
@@ -95,27 +93,27 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
             @Override
             public int size() {
-                return attributes.size();
+                return layout.attributes.size();
             }
         };
     }
 
     @Override
     public boolean hasAttribute(String name) {
-        return attributes.nameSet().contains(name);
+        return layout.attributes.nameSet().contains(name);
     }
 
     @Override
     public boolean hasAttribute(TypedName<?> name) {
-        return attributes.contains(name);
+        return layout.attributes.contains(name);
     }
 
     @Nullable
     @Override
     public Object maybeGet(String attr) {
-        int idx = attributes.lookup(attr);
+        int idx = layout.attributes.lookup(attr);
         if (idx >= 0) {
-            Function<Object,Object> gf = methods.get(idx);
+            Function<Object,Object> gf = layout.getters.get(idx);
             return gf.apply(this);
         } else {
             return null;
@@ -125,9 +123,9 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     @Nullable
     @Override
     public <T> T maybeGet(TypedName<T> name) {
-        int idx = attributes.lookup(name, true);
+        int idx = layout.attributes.lookup(name, true);
         if (idx >= 0) {
-            Function<Object,Object> gf = methods.get(idx);
+            Function<Object,Object> gf = layout.getters.get(idx);
             return (T) gf.apply(this);
         } else {
             return null;
@@ -136,9 +134,9 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     @Override
     public long getLong(TypedName<Long> name) {
-        int idx = attributes.lookup(name);
+        int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = methods.get(idx);
+            Function<Object,Object> gf = layout.getters.get(idx);
             if (gf instanceof ToLongFunction) {
                 return ((ToLongFunction) gf).applyAsLong(this);
             } else {
@@ -151,9 +149,9 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     @Override
     public double getDouble(TypedName<Double> name) {
-        int idx = attributes.lookup(name);
+        int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = methods.get(idx);
+            Function<Object,Object> gf = layout.getters.get(idx);
             if (gf instanceof ToLongFunction) {
                 return ((ToDoubleFunction) gf).applyAsDouble(this);
             } else {
@@ -166,9 +164,9 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     @Override
     public int getInteger(TypedName<Integer> name) {
-        int idx = attributes.lookup(name);
+        int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = methods.get(idx);
+            Function<Object,Object> gf = layout.getters.get(idx);
             return (int) gf.apply(this);
         } else {
             throw new NoSuchAttributeException(name.toString());
@@ -177,17 +175,27 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     @Override
     public boolean getBoolean(TypedName<Boolean> name) {
-        int idx = attributes.lookup(name);
+        int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = methods.get(idx);
+            Function<Object,Object> gf = layout.getters.get(idx);
             return (boolean) gf.apply(this);
         } else {
             throw new NoSuchAttributeException(name.toString());
         }
     }
 
-    private static Pair<AttributeSet, ImmutableList<Function<Object,Object>>> lookupAttrs(Class<? extends AbstractBeanEntity> type) {
-        Pair<AttributeSet, ImmutableList<Function<Object,Object>>> res = cache.get(type);
+    protected static class BeanEntityLayout {
+        private final AttributeSet attributes;
+        private final ImmutableList<Function<Object,Object>> getters;
+
+        BeanEntityLayout(AttributeSet as, ImmutableList<Function<Object,Object>> gs) {
+            attributes = as;
+            getters = gs;
+        }
+    }
+
+    protected static BeanEntityLayout makeLayout(Class<? extends AbstractBeanEntity> type) {
+        BeanEntityLayout res = cache.get(type);
         if (res != null) {
             return res;
         }
@@ -210,7 +218,7 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
             mhlb.add(attrs.get(name));
         }
 
-        res = Pair.of(aset, mhlb.build());
+        res = new BeanEntityLayout(aset, mhlb.build());
         cache.put(type, res);
         return res;
     }
