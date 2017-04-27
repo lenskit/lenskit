@@ -22,6 +22,7 @@ package org.lenskit.data.entities;
 
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.lenskit.util.reflect.CGUtils;
 import org.lenskit.util.reflect.DynamicClassLoader;
 import org.objectweb.asm.tree.*;
 
@@ -156,73 +157,13 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
             cn.access = ACC_PUBLIC;
             cn.version = V1_8;
             cn.superName = getInternalName(AttrMethod.class);
-            MethodNode ctor = new MethodNode();
-            ctor.access = ACC_PUBLIC;
-            ctor.desc = getMethodDescriptor(VOID_TYPE, getType(TypedName.class));
-            ctor.name = "<init>";
-            ctor.exceptions = Collections.emptyList();
-            ctor.maxLocals = 2;
-            ctor.maxStack = 2;
-            InsnList ctc = ctor.instructions;
-            ctc.add(new VarInsnNode(ALOAD, 0));
-            ctc.add(new VarInsnNode(ALOAD, 1));
-            ctc.add(new MethodInsnNode(INVOKESPECIAL, getInternalName(AttrMethod.class),
-                                       "<init>", ctor.desc, false));
-            ctc.add(new InsnNode(RETURN));
+            MethodNode ctor = generateBeanConstructor();
             cn.methods.add(ctor);
 
-            MethodNode setter = new MethodNode();
-            setter.access = ACC_PUBLIC;
-            setter.desc = getMethodDescriptor(VOID_TYPE,
-                                              getType(AbstractBeanEntityBuilder.class),
-                                              getType(Object.class));
-            setter.name = "set";
-            setter.exceptions = Collections.emptyList();
-            setter.maxLocals = 3;
-            setter.maxStack = 2;
-            InsnList sis = setter.instructions;
-            sis.add(new VarInsnNode(ALOAD, 1));
-            sis.add(new TypeInsnNode(CHECKCAST, getInternalName(type)));
-            sis.add(new VarInsnNode(ALOAD, 2));
-            adaptType(setter, attr.getRawType(), smethod.getParameterTypes()[0]);
-            sis.add(new MethodInsnNode(INVOKEVIRTUAL, getInternalName(type),
-                                       smethod.getName(), getMethodDescriptor(smethod),
-                                       false));
-            sis.add(new InsnNode(RETURN));
+            MethodNode setter = generateSetter(type, smethod);
             cn.methods.add(setter);
 
-            MethodNode clearer = new MethodNode();
-            clearer.access = ACC_PUBLIC;
-            clearer.desc = getMethodDescriptor(VOID_TYPE,
-                                              getType(AbstractBeanEntityBuilder.class));
-            clearer.name = "clear";
-            clearer.exceptions = Collections.emptyList();
-            clearer.maxLocals = 2;
-            clearer.maxStack = 1;
-            InsnList cis = clearer.instructions;
-            if (cmethod != null) {
-                cis.add(new VarInsnNode(ALOAD, 1));
-                cis.add(new TypeInsnNode(CHECKCAST, getInternalName(type)));
-                cis.add(new MethodInsnNode(INVOKEVIRTUAL, getInternalName(type),
-                                           cmethod.getName(), getMethodDescriptor(cmethod),
-                                           false));
-                cis.add(new InsnNode(RETURN));
-            } else if (!smethod.getParameterTypes()[0].isPrimitive()) {
-                cis.add(new VarInsnNode(ALOAD, 1));
-                cis.add(new TypeInsnNode(CHECKCAST, getInternalName(type)));
-                cis.add(new InsnNode(ACONST_NULL));
-                clearer.maxStack = 2;
-                cis.add(new MethodInsnNode(INVOKEVIRTUAL, getInternalName(type),
-                                           smethod.getName(), getMethodDescriptor(smethod),
-                                           false));
-                cis.add(new InsnNode(RETURN));
-            } else {
-                clearer.maxStack = 2;
-                cis.add(new TypeInsnNode(NEW, "java/lang/UnsupportedOperationException"));
-                cis.add(new InsnNode(DUP));
-                cis.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/UnsupportedOperationException", "<init>", "()V", false));
-                cis.add(new InsnNode(ATHROW));
-            }
+            MethodNode clearer = generateClearer(type, smethod, cmethod);
             cn.methods.add(clearer);
 
             Class<? extends AttrMethod> cls = dlc.defineClass(cn).asSubclass(AttrMethod.class);
@@ -237,28 +178,76 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         return ael;
     }
 
-    private static void adaptType(MethodNode method, Class<?> rawType, Class<?> paramType) {
-        if (paramType.isPrimitive()) {
-            if (paramType.equals(long.class)) {
-                method.instructions.add(new TypeInsnNode(CHECKCAST, getInternalName(Long.class)));
-                method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, getInternalName(Long.class),
-                                          "longValue", "()J", false));
-                method.maxStack += 1;
-            } else if (paramType.equals(int.class)) {
-                method.instructions.add(new TypeInsnNode(CHECKCAST, getInternalName(Integer.class)));
-                method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, getInternalName(Integer.class),
-                                          "intValue", "()I", false));
-            } else if (paramType.equals(double.class)) {
-                method.instructions.add(new TypeInsnNode(CHECKCAST, getInternalName(Double.class)));
-                method.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, getInternalName(Double.class),
-                                          "doubleValue", "()D", false));
-                method.maxStack += 1;
-            } else {
-                throw new IllegalArgumentException("type " + paramType + " not yet supported");
-            }
+    private static MethodNode generateBeanConstructor() {
+        MethodNode ctor = new MethodNode();
+        ctor.access = ACC_PUBLIC;
+        ctor.desc = getMethodDescriptor(VOID_TYPE, getType(TypedName.class));
+        ctor.name = "<init>";
+        ctor.exceptions = Collections.emptyList();
+        ctor.maxLocals = 2;
+        ctor.maxStack = 2;
+        ctor.visitVarInsn(ALOAD, 0);
+        ctor.visitVarInsn(ALOAD, 1);
+        ctor.visitMethodInsn(INVOKESPECIAL, getInternalName(AttrMethod.class),
+                             "<init>", ctor.desc, false);
+        ctor.visitInsn(RETURN);
+        return ctor;
+    }
+
+    private static MethodNode generateSetter(Class<? extends AbstractBeanEntityBuilder> type, Method smethod) {
+        MethodNode setter = new MethodNode();
+        setter.access = ACC_PUBLIC;
+        setter.desc = getMethodDescriptor(VOID_TYPE,
+                                          getType(AbstractBeanEntityBuilder.class),
+                                          getType(Object.class));
+        setter.name = "set";
+        setter.exceptions = Collections.emptyList();
+        setter.maxLocals = 3;
+        setter.maxStack = 2;
+        setter.visitVarInsn(ALOAD, 1);
+        setter.visitTypeInsn(CHECKCAST, getInternalName(type));
+        setter.visitVarInsn(ALOAD, 2);
+        setter.maxStack += CGUtils.adaptToType(setter, smethod.getParameterTypes()[0]);
+        setter.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                               smethod.getName(), getMethodDescriptor(smethod),
+                               false);
+        setter.visitInsn(RETURN);
+        return setter;
+    }
+
+    private static MethodNode generateClearer(Class<? extends AbstractBeanEntityBuilder> type, Method smethod, Method cmethod) {
+        MethodNode clearer = new MethodNode();
+        clearer.access = ACC_PUBLIC;
+        clearer.desc = getMethodDescriptor(VOID_TYPE,
+                                          getType(AbstractBeanEntityBuilder.class));
+        clearer.name = "clear";
+        clearer.exceptions = Collections.emptyList();
+        clearer.maxLocals = 2;
+        clearer.maxStack = 1;
+        if (cmethod != null) {
+            clearer.visitVarInsn(ALOAD, 1);
+            clearer.visitTypeInsn(CHECKCAST, getInternalName(type));
+            clearer.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                                    cmethod.getName(), getMethodDescriptor(cmethod),
+                                    false);
+            clearer.visitInsn(RETURN);
+        } else if (!smethod.getParameterTypes()[0].isPrimitive()) {
+            clearer.visitVarInsn(ALOAD, 1);
+            clearer.visitTypeInsn(CHECKCAST, getInternalName(type));
+            clearer.visitInsn(ACONST_NULL);
+            clearer.maxStack = 2;
+            clearer.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                                    smethod.getName(), getMethodDescriptor(smethod),
+                                    false);
+            clearer.visitInsn(RETURN);
         } else {
-            method.instructions.add(new TypeInsnNode(CHECKCAST, getInternalName(paramType)));
+            clearer.maxStack = 2;
+            clearer.visitTypeInsn(NEW, "java/lang/UnsupportedOperationException");
+            clearer.visitInsn(DUP);
+            clearer.visitMethodInsn(INVOKESPECIAL, "java/lang/UnsupportedOperationException", "<init>", "()V", false);
+            clearer.visitInsn(ATHROW);
         }
+        return clearer;
     }
 
     /**
