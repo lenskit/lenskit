@@ -22,7 +22,6 @@ package org.lenskit.data.entities;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import org.lenskit.util.reflect.CGUtils;
 import org.lenskit.util.reflect.DynamicClassLoader;
@@ -80,7 +79,7 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
             public Iterator<Attribute<?>> iterator() {
                 return (Iterator) IntStream.range(0, layout.attributes.size())
                                            .mapToObj(i -> {
-                                               Object val = layout.getters.get(i).apply(AbstractBeanEntity.this);
+                                               Object val = layout.getters.get(i).get(AbstractBeanEntity.this);
                                                if (val == null) {
                                                    return null;
                                                } else {
@@ -113,8 +112,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public Object maybeGet(String attr) {
         int idx = layout.attributes.lookup(attr);
         if (idx >= 0) {
-            Function<Object,Object> gf = layout.getters.get(idx);
-            return gf.apply(this);
+            BeanAttributeGetter gf = layout.getters.get(idx);
+            return gf.get(this);
         } else {
             return null;
         }
@@ -125,8 +124,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public <T> T maybeGet(TypedName<T> name) {
         int idx = layout.attributes.lookup(name, true);
         if (idx >= 0) {
-            Function<Object,Object> gf = layout.getters.get(idx);
-            return (T) gf.apply(this);
+            BeanAttributeGetter gf = layout.getters.get(idx);
+            return (T) gf.get(this);
         } else {
             return null;
         }
@@ -136,12 +135,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public long getLong(TypedName<Long> name) {
         int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = layout.getters.get(idx);
-            if (gf instanceof ToLongFunction) {
-                return ((ToLongFunction) gf).applyAsLong(this);
-            } else {
-                return (long) gf.apply(this);
-            }
+            BeanAttributeGetter gf = layout.getters.get(idx);
+            return gf.getLong(this);
         } else {
             throw new NoSuchAttributeException(name.toString());
         }
@@ -151,12 +146,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public double getDouble(TypedName<Double> name) {
         int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = layout.getters.get(idx);
-            if (gf instanceof ToLongFunction) {
-                return ((ToDoubleFunction) gf).applyAsDouble(this);
-            } else {
-                return (double) gf.apply(this);
-            }
+            BeanAttributeGetter gf = layout.getters.get(idx);
+            return gf.getDouble(this);
         } else {
             throw new NoSuchAttributeException(name.toString());
         }
@@ -166,8 +157,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public int getInteger(TypedName<Integer> name) {
         int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = layout.getters.get(idx);
-            return (int) gf.apply(this);
+            BeanAttributeGetter gf = layout.getters.get(idx);
+            return gf.getInt(this);
         } else {
             throw new NoSuchAttributeException(name.toString());
         }
@@ -177,8 +168,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
     public boolean getBoolean(TypedName<Boolean> name) {
         int idx = layout.attributes.lookup(name);
         if (idx >= 0) {
-            Function<Object,Object> gf = layout.getters.get(idx);
-            return (boolean) gf.apply(this);
+            BeanAttributeGetter gf = layout.getters.get(idx);
+            return gf.getBoolean(this);
         } else {
             throw new NoSuchAttributeException(name.toString());
         }
@@ -186,11 +177,34 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     protected static class BeanEntityLayout {
         private final AttributeSet attributes;
-        private final ImmutableList<Function<Object,Object>> getters;
+        private final ImmutableList<BeanAttributeGetter> getters;
 
-        BeanEntityLayout(AttributeSet as, ImmutableList<Function<Object,Object>> gs) {
+        BeanEntityLayout(AttributeSet as, ImmutableList<BeanAttributeGetter> gs) {
             attributes = as;
             getters = gs;
+        }
+    }
+
+    /**
+     * Internal utility class - do not use.
+     */
+    public static abstract class BeanAttributeGetter {
+        public abstract Object get(AbstractBeanEntity bean);
+
+        public long getLong(AbstractBeanEntity bean) {
+            return (long) get(bean);
+        }
+
+        public double getDouble(AbstractBeanEntity bean) {
+            return (double) get(bean);
+        }
+
+        public int getInt(AbstractBeanEntity bean) {
+            return (int) get(bean);
+        }
+
+        public boolean getBoolean(AbstractBeanEntity bean) {
+            return (boolean) get(bean);
         }
     }
 
@@ -201,19 +215,19 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         }
 
         DynamicClassLoader dlc = new DynamicClassLoader(type.getClassLoader());
-        Map<String,Function<Object,Object>> attrs = new HashMap<>();
+        Map<String, BeanAttributeGetter> attrs = new HashMap<>();
         List<TypedName<?>> names = new ArrayList<>();
         for (Method m: type.getMethods()) {
             EntityAttribute annot = m.getAnnotation(EntityAttribute.class);
             if (annot != null) {
-                Function<Object, Object> gfunc = generateGetter(dlc, type, m);
+                BeanAttributeGetter gfunc = generateGetter(dlc, type, m);
                 attrs.put(annot.value(), gfunc);
                 names.add(TypedName.create(annot.value(), TypeToken.of(m.getGenericReturnType())));
             }
         }
 
         AttributeSet aset = AttributeSet.create(names);
-        ImmutableList.Builder<Function<Object,Object>> mhlb = ImmutableList.builder();
+        ImmutableList.Builder<BeanAttributeGetter> mhlb = ImmutableList.builder();
         for (String name: aset.nameSet()) {
             mhlb.add(attrs.get(name));
         }
@@ -223,24 +237,21 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         return res;
     }
 
-    private static Function<Object,Object> generateGetter(DynamicClassLoader dlc, Class<? extends AbstractBeanEntity> type, Method getter) {
+    private static BeanAttributeGetter generateGetter(DynamicClassLoader dlc, Class<? extends AbstractBeanEntity> type, Method getter) {
         ClassNode node = new ClassNode();
         node.name = String.format("%s$$AttrGet$%s", Type.getInternalName(type), getter.getName());
         node.access = ACC_PUBLIC;
         node.version = V1_8;
-        node.superName = Type.getInternalName(Object.class);
-        node.interfaces = Lists.newArrayList(Type.getInternalName(Function.class));
+        node.superName = Type.getInternalName(BeanAttributeGetter.class);
         node.methods.add(generateGetterConstructor());
         node.methods.add(generateGetterMethod(type, getter));
         if (Type.getReturnType(getter).equals(Type.LONG_TYPE)) {
             node.methods.add(generateLongGetterMethod(type, getter));
-            node.interfaces.add(Type.getInternalName(ToLongFunction.class));
         } else if (Type.getReturnType(getter).equals(Type.DOUBLE_TYPE)) {
             node.methods.add(generateDoubleGetterMethod(type, getter));
-            node.interfaces.add(Type.getInternalName(ToDoubleFunction.class));
         }
 
-        Class<? extends Function> cls = dlc.defineClass(node).asSubclass(Function.class);
+        Class<? extends BeanAttributeGetter> cls = dlc.defineClass(node).asSubclass(BeanAttributeGetter.class);
         try {
             return cls.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
@@ -257,15 +268,17 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
         cn.maxStack = 1;
         cn.maxLocals = 1;
         cn.visitVarInsn(ALOAD, 0);
-        cn.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        cn.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(BeanAttributeGetter.class),
+                           "<init>", "()V", false);
         cn.visitInsn(RETURN);
         return cn;
     }
 
     private static MethodNode generateGetterMethod(Class<? extends AbstractBeanEntity> type, Method getter) {
         MethodNode gn = new MethodNode();
-        gn.name = "apply";
-        gn.desc = "(Ljava/lang/Object;)Ljava/lang/Object;";
+        gn.name = "get";
+        gn.desc = Type.getMethodDescriptor(Type.getType(Object.class),
+                                           Type.getType(AbstractBeanEntity.class));
         gn.access = ACC_PUBLIC;
         gn.exceptions = Collections.emptyList();
         Type rt = Type.getReturnType(getter);
@@ -283,8 +296,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     private static MethodNode generateLongGetterMethod(Class<? extends AbstractBeanEntity> type, Method getter) {
         MethodNode gn = new MethodNode();
-        gn.name = "applyAsLong";
-        gn.desc = "(Ljava/lang/Object;)J";
+        gn.name = "getLong";
+        gn.desc = Type.getMethodDescriptor(Type.LONG_TYPE, Type.getType(AbstractBeanEntity.class));
         gn.access = ACC_PUBLIC;
         gn.exceptions = Collections.emptyList();
         gn.maxLocals = 2;
@@ -300,8 +313,8 @@ public abstract class AbstractBeanEntity extends AbstractEntity {
 
     private static MethodNode generateDoubleGetterMethod(Class<? extends AbstractBeanEntity> type, Method getter) {
         MethodNode gn = new MethodNode();
-        gn.name = "applyAsDouble";
-        gn.desc = "(Ljava/lang/Object;)D";
+        gn.name = "getDouble";
+        gn.desc = Type.getMethodDescriptor(Type.DOUBLE_TYPE, Type.getType(AbstractBeanEntity.class));
         gn.access = ACC_PUBLIC;
         gn.exceptions = Collections.emptyList();
         gn.maxLocals = 2;
