@@ -25,6 +25,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 import javax.annotation.Nonnull;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -36,12 +39,14 @@ import java.util.List;
  */
 class IteratorObjectStream<T> extends AbstractObjectStream<T> {
     private final Collection<? extends T> collection;
+    private final Closeable toClose;
     private Iterator<? extends T> iterator;
     private int ndone = 0;
 
     IteratorObjectStream(@Nonnull Collection<? extends T> col) {
         collection = col;
         iterator = col.iterator();
+        toClose = null;
     }
 
     /**
@@ -52,6 +57,19 @@ class IteratorObjectStream<T> extends AbstractObjectStream<T> {
         Preconditions.checkNotNull(iter, "stream iterator");
         iterator = iter;
         collection = null;
+        toClose = null;
+    }
+
+    /**
+     * Construct a new iterator stream.
+     * @param iter The iterator.
+     * @param root An underlying resource to close.
+     */
+    IteratorObjectStream(@Nonnull Iterator<? extends T> iter, Closeable root) {
+        Preconditions.checkNotNull(iter, "stream iterator");
+        iterator = iter;
+        collection = null;
+        toClose = root;
     }
 
     List<T> getList() {
@@ -85,7 +103,11 @@ class IteratorObjectStream<T> extends AbstractObjectStream<T> {
 
     @Override
     public void close() {
-        super.close();
-        iterator = null;
+        try (Closeable ignored = toClose) {
+            super.close();
+            iterator = null;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }

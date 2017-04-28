@@ -99,6 +99,18 @@ public class TextEntitySource implements EntitySource, Describable {
         return ImmutableSet.of(format.getEntityType());
     }
 
+    @Nullable
+    @Override
+    public Layout getLayout() {
+        EntityType type = format.getEntityType();
+        AttributeSet attrs = format.getAttributes();
+        if (attrs != null) {
+            return new Layout(type, attrs, format.getEntityBuilder());
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Set the source file for this reader.
      * @param file The source file.

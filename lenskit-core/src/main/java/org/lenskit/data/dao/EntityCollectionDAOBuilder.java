@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.store.EntityCollection;
+import org.lenskit.data.store.EntityCollectionBuilder;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.util.*;
@@ -35,10 +37,43 @@ import java.util.*;
 @NotThreadSafe
 public class EntityCollectionDAOBuilder {
     private List<TypedName<Long>> defaultIndexes = new ArrayList<>();
-    private Map<EntityType, EntityCollectionBuilder> entitySets = new HashMap<>();
+    private Map<EntityType, EntityCollectionBuilder> entitySets = new IdentityHashMap<>();
     // remember the last builder used as a fast path
     private EntityCollectionBuilder lastBuilder = null;
     private EntityType last = null;
+
+    /**
+     * Set a layout for an entity type.  A layout limits the possible attributes of entities of that type, but can
+     * result in more efficient storage.
+     * @param et The entity type.
+     * @param attributes The set of known attributes.
+     * @return The builder (for chaining).
+     * @throws IllegalStateException if the specified entity type already has a layout or entities.
+     */
+    public EntityCollectionDAOBuilder addEntityLayout(EntityType et, AttributeSet attributes) {
+        return addEntityLayout(et, attributes, null);
+    }
+
+    /**
+     * Set a layout for an entity type.  A layout limits the possible attributes of entities of that type, but can
+     * result in more efficient storage.
+     * @param et The entity type.
+     * @param attributes The set of known attributes.
+     * @param ebc The entity builder class for reconstituting entities.
+     * @return The builder (for chaining).
+     * @throws IllegalStateException if the specified entity type already has a layout or entities.
+     */
+    public EntityCollectionDAOBuilder addEntityLayout(EntityType et, AttributeSet attributes, Class<? extends EntityBuilder> ebc) {
+        if (entitySets.containsKey(et)) {
+            throw new IllegalStateException("layout or entities already added for " + et);
+        }
+        EntityCollectionBuilder ecb = EntityCollection.newBuilder(et, attributes, ebc);
+        for (TypedName<?> name: defaultIndexes) {
+            ecb.addIndex(name);
+        }
+        entitySets.put(et, ecb);
+        return this;
+    }
 
     /**
      * Index entities by an attribute.
@@ -91,7 +126,7 @@ public class EntityCollectionDAOBuilder {
             lastBuilder = entitySets.get(type);
             last = type;
             if (lastBuilder == null) {
-                lastBuilder = new EntityCollectionBuilder(type);
+                lastBuilder = EntityCollection.newBuilder(type);
                 for (TypedName<?> name: defaultIndexes) {
                     lastBuilder.addIndex(name);
                 }
@@ -127,7 +162,7 @@ public class EntityCollectionDAOBuilder {
     /**
      * Derive bare entities from the values in another type of entity.  This method only consults the entities added
      * so far, so it should be called *after* all other calls to {@link #addEntity(Entity)} and friends.  If an entity
-     * has already been added with the same type and ID as one of the derived entites, it is kept instead of the derived
+     * has already been added with the same type and ID as one of the derived entities, it is kept instead of the derived
      * entity.
      *
      * @param derived The derived entity type.
@@ -142,7 +177,11 @@ public class EntityCollectionDAOBuilder {
             return this;
         }
 
-        EntityCollectionBuilder ecb = findBuilder(derived);
+        EntityCollectionBuilder ecb = entitySets.get(derived);
+        if (ecb == null) {
+            ecb = EntityCollection.newBareBuilder(derived);
+            entitySets.put(derived, ecb);
+        }
         for (Entity e: src.entities()) {
             if (e.hasAttribute(attr)) {
                 long key = e.getLong(attr);

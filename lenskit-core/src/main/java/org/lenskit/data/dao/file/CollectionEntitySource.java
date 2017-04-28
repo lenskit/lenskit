@@ -29,6 +29,7 @@ import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -71,6 +72,12 @@ class CollectionEntitySource implements EntitySource, Serializable {
     @Override
     public Set<EntityType> getTypes() {
         return types;
+    }
+
+    @Nullable
+    @Override
+    public Layout getLayout() {
+        return null;
     }
 
     @Override

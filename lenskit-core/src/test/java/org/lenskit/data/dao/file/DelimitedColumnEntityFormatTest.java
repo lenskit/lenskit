@@ -21,13 +21,15 @@
 package org.lenskit.data.dao.file;
 
 import org.junit.Test;
-import org.lenskit.data.entities.*;
+import org.lenskit.data.entities.BasicEntityBuilder;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
 
 import java.util.Collections;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 public class DelimitedColumnEntityFormatTest {
     @Test
@@ -50,6 +52,10 @@ public class DelimitedColumnEntityFormatTest {
         format.setEntityType(pcType);
         format.addColumn(CommonAttributes.ITEM_ID);
         format.addColumn(CommonAttributes.COUNT);
+        assertThat(format.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.COUNT));
 
         LineEntityParser parser = format.makeParser(Collections.<String>emptyList());
         assertThat(parser, notNullValue());
@@ -69,6 +75,38 @@ public class DelimitedColumnEntityFormatTest {
     }
 
     @Test
+    public void testParseLineWithBaseId() {
+        DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
+        format.setDelimiter(",");
+        format.setBaseId(42);
+
+        EntityType pcType = EntityType.forName("pop_count");
+        format.setEntityType(pcType);
+        format.addColumn(CommonAttributes.ITEM_ID);
+        format.addColumn(CommonAttributes.COUNT);
+        assertThat(format.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.COUNT));
+
+        LineEntityParser parser = format.makeParser(Collections.<String>emptyList());
+        assertThat(parser, notNullValue());
+
+        Entity pc = parser.parse("42,10");
+        assertThat(pc, notNullValue());
+        assertThat(pc.getId(), equalTo(43L));
+        assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(42L));
+        assertThat(pc.get(CommonAttributes.COUNT), equalTo(10));
+
+        // make sure the ID (row count) advances
+        pc = parser.parse("78,2");
+        assertThat(pc, notNullValue());
+        assertThat(pc.getId(), equalTo(44L));
+        assertThat(pc.get(CommonAttributes.ITEM_ID), equalTo(78L));
+        assertThat(pc.get(CommonAttributes.COUNT), equalTo(2));
+    }
+
+    @Test
     public void testHeaderParseLine() {
         DelimitedColumnEntityFormat format = new DelimitedColumnEntityFormat();
         format.setDelimiter(",");
@@ -81,6 +119,10 @@ public class DelimitedColumnEntityFormatTest {
 
         format.addColumn("song", CommonAttributes.ITEM_ID);
         format.addColumn("plays", CommonAttributes.COUNT);
+        assertThat(format.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.COUNT));
 
         LineEntityParser parser = format.makeParser(Collections.singletonList("song,plays"));
         assertThat(parser, notNullValue());
@@ -110,6 +152,11 @@ public class DelimitedColumnEntityFormatTest {
         format.addColumn(CommonAttributes.ENTITY_ID);
         format.addColumn(CommonAttributes.ITEM_ID);
         format.addColumn(CommonAttributes.COUNT);
+
+        assertThat(format.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.COUNT));
 
         LineEntityParser parser = format.makeParser(Collections.<String>emptyList());
         assertThat(parser, notNullValue());

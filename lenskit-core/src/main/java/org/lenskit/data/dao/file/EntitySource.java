@@ -20,11 +20,18 @@
  */
 package org.lenskit.data.dao.file;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.lenskit.data.entities.AttributeSet;
 import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityBuilder;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +55,15 @@ public interface EntitySource {
     Set<EntityType> getTypes();
 
     /**
+     * Get this entity source's layout, if one is available.  A source has a layout if it produces a single entity
+     * type with a known set of attributes.
+     *
+     * @return The layout, or `null` if this source does not know its layout.
+     */
+    @Nullable
+    Layout getLayout();
+
+    /**
      * Get the data from this entity source.
      * @return The data from the entity source.
      */
@@ -59,4 +75,69 @@ public interface EntitySource {
      */
     @Nonnull
     Map<String,Object> getMetadata();
+
+    /**
+     * The layout of an entity source.
+     */
+    class Layout {
+        private final EntityType entityType;
+        private final AttributeSet attributes;
+        private final Class<? extends EntityBuilder> entityBuilder;
+
+        /**
+         * Construct an entity source layout.
+         * @param et The entity type.
+         * @param attrs The attributes.
+         * @param eb The entity builder class.
+         */
+        public Layout(EntityType et, AttributeSet attrs, Class<? extends EntityBuilder> eb) {
+            entityType = et;
+            attributes = attrs;
+            entityBuilder = eb;
+        }
+
+        public EntityType getEntityType() {
+            return entityType;
+        }
+
+        public AttributeSet getAttributes() {
+            return attributes;
+        }
+
+        public Class<? extends EntityBuilder> getEntityBuilder() {
+            return entityBuilder;
+        }
+
+        @Override
+        public String toString() {
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("type", entityType)
+                    .append("attributes", attributes)
+                    .build();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Layout layout = (Layout) o;
+
+            return new EqualsBuilder()
+                    .append(entityType, layout.entityType)
+                    .append(attributes, layout.attributes)
+                    .append(entityBuilder, layout.entityBuilder)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37)
+                    .append(entityType)
+                    .append(attributes)
+                    .append(entityBuilder)
+                    .toHashCode();
+        }
+    }
 }

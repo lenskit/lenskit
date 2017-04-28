@@ -82,6 +82,7 @@ public class JSONEntityFormat implements EntityFormat {
      * Get the entity builder class.
      * @return The entity builder class.
      */
+    @Override
     public Class<? extends EntityBuilder> getEntityBuilder() {
         return entityBuilder;
     }
@@ -101,8 +102,21 @@ public class JSONEntityFormat implements EntityFormat {
      * Get the attributes expected.
      * @return The expected attributes.
      */
-    public Map<String,TypedName<?>> getAttributes() {
+    public Map<String,TypedName<?>> getDefinedAttributes() {
         return Collections.unmodifiableMap(attributes);
+    }
+
+    @Override
+    public AttributeSet getAttributes() {
+        if (attributes.isEmpty()) {
+            return null;
+        }
+
+        List<TypedName<?>> attrs = new ArrayList<>(attributes.values());
+        if (!attrs.contains(CommonAttributes.ENTITY_ID)) {
+            attrs.add(0, CommonAttributes.ENTITY_ID);
+        }
+        return AttributeSet.create(attrs);
     }
 
     /**

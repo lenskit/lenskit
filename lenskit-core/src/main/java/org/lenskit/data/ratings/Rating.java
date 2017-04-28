@@ -23,6 +23,7 @@ package org.lenskit.data.ratings;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
 
+import javax.accessibility.AccessibleTextSequence;
 import java.io.Serializable;
 
 /**
@@ -39,13 +40,28 @@ import java.io.Serializable;
 public class Rating extends AbstractBeanEntity implements Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
+    public static final EntityType ENTITY_TYPE = CommonTypes.RATING;
+    public static final AttributeSet ATTRIBUTES = AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                      CommonAttributes.USER_ID,
+                                                                      CommonAttributes.ITEM_ID,
+                                                                      CommonAttributes.RATING,
+                                                                      CommonAttributes.TIMESTAMP);
+    private static final BeanEntityLayout LAYOUT = makeLayout(Rating.class);
+    private static final BeanEntityLayout TIMESTAMP_LAYOUT = makeLayout(WithTimestamp.class);
 
     private final long user;
     private final long item;
     private final double value;
 
     Rating(long eid, long uid, long iid, double v) {
-        super(CommonTypes.RATING, eid);
+        super(LAYOUT, CommonTypes.RATING, eid);
+        user = uid;
+        item = iid;
+        value = v;
+    }
+
+    private Rating(BeanEntityLayout layout, long eid, long uid, long iid, double v) {
+        super(layout, CommonTypes.RATING, eid);
         user = uid;
         item = iid;
         value = v;
@@ -148,11 +164,11 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
         }
     }
 
-    static class WithTimestamp extends Rating {
+    public static class WithTimestamp extends Rating {
         private final long timestamp;
 
         WithTimestamp(long id, long user, long item, double val, long ts) {
-            super(id, user, item, val);
+            super(TIMESTAMP_LAYOUT, id, user, item, val);
             timestamp = ts;
         }
 

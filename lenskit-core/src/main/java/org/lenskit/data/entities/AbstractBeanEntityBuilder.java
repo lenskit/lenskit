@@ -21,14 +21,23 @@
 package org.lenskit.data.entities;
 
 import com.google.common.reflect.TypeToken;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.lenskit.util.reflect.CGUtils;
+import org.lenskit.util.reflect.DynamicClassLoader;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Type.*;
 
 /**
  * Base class for entity builders using bean-style setters.  An entity builder should extend this class, then annotate
@@ -36,10 +45,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * methods will then be implemented in terms of these.
  */
 public class AbstractBeanEntityBuilder extends EntityBuilder {
-    private static final ConcurrentHashMap<Class<? extends AbstractBeanEntityBuilder>, AttrEntry[]> cache =
+    private static final ConcurrentHashMap<Class<? extends AbstractBeanEntityBuilder>, AttrMethod[]> cache =
             new ConcurrentHashMap<>();
 
-    private final AttrEntry[] attributeRecords;
+    private final AttrMethod[] attributeRecords;
 
     protected AbstractBeanEntityBuilder(EntityType type) {
         super(type);
@@ -47,8 +56,8 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
     }
 
     @Nullable
-    private final AttrEntry findEntry(TypedName<?> name) {
-        for (AttrEntry e: attributeRecords) {
+    private final AttrMethod findEntry(TypedName<?> name) {
+        for (AttrMethod e: attributeRecords) {
             if (e.name == name) {
                 return e;
             }
@@ -59,15 +68,11 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
 
     @Override
     public <T> EntityBuilder setAttribute(TypedName<T> name, T val) {
-        AttrEntry e = findEntry(name);
+        AttrMethod e = findEntry(name);
         if (e == null) {
             setExtraAttribute(name, val);
         } else {
-            try {
-                e.setter.invoke(this, val);
-            } catch (IllegalAccessException | InvocationTargetException e1) {
-                throw new RuntimeException("error invoking " + e.setter, e1);
-            }
+            e.set(this, val);
         }
 
         return this;
@@ -75,18 +80,12 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
 
     @Override
     public EntityBuilder clearAttribute(TypedName<?> name) {
-        AttrEntry e = findEntry(name);
+        AttrMethod e = findEntry(name);
 
-        try {
-            if (e == null) {
+        if (e == null) {
             clearExtraAttribute(name);
-            } else if (e.clearer != null) {
-                e.clearer.invoke(this);
-            } else {
-                e.setter.invoke(null);
-            }
-        } catch (IllegalAccessException | InvocationTargetException e1) {
-            throw new RuntimeException("error invoking " + e.setter, e1);
+        } else {
+            e.clear(this);
         }
 
         return this;
@@ -120,55 +119,194 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         return null;
     }
 
-    private static AttrEntry[] lookupAttrs(Class<? extends AbstractBeanEntityBuilder> type) {
-        AttrEntry[] res = cache.get(type);
+    private static AttrMethod[] lookupAttrs(Class<? extends AbstractBeanEntityBuilder> type) {
+        AttrMethod[] res = cache.get(type);
         if (res != null) {
             return res;
         }
 
-        Map<String,AttrEntry> attrs = new HashMap<>();
+        DynamicClassLoader dlc = new DynamicClassLoader(type.getClassLoader());
+        Map<TypedName<?>,Method> setters = new HashMap<>();
         Map<String,Method> clearers = new HashMap<>();
         for (Method m: type.getMethods()) {
             EntityAttributeSetter annot = m.getAnnotation(EntityAttributeSetter.class);
             if (annot != null) {
-                m.setAccessible(true);
                 Type[] params = m.getParameterTypes();
                 if (params.length != 1) {
                     throw new IllegalArgumentException("method " + m + " has " + params.length + " parameters, expected 1");
                 }
                 TypeToken atype = TypeToken.of(params[0]);
                 TypedName<?> name = TypedName.create(annot.value(), atype);
-                AttrEntry e = new AttrEntry(name);
-                e.setter = m;
-                attrs.put(annot.value(), e);
+                setters.put(name, m);
             }
             EntityAttributeClearer clearAnnot = m.getAnnotation(EntityAttributeClearer.class);
             if (clearAnnot != null) {
-                m.setAccessible(true);
                 clearers.put(clearAnnot.value(), m);
             }
         }
 
-        for (Map.Entry<String,Method> ce: clearers.entrySet()) {
-            AttrEntry ae = attrs.get(ce.getKey());
-            if (ae == null) {
-                throw new RuntimeException("clearer " + ce.getValue() + " for " + ce.getKey() + " has no corresponding setter");
+        AttrMethod[] ael = new AttrMethod[setters.size()];
+        int attrIdx = 0;
+        for (Map.Entry<TypedName<?>,Method> ce: setters.entrySet()) {
+            TypedName<?> attr = ce.getKey();
+            Method smethod = ce.getValue();
+            Method cmethod = clearers.get(ce.getKey().getName());
+            ClassNode cn = new ClassNode();
+            cn.name = String.format("org/lenskit/generated/entities/AttrSet$$%s$$%s",
+                                    type.getName().replace('.', '$'),
+                                    ce.getValue().getName());
+            cn.access = ACC_PUBLIC;
+            cn.version = V1_8;
+            cn.superName = getInternalName(AttrMethod.class);
+            MethodNode ctor = generateBeanConstructor();
+            cn.methods.add(ctor);
+
+            MethodNode setter = generateSetter(type, smethod);
+            cn.methods.add(setter);
+
+            MethodNode clearer = generateClearer(type, smethod, cmethod);
+            cn.methods.add(clearer);
+
+            Class<? extends AttrMethod> cls = dlc.defineClass(cn).asSubclass(AttrMethod.class);
+            try {
+                ael[attrIdx++] = ConstructorUtils.invokeConstructor(cls, attr);
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                throw new RuntimeException("cannot instantiate " + cls, e);
             }
-            ae.clearer = ce.getValue();
         }
 
-        AttrEntry[] ael = attrs.values().toArray(new AttrEntry[attrs.size()]);
         cache.put(type, ael);
         return ael;
     }
 
-    private static class AttrEntry {
+    private static MethodNode generateBeanConstructor() {
+        MethodNode ctor = new MethodNode();
+        ctor.access = ACC_PUBLIC;
+        ctor.desc = getMethodDescriptor(VOID_TYPE, getType(TypedName.class));
+        ctor.name = "<init>";
+        ctor.exceptions = Collections.emptyList();
+        ctor.maxLocals = 2;
+        ctor.maxStack = 2;
+        // load instance ('this')
+        ctor.visitVarInsn(ALOAD, 0);
+        // load the attribute
+        ctor.visitVarInsn(ALOAD, 1);
+        // invoke superclass constructor with attribute
+        ctor.visitMethodInsn(INVOKESPECIAL, getInternalName(AttrMethod.class),
+                             "<init>", ctor.desc, false);
+        ctor.visitInsn(RETURN);
+        return ctor;
+    }
+
+    private static MethodNode generateSetter(Class<? extends AbstractBeanEntityBuilder> type, Method smethod) {
+        MethodNode setter = new MethodNode();
+        setter.access = ACC_PUBLIC;
+        setter.desc = getMethodDescriptor(VOID_TYPE,
+                                          getType(AbstractBeanEntityBuilder.class),
+                                          getType(Object.class));
+        setter.name = "set";
+        setter.exceptions = Collections.emptyList();
+        setter.maxLocals = 3;
+        setter.maxStack = 2;
+        // load target object
+        setter.visitVarInsn(ALOAD, 1);
+        // cast target object
+        setter.visitTypeInsn(CHECKCAST, getInternalName(type));
+        // load attribute value
+        setter.visitVarInsn(ALOAD, 2);
+        // convert attribute value if necessary
+        setter.maxStack += CGUtils.adaptToType(setter, smethod.getParameterTypes()[0]);
+        // call real setter
+        setter.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                               smethod.getName(), getMethodDescriptor(smethod),
+                               false);
+        setter.visitInsn(RETURN);
+        return setter;
+    }
+
+    private static MethodNode generateClearer(Class<? extends AbstractBeanEntityBuilder> type, Method smethod, Method cmethod) {
+        MethodNode clearer = new MethodNode();
+        clearer.access = ACC_PUBLIC;
+        clearer.desc = getMethodDescriptor(VOID_TYPE,
+                                          getType(AbstractBeanEntityBuilder.class));
+        clearer.name = "clear";
+        clearer.exceptions = Collections.emptyList();
+        clearer.maxLocals = 2;
+        clearer.maxStack = 1;
+        if (cmethod != null) {
+            // load target object
+            clearer.visitVarInsn(ALOAD, 1);
+            // cast to target object type
+            clearer.visitTypeInsn(CHECKCAST, getInternalName(type));
+            // call clearer method
+            clearer.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                                    cmethod.getName(), getMethodDescriptor(cmethod),
+                                    false);
+            clearer.visitInsn(RETURN);
+        } else if (!smethod.getParameterTypes()[0].isPrimitive()) {
+            // load target object & cast to type
+            clearer.visitVarInsn(ALOAD, 1);
+            clearer.visitTypeInsn(CHECKCAST, getInternalName(type));
+            // load null and call setter
+            clearer.visitInsn(ACONST_NULL);
+            clearer.maxStack = 2;
+            clearer.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                                    smethod.getName(), getMethodDescriptor(smethod),
+                                    false);
+            clearer.visitInsn(RETURN);
+        } else {
+            // no clearer and primitive method, throw unsupported operation exception
+            clearer.maxStack = 2;
+            clearer.visitTypeInsn(NEW, "java/lang/UnsupportedOperationException");
+            clearer.visitInsn(DUP);
+            clearer.visitMethodInsn(INVOKESPECIAL, "java/lang/UnsupportedOperationException", "<init>", "()V", false);
+            clearer.visitInsn(ATHROW);
+        }
+        return clearer;
+    }
+
+    /**
+     * Abstract class for accessing attribute methods.  This is only for internal use.
+     */
+    public abstract static class AttrMethod {
         final TypedName<?> name;
+
+        protected AttrMethod(TypedName<?> n) {
+            name = n;
+        }
+
+        public abstract void set(AbstractBeanEntityBuilder receiver, Object value);
+        public abstract void clear(AbstractBeanEntityBuilder receiver);
+    }
+
+    private static class ReflectionAttrMethod extends AttrMethod {
         Method setter;
         Method clearer;
 
-        AttrEntry(TypedName<?> n) {
-            name = n;
+        public ReflectionAttrMethod(TypedName<?> n) {
+            super(n);
+        }
+
+        @Override
+        public void set(AbstractBeanEntityBuilder receiver, Object value) {
+            try {
+                setter.invoke(receiver, value);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("cannot invoke " + setter, e);
+            }
+        }
+
+        @Override
+        public void clear(AbstractBeanEntityBuilder receiver) {
+            try {
+                if (clearer != null) {
+                    clearer.invoke(receiver);
+                } else {
+                    setter.invoke(receiver, null);
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("cannot invoke " + (clearer != null ? clearer : setter), e);
+            }
         }
     }
 }

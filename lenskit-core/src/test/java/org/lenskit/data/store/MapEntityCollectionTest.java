@@ -18,10 +18,14 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
+package org.lenskit.data.store;
 
 import com.google.common.collect.Lists;
 import org.junit.Test;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.CommonTypes;
+import org.lenskit.data.entities.Entities;
+import org.lenskit.data.entities.Entity;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -30,7 +34,7 @@ import static org.junit.Assert.*;
  *
  * Created by MichaelEkstrand on 6/18/2016.
  */
-public class EntityCollectionTest {
+public class MapEntityCollectionTest {
     @Test
     public void testEmptyBuilder() {
         EntityCollection ec = EntityCollection.newBuilder(CommonTypes.USER)

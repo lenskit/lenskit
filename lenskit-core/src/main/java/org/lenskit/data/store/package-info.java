@@ -18,26 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
-
-import com.google.common.collect.ImmutableListMultimap;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-
 /**
- * Generic implementation of the entity index.
+ * In-memory storage of entities.  Applications will rarely use this directly; {@link org.lenskit.data.dao} is the
+ * user-facing interface to this logic.
  */
-class GenericEntityIndex implements EntityIndex {
-    private ImmutableListMultimap<Object,Entity> entities;
-
-    GenericEntityIndex(ImmutableListMultimap<Object,Entity> data) {
-        entities = data;
-    }
-
-    @Nonnull
-    @Override
-    public List<Entity> getEntities(@Nonnull Object value) {
-        return entities.get(value);
-    }
-}
+package org.lenskit.data.store;

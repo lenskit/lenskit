@@ -107,22 +107,6 @@ public class RatingTest {
     }
 
     @Test
-    public void testURVRatingsDup() {
-        List<Rating> ratings = new ArrayList<>();
-        ratings.add(Rating.create(1, 2, 3.0, 3));
-        ratings.add(Rating.create(1, 5, 2.3, 4));
-        ratings.add(Rating.create(1, 3, 4.5, 5));
-        ratings.add(Rating.create(1, 5, 3.7, 6));
-        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
-        assertThat(urv.isEmpty(), equalTo(false));
-        assertThat(urv.size(), equalTo(3));
-        assertThat(urv.get(2), closeTo(3.0, 1.0e-6));
-        assertThat(urv.get(3), closeTo(4.5, 1.0e-6));
-        assertThat(urv.get(5), closeTo(3.7, 1.0e-6));
-        assertThat(urv.containsKey(1), equalTo(false));
-    }
-
-    @Test
     public void testEmptyIRV() {
         List<Rating> ratings = Collections.emptyList();
         Long2DoubleMap urv = Ratings.itemRatingVector(ratings);
@@ -134,7 +118,6 @@ public class RatingTest {
     public void testIRVRatings() {
         List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 1));
-        ratings.add(Rating.create(3, 2, 4.5, 2));
         ratings.add(Rating.create(2, 2, 2.3, 3));
         ratings.add(Rating.create(3, 2, 4.5, 10));
         Long2DoubleMap urv = Ratings.itemRatingVector(ratings);

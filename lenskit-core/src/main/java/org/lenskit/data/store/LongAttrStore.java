@@ -18,22 +18,26 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
+package org.lenskit.data.store;
 
-import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * An index to look up entities by attribute value.
- *
- * @see EntityIndexBuilder
+ * Long-specialized attribute store.
  */
-public interface EntityIndex {
-    /**
-     * Get the entities with the associated attribute value.
-     * @param value The attribute value.
-     * @return The list of entities.
-     */
-    @Nonnull
-    List<Entity> getEntities(@Nonnull Object value);
+class LongAttrStore extends AttrStore {
+    List<LongShard> longShards;
+
+    LongAttrStore(List<Shard> shards, int total) {
+        super(shards, total);
+        longShards = shards.stream()
+                           .map(s -> (LongShard) s)
+                           .collect(Collectors.toList());
+    }
+
+    long getLong(int idx) {
+        return longShards.get(Shard.indexOfShard(idx))
+                         .getLong(Shard.indexWithinShard(idx));
+    }
 }

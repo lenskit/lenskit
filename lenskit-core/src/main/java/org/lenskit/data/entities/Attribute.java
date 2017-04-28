@@ -44,7 +44,9 @@ public final class Attribute<T> {
     private Attribute(@Nonnull TypedName<T> name, @Nonnull T val) {
         Preconditions.checkNotNull(name, "name");
         Preconditions.checkNotNull(val, "value");
-        Preconditions.checkArgument(name.getRawType().isInstance(val), "value-type mismatch");
+        Preconditions.checkArgument(name.getRawType().isInstance(val),
+                                    "creating attribute %s: value '%s' is not of correct type",
+                                    name, val);
         this.name = name;
         value = val;
     }

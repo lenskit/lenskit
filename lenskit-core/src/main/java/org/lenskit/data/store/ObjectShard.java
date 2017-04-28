@@ -18,43 +18,50 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
+package org.lenskit.data.store;
 
-import com.google.common.collect.ImmutableList;
-import org.lenskit.util.IdBox;
-import org.lenskit.util.keys.KeyedObjectMap;
-
-import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 /**
- * Generic implementation of the entity index.
+ * An object shard.
  */
-class LongEntityIndex implements EntityIndex {
-    private final KeyedObjectMap<IdBox<ImmutableList<Entity>>> entityLists;
+class ObjectShard extends Shard {
+    private Object[] data = new Object[SHARD_SIZE];
+    private int size = 0;
 
-    LongEntityIndex(KeyedObjectMap<IdBox<ImmutableList<Entity>>> lists) {
-        entityLists = lists;
-    }
-
-    @Nonnull
     @Override
-    public List<Entity> getEntities(@Nonnull Object value) {
-        if (!(value instanceof Long)) {
-            return Collections.emptyList();
-        }
-        long key = (Long) value;
-        return getEntities(key);
+    Object get(int idx) {
+        assert idx >= 0 && idx < size;
+        return data[idx];
     }
 
-    @Nonnull
-    public List<Entity> getEntities(long key) {
-        IdBox<ImmutableList<Entity>> box = entityLists.get(key);
-        if (box == null) {
-            return Collections.emptyList();
-        } else {
-            return box.getValue();
+    @Override
+    void put(int idx, Object value) {
+        assert idx >= 0 && idx < data.length;
+        if (idx >= size) {
+            size = idx + 1;
         }
+        data[idx] = value;
+    }
+
+    @Override
+    boolean isNull(int idx) {
+        assert idx >= 0 && idx < size;
+        return data[idx] == null;
+    }
+
+    @Override
+    Shard adapt(Object obj) {
+        return this;
+    }
+
+    @Override
+    int size() {
+        return size;
+    }
+
+    @Override
+    void compact() {
+        data = Arrays.copyOf(data, size);
     }
 }

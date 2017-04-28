@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.reflect.TypeToken;
+import groovyjarjarantlr.CommonASTWithHiddenTokens;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.util.TypeUtils;
 import org.hamcrest.Matcher;
@@ -44,6 +45,8 @@ public class JSONEntityFormatTest {
     public void testBareEntity() {
         JSONEntityFormat fmt = new JSONEntityFormat();
         fmt.setEntityType(CommonTypes.USER);
+
+        assertThat(fmt.getAttributes(), nullValue());
 
         LineEntityParser lep = fmt.makeParser(Collections.EMPTY_LIST);
         Entity res = lep.parse("{\"$id\": 203810}");
@@ -143,10 +146,13 @@ public class JSONEntityFormatTest {
         JsonNode json = reader.readTree("{\"entity_type\": \"item\", \"attributes\": {\"id\": \"long\", \"title\": {\"name\": \"name\", \"type\": \"string\"}, \"tags\": \"string[]\"}}");
         JSONEntityFormat fmt = JSONEntityFormat.fromJSON(null, ClassLoaders.inferDefault(), json);
         assertThat(fmt.getEntityType(), equalTo(CommonTypes.ITEM));
-        assertThat(fmt.getAttributes(), hasEntry("id", (TypedName) CommonAttributes.ENTITY_ID));
-        assertThat(fmt.getAttributes(), hasEntry("title", (TypedName) CommonAttributes.NAME));
-        assertThat(fmt.getAttributes(), hasEntry("tags", (TypedName) tlName));
-        assertThat(fmt.getAttributes().size(), equalTo(3));
+        assertThat(fmt.getDefinedAttributes(), hasEntry("id", (TypedName) CommonAttributes.ENTITY_ID));
+        assertThat(fmt.getDefinedAttributes(), hasEntry("title", (TypedName) CommonAttributes.NAME));
+        assertThat(fmt.getDefinedAttributes(), hasEntry("tags", (TypedName) tlName));
+        assertThat(fmt.getDefinedAttributes().size(), equalTo(3));
+
+        assertThat(fmt.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID, CommonAttributes.NAME, tlName));
 
         LineEntityParser lep = fmt.makeParser(Collections.EMPTY_LIST);
         Entity res = lep.parse("{\"id\": 204, \"title\": \"hamster\", \"tags\": [\"foo\", \"bar\"]}");

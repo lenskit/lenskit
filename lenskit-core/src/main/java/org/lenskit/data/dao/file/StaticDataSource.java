@@ -24,14 +24,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.util.concurrent.Monitor;
-import org.lenskit.util.describe.Describable;
-import org.lenskit.util.describe.DescriptionWriter;
-import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.EntityCollectionDAOBuilder;
@@ -39,6 +33,9 @@ import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.lenskit.util.UncheckedInterruptException;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.parallel.Blockers;
 import org.slf4j.Logger;
@@ -245,6 +242,26 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
         Set<EntityType> types = new HashSet<>();
 
         EntityCollectionDAOBuilder builder = new EntityCollectionDAOBuilder();
+        SetMultimap<EntityType, EntitySource.Layout> layouts = HashMultimap.create();
+        for (EntitySource source: sources) {
+            logger.debug("source {} declares types {} and layout {}",
+                         source, source.getTypes(), source.getLayout());
+            for (EntityType et: source.getTypes()) {
+                layouts.put(et, source.getLayout());
+            }
+        }
+        for (Map.Entry<EntityType, Collection<EntitySource.Layout>> e: layouts.asMap().entrySet()) {
+            EntitySource.Layout layout = null;
+            layout = Iterables.getFirst(e.getValue(), null);
+            if (layout != null && e.getValue().size() == 1) {
+                assert layout.getEntityType() == e.getKey();
+                logger.info("using static layout {}", layout);
+                builder.addEntityLayout(layout.getEntityType(), layout.getAttributes(), layout.getEntityBuilder());
+            } else {
+                logger.debug("found {} layouts for entity type {}", e.getValue().size(), e.getKey());
+            }
+        }
+
         builder.addDefaultIndex(CommonAttributes.USER_ID);
         builder.addDefaultIndex(CommonAttributes.ITEM_ID);
         for (Map.Entry<EntityType,TypedName<?>> iae: indexedAttributes.entries()) {

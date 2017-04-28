@@ -18,18 +18,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.entities;
+package org.lenskit.data.store;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import org.lenskit.data.entities.Entities;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.TypedName;
 import org.lenskit.util.keys.KeyedObjectMap;
 import org.lenskit.util.keys.KeyedObjectMapBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,25 +41,20 @@ import java.util.Map;
  * Builder class for entity collections.  These builders are *destructive*: their {@link #build()} methods destroy the
  * internal storage, so the builder is single-use.
  */
-public class EntityCollectionBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(EntityCollectionBuilder.class);
+class MapEntityCollectionBuilder extends EntityCollectionBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(MapEntityCollectionBuilder.class);
     private final EntityType type;
     private KeyedObjectMapBuilder<Entity> store;
     private Map<String,EntityIndexBuilder> indexBuilders;
     private Hasher hasher = Hashing.md5().newHasher();
 
-    public EntityCollectionBuilder(EntityType type) {
+    public MapEntityCollectionBuilder(EntityType type) {
         this.type = type;
         store = KeyedObjectMap.newBuilder(Entities.idKeyExtractor());
         indexBuilders = new HashMap<>();
     }
 
-    /**
-     * Add an index to an entity collection to speed up lookups.
-     * @param attribute The attribute to index.
-     * @param <T> The attribute type
-     * @return The builder (for chaining).
-     */
+    @Override
     public <T> EntityCollectionBuilder addIndex(TypedName<T> attribute) {
         Preconditions.checkState(indexBuilders != null, "build() already called");
         if (indexBuilders.containsKey(attribute.getName())) {
@@ -73,31 +71,12 @@ public class EntityCollectionBuilder {
         return this;
     }
 
-    /**
-     * Add an index to an entity collection to speed up lookups.
-     * @param attrName The name of the attribute to index.
-     * @return The builder (for chaining).
-     */
+    @Override
     public EntityCollectionBuilder addIndex(String attrName) {
         return addIndex(TypedName.create(attrName, Object.class));
     }
 
-    /**
-     * Add an entity to the collection.
-     * @param e The entity to add.
-     * @return The builder (for chaining).
-     */
-    public EntityCollectionBuilder add(Entity e) {
-        return add(e, true);
-    }
-
-    /**
-     * Add an entity to the collection.
-     * @param e The entity to add.
-     * @param replace Whether to replace. If `false`, and an entity with the same ID as `e` has already been added,
-     *                this entity is **silently** ignored.
-     * @return The builder (for chaining).
-     */
+    @Override
     public EntityCollectionBuilder add(Entity e, boolean replace) {
         Preconditions.checkState(store != null, "build() already called");
         Preconditions.checkArgument(e.getType().equals(type));
@@ -113,40 +92,13 @@ public class EntityCollectionBuilder {
         return this;
     }
 
-    /**
-     * Add multiple entities to the collection.
-     * @param entities The entity to add.
-     * @return The builder (for chaining).
-     */
-    public EntityCollectionBuilder addAll(Entity... entities) {
-        return addAll(Arrays.asList(entities));
-    }
-
-    /**
-     * Add multiple entities to the collection.
-     * @param entities The entity to add.
-     * @return The builder (for chaining).
-     */
-    public EntityCollectionBuilder addAll(Iterable<Entity> entities) {
-        for (Entity e: entities) {
-            add(e);
-        }
-        return this;
-    }
-
-    /**
-     * Get a view of the entities added, for iteration and re-processing.
-     * @return The view of entities added.
-     */
+    @Override
     public Collection<Entity> entities() {
         return store.objects();
     }
 
-    /**
-     * Build the entity collection.
-     * @return The collection of entities.
-     */
-    public EntityCollection build() {
+    @Override
+    public MapEntityCollection build() {
         Preconditions.checkState(store != null, "build() already called");
         ImmutableMap.Builder<String,EntityIndex> indexes = ImmutableMap.builder();
         for (Map.Entry<String,EntityIndexBuilder> e: indexBuilders.entrySet()) {
@@ -158,6 +110,6 @@ public class EntityCollectionBuilder {
                      map.size(), type, idxMap.size());
         store = null;
         indexBuilders = null;
-        return new EntityCollection(type, map, idxMap, hasher.hash());
+        return new MapEntityCollection(type, map, idxMap, hasher.hash());
     }
 }

@@ -28,9 +28,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.lenskit.util.TypeUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
+import org.lenskit.util.TypeUtils;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +48,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     private String delimiter = "\t";
     private int headerLines;
     private boolean readHeader;
+    private long baseId;
     private EntityType entityType = EntityType.forName("rating");
     private Class<? extends EntityBuilder> entityBuilder = BasicEntityBuilder.class;
     private InstanceFactory<EntityBuilder> builderFactory;
@@ -105,6 +106,23 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
     }
 
     /**
+     * Get the base entity ID for this source.
+     * @return The base entity ID.
+     */
+    public long getBaseId() {
+        return baseId;
+    }
+
+    /**
+     * Set the base entity ID for this source.  If an entity column is not defined, then the line number will
+     * be added to this value to obtain a synthetic ID.
+     * @param base The base entity ID.
+     */
+    public void setBaseId(long base) {
+        baseId = base;
+    }
+
+    /**
      * Set the entity type.
      * @param type The entity type.
      */
@@ -134,8 +152,27 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * Get the entity builder class.
      * @return The entity builder class.
      */
+    @Override
     public Class<? extends EntityBuilder> getEntityBuilder() {
         return entityBuilder;
+    }
+
+    @Nullable
+    @Override
+    public AttributeSet getAttributes() {
+        List<TypedName<?>> names = new ArrayList<>();
+        names.add(CommonAttributes.ENTITY_ID);
+        if (columns != null) {
+            columns.stream()
+                   .filter(n -> n != CommonAttributes.ENTITY_ID)
+                   .forEach(names::add);
+        } else if (labeledColumns != null) {
+            labeledColumns.values()
+                          .stream()
+                          .filter(n -> n != CommonAttributes.ENTITY_ID)
+                          .forEach(names::add);
+        }
+        return AttributeSet.create(names);
     }
 
     /**
@@ -231,6 +268,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         json.put("format", "delimited");
         json.put("delimiter", delimiter);
         json.put("entity_type", entityType.getName());
+        json.put("base_id", getBaseId());
         if (readHeader) {
             json.put("header", true);
         } else if (headerLines > 0) {
@@ -289,6 +327,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             format.setHeaderLines(header.asInt());
             logger.debug("{}: skipping {} header lines", format.getHeaderLines());
         }
+        format.setBaseId(json.path("base_id").asLong(0));
 
         String eTypeName = json.path("entity_type").asText("rating").toLowerCase();
         EntityType etype = EntityType.forName(eTypeName);
@@ -371,7 +410,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             lineNo += 1;
 
             EntityBuilder builder = newEntityBuilder()
-                    .setId(lineNo);
+                    .setId(lineNo + baseId);
 
             // since ID is already set, a subsequent ID column will properly override
 
