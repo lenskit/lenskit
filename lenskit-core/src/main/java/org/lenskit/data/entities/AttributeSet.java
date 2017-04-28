@@ -29,7 +29,7 @@ import java.util.*;
 
 /**
  * A set of attributes.  Attributes are mapped to positions.  If {@link CommonAttributes#ENTITY_ID} is in the
- * set, it is always at position 0.
+ * set, it is always at position 0.  Iteration is in order.
  *
  * This class exists for two reasons:
  *

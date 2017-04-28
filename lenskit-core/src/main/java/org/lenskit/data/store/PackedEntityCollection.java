@@ -37,11 +37,13 @@ import org.lenskit.data.entities.*;
 import org.lenskit.util.BinarySearch;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
+import org.lenskit.util.reflect.InstanceFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -51,6 +53,7 @@ import java.util.stream.Stream;
  */
 class PackedEntityCollection extends EntityCollection implements Describable {
     private final EntityType entityType;
+    private final IntFunction<Entity> entityBuilder;
     private final AttributeSet attributes;
     private final LongAttrStore idStore;
     private final AttrStore[] attrStores;
@@ -59,13 +62,19 @@ class PackedEntityCollection extends EntityCollection implements Describable {
     private transient HashCode contentHash;
     private ConcurrentHashMap<Integer,AttributeSet> attrSets = new ConcurrentHashMap<>();
 
-    PackedEntityCollection(EntityType et, AttributeSet attrs, AttrStore[] stores, PackIndex[] idxes) {
+    PackedEntityCollection(EntityType et, AttributeSet attrs, AttrStore[] stores, PackIndex[] idxes, Class<? extends EntityBuilder> ebc) {
         entityType = et;
         attributes = attrs;
         attrStores = stores;
         indexes = idxes;
         idStore = (LongAttrStore) stores[0];
         size = idStore.size();
+
+        if (ebc == null || ebc.equals(BasicEntityBuilder.class)) {
+            entityBuilder = IndirectEntity::new;
+        } else {
+            entityBuilder = new Reconstitutor(ebc);
+        }
     }
 
     @Override
@@ -83,7 +92,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
     public Entity lookup(long id) {
         int pos = new IdSearch(id).search(0, size);
         if (pos >= 0) {
-            return new IndirectEntity(pos);
+            return entityBuilder.apply(pos);
         } else {
             return null;
         }
@@ -137,7 +146,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
 
     public Stream<Entity> stream() {
         return IntStream.range(0, size)
-                        .mapToObj(IndirectEntity::new);
+                        .mapToObj(entityBuilder);
     }
 
     @Override
@@ -300,7 +309,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
 
         @Override
         public Entity get(int index) {
-            return new IndirectEntity(positions.get(index));
+            return entityBuilder.apply(positions.getInt(index));
         }
 
         @Override
@@ -348,6 +357,27 @@ class PackedEntityCollection extends EntityCollection implements Describable {
         @Override
         public boolean hasNext() {
             return pos < idStore.size();
+        }
+    }
+
+    private class Reconstitutor implements IntFunction<Entity> {
+        private final InstanceFactory<EntityBuilder> factory;
+
+        public Reconstitutor(Class<? extends EntityBuilder> ebc) {
+            factory = InstanceFactory.fromConstructor(ebc, entityType);
+        }
+
+        @Override
+        public Entity apply(int position) {
+            EntityBuilder eb = factory.newInstance();
+            eb.setId(idStore.getLong(position));
+            for (int i = 1; i < attributes.size(); i++) {
+                Object obj = attrStores[i].get(position);
+                if (obj != null) {
+                    eb.setAttribute((TypedName) attributes.getAttribute(i), obj);
+                }
+            }
+            return eb.build();
         }
     }
 }

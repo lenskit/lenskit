@@ -256,7 +256,7 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
             if (layout != null && e.getValue().size() == 1) {
                 assert layout.getEntityType() == e.getKey();
                 logger.info("using static layout {}", layout);
-                builder.addEntityLayout(layout.getEntityType(), layout.getAttributes());
+                builder.addEntityLayout(layout.getEntityType(), layout.getAttributes(), layout.getEntityBuilder());
             } else {
                 logger.debug("found {} layouts for entity type {}", e.getValue().size(), e.getKey());
             }

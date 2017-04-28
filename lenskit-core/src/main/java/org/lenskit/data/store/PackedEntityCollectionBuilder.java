@@ -42,13 +42,14 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     private final AttributeSet attributes;
     private final LongAttrStoreBuilder idStore;
     private final AttrStoreBuilder[] storeBuilders;
+    private final Class<? extends EntityBuilder> entityBuilderClass;
     private boolean needIndex[];
     private LongSet ids = null;
     private boolean isSorted = true;
     private int size = 0;
     private long lastEntityId = Long.MIN_VALUE;
 
-    PackedEntityCollectionBuilder(EntityType et, AttributeSet attrs) {
+    PackedEntityCollectionBuilder(EntityType et, AttributeSet attrs, Class<? extends EntityBuilder> ebc) {
         Preconditions.checkArgument(attrs.size() > 0, "attribute set is emtpy");
         Preconditions.checkArgument(attrs.size() < 32, "cannot have more than 31 attributes");
         Preconditions.checkArgument(attrs.getAttribute(0) == CommonAttributes.ENTITY_ID,
@@ -78,6 +79,9 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             }
             storeBuilders[i] = asb;
         }
+
+        entityBuilderClass = ebc;
+
     }
 
     @Override
@@ -167,7 +171,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
             stores[i] = storeBuilders[i].tempBuild();
         }
         // the packed collection is not fully functional! But it will be iterable.
-        return new PackedEntityCollection(entityType, attributes, stores, new PackIndex[attributes.size()]);
+        return new PackedEntityCollection(entityType, attributes, stores, new PackIndex[attributes.size()], entityBuilderClass);
     }
 
     @Override
@@ -183,7 +187,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
                 indexes[i] = buildIndex(i);
             }
         }
-        return new PackedEntityCollection(entityType, attributes, stores, indexes);
+        return new PackedEntityCollection(entityType, attributes, stores, indexes, entityBuilderClass);
     }
 
     private class IdSearch extends BinarySearch {

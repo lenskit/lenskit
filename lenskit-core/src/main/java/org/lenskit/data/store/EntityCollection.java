@@ -56,11 +56,29 @@ public abstract class EntityCollection extends AbstractCollection<Entity> {
         Preconditions.checkArgument(attrs.lookup(CommonAttributes.ENTITY_ID) == 0,
                                     "could not find entity ID in: %s", attrs);
         if (attrs.size() > 1) {
-            return new PackedEntityCollectionBuilder(type, attrs);
+            return new PackedEntityCollectionBuilder(type, attrs, null);
         } else {
             return new BareEntityCollectionBuilder(type);
         }
     }
+
+    /**
+     * Create a new packed entity collection builder.
+     * @param type The entity type.
+     * @param attrs The attributes to store.
+     * @param eb An entity builder to use when reconstituting entities.
+     * @return An entity collection builder.
+     */
+    public static EntityCollectionBuilder newBuilder(EntityType type, AttributeSet attrs, Class<? extends EntityBuilder> eb) {
+        Preconditions.checkArgument(attrs.lookup(CommonAttributes.ENTITY_ID) == 0,
+                                    "could not find entity ID in: %s", attrs);
+        if (attrs.size() > 1) {
+            return new PackedEntityCollectionBuilder(type, attrs, eb);
+        } else {
+            return new BareEntityCollectionBuilder(type);
+        }
+    }
+
 
     /**
      * Create a new builder for colletions of bare entitites (only storing IDs).

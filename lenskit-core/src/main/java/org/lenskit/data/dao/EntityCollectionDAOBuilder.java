@@ -51,10 +51,23 @@ public class EntityCollectionDAOBuilder {
      * @throws IllegalStateException if the specified entity type already has a layout or entities.
      */
     public EntityCollectionDAOBuilder addEntityLayout(EntityType et, AttributeSet attributes) {
+        return addEntityLayout(et, attributes, null);
+    }
+
+    /**
+     * Set a layout for an entity type.  A layout limits the possible attributes of entities of that type, but can
+     * result in more efficient storage.
+     * @param et The entity type.
+     * @param attributes The set of known attributes.
+     * @param ebc The entity builder class for reconstituting entities.
+     * @return The builder (for chaining).
+     * @throws IllegalStateException if the specified entity type already has a layout or entities.
+     */
+    public EntityCollectionDAOBuilder addEntityLayout(EntityType et, AttributeSet attributes, Class<? extends EntityBuilder> ebc) {
         if (entitySets.containsKey(et)) {
             throw new IllegalStateException("layout or entities already added for " + et);
         }
-        EntityCollectionBuilder ecb = EntityCollection.newBuilder(et, attributes);
+        EntityCollectionBuilder ecb = EntityCollection.newBuilder(et, attributes, ebc);
         for (TypedName<?> name: defaultIndexes) {
             ecb.addIndex(name);
         }
