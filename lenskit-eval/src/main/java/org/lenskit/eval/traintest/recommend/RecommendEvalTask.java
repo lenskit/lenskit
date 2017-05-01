@@ -128,7 +128,7 @@ public class RecommendEvalTask implements EvalTask {
                 if (metric != null) {
                     task.addMetric(metric);
                 } else {
-                    throw new RuntimeException("cannot build metric for " + mn.toString());
+                    throw new VerifyError("cannot build metric for " + mn.toString());
                 }
             }
         }
