@@ -24,8 +24,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 import javax.annotation.concurrent.Immutable;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -40,7 +42,8 @@ import java.util.*;
  * hashtable lookups for small maps, and entities do not tend to have very many attributes.
  */
 @Immutable
-public class AttributeSet extends AbstractSet<TypedName<?>> {
+public class AttributeSet extends AbstractSet<TypedName<?>> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Interner<AttributeSet> setCache = Interners.newWeakInterner();
 
     // Typed names are always interned, so we can use == to compare them.
@@ -203,6 +206,32 @@ public class AttributeSet extends AbstractSet<TypedName<?>> {
                 throw new NoSuchElementException();
             }
             return names[pos++];
+        }
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        throw new InvalidObjectException("typed names must use serialization proxy");
+    }
+
+    private void readObjectNoData() throws ObjectStreamException {
+        throw new InvalidObjectException("typed names must use serialization proxy");
+    }
+
+    private Object writeReplace() {
+        return new SerialProxy(names);
+    }
+
+    private static class SerialProxy implements Serializable {
+        private static final long serialVersionUID = 2L;
+
+        private List<TypedName<?>> names;
+
+        public SerialProxy(TypedName<?>[] names) {
+            this.names = Lists.newArrayList(names);
+        }
+
+        private Object readResolve() throws ObjectStreamException {
+            return create(names);
         }
     }
 }
