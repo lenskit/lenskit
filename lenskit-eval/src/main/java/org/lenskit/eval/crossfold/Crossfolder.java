@@ -267,25 +267,20 @@ public class Crossfolder {
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      */
-    public void execute() {
-        try {
-            logger.info("ensuring output directory {} exists", outputDir);
-            Files.createDirectories(outputDir);
-            logger.info("making sure item list is available");
-            JsonNode itemDataInfo = writeItemFile(source);
-            logger.info("writing train-test split files");
-            createTTFiles(source);
-            logger.info("writing manifests and specs");
-            Map<String,Object> metadata = new HashMap<>();
-            for (EntitySource src: source.getSourcesForType(entityType)) {
-                metadata.putAll(src.getMetadata());
-            }
-            writeManifests(source, metadata, itemDataInfo);
-            executed = true;
-        } catch (IOException ex) {
-            // TODO Use application-specific exception
-            throw new RuntimeException("Error writing data sets", ex);
+    public void execute() throws IOException {
+        logger.info("ensuring output directory {} exists", outputDir);
+        Files.createDirectories(outputDir);
+        logger.info("making sure item list is available");
+        JsonNode itemDataInfo = writeItemFile(source);
+        logger.info("writing train-test split files");
+        createTTFiles(source);
+        logger.info("writing manifests and specs");
+        Map<String,Object> metadata = new HashMap<>();
+        for (EntitySource src: source.getSourcesForType(entityType)) {
+            metadata.putAll(src.getMetadata());
         }
+        writeManifests(source, metadata, itemDataInfo);
+        executed = true;
     }
 
     List<Path> getTrainingFiles() {

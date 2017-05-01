@@ -66,11 +66,10 @@ public class Crossfold implements Command {
         Crossfolder cf;
         try {
             cf = configureCrossfolder(options);
+            cf.execute();
         } catch (IOException e) {
             throw new LenskitCommandException(e);
         }
-
-        cf.execute();
     }
 
     Crossfolder configureCrossfolder(Namespace options) throws IOException {
