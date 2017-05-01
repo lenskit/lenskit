@@ -23,6 +23,7 @@ package org.lenskit.data.entities;
 import com.google.common.base.*;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.lenskit.util.keys.KeyExtractor;
 
@@ -176,8 +177,10 @@ public final class Entities {
                 EntityBuilder builder = null;
                 try {
                     builder = ctor.get().newInstance(e.getType());
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException ex) {
-                    throw new RuntimeException("cannot invoke " + ctor.get(), ex);
+                } catch (IllegalAccessException | InstantiationException ex) {
+                    throw new VerifyException(ctor.get() + " cannot be instantiated", ex);
+                } catch (InvocationTargetException ex) {
+                    throw new UncheckedExecutionException("error invoking " + ctor.get(), ex);
                 }
                 for (Attribute<?> attr: e.getAttributes()) {
                     builder.setAttribute(attr);
