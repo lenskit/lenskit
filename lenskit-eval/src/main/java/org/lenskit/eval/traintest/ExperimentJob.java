@@ -49,10 +49,12 @@ import org.lenskit.util.table.RowBuilder;
 import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tukaani.xz.UnsupportedOptionsException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -264,6 +266,10 @@ class ExperimentJob extends RecursiveAction {
      */
     public void execute() {
         compute();
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        throw new UnsupportedOptionsException("experiment jobs cannot be serialized");
     }
 
     /**
