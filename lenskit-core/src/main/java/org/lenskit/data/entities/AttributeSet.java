@@ -25,6 +25,7 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Iterators;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.*;
 
 /**
@@ -38,6 +39,7 @@ import java.util.*;
  * - To speed up lookups; microbenchmarks have found that linear search with object identity is faster than
  * hashtable lookups for small maps, and entities do not tend to have very many attributes.
  */
+@Immutable
 public class AttributeSet extends AbstractSet<TypedName<?>> {
     private static final Interner<AttributeSet> setCache = Interners.newWeakInterner();
 
