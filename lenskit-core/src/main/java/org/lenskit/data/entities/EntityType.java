@@ -22,14 +22,14 @@ package org.lenskit.data.entities;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A type for an entity.  Obtain an entity from a named type with {@link #forName(String)}.
@@ -42,7 +42,7 @@ import java.util.Locale;
 @Immutable
 public final class EntityType implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Interner<EntityType> TYPE_CACHE = Interners.newStrongInterner();
+    private static final ConcurrentMap<String,EntityType> TYPE_CACHE = new ConcurrentHashMap<>();
 
     private final String name;
 
@@ -57,20 +57,6 @@ public final class EntityType implements Serializable {
     @JsonValue
     public String getName() {
         return name;
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        } else {
-            return obj instanceof EntityType && name.equals(((EntityType) obj).name);
-        }
     }
 
     @Override
@@ -93,9 +79,10 @@ public final class EntityType implements Serializable {
      */
     @Nonnull
     @JsonCreator
-    public static synchronized EntityType forName(String name) {
+    public static EntityType forName(String name) {
         String normedName = name.toLowerCase(Locale.ROOT);
         EntityType type = new EntityType(normedName);
-        return TYPE_CACHE.intern(type);
+        EntityType canonical = TYPE_CACHE.putIfAbsent(normedName, type);
+        return canonical == null ? type : canonical;
     }
 }

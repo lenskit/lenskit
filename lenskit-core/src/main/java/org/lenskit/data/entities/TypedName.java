@@ -22,19 +22,20 @@ package org.lenskit.data.entities;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.base.Equivalence;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.lenskit.util.TypeUtils;
 import org.joda.convert.FromStringConverter;
+import org.lenskit.util.TypeUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.io.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * An association of a type with a name.  This is used for type-safe (or at least type-suggested) access to entity
@@ -42,15 +43,16 @@ import java.io.*;
  * the specified attribute.
  *
  * When used consistently, they allow for type-safe access to entity attribute data.
+ *
+ * Typed names are unique objects, so they can be safely compared with `==`.
  */
 @Immutable
 public final class TypedName<T> implements Serializable {
-    private static final long serialVersionUID = -1L;
-    private static final Interner<TypedName<?>> FIELD_CACHE = Interners.newStrongInterner();
+    private static final long serialVersionUID = 1L;
+    private static final Interner<Equivalence.Wrapper<TypedName<?>>> FIELD_CACHE = Interners.newStrongInterner();
 
     private final String name;
     private final TypeToken<T> type;
-    private transient volatile int hashCode;
     @Nullable
     private transient volatile FromStringConverter converter;
     @Nullable
@@ -123,32 +125,6 @@ public final class TypedName<T> implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        // intermediate variable means only 1 memory fence in common case
-        int hc = hashCode;
-        if (hc == 0) {
-            HashCodeBuilder hcb = new HashCodeBuilder();
-            hc = hcb.append(name)
-                    .append(type)
-                    .toHashCode();
-            hashCode = hc;
-        }
-        return hc;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) {
-            return true;
-        } else if (o instanceof TypedName) {
-            TypedName of = (TypedName) o;
-            return name.equals(of.getName()) && type.equals(of.getType());
-        } else {
-            return false;
-        }
-    }
-
-    @Override
     public String toString() {
         String tname;
         if (ClassUtils.isPrimitiveWrapper(getRawType())) {
@@ -175,7 +151,7 @@ public final class TypedName<T> implements Serializable {
             type = (Class<T>) ClassUtils.primitiveToWrapper(type);
         }
         TypedName<T> attribute = new TypedName<>(name.intern(), TypeToken.of(type));
-        return (TypedName<T>) FIELD_CACHE.intern(attribute);
+        return (TypedName<T>) FIELD_CACHE.intern(NAME_EQUIVALENCE.wrap(attribute)).get();
     }
 
     /**
@@ -194,7 +170,7 @@ public final class TypedName<T> implements Serializable {
             type = TypeToken.of((Class<T>) ClassUtils.primitiveToWrapper(type.getRawType()));
         }
         TypedName<T> attribute = new TypedName<>(name.intern(), type);
-        return (TypedName<T>) FIELD_CACHE.intern(attribute);
+        return (TypedName<T>) FIELD_CACHE.intern(NAME_EQUIVALENCE.wrap(attribute)).get();
     }
 
     /**
@@ -208,31 +184,23 @@ public final class TypedName<T> implements Serializable {
         return create(name, TypeUtils.resolveTypeName(typeName));
     }
 
-    private void readObject(ObjectInputStream in) throws IOException {
-        throw new InvalidObjectException("typed names must use serialization proxy");
+    private Object readResolve() throws ObjectStreamException {
+        // Look up the name to ensure singletons
+        // This is not entirely safe; see Effective Java, 2nd Ed., #77 for details.
+        // However, we do not depend on singletons for security, only for correctness.
+        // It is acceptable if malicious serialization streams result in broken objects.
+        return create(name, type);
     }
 
-    private void readObjectNoData() throws ObjectStreamException {
-        throw new InvalidObjectException("typed names must use serialization proxy");
-    }
-
-    private Object writeReplace() {
-        return new SerialProxy(name, type);
-    }
-
-    private static class SerialProxy implements Serializable {
-        private static final long serialVersionUID = 2L;
-
-        private String name;
-        private TypeToken type;
-
-        public SerialProxy(String n, TypeToken t) {
-            name = n;
-            type = t;
+    private static final Equivalence<TypedName<?>> NAME_EQUIVALENCE = new Equivalence<TypedName<?>>() {
+        @Override
+        protected boolean doEquivalent(TypedName<?> a, TypedName<?> b) {
+            return a == b || (a.name.equals(b.getName()) && a.type.equals(b.getType()));
         }
 
-        private Object readResolve() throws ObjectStreamException {
-            return create(name, type);
+        @Override
+        protected int doHash(TypedName<?> typedName) {
+            return typedName.name.hashCode() ^ typedName.type.hashCode();
         }
-    }
+    };
 }
