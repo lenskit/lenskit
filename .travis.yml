@@ -1,6 +1,9 @@
+sudo: false
+dist: trusty
 language: java
 jdk:
 - oraclejdk8
+- openjdk8
 branches:
   except:
   - www
@@ -51,9 +54,6 @@ env:
   - secure: "Bj66Sq92T/khNFGwMU4JYExlycwrkogdsf35GFeB4YiEC7bhrDsshpFWMWcQstUMo5+tJmTBCuXY6YHOHMUcjxjr+RFSuetwluzCumklJGHQms3s83peqle4E8Lu6b5Y1VKekf8Iri6P2+efI2fii5Pr0BD1RozPdBCQfZGqQYc="
 
 addons:
-  apt:
-    packages:
-      - oracle-java8-installer
   coverity_scan:
     project:
       name: "lenskit/lenskit"
@@ -62,5 +62,3 @@ addons:
     build_command_prepend: "./gradlew clean"
     build_command:   "./gradlew classes"
     branch_pattern: coverity_scan
-
-sudo: false
