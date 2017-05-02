@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Intermediate class for top-N metrics that only depend on the list of recommended items, not their details.
  * Metrics extending this class will implement the {@link #measureUser(Recommender, TestUser, int, LongList, Object)} method
- * instead of {@link #measureUser(TestUser, int, ResultList, Object)}.  The recommend eval task uses this
+ * instead of {@link #measureUser(Recommender, TestUser, int, ResultList, Object)}.  The recommend eval task uses this
  * subclass to improve efficiency when results are not used in the evaluation.
  *
  * @param <X> The accumulator type.
@@ -62,6 +62,9 @@ public abstract class ListOnlyTopNMetric<X> extends TopNMetric<X> {
 
     /**
      * Measurement method that only uses the recommend list.
+     *
+     * **Thread Safety:** This method may be called concurrently by multiple threads with the same recommender and
+     * context.
      *
      * @param rec The recommender used to recommend for this user.
      * @param user The user.

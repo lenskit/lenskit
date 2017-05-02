@@ -92,7 +92,9 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
         double nDPM = dpm / normalizingFactor; // Normalized nDPM
 
-        context.add(nDPM);
+        synchronized (context) {
+            context.add(nDPM);
+        }
 
         return MetricResult.singleton(DEFAULT_COLUMN, nDPM);
     }

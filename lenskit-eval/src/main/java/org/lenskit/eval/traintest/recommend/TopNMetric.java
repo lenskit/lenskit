@@ -71,6 +71,10 @@ public abstract class TopNMetric<X> extends Metric<X> {
 
     /**
      * Measure a single result.  The result may come from either prediction or recommendation.
+     *
+     * **Thread Safety:** This method may be called concurrently by multiple threads with the same recommender and
+     * context.
+     *
      * @param rec The recommender used to recommend for this user.
      * @param user The user's test data.
      * @param targetLength The intended length of the recommendation list.

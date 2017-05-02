@@ -103,11 +103,15 @@ public abstract class Metric<X> {
      * Create the context for an experimental condition (algorithm/data set pair).  The default implementation
      * returns `null`.
      *
+     * **Note:** Contexts must be thread-safe, in that multiple concurrent calls to the appropriate user-measurement
+     * function with the same context must be safe.  This can be handled either by the context itself, or by the
+     * user-measurement function.
+     *
      * @param algorithm The algorithm.
      * @param dataSet   The data set.
      * @param engine    The LensKit recommender engine, if applicable.  This can be null for an external
      *                  algorithm that does not provide a LensKit recommender.
-     * @return The accumulator.  This will be passed to the individual measurement methods. If
+     * @return The context. This will be passed to the individual measurement methods. If
      * the metric does need to accumulate any results, this method can return {@code null}.
      */
     @Nullable

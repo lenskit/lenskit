@@ -131,7 +131,9 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
         double gain = computeDCG(actual, ratings);
         logger.debug("user {} has gain of {} (ideal {})", user.getUserId(), gain, idealGain);
         double score = gain / idealGain;
-        context.add(score);
+        synchronized (context) {
+            context.add(score);
+        }
         ImmutableMap.Builder<String,Double> results = ImmutableMap.builder();
         return MetricResult.fromMap(results.put(columnName, score)
                                            .put(columnName + ".Raw", gain)

@@ -158,7 +158,7 @@ public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionR
             universe = items;
         }
 
-        private void addUser(double prec, double rec) {
+        private synchronized void addUser(double prec, double rec) {
             totalPrecision += prec;
             totalRecall += rec;
             nusers += 1;

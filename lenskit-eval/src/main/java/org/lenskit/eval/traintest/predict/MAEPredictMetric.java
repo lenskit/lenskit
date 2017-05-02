@@ -109,14 +109,14 @@ public class MAEPredictMetric extends PredictMetric<MAEPredictMetric.Context> {
         private int nratings = 0;
         private int nusers = 0;
 
-        private void addUser(int n, double err, double mae) {
+        private synchronized void addUser(int n, double err, double mae) {
             totalError += err;
             totalMAE += mae;
             nratings += n;
             nusers += 1;
         }
 
-        public MetricResult finish() {
+        public synchronized MetricResult finish() {
             if (nratings > 0) {
                 double v = totalError / nratings;
                 logger.info("RMSE: {}", v);

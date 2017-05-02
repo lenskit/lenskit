@@ -157,7 +157,7 @@ public class TopNMRRMetric extends ListOnlyTopNMetric<TopNMRRMetric.Context> {
             this.universe = universe;
         }
 
-        void addUser(UserResult ur) {
+        synchronized void addUser(UserResult ur) {
             allMean.add(ur.getRecipRank());
         }
     }

@@ -78,7 +78,7 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
         }
         pop = pop / recs.size();
 
-        context.mean.add(pop);
+        context.addUser(pop);
         return new PopResult(pop);
     }
 
@@ -101,6 +101,10 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
         final MeanAccumulator mean = new MeanAccumulator();
 
         public Context() {
+        }
+
+        private synchronized void addUser(double pop) {
+            mean.add(pop);
         }
     }
 }

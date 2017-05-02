@@ -113,14 +113,14 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
         private int nratings = 0;
         private int nusers = 0;
 
-        private void addUser(int n, double sse, double rmse) {
+        private synchronized void addUser(int n, double sse, double rmse) {
             totalSSE += sse;
             totalRMSE += rmse;
             nratings += n;
             nusers += 1;
         }
 
-        public MetricResult finish() {
+        public synchronized MetricResult finish() {
             if (nratings > 0) {
                 double v = sqrt(totalSSE / nratings);
                 logger.info("RMSE: {}", v);

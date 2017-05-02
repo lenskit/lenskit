@@ -108,7 +108,7 @@ public class CoveragePredictMetric extends PredictMetric<CoveragePredictMetric.C
         private int ngood = 0;
         private int nusers = 0;
 
-        private void addUser(int np, int ng) {
+        private synchronized void addUser(int np, int ng) {
             npreds += np;
             ngood += ng;
             nusers += 1;

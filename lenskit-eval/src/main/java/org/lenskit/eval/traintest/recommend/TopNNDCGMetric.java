@@ -121,7 +121,9 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
         double score = gain / idealGain;
 
-        context.add(score);
+        synchronized (context) {
+            context.add(score);
+        }
         return MetricResult.singleton(columnName, score);
     }
 

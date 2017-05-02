@@ -51,7 +51,9 @@ public class TopNLengthMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     @Override
     public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
         int n = recommendations.size();
-        context.add(n);
+        synchronized (context) {
+            context.add(n);
+        }
         return new LengthResult(n);
     }
 

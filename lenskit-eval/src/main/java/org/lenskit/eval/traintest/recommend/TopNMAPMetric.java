@@ -167,7 +167,7 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
             recommenderEngine = engine;
         }
 
-        void addUser(UserResult ur) {
+        synchronized void addUser(UserResult ur) {
             allMean.add(ur.avgPrecision);
         }
     }

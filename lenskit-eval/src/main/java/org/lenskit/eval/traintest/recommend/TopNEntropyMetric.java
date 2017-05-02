@@ -91,7 +91,7 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
         private Long2IntMap counts = new Long2IntOpenHashMap();
         private int recCount = 0;
 
-        private void addUser(LongList recs) {
+        private synchronized void addUser(LongList recs) {
             LongIterator iter = recs.iterator();
             while (iter.hasNext()) {
                 long item = iter.nextLong();
@@ -101,7 +101,7 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
         }
 
         @Nullable
-        public EntropyResult finish() {
+        public synchronized EntropyResult finish() {
             if (recCount > 0) {
                 double entropy = 0;
                 for (Long2IntMap.Entry e : counts.long2IntEntrySet()) {
