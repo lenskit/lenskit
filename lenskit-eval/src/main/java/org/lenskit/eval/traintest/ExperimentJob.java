@@ -42,7 +42,6 @@ import org.lenskit.data.entities.EntityType;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
 import org.lenskit.util.ProgressLogger;
-import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.monitor.TrackedJob;
 import org.lenskit.util.parallel.Blockers;
 import org.lenskit.util.table.RowBuilder;
@@ -114,29 +113,29 @@ class ExperimentJob extends RecursiveAction {
             try {
                 Blockers.acquireSemaphore(limitSemaphore);
             } catch (InterruptedException e) {
-                throw new UncheckedInterruptException(e);
+                Thread.currentThread().interrupt();
+                throw new EvaluationException("Evaluation interrupted", e);
             }
         }
         try {
             tracker.start();
             doEvaluate();
             tracker.finish();
-        } catch (UncheckedInterruptException ex) {
-            try {
+        } catch (Exception th) {
+            if (Thread.interrupted()) {
                 logger.info("evaluation of {} on {} interrupted", algorithm, dataSet);
-                tracker.fail(ex);
-            } catch (Throwable th) {
-                ex.addSuppressed(th);
             }
-            throw ex;
-        } catch (Throwable th) {
             try {
                 logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
                 tracker.fail(th);
             } catch (Throwable th2) {
                 th.addSuppressed(th2);
             }
-            throw th;
+            if (th instanceof EvaluationException) {
+                throw th;
+            } else {
+                throw new EvaluationException("Error running evaluation", th);
+            }
         } finally {
             if (limitSemaphore != null) {
                 limitSemaphore.release();

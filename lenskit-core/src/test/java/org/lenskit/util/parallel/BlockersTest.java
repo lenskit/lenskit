@@ -22,7 +22,6 @@ package org.lenskit.util.parallel;
 
 import com.google.common.util.concurrent.Monitor;
 import org.junit.Test;
-import org.lenskit.util.UncheckedInterruptException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +59,7 @@ public class BlockersTest {
                                     monitor.leave();
                                 }
                             } catch (InterruptedException e) {
-                                throw new UncheckedInterruptException(e);
+                                throw new RuntimeException(e);
                             }
                         }
                     });
@@ -98,7 +97,7 @@ public class BlockersTest {
                                     sem.release();
                                 }
                             } catch (InterruptedException e) {
-                                throw new UncheckedInterruptException(e);
+                                throw new RuntimeException(e);
                             }
                         }
                     });

@@ -32,7 +32,6 @@ import org.lenskit.data.dao.EntityCollectionDAOBuilder;
 import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
-import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.io.LKFileUtils;
@@ -192,7 +191,8 @@ public class StaticDataSource implements Provider<DataAccessObject>, Describable
             try {
                 Blockers.enterMonitor(monitor);
             } catch (InterruptedException e) {
-                throw new UncheckedInterruptException(e);
+                Thread.currentThread().interrupt();
+                throw new DataAccessException("data load interrupted", e);
             }
             try {
                 // did someone else make a DAO?
