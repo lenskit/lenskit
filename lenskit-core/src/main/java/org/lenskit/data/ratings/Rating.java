@@ -23,7 +23,6 @@ package org.lenskit.data.ratings;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
 
-import javax.accessibility.AccessibleTextSequence;
 import java.io.Serializable;
 
 /**
@@ -47,7 +46,6 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
                                                                       CommonAttributes.RATING,
                                                                       CommonAttributes.TIMESTAMP);
     private static final BeanEntityLayout LAYOUT = makeLayout(Rating.class);
-    private static final BeanEntityLayout TIMESTAMP_LAYOUT = makeLayout(WithTimestamp.class);
 
     private final long user;
     private final long item;
@@ -165,6 +163,7 @@ public class Rating extends AbstractBeanEntity implements Preference, Serializab
     }
 
     public static class WithTimestamp extends Rating {
+        private static final BeanEntityLayout TIMESTAMP_LAYOUT = makeLayout(WithTimestamp.class);
         private final long timestamp;
 
         WithTimestamp(long id, long user, long item, double val, long ts) {
