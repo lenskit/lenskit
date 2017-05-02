@@ -153,6 +153,7 @@ subprojects {
         reports.html.enabled = true
 
         testLogging {
+            showStackTraces true
             exceptionFormat "full"
         }
     }
