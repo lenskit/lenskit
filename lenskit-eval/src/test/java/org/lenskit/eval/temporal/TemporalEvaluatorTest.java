@@ -20,8 +20,9 @@
  */
 package org.lenskit.eval.temporal;
 
-import com.google.common.collect.ImmutableList;
-import net.java.quickcheck.generator.iterable.Iterables;
+import net.java.quickcheck.Generator;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,12 +42,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
 public class TemporalEvaluatorTest {
@@ -61,17 +63,25 @@ public class TemporalEvaluatorTest {
     @Before
     public void initialize() throws IOException {
         predictOutputFile = folder.newFile("predictions.csv");
-        List<Rating> ratings;
-        ImmutableList.Builder<Rating> bld = ImmutableList.builder();
+        List<Rating> ratings = new ArrayList<>();
+        Generator<Rating> rgen = LenskitGenerators.ratings();
+        Set<Pair<Long,Long>> used = new HashSet<>();
 
-        for (Rating r: Iterables.toIterable(LenskitGenerators.ratings(), RATING_COUNT)) {
+        while (ratings.size() < RATING_COUNT) {
+            Rating r = rgen.next();
+            long uid = r.getUserId() % 5;
+            Pair<Long,Long> ui = ImmutablePair.of(uid, r.getItemId());
+            if (used.contains(ui)) {
+                continue;
+            }
+
+            used.add(ui);
             Rating r2 = r.copyBuilder()
                          .setUserId(r.getUserId() % 5)
                          .build();
-            bld.add(r2);
+            ratings.add(r2);
         }
 
-        ratings = bld.build();
         assumeThat(ratings, hasSize(RATING_COUNT));
 
         dao = StaticDataSource.fromList(ratings).get();
