@@ -122,15 +122,16 @@ public abstract class LenskitConfigScript extends Script {
             throw new RecommenderConfigurationException("error configuring recommender", ex);
         }
         if (!badProperties.isEmpty()) {
+            String message = "Unresolved properties in evaluation script: ";
+            message += Joiner.on(", ").join(badProperties.keySet());
+            RecommenderConfigurationException ex = new RecommenderConfigurationException(message);
             for (Map.Entry<String,Set<String>> bpe: badProperties.entrySet()) {
                 logger.error("Script references unknown class or property {}", bpe.getKey());
                 for (String pkg: bpe.getValue()) {
                     logger.info("consider importing {}.{}", pkg, bpe.getKey());
+                    ex.addHint("consider importing %s.%s", pkg, bpe.getKey());
                 }
             }
-            String message = "Unresolved properties in evaluation script: ";
-            message += Joiner.on(", ").join(badProperties.keySet());
-            throw new RecommenderConfigurationException(message);
         }
     }
 
