@@ -20,7 +20,6 @@
  */
 package org.lenskit.config
 
-import org.apache.commons.lang3.reflect.FieldUtils
 import org.junit.Test
 import org.lenskit.LenskitConfiguration
 import org.lenskit.LenskitRecommenderEngine
@@ -230,10 +229,8 @@ root PreferenceDomain
             config = script.configure()
             fail("script load should fail")
         } catch (RecommenderConfigurationException rce) {
-            def bpf = FieldUtils.getField(LenskitConfigScript, "badProperties", true)
-            def bp = bpf.get(script);
-            assertThat(bp.keySet(), contains("PreferenceDomain"))
-            assertThat(bp["PreferenceDomain"], contains("org.lenskit.data.ratings"))
+            assertThat(rce.hints, hasSize(1))
+            assertThat(rce.hints, contains("consider importing org.lenskit.data.ratings.PreferenceDomain"))
         }
     }
 }

@@ -31,7 +31,9 @@ import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Base class for LensKit configuration scripts.  This class mixes in {@code LenskitConfigDSL}, so
@@ -132,6 +134,7 @@ public abstract class LenskitConfigScript extends Script {
                     ex.addHint("consider importing %s.%s", pkg, bpe.getKey());
                 }
             }
+            throw ex;
         }
     }
 

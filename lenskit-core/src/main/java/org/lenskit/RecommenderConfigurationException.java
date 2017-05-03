@@ -63,7 +63,7 @@ public class RecommenderConfigurationException extends RecommenderBuildException
         StringBuilder msg = new StringBuilder(super.toString());
 
         for (String hint: hints) {
-            msg.append("\nhint: ").append(hint);
+            msg.append("\nHINT: ").append(hint);
         }
 
         return msg.toString();
