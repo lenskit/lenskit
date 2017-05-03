@@ -37,6 +37,7 @@ import org.lenskit.transform.normalize.BiasUserVectorNormalizer
 import org.lenskit.transform.normalize.UserVectorNormalizer
 
 import static junit.framework.Assert.fail
+import static org.grouplens.lenskit.util.test.ExtraMatchers.matchesPattern
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
@@ -229,8 +230,7 @@ root PreferenceDomain
             config = script.configure()
             fail("script load should fail")
         } catch (RecommenderConfigurationException rce) {
-            assertThat(rce.hints, hasSize(1))
-            assertThat(rce.hints, contains("consider importing org.lenskit.data.ratings.PreferenceDomain"))
+            assertThat(rce.hints, contains(matchesPattern(/.*import.*\s+org\.lenskit\.data\.ratings\.PreferenceDomain/)))
         }
     }
 }
