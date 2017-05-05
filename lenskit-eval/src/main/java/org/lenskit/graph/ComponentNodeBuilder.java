@@ -242,7 +242,7 @@ class ComponentNodeBuilder implements Builder<GVNode> {
             }
             return bld.toString();
         } else {
-            throw new RuntimeException("invalid annotation string format");
+            throw new IllegalArgumentException("invalid annotation string format");
         }
     }
 }

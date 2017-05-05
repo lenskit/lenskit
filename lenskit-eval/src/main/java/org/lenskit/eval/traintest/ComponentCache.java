@@ -35,7 +35,6 @@ import org.grouplens.grapht.reflect.Satisfactions;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeInstantiator;
 import org.lenskit.inject.NodeProcessor;
-import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.describe.*;
 import org.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.lenskit.util.io.StagedWrite;
@@ -138,7 +137,8 @@ class ComponentCache implements NodeProcessor {
         } catch (IOException e) {
             throw new InjectionException("Cache I/O error", e);
         } catch (InterruptedException e) {
-            throw new UncheckedInterruptException(e);
+            Thread.currentThread().interrupt();
+            throw new InjectionException("Cache load interrupted", e);
         }
 
         // Build a new satisfaction and a node, with all non-transient edges.
@@ -313,7 +313,7 @@ class ComponentCache implements NodeProcessor {
             } catch (ClosedByInterruptException | InterruptedIOException ex) {
                 logger.info("Evaluation thread interrupted, aborting");
                 Thread.currentThread().interrupt();
-                throw new UncheckedInterruptException("Evaluation thread interrupted", ex);
+                throw new UncheckedIOException("Evaluation thread interrupted", ex);
             } catch (IOException ex) {
                 logger.warn("ignoring cache file {} due to read error: {}",
                             cacheFile.getFileName(), ex.toString());
