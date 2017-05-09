@@ -90,6 +90,7 @@ public class TrainTestExperiment {
     private boolean shareModelComponents = true;
     private int threadCount = 0;
     private int parallelTasks = 0;
+    private boolean continueAfterError = false;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -304,6 +305,22 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Query whether this task will continue in the face of an error.
+     * @return `true` if the experiment will keep going if a segment fails.
+     */
+    public boolean getContinueAfterError() {
+        return continueAfterError;
+    }
+
+    /**
+     * Configure whether the experiment will continue after an error.
+     * @param c `true` to continue after an error.
+     */
+    public void setContinueAfterError(boolean c) {
+        continueAfterError = c;
+    }
+
+    /**
      * Get the class loader for this experiment.
      * @return The class loader that will be used.
      */
@@ -513,6 +530,7 @@ public class TrainTestExperiment {
             if (group == null) {
                 group = new TaskGroup(true);
                 groups.put(gid, group);
+                group.setContinueAterError(continueAfterError);
             }
             MergePool<Component,Dependency> pool = null;
             if (cache != null) {
@@ -529,6 +547,7 @@ public class TrainTestExperiment {
         TaskGroup root;
         if (groups.size() > 1) {
             root = new TaskGroup(false);
+            root.setContinueAterError(continueAfterError);
             for (TaskGroup g: groups.values()) {
                 root.addTask(g);
             }
