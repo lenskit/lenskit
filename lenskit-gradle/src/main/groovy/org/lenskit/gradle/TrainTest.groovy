@@ -191,17 +191,6 @@ class TrainTest extends LenskitTask implements GradleUtils {
         evalTasks.add(task)
     }
 
-    @Override
-    @TaskAction
-    void perform() {
-        try {
-            super.perform()
-        } catch (Throwable th) {
-            logger.error('error running train-test task', th)
-            throw new RuntimeException('train-test failed', th)
-        }
-    }
-
     @Input
     def getJson() {
         def json = [output_file           : makeUrl(getOutputFile(), getSpecFile()),
