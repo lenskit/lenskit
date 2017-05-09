@@ -20,24 +20,18 @@
  */
 package org.lenskit.gradle
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.ConventionTask
-import org.gradle.api.internal.file.FileResolver
-import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.StopExecutionException
-import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.nativeintegration.console.ConsoleDetector
 import org.gradle.internal.nativeintegration.console.ConsoleMetaData
 import org.gradle.internal.nativeintegration.services.NativeServices
-import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
-import org.gradle.process.internal.JavaExecHandleBuilder
 import org.gradle.util.ConfigureUtil
 
 /**
  * Base class for LensKit tasks.
  */
-public abstract class LenskitTask extends ConventionTask {
+abstract class LenskitTask extends JavaExec {
     /**
      * Enable dry-run support. If turned on, the runner prepares but does not execute the task.
      */
@@ -47,11 +41,6 @@ public abstract class LenskitTask extends ConventionTask {
      * The maximum memory the LensKit task should use.  Defaults to {@link LenskitExtension#getMaxMemory()}.
      */
     def String maxMemory
-
-    /**
-     * The classpath to use.
-     */
-    def FileCollection classpath
 
     /**
      * The log file.  Defaults to no log file.
@@ -84,7 +73,10 @@ public abstract class LenskitTask extends ConventionTask {
      * exposed by LensKit tasks (such as {@link #getMaxMemory()}) will generally override their corresponding settings
      * in the invoker.
      */
-    final def JavaExecSpec invoker
+    @Deprecated
+    JavaExecSpec getInvoker() {
+        return this
+    }
 
     /*
     * The list of jvm argument prroperties
@@ -92,7 +84,6 @@ public abstract class LenskitTask extends ConventionTask {
     def List<String> jvmArgs
 
     LenskitTask() {
-        invoker = new JavaExecHandleBuilder(services.get(FileResolver))
         def ext = project.extensions.getByType(LenskitExtension)
         conventionMapping.jvmArgs = { ext.jvmArgs } // map jvmargs default to the jvmargs from the extension
         conventionMapping.maxMemory = { ext.maxMemory }
@@ -107,17 +98,13 @@ public abstract class LenskitTask extends ConventionTask {
     protected void applyFinalSettings() {
         def mem = getMaxMemory()
         if (mem != null) {
-            invoker.maxHeapSize = mem
-        }
-        if (getClasspath() != null) {
-            invoker.classpath = getClasspath()
+            maxHeapSize = mem
         }
         if (logbackConfiguration) {
-            invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
+            systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
 
         logger.info('applying JVM arguments {}', getJvmArgs())
-        invoker.jvmArgs getJvmArgs() // add all the arguments in the invoker
 
         // the LensKit process will have stderr redirected, even if we're on a terminal
         // so we need to detect console things
@@ -126,7 +113,7 @@ public abstract class LenskitTask extends ConventionTask {
         if (cmd?.isStdErr()) {
             // stderr is a console
             logger.info('color output, turning on color passthrough')
-            invoker.systemProperties 'jansi.passthrough': true
+            systemProperties 'jansi.passthrough': true
         }
     }
 
@@ -134,17 +121,10 @@ public abstract class LenskitTask extends ConventionTask {
      * Apply additional JVM configuration.
      * @param block The configuration block, evaluated against {@link #getInvoker()}.
      */
+    @Deprecated
     public void invoker(Closure block) {
-        ConfigureUtil.configure(block, invoker)
-    }
-
-    @InputFiles
-    public FileCollection getClasspathFiles() {
-        if (dependsOnClasspath) {
-            return getClasspath()
-        } else {
-            return project.files()
-        }
+        logger.warn("invoker is deprecated, just configure the task")
+        ConfigureUtil.configure(block, this)
     }
 
     /**
@@ -153,50 +133,37 @@ public abstract class LenskitTask extends ConventionTask {
     protected void doPrepare() {}
 
     /**
-     * Method run after running the command.  It is run if there is a failure running the LensKit command, but not
-     * if the setup for the command ({@link #doPrepare()}, {@link #getCommandArgs()}, etc.) fail.
-     * @param The result, or `null` if the command could not be executed at all.
-     */
-    protected void doCleanup(ExecResult result) {}
-
-    /**
      * Execute the LensKit task.
      */
-    @TaskAction
-    public void perform() {
+    @Override
+    void exec() {
         applyFinalSettings()
         doPrepare()
+        setClasspath(getClasspath())
         logger.info 'running LensKit command {}', command
         logger.info 'Max memory: {}', getMaxMemory()
-        if (logger.infoEnabled) {
-            logger.info('classpath:')
-            for (f in getClasspath().files) {
-                logger.info('  {}', f)
-            }
-        }
         if (getDryRun()) {
             throw new StopExecutionException()
         }
-        invoker.main = 'org.lenskit.cli.Main'
-        if (getLogFile() != null) {
-            invoker.args '--log-file', project.file(getLogFile())
-        }
-        if (getLogFileLevel() != null) {
-            invoker.args '--log-file-level', getLogFileLevel()
-        }
-
-        invoker.args command
-        invoker.args commandArgs
-        def bld = invoker as JavaExecHandleBuilder
-        ExecResult result = null
-        try {
-            result = bld.build().start().waitForFinish()
-        } finally {
-            doCleanup(result)
-        }
-        result.assertNormalExitValue()
+        setMain('org.lenskit.cli.Main')
+        setArgs(getArgs())
+        super.exec()
     }
 
-    abstract String getCommand();
-    abstract List getCommandArgs();
+    abstract String getCommand()
+    abstract List getCommandArgs()
+
+    @Override
+    List<String> getArgs() {
+        def args = []
+        if (getLogFile() != null) {
+            args << '--log-file' << project.file(getLogFile())
+        }
+        if (getLogFileLevel() != null) {
+            args << '--log-file-level' << getLogFileLevel()
+        }
+        args.add getCommand()
+        args.addAll getCommandArgs()
+        return args
+    }
 }
