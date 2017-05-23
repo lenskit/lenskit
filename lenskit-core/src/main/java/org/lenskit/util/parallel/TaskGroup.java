@@ -77,7 +77,7 @@ public class TaskGroup extends RecursiveAction {
     }
 
     @Override
-    protected void compute() {
+    public void compute() {
         if (parallel) {
             logger.debug("running {} tasks in parallel", tasks.size());
             if (continueAfterError) {

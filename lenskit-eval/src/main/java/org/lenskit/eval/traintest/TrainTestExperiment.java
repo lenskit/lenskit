@@ -24,9 +24,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
@@ -566,15 +568,33 @@ public class TrainTestExperiment {
     private void runJobList() {
         Preconditions.checkState(allJobs != null, "job graph not built");
 
-        for (ExperimentJob job: allJobs) {
-            job.execute();
+        try {
+            rootJob.compute();
+        } catch (Throwable err) {
+            logger.error("experiment failed", err);
+            if (!continueAfterError) {
+                Throwables.throwIfUnchecked(err);
+                // will only happen if an undeclared checked exception slips through
+                throw new UncheckedExecutionException(err);
+            }
         }
     }
 
     private void runJobGraph(int nthreads) {
         Preconditions.checkState(rootJob != null, "job graph not built");
         ForkJoinPool pool = new ForkJoinPool(nthreads);
-        pool.invoke(rootJob);
+        try {
+            pool.invoke(rootJob);
+        } catch (Throwable err) {
+            logger.error("experiment failed", err);
+            if (!continueAfterError) {
+                Throwables.throwIfUnchecked(err);
+                // will only happen if an undeclared checked exception slips through
+                throw new UncheckedExecutionException(err);
+            }
+        } finally {
+            pool.shutdown();
+        }
     }
 
     /**
