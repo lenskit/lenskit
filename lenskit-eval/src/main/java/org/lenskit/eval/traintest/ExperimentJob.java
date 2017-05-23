@@ -225,6 +225,7 @@ class ExperimentJob extends RecursiveAction {
         logger.info("Tested {} in {}", algorithm.getName(), testTimer);
         outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
         outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+        outputRow.add("Succeeded", "Y");
         for (ConditionEvaluator ce : accumulators) {
             outputRow.addAll(ce.finish());
         }

@@ -37,6 +37,7 @@ import org.lenskit.eval.crossfold.CrossfoldMethods
 import org.lenskit.eval.crossfold.Crossfolder
 import org.lenskit.eval.crossfold.HistoryPartitions
 import org.lenskit.eval.crossfold.SortOrder
+import org.lenskit.eval.traintest.predict.PredictEvalTask
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
 import org.lenskit.eval.traintest.recommend.TopNMRRMetric
 
@@ -92,8 +93,12 @@ class TrainTestExperimentTest {
             bind ItemScorer to ItemMeanRatingItemScorer
         }
         experiment.addDataSets(sets)
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
         def result = experiment.execute()
         assertThat(result, notNullValue())
+        assertThat(result, hasSize(2))
+        assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
     }
 
     private List<DataSet> crossfoldRatings() {

@@ -477,7 +477,8 @@ public class TrainTestExperiment {
 
     private TableLayout makeGlobalResultLayout(ExperimentOutputLayout eol) {
         TableLayoutBuilder tlb = TableLayoutBuilder.copy(eol.getConditionLayout());
-        tlb.addColumn("BuildTime")
+        tlb.addColumn("Succeeded")
+           .addColumn("BuildTime")
            .addColumn("TestTime");
         for (EvalTask task: tasks) {
             tlb.addColumns(task.getGlobalColumns());
@@ -619,6 +620,7 @@ public class TrainTestExperiment {
         if (json.has("share_model_components")) {
             exp.setShareModelComponents(json.get("share_model_components").asBoolean());
         }
+        exp.setContinueAfterError(json.path("continue_after_error").asBoolean(false));
         if (!json.has("datasets")) {
             throw new IllegalArgumentException("no data sets specified");
         }
