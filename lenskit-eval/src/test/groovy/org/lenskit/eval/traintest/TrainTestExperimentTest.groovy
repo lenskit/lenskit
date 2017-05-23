@@ -31,15 +31,18 @@ import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.basic.ConstantItemScorer
 import org.lenskit.basic.PopularityRankItemScorer
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.eval.crossfold.CrossfoldMethods
 import org.lenskit.eval.crossfold.Crossfolder
 import org.lenskit.eval.crossfold.HistoryPartitions
 import org.lenskit.eval.crossfold.SortOrder
+import org.lenskit.eval.traintest.predict.PredictEvalTask
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
 import org.lenskit.eval.traintest.recommend.TopNMRRMetric
 
+import javax.inject.Provider
 import java.nio.file.Files
 import java.nio.file.Paths
 
@@ -92,8 +95,12 @@ class TrainTestExperimentTest {
             bind ItemScorer to ItemMeanRatingItemScorer
         }
         experiment.addDataSets(sets)
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
         def result = experiment.execute()
         assertThat(result, notNullValue())
+        assertThat(result, hasSize(2))
+        assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
     }
 
     private List<DataSet> crossfoldRatings() {
@@ -145,6 +152,35 @@ algorithm('A2') {
                    hasEntry('foo', 'bar'))
         assertThat(experiment.algorithms[1].attributes,
                    hasEntry('foo', 'bat'))
+    }
+
+    @Test
+    void testContinueAfterError() {
+        List<DataSet> sets = crossfoldRatings()
+        def errp = new Provider<Double>() {
+            @Override
+            Double get() {
+                throw new UnsupportedOperationException("ni")
+            }
+        }
+        experiment.addAlgorithm("Fail") {
+            bind ItemScorer to ConstantItemScorer
+            bind (ConstantItemScorer.Value,double) toProvider errp
+        }
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to ItemMeanRatingItemScorer
+        }
+        experiment.addDataSets(sets)
+        experiment.continueAfterError = true
+        experiment.parallelTasks = 1
+        experiment.threadCount = 1
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
+        def result = experiment.execute()
+        assertThat(result, notNullValue())
+        assertThat(result, hasSize(4))
+        assertThat(result.column("Succeeded"),
+                   containsInAnyOrder('Y', 'Y', 'N', 'N'))
     }
 
     @Test

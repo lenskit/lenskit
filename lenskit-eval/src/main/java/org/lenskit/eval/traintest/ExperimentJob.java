@@ -169,10 +169,22 @@ class ExperimentJob extends RecursiveAction {
         train.start();
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        LenskitRecommenderEngine engine = buildRecommenderEngine(trainData);
+        LenskitRecommenderEngine engine;
+        try {
+             engine = buildRecommenderEngine(trainData);
+        } catch (Throwable th) {
+            outputRow.add("Succeeded", "N");
+            try {
+                globalOutput.writeRow(outputRow.buildList());
+            } catch (Throwable e) {
+                th.addSuppressed(e);
+            }
+            throw th;
+        }
         buildTimer.stop();
         train.finish();
         logger.info("Built {} in {}", algorithm.getName(), buildTimer);
+        outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
         logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
         List<ConditionEvaluator> accumulators = Lists.newArrayList();
@@ -217,14 +229,24 @@ class ExperimentJob extends RecursiveAction {
         }
 
         UserEvaluator eval = new UserEvaluator(test, userOutput, trainData, runtimeData, engine, accumulators, testData, progress, entityTypes);
-        userStream.forEach(eval);
+        try {
+            userStream.forEach(eval);
+        } catch (Throwable th) {
+            outputRow.add("Succeeded", "N");
+            try {
+                globalOutput.writeRow(outputRow.buildList());
+            } catch (Throwable e) {
+                th.addSuppressed(e);
+            }
+            throw th;
+        }
 
         test.finish();
         progress.finish();
         testTimer.stop();
         logger.info("Tested {} in {}", algorithm.getName(), testTimer);
-        outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
         outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+        outputRow.add("Succeeded", "Y");
         for (ConditionEvaluator ce : accumulators) {
             outputRow.addAll(ce.finish());
         }

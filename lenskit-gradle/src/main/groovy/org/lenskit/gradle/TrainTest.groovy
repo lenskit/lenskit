@@ -25,7 +25,6 @@ import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.ParallelizableTask
-import org.gradle.api.tasks.TaskAction
 import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
@@ -68,6 +67,11 @@ class TrainTest extends LenskitTask implements GradleUtils {
      * Configure whether the evaluator should share model components between algorithms.
      */
     def boolean shareModelComponents = true
+
+    /**
+     * Configure whether the evaluation will continue after errors.
+     */
+    def boolean continueAfterError = false
 
     private Map<String,Object> algorithms = new HashMap<>()
     private List<Callable> dataSets = []
@@ -198,7 +202,8 @@ class TrainTest extends LenskitTask implements GradleUtils {
                     cache_directory       : makeUrl(getCacheDirectory(), getSpecFile()),
                     thread_count          : getThreadCount(),
                     parallel_tasks        : getParallelTasks(),
-                    share_model_components: getShareModelComponents()]
+                    share_model_components: getShareModelComponents(),
+                    continue_after_error  : getContinueAfterError()]
         json.datasets = dataSets.collect {it.call()}
         json.algorithms = algorithms.collectEntries {k, v ->
             [k, makeUrl(v, getSpecFile())]

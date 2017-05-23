@@ -24,9 +24,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
@@ -90,6 +92,7 @@ public class TrainTestExperiment {
     private boolean shareModelComponents = true;
     private int threadCount = 0;
     private int parallelTasks = 0;
+    private boolean continueAfterError = false;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -304,6 +307,22 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Query whether this task will continue in the face of an error.
+     * @return `true` if the experiment will keep going if a segment fails.
+     */
+    public boolean getContinueAfterError() {
+        return continueAfterError;
+    }
+
+    /**
+     * Configure whether the experiment will continue after an error.
+     * @param c `true` to continue after an error.
+     */
+    public void setContinueAfterError(boolean c) {
+        continueAfterError = c;
+    }
+
+    /**
      * Get the class loader for this experiment.
      * @return The class loader that will be used.
      */
@@ -460,7 +479,8 @@ public class TrainTestExperiment {
 
     private TableLayout makeGlobalResultLayout(ExperimentOutputLayout eol) {
         TableLayoutBuilder tlb = TableLayoutBuilder.copy(eol.getConditionLayout());
-        tlb.addColumn("BuildTime")
+        tlb.addColumn("Succeeded")
+           .addColumn("BuildTime")
            .addColumn("TestTime");
         for (EvalTask task: tasks) {
             tlb.addColumns(task.getGlobalColumns());
@@ -513,6 +533,7 @@ public class TrainTestExperiment {
             if (group == null) {
                 group = new TaskGroup(true);
                 groups.put(gid, group);
+                group.setContinueAterError(continueAfterError);
             }
             MergePool<Component,Dependency> pool = null;
             if (cache != null) {
@@ -529,6 +550,7 @@ public class TrainTestExperiment {
         TaskGroup root;
         if (groups.size() > 1) {
             root = new TaskGroup(false);
+            root.setContinueAterError(continueAfterError);
             for (TaskGroup g: groups.values()) {
                 root.addTask(g);
             }
@@ -546,15 +568,33 @@ public class TrainTestExperiment {
     private void runJobList() {
         Preconditions.checkState(allJobs != null, "job graph not built");
 
-        for (ExperimentJob job: allJobs) {
-            job.execute();
+        try {
+            rootJob.compute();
+        } catch (Throwable err) {
+            logger.error("experiment failed", err);
+            if (!continueAfterError) {
+                Throwables.throwIfUnchecked(err);
+                // will only happen if an undeclared checked exception slips through
+                throw new UncheckedExecutionException(err);
+            }
         }
     }
 
     private void runJobGraph(int nthreads) {
         Preconditions.checkState(rootJob != null, "job graph not built");
         ForkJoinPool pool = new ForkJoinPool(nthreads);
-        pool.invoke(rootJob);
+        try {
+            pool.invoke(rootJob);
+        } catch (Throwable err) {
+            logger.error("experiment failed", err);
+            if (!continueAfterError) {
+                Throwables.throwIfUnchecked(err);
+                // will only happen if an undeclared checked exception slips through
+                throw new UncheckedExecutionException(err);
+            }
+        } finally {
+            pool.shutdown();
+        }
     }
 
     /**
@@ -600,6 +640,7 @@ public class TrainTestExperiment {
         if (json.has("share_model_components")) {
             exp.setShareModelComponents(json.get("share_model_components").asBoolean());
         }
+        exp.setContinueAfterError(json.path("continue_after_error").asBoolean(false));
         if (!json.has("datasets")) {
             throw new IllegalArgumentException("no data sets specified");
         }
