@@ -186,11 +186,26 @@ class TrainTest extends LenskitTask implements GradleUtils {
     }
 
     /**
-     * Configure a prediction task.
+     * Configure a top-N recommendation task.
      * @param block The block.
      */
     void recommend(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
         def task = new RecommendEvalTaskConfig(project)
+        task.configure block
+        evalTasks.add(task)
+    }
+
+    /**
+     * Configure a rank effectiveness task.  This is built on {@link #recommend(Closure)}, but sets options to defaults
+     * that make the resulting task a rank effectiveness measure when used with suitable metrics such as NDCG.
+     *
+     * @param block The configuration block.
+     */
+    void rank(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
+        def task = new RecommendEvalTaskConfig(project)
+        task.labelPrefix = 'Rank'
+        task.candidates = 'user.testItems'
+        task.listSize = -1
         task.configure block
         evalTasks.add(task)
     }
