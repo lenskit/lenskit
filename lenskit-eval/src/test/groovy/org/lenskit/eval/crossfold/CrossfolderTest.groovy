@@ -73,8 +73,7 @@ class CrossfolderTest {
     public void testFreshCFStateDoesNotHaveFiles() {
         assertThat(cf.name, equalTo("test"))
         assertThat(cf.partitionCount, equalTo(5))
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
-        assertThat(cf.skipIfUpToDate, equalTo(false))
+        assertThat(cf.method, equalTo(CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10))))
         assertThat(cf.writeTimestamps, equalTo(true))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
         assertThat(Files.exists(tmp.root.toPath().resolve("datasets.yaml")),

@@ -22,6 +22,10 @@ package org.lenskit.util.io;
 
 import javax.annotation.CheckForNull;
 import java.io.Closeable;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * A stream of objects read from somewhere.
@@ -32,8 +36,9 @@ import java.io.Closeable;
  * any iterator returned will be null.
  *
  * @param <T> The type of data returned by the stream
+ * @see AbstractObjectStream
  */
-public interface ObjectStream<T> extends Iterable<T>, Closeable {
+public interface ObjectStream<T> extends Closeable, Stream<T>, Iterable<T> {
     /**
      * Read the next object from this stream.
      * @return The next object, or `null` if at the end of the stream.
@@ -49,4 +54,18 @@ public interface ObjectStream<T> extends Iterable<T>, Closeable {
      */
     @Override
     void close();
+
+    @Override
+    default void forEach(Consumer<? super T> action) {
+        T obj = readObject();
+        while (obj != null) {
+            action.accept(obj);
+            obj = readObject();
+        }
+    }
+
+    @Override
+    default Spliterator<T> spliterator() {
+        return Spliterators.spliteratorUnknownSize(iterator(), 0);
+    }
 }

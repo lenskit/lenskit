@@ -23,8 +23,8 @@ package org.lenskit.util.table.writer;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
-import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.table.TableLayout;
 
 import javax.annotation.Nonnull;

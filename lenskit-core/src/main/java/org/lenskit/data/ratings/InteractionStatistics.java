@@ -151,4 +151,38 @@ public class InteractionStatistics implements Serializable {
             return new InteractionStatistics(entityType, counts);
         }
     }
+
+    /**
+     * Provider that counts item interactions.
+     */
+    public static class CountSumISProvider implements Provider<InteractionStatistics> {
+        private final EntityType entityType;
+        private final DataAccessObject dao;
+
+        /**
+         * Construct the provider.
+         * @param type The entity type. It should have {@link CommonAttributes#ITEM_ID} attributes.
+         * @param dao The data access object.
+         */
+        @Inject
+        public CountSumISProvider(@InteractionEntityType EntityType type,
+                                  @Transient DataAccessObject dao) {
+            entityType = type;
+            this.dao = dao;
+        }
+
+        @Override
+        public InteractionStatistics get() {
+            Long2IntOpenHashMap counts = new Long2IntOpenHashMap();
+
+            try (ObjectStream<Entity> stream = dao.query(entityType).stream()) {
+                for (Entity e : stream) {
+                    long item = e.getLong(CommonAttributes.ITEM_ID);
+                    counts.addTo(item, e.getInteger(CommonAttributes.COUNT));
+                }
+            }
+
+            return new InteractionStatistics(entityType, counts);
+        }
+    }
 }

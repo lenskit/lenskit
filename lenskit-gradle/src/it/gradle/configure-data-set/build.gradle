@@ -32,13 +32,17 @@ task evaluate(type: TrainTest) {
     }
 }
 
-task check(overwrite: true, dependsOn: evaluate) << {
-    def specFile = file("$buildDir/evaluate-spec.json")
-    assertThat("spec file exists", specFile.exists())
-    def exp = SpecUtils.load(TrainTestExperimentSpec, specFile.toPath())
-    assertThat(exp.dataSets, hasSize(1))
-    def spec = exp.dataSets[0]
-    assertThat(spec.name, equalTo('Foo'))
-    assertThat(spec.attributes, hasEntry('Partition', 1))
-    assertThat(spec.testSource, instanceOf(TextDataSourceSpec))
+task verifyEvalOutput(dependsOn: evaluate) {
+    doLast {
+        def specFile = file("$buildDir/evaluate-spec.json")
+        assertThat("spec file exists", specFile.exists())
+        def exp = SpecUtils.load(TrainTestExperimentSpec, specFile.toPath())
+        assertThat(exp.dataSets, hasSize(1))
+        def spec = exp.dataSets[0]
+        assertThat(spec.name, equalTo('Foo'))
+        assertThat(spec.attributes, hasEntry('Partition', 1))
+        assertThat(spec.testSource, instanceOf(TextDataSourceSpec))
+    }
 }
+
+check.dependsOn verifyEvalOutput

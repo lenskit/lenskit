@@ -21,7 +21,7 @@
 package org.lenskit.similarity;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
+import org.lenskit.util.math.MutualInformationAccumulator;
 import org.lenskit.transform.quantize.Quantizer;
 
 import javax.inject.Inject;

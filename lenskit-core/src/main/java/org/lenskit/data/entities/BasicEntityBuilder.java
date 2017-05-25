@@ -22,9 +22,8 @@ package org.lenskit.data.entities;
 
 import com.google.common.base.Preconditions;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * General-purpose builder for {@linkplain Entity entities}.
@@ -38,7 +37,7 @@ public class BasicEntityBuilder extends EntityBuilder {
      */
     public BasicEntityBuilder(EntityType type) {
         super(type);
-        attributes = new HashMap<>();
+        attributes = new LinkedHashMap<>();
     }
 
     @Override
@@ -58,7 +57,7 @@ public class BasicEntityBuilder extends EntityBuilder {
     @Override
     public EntityBuilder clearAttribute(TypedName<?> name) {
         Preconditions.checkNotNull(name, "attribute");
-        attributes.remove(name);
+        attributes.remove(name.getName());
         if (name == CommonAttributes.ENTITY_ID) {
             idSet = false;
         }
@@ -72,7 +71,21 @@ public class BasicEntityBuilder extends EntityBuilder {
         if (attributes.isEmpty() || attributes.keySet().equals(Collections.singleton(CommonAttributes.ENTITY_ID))) {
             return new BareEntity(type, id);
         } else {
-            return new BasicEntity(type, id, attributes);
+            List<TypedName<?>> names = new ArrayList<>(attributes.size());
+            names.add(CommonAttributes.ENTITY_ID);
+            for (Attribute<?> a: attributes.values()) {
+                names.add(a.getTypedName());
+            }
+            assert names.lastIndexOf(CommonAttributes.ENTITY_ID) == 0;
+
+            AttributeSet aset = AttributeSet.create(names);
+            Object[] values = new Object[aset.size()];
+            for (Attribute<?> a: attributes.values()) {
+                int i = aset.lookup(a.getTypedName());
+                values[i-1] = a.getValue();
+            }
+
+            return new BasicEntity(type, id, aset, values);
         }
     }
 }

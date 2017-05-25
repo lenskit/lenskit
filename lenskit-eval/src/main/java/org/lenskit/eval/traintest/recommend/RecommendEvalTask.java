@@ -29,11 +29,10 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.Result;
-import org.lenskit.api.ResultList;
+import org.lenskit.util.io.CompressionMode;
+import org.lenskit.api.*;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
@@ -67,14 +66,18 @@ public class RecommendEvalTask implements EvalTask {
     };
 
     private Path outputFile;
+    private Path itemOutputFile;
     private String labelPrefix;
     private int listSize = -1;
+    private boolean separateItems;
     private List<TopNMetric<?>> topNMetrics = Lists.newArrayList(DEFAULT_METRICS);
     private volatile ItemSelector candidateSelector = ItemSelector.allItems();
     private volatile ItemSelector excludeSelector = ItemSelector.userTrainItems();
 
     private ExperimentOutputLayout experimentOutputLayout;
     private TableWriter outputTable;
+    private TableWriter itemOutputTable;
+    private TableLayout itemOutputLayout;
 
     /**
      * Create a new recommend eval task.
@@ -95,6 +98,13 @@ public class RecommendEvalTask implements EvalTask {
         if (outFile != null) {
             task.setOutputFile(Paths.get(base.resolve(outFile)));
         }
+
+        String itemOut = json.path("item_output_file").asText(null);
+        if (itemOut != null) {
+            task.setItemOutputFile(Paths.get(base.resolve(itemOut)));
+        }
+
+        task.setSeparateItems(json.path("separate_items").asBoolean(false));
 
         task.setLabelPrefix(json.path("label_prefix").asText(null));
         task.setListSize(json.path("list_size").asInt(-1));
@@ -118,7 +128,7 @@ public class RecommendEvalTask implements EvalTask {
                 if (metric != null) {
                     task.addMetric(metric);
                 } else {
-                    throw new RuntimeException("cannot build metric for " + mn.toString());
+                    throw new VerifyError("cannot build metric for " + mn.toString());
                 }
             }
         }
@@ -127,7 +137,7 @@ public class RecommendEvalTask implements EvalTask {
     }
 
     /**
-     * Get the output file for writing predictions.
+     * Get the output file for writing recommendations.
      * @return The output file, or {@code null} if no file is configured.
      */
     public Path getOutputFile() {
@@ -135,11 +145,27 @@ public class RecommendEvalTask implements EvalTask {
     }
 
     /**
-     * Set the output file for predictions.
+     * Set the output file for recommendations.
      * @param file The output file for writing predictions. Will get a CSV file.
      */
     public void setOutputFile(Path file) {
         outputFile = file;
+    }
+
+    /**
+     * Get the output file for writing per-target-item results.
+     * @return The output file, or {@code null} if no file is configured.
+     */
+    public Path getItemOutputFile() {
+        return itemOutputFile;
+    }
+
+    /**
+     * Set the output file for per-target-item results.
+     * @param file The output file for writing predictions. Will get a CSV file.
+     */
+    public void setItemOutputFile(Path file) {
+        itemOutputFile = file;
     }
 
     /**
@@ -173,6 +199,22 @@ public class RecommendEvalTask implements EvalTask {
      */
     public void setListSize(int n) {
         listSize = n;
+    }
+
+    /**
+     * Query whether this task will separate items.
+     * @return {@code true} if test items are evaluated separately.
+     */
+    public boolean getSeparateItems() {
+        return separateItems;
+    }
+
+    /**
+     * Control whether this task will separate items.
+     * @param sep {@code true} to evaluate test items separately.
+     */
+    public void setSeparateItems(boolean sep) {
+        separateItems = sep;
     }
 
     /**
@@ -258,6 +300,10 @@ public class RecommendEvalTask implements EvalTask {
 
     @Override
     public List<String> getUserColumns() {
+        if (separateItems) {
+            Collections.emptyList();
+        }
+
         ImmutableList.Builder<String> columns = ImmutableList.builder();
         for (TopNMetric<?> pm: getTopNMetrics()) {
             for (String label: pm.getColumnLabels()) {
@@ -280,21 +326,46 @@ public class RecommendEvalTask implements EvalTask {
     public void start(ExperimentOutputLayout outputLayout) {
         experimentOutputLayout = outputLayout;
         Path outFile = getOutputFile();
-        if (outFile == null) {
-            return;
+        if (outFile != null) {
+            logger.info("setting up recommendation output to {}", outFile);
+            TableLayoutBuilder tlb = TableLayoutBuilder.copy(outputLayout.getConditionLayout());
+            tlb.addColumn("User");
+            if (separateItems) {
+                tlb.addColumn("TargetItem");
+            }
+
+            TableLayout layout = tlb.addColumn("Rank")
+                                    .addColumn("Item")
+                                    .addColumn("Score")
+                                    .build();
+            try {
+                logger.info("writing recommendations to {}", outFile);
+                outputTable = CSVWriter.open(outFile.toFile(), layout, CompressionMode.AUTO);
+            } catch (IOException e) {
+                throw new EvaluationException("error opening recommendation output file", e);
+            }
         }
 
-        TableLayoutBuilder tlb = TableLayoutBuilder.copy(outputLayout.getConditionLayout());
-        TableLayout layout = tlb.addColumn("User")
-                                .addColumn("Rank")
-                                .addColumn("Item")
-                                .addColumn("Score")
-                                .build();
-        try {
-            logger.info("writing recommendations to {}", outFile);
-            outputTable = CSVWriter.open(outFile.toFile(), layout, CompressionMode.AUTO);
-        } catch (IOException e) {
-            throw new EvaluationException("error opening prediction output file", e);
+        Path itemOut = getItemOutputFile();
+        if (itemOut != null && separateItems) {
+            logger.info("setting up per-item output to {}", itemOut);
+            TableLayoutBuilder tlb = TableLayoutBuilder.copy(outputLayout.getConditionLayout());
+            tlb.addColumn("User")
+               .addColumn("TargetItem");
+            for (TopNMetric<?> pm: getTopNMetrics()) {
+                for (String label: pm.getColumnLabels()) {
+                    tlb.addColumn(label);
+                }
+            }
+
+            itemOutputLayout = tlb.build();
+
+            try {
+                logger.info("writing per-item results to {}", outFile);
+                itemOutputTable = CSVWriter.open(itemOut.toFile(), itemOutputLayout, CompressionMode.AUTO);
+            } catch (IOException e) {
+                throw new EvaluationException("error opening per-item result file", e);
+            }
         }
     }
 
@@ -306,21 +377,25 @@ public class RecommendEvalTask implements EvalTask {
                 outputTable.close();
                 outputTable = null;
             } catch (IOException e) {
-                throw new EvaluationException("error closing prediction output file", e);
+                throw new EvaluationException("error closing recommendation output file", e);
+            }
+        }
+
+        if (itemOutputTable != null) {
+            try {
+                itemOutputTable.close();
+                itemOutputTable = null;
+            } catch (IOException e) {
+                throw new EvaluationException("error closing per-item recommendation output file", e);
             }
         }
     }
 
     @Override
-    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
+    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine rec) {
         Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
         TableWriter recTable = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
         LongSortedArraySet items = LongUtils.packedSet(dataSet.getAllItems());
-        ItemRecommender irec = rec.getItemRecommender();
-        if (irec == null) {
-            logger.warn("algorithm {} has no item recommender", algorithm);
-            return null;
-        }
 
         // we need details to write recommendation output
         boolean useDetails = recTable != null;
@@ -333,7 +408,13 @@ public class RecommendEvalTask implements EvalTask {
             useDetails |= mc.usesDetails();
         }
 
-        return new TopNConditionEvaluator(recTable, rec, irec, contexts, items, useDetails);
+        if (separateItems) {
+            TableWriter itemTable = experimentOutputLayout.prefixTable(itemOutputTable, dataSet, algorithm);
+            return new SeparateTopNConditionEvaluator(recTable, itemTable, contexts, items, useDetails);
+        } else {
+            assert itemOutputTable == null;
+            return new BatchedTopNConditionEvaluator(recTable, contexts, items, useDetails);
+        }
     }
 
     static class MetricContext<X> {
@@ -350,13 +431,13 @@ public class RecommendEvalTask implements EvalTask {
         }
 
         @Nonnull
-        public MetricResult measureUser(TestUser user, int n, ResultList recommendations) {
-            return metric.measureUser(user, n, recommendations, context);
+        public MetricResult measureUser(Recommender rec, TestUser user, int n, ResultList recommendations) {
+            return metric.measureUser(rec, user, n, recommendations, context);
         }
 
         @Nonnull
-        public MetricResult measureUser(TestUser user, int n, LongList recommendations) {
-            return ((ListOnlyTopNMetric<X>) metric).measureUser(user, n, recommendations, context);
+        public MetricResult measureUser(Recommender rec, TestUser user, int n, LongList recommendations) {
+            return ((ListOnlyTopNMetric<X>) metric).measureUser(rec, user, n, recommendations, context);
         }
 
         @Nonnull
@@ -367,25 +448,21 @@ public class RecommendEvalTask implements EvalTask {
         /**
          * Create a new metric context. Indirected through this method to help the type checker.
          */
-        public static <X> MetricContext<X> create(TopNMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
-            X ctx = metric.createContext(algorithm, dataSet, rec);
+        public static <X> MetricContext<X> create(TopNMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+            X ctx = metric.createContext(algorithm, dataSet, engine);
             return new MetricContext<>(metric, ctx);
         }
     }
 
-    class TopNConditionEvaluator implements ConditionEvaluator {
+    class BatchedTopNConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
-        private final Recommender recommender;
-        private final ItemRecommender itemRecommender;
         private final List<MetricContext<?>> predictMetricContexts;
         private final LongSortedArraySet allItems;
         private final boolean useDetails;
 
-        public TopNConditionEvaluator(TableWriter tw, Recommender rec, ItemRecommender irec,
-                                      List<MetricContext<?>> mcs, LongSortedArraySet items, boolean details) {
+        public BatchedTopNConditionEvaluator(TableWriter tw,
+                                             List<MetricContext<?>> mcs, LongSortedArraySet items, boolean details) {
             writer = tw;
-            recommender = rec;
-            itemRecommender = irec;
             predictMetricContexts = mcs;
             allItems = items;
             useDetails = details;
@@ -393,19 +470,27 @@ public class RecommendEvalTask implements EvalTask {
 
         @Nonnull
         @Override
-        public Map<String, Object> measureUser(TestUser testUser) {
+        public Map<String, Object> measureUser(Recommender recommender, TestUser testUser) {
+            ItemRecommender irec = recommender.getItemRecommender();
+            if (irec == null) {
+                logger.debug("recommender cannot produce recommendations");
+                return Collections.emptyMap();
+            }
+
             LongSet candidates = getCandidateSelector().selectItems(allItems, recommender, testUser);
             LongSet excludes = getExcludeSelector().selectItems(allItems, recommender, testUser);
             int n = getListSize();
             ResultList results = null;
             LongList items = null;
             if (useDetails) {
-                results = itemRecommender.recommendWithDetails(testUser.getUserId(), n,
-                                                               candidates, excludes);
+                logger.debug("generating {} detailed recommendations for user {}", n, testUser.getUser());
+                results = irec.recommendWithDetails(testUser.getUserId(), n,
+                                                    candidates, excludes);
             } else {
                 // no one needs details, save time collecting them
-                items = LongUtils.asLongList(itemRecommender.recommend(testUser.getUserId(), n,
-                                                                       candidates, excludes));
+                logger.debug("generating {} recommendations for user {}", n, testUser.getUser());
+                items = LongUtils.asLongList(irec.recommend(testUser.getUserId(), n,
+                                                            candidates, excludes));
             }
 
             // Measure the user results
@@ -413,9 +498,9 @@ public class RecommendEvalTask implements EvalTask {
             for (MetricContext<?> mc: predictMetricContexts) {
                 MetricResult res;
                 if (useDetails) {
-                    res = mc.measureUser(testUser, n, results);
+                    res = mc.measureUser(recommender, testUser, n, results);
                 } else {
-                    res = mc.measureUser(testUser, n, items);
+                    res = mc.measureUser(recommender, testUser, n, items);
                 }
                 row.putAll(res.withPrefix(getLabelPrefix())
                               .getValues());
@@ -436,6 +521,120 @@ public class RecommendEvalTask implements EvalTask {
             }
 
             return row;
+        }
+
+        @Nonnull
+        @Override
+        public Map<String, Object> finish() {
+            Map<String,Object> results = new HashMap<>();
+            for (MetricContext<?> mc: predictMetricContexts) {
+                logger.debug("finishing metric {}", mc.metric);
+                results.putAll(mc.getAggregateMeasurements()
+                                 .withPrefix(getLabelPrefix())
+                                 .getValues());
+            }
+            return results;
+        }
+    }
+
+    class SeparateTopNConditionEvaluator implements ConditionEvaluator {
+        private final TableWriter writer;
+        private final TableWriter itemWriter;
+        private final List<MetricContext<?>> predictMetricContexts;
+        private final LongSortedArraySet allItems;
+        private final boolean useDetails;
+
+        public SeparateTopNConditionEvaluator(@Nullable TableWriter tw, @Nullable TableWriter itw,
+                                              List<MetricContext<?>> mcs, LongSortedArraySet items, boolean details) {
+            writer = tw;
+            itemWriter = itw;
+            predictMetricContexts = mcs;
+            allItems = items;
+            useDetails = details;
+        }
+
+        @Nonnull
+        @Override
+        public Map<String, Object> measureUser(Recommender recommender, TestUser testUser) {
+            ItemRecommender itemRecommender = recommender.getItemRecommender();
+            if (itemRecommender == null) {
+                logger.debug("recommender cannot produce recommendations");
+                return Collections.emptyMap();
+            }
+
+            List<Entity> history = testUser.getTestHistory();
+            logger.debug("analyzing for user {} with {} test items", testUser.getUserId(), history.size());
+            for (Entity te: history) {
+                TestUserBuilder tub = new TestUserBuilder();
+                tub.setUserId(testUser.getUserId())
+                   .setTrainHistory(testUser.getTrainHistory())
+                   .setTestHistory(Lists.newArrayList(te));
+                TestUser tu2 = tub.build();
+
+                LongSet candidates = getCandidateSelector().selectItems(allItems, recommender, tu2);
+                LongSet excludes = getExcludeSelector().selectItems(allItems, recommender, tu2);
+                int n = getListSize();
+                ResultList results = null;
+                LongList items = null;
+                logger.debug("generating recommendations for user {}, item {}",
+                             testUser.getUserId(), te.maybeGet(CommonAttributes.ITEM_ID));
+                if (useDetails) {
+                    results = itemRecommender.recommendWithDetails(tu2.getUserId(), n,
+                                                                   candidates, excludes);
+                } else {
+                    // no one needs details, save time collecting them
+                    items = LongUtils.asLongList(itemRecommender.recommend(tu2.getUserId(), n,
+                                                                           candidates, excludes));
+                }
+
+                // Measure the user results
+                TableLayout il = itemWriter != null ? itemWriter.getLayout() : null;
+                List<Object> row = new ArrayList<>();
+                row.add(tu2.getUserId());
+                row.add(te.getLong(CommonAttributes.ITEM_ID));
+                for (MetricContext<?> mc: predictMetricContexts) {
+                    MetricResult res;
+                    if (useDetails) {
+                        res = mc.measureUser(recommender, tu2, n, results);
+                    } else {
+                        res = mc.measureUser(recommender, tu2, n, items);
+                    }
+                    if (il != null) {
+                        for (Map.Entry<String, Object> rv : res.getValues().entrySet()) {
+                            int idx = il.columnIndex(rv.getKey());
+                            while (row.size() <= idx) {
+                                row.add(null);
+                            }
+                            row.set(idx, rv.getValue());
+                        }
+                    }
+                }
+
+                if (itemWriter != null) {
+                    try {
+                        itemWriter.writeRow(row);
+                    } catch (IOException e) {
+                        throw new EvaluationException("error writing target item result row", e);
+                    }
+                }
+
+                // Write all attempted predictions
+                if (writer != null) {
+                    assert results != null; // we use details when writer is nonnull
+                    int rank = 0;
+                    for (Result rec : results) {
+                        try {
+                            rank += 1;
+                            writer.writeRow(tu2.getUserId(), te.getLong(CommonAttributes.ITEM_ID),
+                                            rank, rec.getId(), rec.getScore());
+                        } catch (IOException ex) {
+                            throw new EvaluationException("error writing prediction row", ex);
+                        }
+                    }
+                }
+
+            }
+            return Collections.emptyMap();
         }
 
         @Nonnull

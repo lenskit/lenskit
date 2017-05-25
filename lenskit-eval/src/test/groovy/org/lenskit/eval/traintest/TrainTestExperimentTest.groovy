@@ -20,6 +20,9 @@
  */
 package org.lenskit.eval.traintest
 
+import com.google.common.base.Charsets
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -28,12 +31,19 @@ import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.basic.ConstantItemScorer
+import org.lenskit.basic.PopularityRankItemScorer
 import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.eval.crossfold.CrossfoldMethods
 import org.lenskit.eval.crossfold.Crossfolder
 import org.lenskit.eval.crossfold.HistoryPartitions
 import org.lenskit.eval.crossfold.SortOrder
+import org.lenskit.eval.traintest.predict.PredictEvalTask
+import org.lenskit.eval.traintest.recommend.RecommendEvalTask
+import org.lenskit.eval.traintest.recommend.TopNMRRMetric
 
+import javax.inject.Provider
+import java.nio.file.Files
 import java.nio.file.Paths
 
 import static org.hamcrest.Matchers.*
@@ -62,9 +72,13 @@ class TrainTestExperimentTest {
         file.append('5,2,3,881250949\n')
         file.append('5,1,3,881250949\n')
         file.append('5,5,3,881250949\n')
-        file = folder.newFile("global-test.csv")
+
+        file = folder.newFile("multi-test.csv")
         file.append('1,4,3.0\n')
         file.append('3,3,4.5\n')
+        file.append('1,2,4.5\n')
+
+
         experiment = new TrainTestExperiment()
     }
 
@@ -81,8 +95,12 @@ class TrainTestExperimentTest {
             bind ItemScorer to ItemMeanRatingItemScorer
         }
         experiment.addDataSets(sets)
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
         def result = experiment.execute()
         assertThat(result, notNullValue())
+        assertThat(result, hasSize(2))
+        assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
     }
 
     private List<DataSet> crossfoldRatings() {
@@ -134,5 +152,64 @@ algorithm('A2') {
                    hasEntry('foo', 'bar'))
         assertThat(experiment.algorithms[1].attributes,
                    hasEntry('foo', 'bat'))
+    }
+
+    @Test
+    void testContinueAfterError() {
+        List<DataSet> sets = crossfoldRatings()
+        def errp = new Provider<Double>() {
+            @Override
+            Double get() {
+                throw new UnsupportedOperationException("ni")
+            }
+        }
+        experiment.addAlgorithm("Fail") {
+            bind ItemScorer to ConstantItemScorer
+            bind (ConstantItemScorer.Value,double) toProvider errp
+        }
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to ItemMeanRatingItemScorer
+        }
+        experiment.addDataSets(sets)
+        experiment.continueAfterError = true
+        experiment.parallelTasks = 1
+        experiment.threadCount = 1
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
+        def result = experiment.execute()
+        assertThat(result, notNullValue())
+        assertThat(result, hasSize(4))
+        assertThat(result.column("Succeeded"),
+                   containsInAnyOrder('Y', 'Y', 'N', 'N'))
+    }
+
+    @Test
+    void testSeparateTopN() {
+        DataSet set = DataSet.newBuilder("test")
+                .setTrain(StaticDataSource.csvRatingFile(folder.root.toPath().resolve("ratings.csv")))
+                .setTest(StaticDataSource.csvRatingFile(folder.root.toPath().resolve("multi-test.csv")))
+                .build()
+        experiment.addDataSet(set)
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to PopularityRankItemScorer
+        }
+        def task = new RecommendEvalTask()
+        def itemFile = folder.root.toPath().resolve("item-output.csv")
+        task.separateItems = true
+        task.itemOutputFile = itemFile
+        task.addMetric(new TopNMRRMetric())
+        experiment.addTask(task)
+        def result = experiment.execute()
+        assertThat(result.column("MRR"), notNullValue())
+        assertThat(result.column("MRR"), hasSize(1))
+        assertThat(Files.exists(itemFile), equalTo(true))
+        def csvP = CSVParser.parse(itemFile.toFile(), Charsets.UTF_8, CSVFormat.DEFAULT.withFirstRecordAsHeader())
+        def csv = csvP.iterator().toList()*.toMap()
+        // 3 test entities
+        assertThat(csv, hasSize(3))
+        // from 2 different users
+        assertThat(csv*.User.toSet(), containsInAnyOrder("1", "3"))
+        assertThat(csv*.TargetItem.toSet(), containsInAnyOrder("2", "3", "4"))
+        assertThat(csv*.RecipRank*.toDouble().sum() / 3.0d, closeTo(result.column("MRR").get(0), 1.0e-6d ))
     }
 }

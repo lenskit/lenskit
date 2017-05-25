@@ -20,76 +20,103 @@
  */
 package org.lenskit.data.entities;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Predicates;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.util.Map;
+import java.util.AbstractCollection;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 /**
  * Implementation of an entity backed by a basic set of attributes.
  */
 @Immutable
 class BasicEntity extends AbstractEntity {
-    private final Map<String, Attribute<?>> attributes;
+    private final AttributeSet attributeNames;
+    private final Object[] attributeValues;
 
-    BasicEntity(EntityType t, long eid, Map<String, Attribute<?>> attrs) {
+    BasicEntity(EntityType t, long eid, AttributeSet aset, Object[] avals) {
         super(t, eid);
-        attributes = ImmutableMap.<String,Attribute<?>>builder()
-                                 .put(CommonAttributes.ENTITY_ID.getName(),
-                                      Attribute.create(CommonAttributes.ENTITY_ID, eid))
-                                 .putAll(attrs)
-                                 .build();
-        assert id == (Long) attributes.get(CommonAttributes.ENTITY_ID.getName())
-                                      .getValue();
+        attributeNames = aset;
+        attributeValues = avals;
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        return attributes.keySet();
+        return attributeNames.nameSet();
     }
 
     @Override
     public Set<TypedName<?>> getTypedAttributeNames() {
-        // TODO Make this more efficient
-        ImmutableSet.Builder<TypedName<?>> bld = ImmutableSet.builder();
-        for (Attribute<?> name: attributes.values()) {
-            bld.add(name.getTypedName());
-        }
-        return bld.build();
+        return attributeNames;
+    }
+
+    @Override
+    public Collection<Attribute<?>> getAttributes() {
+        return new AbstractCollection<Attribute<?>>() {
+            @Override
+            public Iterator<Attribute<?>> iterator() {
+                return (Iterator) IntStream.range(0, attributeNames.size())
+                                           .mapToObj(i -> {
+                                               if (i == 0) {
+                                                   return Attribute.create(CommonAttributes.ENTITY_ID, getId());
+                                               }
+                                               Object val = attributeValues[i-1];
+                                               if (val == null) {
+                                                   return null;
+                                               } else {
+                                                   return Attribute.create((TypedName) attributeNames.getAttribute(i), val);
+                                               }
+                                           })
+                                           .filter(Predicates.notNull())
+                                           .iterator();
+            }
+
+            @Override
+            public int size() {
+                return attributeNames.size();
+            }
+        };
     }
 
     @Override
     public boolean hasAttribute(String name) {
-        return attributes.containsKey(name);
+        return attributeNames.lookup(name) >= 0;
     }
 
     @Override
     public boolean hasAttribute(TypedName<?> name) {
-        return attributes.containsKey(name.getName());
+        return attributeNames.contains(name);
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T> T maybeGet(TypedName<T> name) {
-        Attribute<?> attr = attributes.get(name.getName());
-        if (attr == null) {
+        int idx = attributeNames.lookup(name);
+        if (idx < 0) {
             return null;
-        } else if (attr.getTypedName().equals(name)) {
-            Object value = attr.getValue();
-            return (T) name.getRawType().cast(value);
+        } else if (idx == 0) {
+            return (T) name.getRawType().cast(getId());
         } else {
-            return null;
+            return (T) name.getRawType().cast(attributeValues[idx-1]);
         }
     }
 
     @Nullable
     @Override
     public Object maybeGet(String name) {
-        Attribute<?> attr = attributes.get(name);
-        return attr != null ? attr.getValue() : null;
+        int idx = attributeNames.lookup(name);
+        if (idx < 0) {
+            return null;
+        } else if (idx == 0) {
+            return getId();
+        } else {
+            return attributeValues[idx-1];
+        }
     }
 }

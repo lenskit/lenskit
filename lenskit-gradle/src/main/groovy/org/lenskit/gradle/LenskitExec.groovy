@@ -20,6 +20,8 @@
  */
 package org.lenskit.gradle
 
+import org.gradle.api.tasks.JavaExec
+
 /**
  * Execute a LensKit command.
  */
@@ -27,7 +29,8 @@ class LenskitExec extends LenskitTask {
     def String command
     def List<String> commandArgs = []
 
-    void args(Object... args) {
+    JavaExec args(Object... args) {
         commandArgs.addAll(args.collect {it.toString()})
+        return this
     }
 }

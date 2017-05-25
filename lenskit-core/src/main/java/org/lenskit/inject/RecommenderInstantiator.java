@@ -70,7 +70,8 @@ public final class RecommenderInstantiator {
     /**
      * Instantiate the recommender graph.  This requires the graph to have been resolved with a real
      * DAO instance, not just a class, if anything references the DAO.  Use {@link
-     * LenskitConfiguration#buildGraph()} to get such a graph.
+     * LenskitConfiguration#buildGraph()} to get such a graph.  The result of instantiating a graph
+     * is that all shareable nodes will be instantiated.
      *
      * @return A new recommender graph with all shareable nodes pre-instantiated.
      * @throws RecommenderBuildException If there is an error instantiating the graph.

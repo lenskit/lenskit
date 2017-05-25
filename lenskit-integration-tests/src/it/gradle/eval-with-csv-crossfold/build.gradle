@@ -63,10 +63,12 @@ task trainTest(type: TrainTest) {
     }
 }
 
-task check(overwrite: true, type: JavaExec) {
+task runVerifyScript(type: JavaExec) {
     dependsOn trainTest
     classpath configurations.testRuntime
 
     main 'groovy.ui.GroovyMain'
     args 'verify.groovy'
 }
+
+check.dependsOn runVerifyScript

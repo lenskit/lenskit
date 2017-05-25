@@ -91,7 +91,6 @@ public interface Entity {
      *
      * @param name The attribute name to look for.
      * @return `true` if the entity contains `attribute` and the value is of the associated type.
-     * that the data is of a compatible type.
      */
     boolean hasAttribute(TypedName<?> name);
 

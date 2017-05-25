@@ -20,17 +20,17 @@
  */
 package org.lenskit.data.ratings;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RatingBuilderTest {
     @Test
     public void testInitialState() {
         RatingBuilder rb = new RatingBuilder();
-        assertThat(rb.hasRating(), equalTo(false));
         try {
             rb.build();
             fail("building a rating should fail");
@@ -57,16 +57,7 @@ public class RatingBuilderTest {
     public void testSetRating() {
         RatingBuilder rb = new RatingBuilder();
         rb.setRating(3.5);
-        assertThat(rb.hasRating(), equalTo(true));
         assertThat(rb.getRating(), equalTo(3.5));
-    }
-
-    @Test
-    public void testClearRating() {
-        RatingBuilder rb = new RatingBuilder();
-        rb.setRating(3.5);
-        rb.clearRating();
-        assertThat(rb.hasRating(), equalTo(false));
     }
 
     @Test
@@ -87,23 +78,7 @@ public class RatingBuilderTest {
         assertThat(r, notNullValue());
         assertThat(r.getUserId(), equalTo(692L));
         assertThat(r.getItemId(), equalTo(483L));
-        assertThat(r.hasValue(), equalTo(true));
         assertThat(r.getValue(), equalTo(3.5));
-        assertThat(r.getTimestamp(), equalTo(349702L));
-    }
-
-    @Test
-    @Ignore
-    public void testBuildUnrate() {
-        Rating r = new RatingBuilder()
-                .setUserId(692)
-                .setItemId(483)
-                .setTimestamp(349702)
-                .build();
-        assertThat(r, notNullValue());
-        assertThat(r.getUserId(), equalTo(692L));
-        assertThat(r.getItemId(), equalTo(483L));
-        assertThat(r.hasValue(), equalTo(false));
         assertThat(r.getTimestamp(), equalTo(349702L));
     }
 }

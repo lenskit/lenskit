@@ -31,7 +31,11 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.results.ResultAccumulator;
+import org.lenskit.util.collections.Long2DoubleAccumulator;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
+import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
+import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,15 +82,20 @@ public class TopNItemRecommender extends AbstractItemRecommender {
                      n, user, candidates.size());
 
         Map<Long, Double> scores = scorer.score(user, candidates);
-        ResultAccumulator accum = ResultAccumulator.create(n);
+        Long2DoubleAccumulator accum;
+        if (n >= 0) {
+            accum = new TopNLong2DoubleAccumulator(n);
+        } else {
+            accum = new UnlimitedLong2DoubleAccumulator();
+        }
 
         Long2DoubleMap map = LongUtils.asLong2DoubleMap(scores);
 
-        for (Long2DoubleMap.Entry e: map.long2DoubleEntrySet()) {
-            accum.add(e.getLongKey(), e.getDoubleValue());
+        for (Long2DoubleMap.Entry e: Vectors.fastEntries(map)) {
+            accum.put(e.getLongKey(), e.getDoubleValue());
         }
 
-        return accum.finish().idList();
+        return accum.finishList();
     }
 
 

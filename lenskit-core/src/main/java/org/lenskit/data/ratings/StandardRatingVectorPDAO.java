@@ -20,7 +20,6 @@
  */
 package org.lenskit.data.ratings;
 
-import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
@@ -29,7 +28,6 @@ import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.util.List;
@@ -75,17 +73,7 @@ public class StandardRatingVectorPDAO implements RatingVectorPDAO {
         ObjectStream<IdBox<List<Rating>>> stream = dao.query(Rating.class)
                                                       .groupBy(CommonAttributes.USER_ID)
                                                       .stream();
-        return ObjectStreams.transform(stream, new Function<IdBox<List<Rating>>, IdBox<Long2DoubleMap>>() {
-            @Nullable
-            @Override
-            public IdBox<Long2DoubleMap> apply(@Nullable IdBox<List<Rating>> input) {
-                if (input == null) {
-                    return null;
-                }
-
-                return IdBox.create(input.getId(),
-                                    Ratings.userRatingVector(input.getValue()));
-            }
-        });
+        return ObjectStreams.wrap(stream.map(u -> u.mapValue(Ratings::userRatingVector)),
+                                  stream);
     }
 }

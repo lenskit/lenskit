@@ -35,14 +35,14 @@
 import org.grouplens.lenskit.build.GitExtension
 
 plugins {
-    id "org.sonarqube" version "1.0"
+    id "org.sonarqube" version "2.3"
 }
 apply plugin: 'base'
 apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
 
-ext.guavaVersion = '19.0'
+ext.guavaVersion = '21.0'
 
 configurations {
     allDeps // collect all external dependencies of all modules
@@ -100,6 +100,9 @@ allprojects { project ->
     configurations.all { cfg ->
         def resolve = task("resolve${cfg.name.capitalize()}") {
             description "Resolve dependencies in the $cfg.name configuration."
+            onlyIf {
+                cfg.canBeResolved
+            }
             doLast {
                 logger.info 'resolving {}#{}', project.path, cfg.name
                 def result = cfg.resolvedConfiguration
@@ -121,8 +124,8 @@ task reportTests(type: TestReport) {
 
 subprojects {
     apply plugin: 'java'
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 
     sourceSets.all { ss ->
         // generate resources & classes to same dir
@@ -130,7 +133,6 @@ subprojects {
     }
 
     // don't package until testing
-    jar.mustRunAfter 'test'
     tasks.matching({it.name == 'uploadArchives'}).each { task ->
         task.mustRunAfter check
     }
@@ -151,6 +153,7 @@ subprojects {
         reports.html.enabled = true
 
         testLogging {
+            showStackTraces true
             exceptionFormat "full"
         }
     }
@@ -161,7 +164,7 @@ subprojects {
         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
         compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
 
-        testCompile group: 'junit', name: 'junit', version: '4.11'
+        testCompile group: 'junit', name: 'junit', version: '4.12'
         testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
     }
 

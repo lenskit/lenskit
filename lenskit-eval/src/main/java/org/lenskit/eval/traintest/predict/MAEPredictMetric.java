@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -47,7 +48,7 @@ public class MAEPredictMetric extends PredictMetric<MAEPredictMetric.Context> {
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return new Context();
     }
 
@@ -108,14 +109,14 @@ public class MAEPredictMetric extends PredictMetric<MAEPredictMetric.Context> {
         private int nratings = 0;
         private int nusers = 0;
 
-        private void addUser(int n, double err, double mae) {
+        private synchronized void addUser(int n, double err, double mae) {
             totalError += err;
             totalMAE += mae;
             nratings += n;
             nusers += 1;
         }
 
-        public MetricResult finish() {
+        public synchronized MetricResult finish() {
             if (nratings > 0) {
                 double v = totalError / nratings;
                 logger.info("RMSE: {}", v);
