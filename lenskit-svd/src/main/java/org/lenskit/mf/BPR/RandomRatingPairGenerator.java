@@ -9,7 +9,9 @@ import javax.inject.Inject;
 import java.util.Random;
 
 /**
- * Created by Kluver on 8/22/15.
+ * Randomly generates training pairs by selecting a random user and two random rated items.
+ * If the two random rated items have different ratings, than those items are returned as a training pair.
+ * Otherwise, the algorithm will loop until it finds a training pair.
  */
 public class RandomRatingPairGenerator implements TrainingPairGenerator{
     private final RatingMatrix snapshot;
@@ -26,18 +28,14 @@ public class RandomRatingPairGenerator implements TrainingPairGenerator{
     @Override
     public TrainingItemPair nextPair() {
         TrainingItemPair out = null;
-        for (int i = 0; i < 100; i++) {
+        while(out == null) {
             out = tryGenTrainingPair();
-            if (out != null) {
-                break;
-            }
         }
-
         return out;
     }
 
     private TrainingItemPair tryGenTrainingPair() {
-        // not necissarily efficient, but hey, it works!
+        // randomly generate training pairs, return
 
         long userId = userIds.getLong(rand.nextInt(userIds.size()));
         Long2DoubleMap ratings = snapshot.getUserRatingVector(userId);

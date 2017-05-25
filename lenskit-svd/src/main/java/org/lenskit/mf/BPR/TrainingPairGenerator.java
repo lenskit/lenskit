@@ -5,7 +5,7 @@ package org.lenskit.mf.BPR;
  */
 public interface TrainingPairGenerator {
     /**
-     * @return a new training pair. For now this should loop infinitely, however in the long term this should be a bit smarter.
+     * @return a new training pair.
      */
     TrainingItemPair nextPair();
 }
