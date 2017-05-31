@@ -16,6 +16,7 @@ import org.lenskit.mf.funksvd.FeatureCount;
 import org.lenskit.mf.svd.MFModel;
 import org.lenskit.util.keys.HashKeyIndex;
 import org.lenskit.util.keys.KeyIndex;
+import org.lenskit.util.math.RollingWindowMeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,12 @@ public class BPRMFModelProvider implements Provider<MFModel> {
 
     @Override
     public MFModel get() {
+        //REVIEW arbitrary size.
+        // This will accumulate BPR-Opt (minus the regularization) and will be negated to make an error.
+        // -30 is arbitrary, but would indicate a _really_ consistently bad prediction (~ p=1*10^-13),
+        // and is therefore a reasonable "max_error".
+        RollingWindowMeanAccumulator optAccum = new RollingWindowMeanAccumulator(1000, -30);
+
         int userCount = dao.getEntityIds(CommonTypes.USER).size();
         RealMatrix userFeatures = MatrixUtils.createRealMatrix(userCount, featureCount);
         initFeatures(userFeatures);
@@ -84,10 +91,14 @@ public class BPRMFModelProvider implements Provider<MFModel> {
 
         TrainingLoopController controller = stoppingCondition.newLoop();
 
-        // TODO: currently this will only work for iteration count based training loop controllers.
-        while(controller.keepTraining(0)) {
+        //REVIEW: because of the nature of training samples (and the point that the BPR paper makes that training
+        // by-item or by-user are not optimal) one "iteration" here will be one training update. This leads to _really_
+        // big iteration counts, which can actually overflow ints!. one suggestion would be to allow the iteration count
+        // controller to accept longs, but I don't know if this will introduce backwards compatibility issues (I imagine
+        // this depends on the robustness of our type conversion in the configuration.
+        while(controller.keepTraining(-optAccum.getMean())) {
             TrainingItemPair pair = pairGenerator.nextPair();
-            // Note: bad code style variable names are generally to match BPR paper and enable easier impl
+            // Note: bad code style variable names are generally to match BPR paper and enable easier implementation
             long iid = pair.g;
             int i = itemIndex.internId(iid);
             long jid = pair.l;
@@ -102,7 +113,6 @@ public class BPRMFModelProvider implements Provider<MFModel> {
             double xui = w_u.dotProduct(h_i);
             double xuj = w_u.dotProduct(h_j);
             double xuij = xui - xuj;
-
 
             double bprTerm = 1/(1+exp(xuij));
 
@@ -124,6 +134,8 @@ public class BPRMFModelProvider implements Provider<MFModel> {
             h_i.combineToSelf(1, learningRate, h_i_update);
             h_j.combineToSelf(1, learningRate, h_j_update);
 
+            // update the optimization function accumulator (note we are not including the regularization term)
+            optAccum.add(Math.log(1/(1+Math.exp(-xuij))));
         }
 
         return new MFModel(userFeatures, itemFeatures, userIndex, itemIndex);
