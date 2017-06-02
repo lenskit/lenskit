@@ -89,11 +89,10 @@ public class BPRMFModelProvider implements Provider<MFModel> {
 
     @Override
     public MFModel get() {
-        //REVIEW arbitrary size.
         // This will accumulate BPR-Opt (minus the regularization) and will be negated to make an error.
         // -30 is arbitrary, but would indicate a _really_ consistently bad prediction (~ p=1*10^-13),
         // and is therefore a reasonable "max_error".
-        RollingWindowMeanAccumulator optAccum = new RollingWindowMeanAccumulator(1000, -30);
+        RollingWindowMeanAccumulator optAccum = new RollingWindowMeanAccumulator(10000, -30);
 
         int userCount = dao.getEntityIds(CommonTypes.USER).size();
         RealMatrix userFeatures = MatrixUtils.createRealMatrix(userCount, featureCount);
@@ -101,7 +100,7 @@ public class BPRMFModelProvider implements Provider<MFModel> {
 
         int itemCount = dao.getEntityIds(CommonTypes.ITEM).size();
         RealMatrix itemFeatures = MatrixUtils.createRealMatrix(itemCount, featureCount);
-        initFeatures(userFeatures);
+        initFeatures(itemFeatures);
 
         logger.debug("Learning rate is {}", learningRate);
         logger.debug("Regularization term is {}", regularization);
@@ -117,45 +116,46 @@ public class BPRMFModelProvider implements Provider<MFModel> {
         // controller to accept longs, but I don't know if this will introduce backwards compatibility issues (I imagine
         // this depends on the robustness of our type conversion in the configuration.
         while(controller.keepTraining(-optAccum.getMean())) {
-            TrainingItemPair pair = pairGenerator.nextPair();
-            // Note: bad code style variable names are generally to match BPR paper and enable easier implementation
-            long iid = pair.g;
-            int i = itemIndex.internId(iid);
-            long jid = pair.l;
-            int j = itemIndex.internId(jid);
-            long uid = pair.u;
-            int u = userIndex.internId(uid);
+            for (TrainingItemPair pair : pairGenerator.nextBatch()) {
+                // Note: bad code style variable names are generally to match BPR paper and enable easier implementation
+                long iid = pair.g;
+                int i = itemIndex.internId(iid);
+                long jid = pair.l;
+                int j = itemIndex.internId(jid);
+                long uid = pair.u;
+                int u = userIndex.internId(uid);
 
-            RealVector w_u = userFeatures.getRowVector(u);
-            RealVector h_i = itemFeatures.getRowVector(i);
-            RealVector h_j = itemFeatures.getRowVector(j);
+                RealVector w_u = userFeatures.getRowVector(u);
+                RealVector h_i = itemFeatures.getRowVector(i);
+                RealVector h_j = itemFeatures.getRowVector(j);
 
-            double xui = w_u.dotProduct(h_i);
-            double xuj = w_u.dotProduct(h_j);
-            double xuij = xui - xuj;
+                double xui = w_u.dotProduct(h_i);
+                double xuj = w_u.dotProduct(h_j);
+                double xuij = xui - xuj;
 
-            double bprTerm = 1/(1+exp(xuij));
+                double bprTerm = 1 / (1 + exp(xuij));
 
-            // w_u update
-            RealVector h_i_j = h_i.subtract(h_j);
-            RealVector w_u_update = w_u.mapMultiply(-regularization);
-            w_u_update.combineToSelf(1, bprTerm, h_i_j);
+                // w_u update
+                RealVector h_i_j = h_i.subtract(h_j);
+                RealVector w_u_update = w_u.mapMultiply(-regularization);
+                w_u_update.combineToSelf(1, bprTerm, h_i_j);
 
-            // h_i update
-            RealVector h_i_update = h_i.mapMultiply(-regularization);
-            h_i_update.combineToSelf(1, bprTerm, w_u);
+                // h_i update
+                RealVector h_i_update = h_i.mapMultiply(-regularization);
+                h_i_update.combineToSelf(1, bprTerm, w_u);
 
-            // h_j update
-            RealVector h_j_update = h_j.mapMultiply(-regularization);
-            h_j_update.combineToSelf(1, -bprTerm, w_u);
+                // h_j update
+                RealVector h_j_update = h_j.mapMultiply(-regularization);
+                h_j_update.combineToSelf(1, -bprTerm, w_u);
 
-            // perform updates
-            w_u.combineToSelf(1, learningRate, w_u_update);
-            h_i.combineToSelf(1, learningRate, h_i_update);
-            h_j.combineToSelf(1, learningRate, h_j_update);
+                // perform updates
+                w_u.combineToSelf(1, learningRate, w_u_update);
+                h_i.combineToSelf(1, learningRate, h_i_update);
+                h_j.combineToSelf(1, learningRate, h_j_update);
 
-            // update the optimization function accumulator (note we are not including the regularization term)
-            optAccum.add(Math.log(1/(1+Math.exp(-xuij))));
+                // update the optimization function accumulator (note we are not including the regularization term)
+                optAccum.add(Math.log(1 / (1 + Math.exp(-xuij))));
+            }
         }
 
         return new MFModel(userFeatures, itemFeatures, userIndex, itemIndex);

@@ -1,4 +1,4 @@
-/*
+/**
  * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
@@ -20,18 +20,19 @@
  */
 package org.lenskit.mf.BPR;
 
-/**
- * Class that operates over training events and generates batches of training
- * pairs (defined as a user and a pair of items where the user has expressed
- * a preference for one item over another.
- *
- * This interface makes no constraints over the properties of the training
- * batches.
- */
-public interface TrainingPairGenerator {
+import org.grouplens.grapht.annotation.DefaultInteger;
+import org.lenskit.inject.Parameter;
 
-    /**
-     * @return something that can be iterated over to get the next batch of training pairs.
-     */
-    Iterable<? extends TrainingItemPair> nextBatch();
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
+/**
+ * The number of iterations to use in an iterative update.
+ */
+@Documented
+@Parameter(Integer.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BatchSize {
 }

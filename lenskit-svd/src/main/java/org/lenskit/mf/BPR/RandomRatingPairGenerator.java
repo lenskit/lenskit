@@ -24,28 +24,43 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.lenskit.data.ratings.RatingMatrix;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import javax.inject.Inject;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
  * Randomly generates training pairs by selecting a random user and two random rated items.
+ * Rejection sampling is used to generate samples with these properties:
  * If the two random rated items have different ratings, than those items are returned as a training pair.
  * Otherwise, the algorithm will loop until it finds a training pair.
  */
-public class RandomRatingPairGenerator implements TrainingPairGenerator{
+public class RandomRatingPairGenerator implements TrainingPairGenerator {
     private final RatingMatrix snapshot;
     private final Random rand;
-    private LongList userIds;
+    private final int batchSize;
+    private final LongList userIds;
 
     @Inject
     public RandomRatingPairGenerator(RatingMatrix snapshot, Random rand) {
+    this(snapshot, rand, snapshot.getRatings().size());
+    }
+
+    @Inject
+    public RandomRatingPairGenerator(RatingMatrix snapshot, Random rand, @BatchSize int batchSize) {
         this.snapshot = snapshot;
         this.userIds = new LongArrayList(snapshot.getUserIds());
         this.rand = rand;
+        this.batchSize = batchSize;
     }
 
+
     @Override
+    public Iterable<? extends TrainingItemPair> nextBatch() {
+        return new TrainingBatch();
+    }
+
     public TrainingItemPair nextPair() {
         TrainingItemPair out = null;
         while(out == null) {
@@ -54,30 +69,66 @@ public class RandomRatingPairGenerator implements TrainingPairGenerator{
         return out;
     }
 
+
     private TrainingItemPair tryGenTrainingPair() {
         // randomly generate training pairs, return
 
         long userId = userIds.getLong(rand.nextInt(userIds.size()));
         Long2DoubleMap ratings = snapshot.getUserRatingVector(userId);
-        long[] ratedItems = ratings.keySet().toLongArray();
 
-        // item i
-        int iidx = rand.nextInt(ratedItems.length);
-        long iid = ratedItems[iidx];
+        long iid, jid;
+        int iidx = rand.nextInt(ratings.size());
+        int jidx = rand.nextInt(ratings.size());
+
+        if (ratings instanceof Long2DoubleSortedArrayMap) {
+            // if we are in the common case and the ratings vector is a L2DSAM we can speed this up significantly.
+            Long2DoubleSortedArrayMap sortedRatings = (Long2DoubleSortedArrayMap) ratings;
+            iid = sortedRatings.getKeyByIndex(iidx);
+            jid = sortedRatings.getKeyByIndex(jidx);
+        } else {
+            long[] ratedItems = ratings.keySet().toLongArray();
+            iid = ratedItems[iidx];
+            jid = ratedItems[jidx];
+        }
+
         double irat = ratings.get(iid);
-
-        // item j
-        int jidx = rand.nextInt(ratedItems.length);
-        long jid = ratedItems[jidx];
         double jrat = ratings.get(jid);
 
         if (irat > jrat) {
             return new TrainingItemPair(userId, iid, jid);
-        } else if (irat < jrat ) {
+        } else if (irat < jrat) {
             return new TrainingItemPair(userId, jid, iid);
         } else {
             return null;
         }
+    }
 
+    /**
+     * private inner class that will iterate a fixed number of times returning random
+     * training pairs.
+     */
+    private class TrainingBatch implements Iterable<TrainingItemPair>, Iterator<TrainingItemPair> {
+        private int remainingPairs = batchSize;
+
+        @Override
+        public Iterator<TrainingItemPair> iterator() {
+            return this;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return remainingPairs>0;
+        }
+
+        @Override
+        public TrainingItemPair next() {
+            remainingPairs = remainingPairs - 1;
+            return nextPair();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

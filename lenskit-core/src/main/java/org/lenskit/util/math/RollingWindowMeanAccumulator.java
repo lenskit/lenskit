@@ -25,7 +25,7 @@ import java.util.Arrays;
 /**
  * Accumulates the mean of the most recent accumulated values. Meaning that its reported mean will only reflect the N
  * most recent values. This is accomplished using a fixed size array and a running total. Adding and getting the average
- * are take O(1).
+ * take O(1) time.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
