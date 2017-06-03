@@ -22,12 +22,7 @@ package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.util.InvertibleFunction;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Normalize a user's vector. This vector is typically a rating or purchase vector.
@@ -52,32 +47,6 @@ import javax.annotation.Nullable;
  */
 @DefaultImplementation(DefaultUserVectorNormalizer.class)
 public interface UserVectorNormalizer {
-    /**
-     * Normalize a vector with respect to a user vector.
-     *
-     * @param user   The user to normalize a vector for.
-     * @param vector The user's vector for reference.
-     * @param target The vector to normalize. If {@code null}, the user vector is normalized.
-     * @return The {@code target} vector, if specified. Otherwise, a fresh mutable vector
-     *         containing a normalized copy of the user vector is returned.
-     * @deprecated Old vectors are going away.
-     */
-    @Deprecated
-    MutableSparseVector normalize(long user, @Nonnull SparseVector vector,
-                                  @Nullable MutableSparseVector target);
-
-    /**
-     * Make a vector transformation for a user. The resulting transformation will be applied
-     * to user vectors to normalize and denormalize them.
-     *
-     * @param user   The user ID to normalize for.
-     * @param vector The user's vector to use as the reference vector.
-     * @return The vector transformation normalizing for this user.
-     * @deprecated Use {@link #makeTransformation(long, Long2DoubleMap)}.
-     */
-    @Deprecated
-    VectorTransformation makeTransformation(long user, SparseVector vector);
-
     /**
      * Make a vector transformation for a user. The resulting transformation will be applied
      * to user vectors to normalize and denormalize them.

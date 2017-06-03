@@ -21,19 +21,14 @@
 package org.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Iterator;
 
 /**
  * Encapsulation of data needed during an item-item model build.  This class
@@ -49,27 +44,26 @@ import java.util.Iterator;
 @DefaultProvider(ItemItemBuildContextProvider.class)
 @Shareable
 public class ItemItemBuildContext implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     @Nonnull
     private
     SortedKeyIndex items;
     @Nonnull
     private
-    SparseVector[] itemVectors;
+    Long2DoubleSortedMap[] itemVectors;
 
     @Nonnull
     private Long2ObjectMap<LongSortedSet> userItems;
 
     /**
      * Set up a new item build context.
-     *
-     * @param universe The set of items for the model.
+     *  @param universe The set of items for the model.
      * @param vectors  Map of item IDs to item rating vectors.
      * @param userItems Map of user IDs to candidate items
      */
     ItemItemBuildContext(@Nonnull SortedKeyIndex universe,
-                         @Nonnull SparseVector[] vectors,
+                         @Nonnull Long2DoubleSortedMap[] vectors,
                          @Nonnull Long2ObjectMap<LongSortedSet> userItems) {
         this.userItems = userItems;
         items = universe;
@@ -95,7 +89,7 @@ public class ItemItemBuildContext implements Serializable {
      * @throws IllegalArgumentException if {@code item} is not a valid item.
      */
     @Nonnull
-    public SparseVector itemVector(long item) {
+    public Long2DoubleSortedMap itemVector(long item) {
         int idx = items.tryGetIndex(item);
         Preconditions.checkArgument(idx >= 0, "unknown item");
         return itemVectors[idx];
@@ -114,99 +108,5 @@ public class ItemItemBuildContext implements Serializable {
             items = LongSortedSets.EMPTY_SET;
         }
         return items;
-    }
-
-    /**
-     * Provides an Iterable over ItemVecPairs
-     *
-     * @return An Iterable over ItemVecPairs, objects
-     *         pairing item ids and their corresponding vectors.
-     * @deprecated This will go away in LensKit 3.0.
-     */
-    @Deprecated
-    public Iterable<ItemVecPair> getItemPairs() {
-        return new Iterable<ItemVecPair>() {
-            @Override
-            public Iterator<ItemVecPair> iterator() {
-                return getItemPairIterator();
-            }
-        };
-    }
-
-    /**
-     * Returns an Iterator over all item vector pairs.
-     *
-     * @return An Iterator over ItemVecPairs, an object
-     *         offering public access to the item ids and their
-     *         corresponding vectors.
-     * @deprecated This will go away in LensKit 3.0.
-     */
-    @Deprecated
-    public Iterator<ItemVecPair> getItemPairIterator() {
-        return new FastIteratorImpl(items.keySet(), items.keySet());
-    }
-
-    /**
-     * An Iterator implementation iterating over all ItemVecPairs from
-     * the parameter LongSortedSets of item ids.
-     */
-    private final class FastIteratorImpl implements Iterator<ItemVecPair> {
-        private ItemVecPair itemVecPair;
-        private LongIterator iter1;
-        private LongSortedSet list2;
-        private LongIterator iter2;
-
-        public FastIteratorImpl(LongSortedSet list1, LongSortedSet list2) {
-            itemVecPair = new ItemVecPair();
-            iter1 = list1.iterator();
-            if (iter1.hasNext()) {
-                itemVecPair.setItem1(iter1.nextLong());
-            }
-            this.list2 = list2;
-            iter2 = list2.iterator();
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iter1.hasNext() || iter2.hasNext();
-        }
-
-        @Override
-        public ItemVecPair next() {
-            if (!iter2.hasNext()) {
-                itemVecPair.setItem1(iter1.nextLong());
-                iter2 = list2.iterator();
-            }
-            itemVecPair.setItem2(iter2.nextLong());
-            itemVecPair.lastInRow = !iter2.hasNext();
-            return itemVecPair;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * A pair of item ids and their corresponding item
-     * vectors, avoiding (un)boxing the ids.
-     */
-    public final class ItemVecPair {
-        public long itemId1;
-        public long itemId2;
-        public SparseVector vec1;
-        public SparseVector vec2;
-        public boolean lastInRow;
-
-        public void setItem1(long itemId1) {
-            this.itemId1 = itemId1;
-            vec1 = itemVector(itemId1);
-        }
-
-        public void setItem2(long itemId2) {
-            this.itemId2 = itemId2;
-            vec2 = itemVector(itemId2);
-        }
     }
 }

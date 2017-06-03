@@ -20,31 +20,9 @@
  */
 package org.lenskit.transform.normalize;
 
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
  * Abstract item vector normalizer implementation.
  */
 public abstract class AbstractItemVectorNormalizer implements ItemVectorNormalizer {
 
-    /**
-     * {@inheritDoc}
-     * <p>Delegates to {@link #makeTransformation(long, SparseVector)}
-     * and the resulting {@link VectorTransformation}.
-     */
-    @Override
-    public MutableSparseVector normalize(long item, @Nonnull SparseVector vector,
-                                         @Nullable MutableSparseVector target) {
-        MutableSparseVector v = target;
-        if (v == null) {
-            v = vector.mutableCopy();
-        }
-
-        VectorTransformation tform = makeTransformation(item, vector);
-        return tform.apply(v);
-    }
 }

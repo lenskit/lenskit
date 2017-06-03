@@ -223,4 +223,20 @@ public class Long2DoubleSortedArrayMapTest {
         assertThat(res, hasEntry(42L, 3.5));
         assertThat(res, hasEntry(62L, 1.8));
     }
+
+    @Test
+    public void testSubMapIndexes() {
+        Long2DoubleMap map = new Long2DoubleOpenHashMap();
+        map.put(1, 1.0);
+        map.put(2, 2.0);
+        map.put(3, 3.0);
+        map.put(4, 4.0);
+        Long2DoubleSortedArrayMap sam = Long2DoubleSortedArrayMap.create(map);
+        Long2DoubleSortedArrayMap s2 = sam.subMap(2, 4);
+        assertThat(s2.keySet(), contains(2L, 3L));
+        assertThat(s2.getKeyByIndex(0), equalTo(2L));
+        assertThat(s2.getKeyByIndex(1), equalTo(3L));
+        assertThat(s2.getValueByIndex(0), equalTo(2.0));
+        assertThat(s2.getValueByIndex(1), equalTo(3.0));
+    }
 }

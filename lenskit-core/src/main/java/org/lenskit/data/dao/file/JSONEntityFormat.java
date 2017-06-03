@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.grouplens.lenskit.util.TypeUtils;
+import org.lenskit.util.TypeUtils;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
@@ -82,6 +82,7 @@ public class JSONEntityFormat implements EntityFormat {
      * Get the entity builder class.
      * @return The entity builder class.
      */
+    @Override
     public Class<? extends EntityBuilder> getEntityBuilder() {
         return entityBuilder;
     }
@@ -101,8 +102,21 @@ public class JSONEntityFormat implements EntityFormat {
      * Get the attributes expected.
      * @return The expected attributes.
      */
-    public Map<String,TypedName<?>> getAttributes() {
+    public Map<String,TypedName<?>> getDefinedAttributes() {
         return Collections.unmodifiableMap(attributes);
+    }
+
+    @Override
+    public AttributeSet getAttributes() {
+        if (attributes.isEmpty()) {
+            return null;
+        }
+
+        List<TypedName<?>> attrs = new ArrayList<>(attributes.values());
+        if (!attrs.contains(CommonAttributes.ENTITY_ID)) {
+            attrs.add(0, CommonAttributes.ENTITY_ID);
+        }
+        return AttributeSet.create(attrs);
     }
 
     /**
@@ -236,6 +250,9 @@ public class JSONEntityFormat implements EntityFormat {
                     }
 
                     JsonNode fn = field.getValue();
+                    if (fn.isNull()) {
+                        continue; // just skip nulls
+                    }
                     if (attr != null) {
                         eb.setAttribute(attr, mapper.convertValue(fn, attr.getJacksonType()));
                     } else {

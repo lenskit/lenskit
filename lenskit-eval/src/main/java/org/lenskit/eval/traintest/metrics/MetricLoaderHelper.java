@@ -21,11 +21,11 @@
 package org.lenskit.eval.traintest.metrics;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.VerifyException;
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +77,7 @@ public class MetricLoaderHelper {
             try {
                 return ClassUtils.getClass(loader, className);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException("class " + className + " not found", e);
+                throw new VerifyException("class " + className + " not found", e);
             }
         } else {
             try {
@@ -87,24 +87,6 @@ public class MetricLoaderHelper {
                 logger.debug("no metric {} found");
                 return null;
             }
-        }
-    }
-
-    /**
-     * Try to instantiate a metric.
-     * @param name The metric name (case-insensitive; will be looked up in lowercase).
-     * @return The metric, or {@code null} if no such metric can be found.
-     */
-    public Object tryInstantiate(String name) {
-        Class<?> metric = findClass(name);
-        if (metric != null) {
-            try {
-                return metric.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException("Cannot instantiate " + metric, e);
-            }
-        } else {
-            return null;
         }
     }
 
@@ -151,7 +133,7 @@ public class MetricLoaderHelper {
         try {
             return type.cast(metric.newInstance());
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Cannot instantiate " + metric, e);
+            throw new VerifyException("Cannot instantiate " + metric, e);
         }
     }
 

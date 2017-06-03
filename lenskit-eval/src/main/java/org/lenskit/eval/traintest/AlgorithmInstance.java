@@ -23,15 +23,9 @@ package org.lenskit.eval.traintest;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.grouplens.grapht.Component;
-import org.grouplens.grapht.Dependency;
-import org.grouplens.grapht.ResolutionException;
-import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.*;
-import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigurationLoader;
 import org.lenskit.config.LenskitConfigScript;
-import org.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +34,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -108,50 +103,6 @@ public class AlgorithmInstance {
     }
 
     /**
-     * Build a recommender.
-     *
-     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
-     *                 algorithm's configuration, so it is overridden if appropriate.  It is used
-     *                 for providing things such as DAOs.
-     * @return The instantiated recommender.
-     * @throws RecommenderBuildException
-     */
-    public LenskitRecommender buildRecommender(@Nullable LenskitConfiguration defaults) throws RecommenderBuildException {
-        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-        if (defaults != null) {
-            builder.addConfiguration(defaults);
-        }
-        for (LenskitConfiguration cfg: configurations) {
-            builder.addConfiguration(cfg);
-        }
-        return builder.build().createRecommender();
-    }
-
-    /**
-     * Build a recommender graph (but don't instantiate any objects).
-     *
-     * @param defaults Additional configurations.  These configurations come <em>before</em> the
-     *                 algorithm's configuration, so they are overridden if appropriate.  They are used
-     *                 for providing things such as DAOs.
-     * @return The recommender graph.
-     * @throws RecommenderConfigurationException if there is an error configuring the recommender.
-     */
-    public DAGNode<Component,Dependency> buildRecommenderGraph(@Nullable LenskitConfiguration... defaults) throws RecommenderConfigurationException {
-        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-        for (LenskitConfiguration dft: defaults) {
-            rgb.addConfiguration(dft);
-        }
-        for (LenskitConfiguration cfg: configurations) {
-            rgb.addConfiguration(cfg);
-        }
-        try {
-            return rgb.buildGraph();
-        } catch (ResolutionException e) {
-            throw new RecommenderConfigurationException("error configuring recommender", e);
-        }
-    }
-
-    /**
      * Load an algorithm instance from a file.
      *
      * @param file The file to load.
@@ -189,11 +140,14 @@ public class AlgorithmInstance {
         sb.append("Algorithm(")
           .append(getName())
           .append(")");
-        if (!attributes.isEmpty()) {
+
+        Map<String, Object> subAttrs = new LinkedHashMap<>(attributes);
+        subAttrs.remove("Algorithm");
+        if (!subAttrs.isEmpty()) {
             sb.append("[");
             Joiner.on(", ")
                   .withKeyValueSeparator("=")
-                  .appendTo(sb, attributes);
+                  .appendTo(sb, subAttrs);
             sb.append("]");
         }
         return sb.toString();

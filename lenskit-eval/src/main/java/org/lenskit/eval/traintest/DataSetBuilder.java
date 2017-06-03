@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.builder.Builder;
 import org.lenskit.data.dao.file.StaticDataSource;
@@ -28,7 +29,10 @@ import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Builder for generic train-test data sets.
@@ -38,9 +42,9 @@ import java.util.*;
 public class DataSetBuilder implements Builder<DataSet> {
     private String name;
     private StaticDataSource trainingData;
+    private StaticDataSource runtimeData;
     private StaticDataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<>();
-    private StaticDataSource queryData;
     private UUID isoGroup = new UUID(0, 0);
     private List<EntityType> entityTypes = Lists.newArrayList(CommonTypes.RATING);
 
@@ -59,7 +63,6 @@ public class DataSetBuilder implements Builder<DataSet> {
      */
     public DataSetBuilder setName(String n) {
         name = n;
-        attributes.put("DataSet", n);
         return this;
     }
 
@@ -68,8 +71,8 @@ public class DataSetBuilder implements Builder<DataSet> {
         return this;
     }
 
-    public DataSetBuilder setQuery(StaticDataSource query) {
-        queryData = query;
+    public DataSetBuilder setRuntime(StaticDataSource ds) {
+        runtimeData = ds;
         return this;
     }
 
@@ -78,7 +81,6 @@ public class DataSetBuilder implements Builder<DataSet> {
         return this;
     }
 
-    // TODO set entity types
     public DataSetBuilder setEntityTypes(List<EntityType> typeList) {
         entityTypes = typeList;
         return this;
@@ -114,6 +116,13 @@ public class DataSetBuilder implements Builder<DataSet> {
     @Override
     public DataSet build() {
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new DataSet(getName(), trainingData, queryData, testData, isoGroup, attributes, entityTypes);
+        Map<String, Object> attrs = attributes;
+        if (!attrs.containsKey("DataSet")) {
+            attrs = ImmutableMap.<String,Object>builder()
+                                .put("DataSet", getName())
+                                .putAll(attrs)
+                                .build();
+        }
+        return new DataSet(getName(), trainingData, runtimeData, testData, isoGroup, attrs, entityTypes);
     }
 }

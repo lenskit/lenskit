@@ -36,10 +36,10 @@
 apply from: "$rootDir/gradle/maven.gradle"
 
 dependencies {
-    compile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
     compile group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
-    compile group: 'com.google.guava', name: 'guava', version: '18.0'
+    compile project(':lenskit-core')
 
     runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.3'
 }
@@ -50,7 +50,7 @@ if ((findProperty('idea.active') ?: 'false').asBoolean()) {
     }
 } else {
     dependencies {
-        compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.4'
+        compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7   '
     }
 }
 

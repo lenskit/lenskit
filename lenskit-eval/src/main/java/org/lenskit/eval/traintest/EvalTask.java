@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 
 import java.util.List;
 import java.util.Set;
@@ -69,8 +70,8 @@ public interface EvalTask {
      *
      * @param algorithm The algorithm being evaluated.
      * @param dataSet The data set being evaluated.
-     * @param rec The recommender to measure.
+     * @param rec The recommender engine that will be measured.
      * @return A condition evaluator that will measure the recommender's performance on the algorithm and data set.
      */
-    ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec);
+    ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine rec);
 }

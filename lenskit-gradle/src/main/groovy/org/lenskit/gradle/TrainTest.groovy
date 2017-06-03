@@ -24,7 +24,7 @@ import com.google.common.io.Files
 import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.ParallelizableTask
 import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
@@ -36,6 +36,7 @@ import java.util.concurrent.Callable
 /**
  * Run a train-test evaluation.
  */
+@ParallelizableTask
 class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The output file for recommendation output.
@@ -58,9 +59,19 @@ class TrainTest extends LenskitTask implements GradleUtils {
     def int threadCount
 
     /**
+     * Then number of parallel tasks to allow.
+     */
+    def int parallelTasks = 0
+
+    /**
      * Configure whether the evaluator should share model components between algorithms.
      */
     def boolean shareModelComponents = true
+
+    /**
+     * Configure whether the evaluation will continue after errors.
+     */
+    def boolean continueAfterError = false
 
     private Map<String,Object> algorithms = new HashMap<>()
     private List<Callable> dataSets = []
@@ -184,24 +195,15 @@ class TrainTest extends LenskitTask implements GradleUtils {
         evalTasks.add(task)
     }
 
-    @Override
-    @TaskAction
-    void perform() {
-        try {
-            super.perform()
-        } catch (Throwable th) {
-            logger.error('error running train-test task', th)
-            throw new RuntimeException('train-test failed', th)
-        }
-    }
-
     @Input
     def getJson() {
         def json = [output_file           : makeUrl(getOutputFile(), getSpecFile()),
                     user_output_file      : makeUrl(getUserOutputFile(), getSpecFile()),
                     cache_directory       : makeUrl(getCacheDirectory(), getSpecFile()),
                     thread_count          : getThreadCount(),
-                    share_model_components: getShareModelComponents()]
+                    parallel_tasks        : getParallelTasks(),
+                    share_model_components: getShareModelComponents(),
+                    continue_after_error  : getContinueAfterError()]
         json.datasets = dataSets.collect {it.call()}
         json.algorithms = algorithms.collectEntries {k, v ->
             [k, makeUrl(v, getSpecFile())]

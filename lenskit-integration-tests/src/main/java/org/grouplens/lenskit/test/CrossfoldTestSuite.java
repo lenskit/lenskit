@@ -47,6 +47,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     @Test
     public void testAlgorithmAccuracy() throws IOException {
         SimpleEvaluator evalCommand = new SimpleEvaluator();
+        evalCommand.getExperiment().setThreadCount(4);
         evalCommand.setWorkDir(workDir.newFolder("data").toPath());
         AlgorithmInstanceBuilder algo = new AlgorithmInstanceBuilder();
         configureAlgorithm(algo.getConfig());

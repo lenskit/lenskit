@@ -23,15 +23,23 @@ package org.lenskit.data.dao;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.lenskit.data.entities.*;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStreams;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someLists;
+import static net.java.quickcheck.generator.PrimitiveGenerators.integers;
+import static net.java.quickcheck.generator.PrimitiveGeneratorsIterables.someFixedValues;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.lenskit.data.entities.CommonTypes.RATING;
+import static org.lenskit.util.test.LenskitGenerators.ratings;
 
 public class EntityCollectionDAOTest {
     private static final EntityType LIKE = EntityType.forName("like");
@@ -301,5 +309,134 @@ public class EntityCollectionDAOTest {
         assertThat(results,
                    containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(0))),
                                       IdBox.create(67L, ImmutableList.of(entities.get(1)))));
+    }
+
+    @Test
+    public void testAddEntityLayout() {
+        EntityCollectionDAOBuilder b = EntityCollectionDAO.newBuilder();
+        b.addEntityLayout(Rating.ENTITY_TYPE, Rating.ATTRIBUTES);
+        Rating r = Rating.newBuilder()
+                         .setId(42)
+                         .setUserId(100)
+                         .setItemId(50)
+                         .setRating(3.5)
+                         .setTimestamp(1034801)
+                         .build();
+        b.addEntity(r);
+        EntityCollectionDAO dao = b.build();
+        assertThat(dao.getEntityIds(CommonTypes.RATING), contains(42L));
+        assertThat(dao.streamEntities(CommonTypes.RATING)
+                      .collect(Collectors.toList()),
+                   contains(r));
+        assertThat(dao.query(Rating.class)
+                      .get(),
+                   contains(r));
+    }
+
+    @Test
+    public void testStoreABunchOfRatings() {
+        for (List<Rating> ratings: someLists(ratings(), integers(100, 5000))) {
+            EntityCollectionDAOBuilder b = EntityCollectionDAO.newBuilder();
+            b.addDefaultIndex(CommonAttributes.USER_ID);
+            b.addDefaultIndex(CommonAttributes.ITEM_ID);
+            ratings.forEach(b::addEntity);
+
+            b.deriveEntities(CommonTypes.USER, CommonTypes.RATING, CommonAttributes.USER_ID);
+            b.deriveEntities(CommonTypes.ITEM, CommonTypes.RATING, CommonAttributes.ITEM_ID);
+
+            DataAccessObject dao = b.build();
+
+            List<Rating> sorted = Entities.idOrdering().sortedCopy(ratings);
+            List<Rating> built = dao.query(Rating.class)
+                                    .orderBy(CommonAttributes.ENTITY_ID)
+                                    .get();
+            assertThat(built, hasSize(ratings.size()));
+            assertThat(built, equalTo(sorted));
+
+            Set<Long> userIds = ratings.stream().map(Rating::getUserId).collect(Collectors.toSet());
+            Set<Long> itemIds = ratings.stream().map(Rating::getItemId).collect(Collectors.toSet());
+            assertThat(dao.getEntityIds(CommonTypes.USER),
+                       equalTo(userIds));
+            assertThat(dao.getEntityIds(CommonTypes.ITEM),
+                       equalTo(itemIds));
+
+            for (long user: someFixedValues(userIds)) {
+                List<Rating> fromData = ratings.stream()
+                                               .filter(r -> r.getUserId() == user)
+                                               .sorted(Ratings.TIMESTAMP_COMPARATOR)
+                                               .collect(Collectors.toList());
+                List<Rating> fromDAO = dao.query(Rating.class)
+                                          .withAttribute(CommonAttributes.USER_ID, user)
+                                          .orderBy(CommonAttributes.TIMESTAMP)
+                                          .get();
+                assertThat(fromDAO, equalTo(fromData));
+            }
+
+            for (long item: someFixedValues(itemIds)) {
+                List<Rating> fromData = ratings.stream()
+                                               .filter(r -> r.getItemId() == item)
+                                               .sorted(Ratings.TIMESTAMP_COMPARATOR)
+                                               .collect(Collectors.toList());
+                List<Rating> fromDAO = dao.query(Rating.class)
+                                          .withAttribute(CommonAttributes.ITEM_ID, item)
+                                          .orderBy(CommonAttributes.TIMESTAMP)
+                                          .get();
+                assertThat(fromDAO, equalTo(fromData));
+            }
+        }
+    }
+
+    @Test
+    public void testPackABunchOfRatings() {
+        for (List<Rating> ratings: someLists(ratings(), integers(100, 5000))) {
+            EntityCollectionDAOBuilder b = EntityCollectionDAO.newBuilder();
+            b.addEntityLayout(Rating.ENTITY_TYPE, Rating.ATTRIBUTES);
+            b.addDefaultIndex(CommonAttributes.USER_ID);
+            b.addDefaultIndex(CommonAttributes.ITEM_ID);
+            ratings.forEach(b::addEntity);
+
+            b.deriveEntities(CommonTypes.USER, CommonTypes.RATING, CommonAttributes.USER_ID);
+            b.deriveEntities(CommonTypes.ITEM, CommonTypes.RATING, CommonAttributes.ITEM_ID);
+
+            DataAccessObject dao = b.build();
+
+            List<Rating> sorted = Entities.idOrdering().sortedCopy(ratings);
+            List<Rating> built = dao.query(Rating.class)
+                                    .orderBy(CommonAttributes.ENTITY_ID)
+                                    .get();
+            assertThat(built, hasSize(ratings.size()));
+            assertThat(built, equalTo(sorted));
+
+            Set<Long> userIds = ratings.stream().map(Rating::getUserId).collect(Collectors.toSet());
+            Set<Long> itemIds = ratings.stream().map(Rating::getItemId).collect(Collectors.toSet());
+            assertThat(dao.getEntityIds(CommonTypes.USER),
+                       equalTo(userIds));
+            assertThat(dao.getEntityIds(CommonTypes.ITEM),
+                       equalTo(itemIds));
+
+            for (long user: someFixedValues(userIds)) {
+                 List<Rating> fromData = ratings.stream()
+                                                .filter(r -> r.getUserId() == user)
+                                                .sorted(Ratings.TIMESTAMP_COMPARATOR)
+                                                .collect(Collectors.toList());
+                 List<Rating> fromDAO = dao.query(Rating.class)
+                                           .withAttribute(CommonAttributes.USER_ID, user)
+                                           .orderBy(CommonAttributes.TIMESTAMP)
+                                           .get();
+                 assertThat(fromDAO, equalTo(fromData));
+            }
+
+            for (long item: someFixedValues(itemIds)) {
+                List<Rating> fromData = ratings.stream()
+                                               .filter(r -> r.getItemId() == item)
+                                               .sorted(Ratings.TIMESTAMP_COMPARATOR)
+                                               .collect(Collectors.toList());
+                List<Rating> fromDAO = dao.query(Rating.class)
+                                          .withAttribute(CommonAttributes.ITEM_ID, item)
+                                          .orderBy(CommonAttributes.TIMESTAMP)
+                                          .get();
+                assertThat(fromDAO, equalTo(fromData));
+            }
+        }
     }
 }

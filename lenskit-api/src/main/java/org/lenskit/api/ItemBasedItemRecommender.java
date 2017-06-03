@@ -46,10 +46,10 @@ public interface ItemBasedItemRecommender {
     List<Long> recommendRelatedItems(long reference);
 
     /**
-     * Recommend up to <var>n</var> possible items for a reference item using the default exclude set.
+     * Recommend up to _n_ possible items for a reference item using the default exclude set.
      *
      * @param reference The reference item.
-     * @param n The number of items to recommend (< 0 for unlimited).
+     * @param n The number of items to recommend. If negative, recommend as many as possible.
      * @return The recommended items.
      * @see #recommendRelatedItems(Set, int, Set, Set)
      */
@@ -65,22 +65,29 @@ public interface ItemBasedItemRecommender {
     List<Long> recommendRelatedItems(Set<Long> basket);
 
     /**
-     * Recommend up to <var>n</var> items for a set of reference items using the default exclude set.
+     * Recommend up to _n_ items for a set of reference items using the default exclude set.
      *
      * @param basket The reference items.
-     * @param n     The number of recommendations to return (< 0 for unlimited).
+     * @param n     The number of recommendations to return. If negative, recommend as many as possible.
      * @return The recommended items.
      * @see #recommendRelatedItems(Set, int, Set, Set)
      */
     List<Long> recommendRelatedItems(Set<Long> basket, int n);
 
     /**
-     * Produce a set of recommendations for the item. This method allows the recommendations to be constrained
-     * by both a candidate set and an exclude set. The exclude set is applied to the candidate set, so the
-     * final effective candidate set is <var>candidates</var> minus <var>exclude</var>.
+     * Produce a set of recommendations for the item. This is the most general
+     * recommendation method, allowing the recommendations to be constrained by
+     * both a candidate set \\(\\mathcal{C}\\) and an exclude set \\(\\mathcal{E}\\). The exclude set is applied to
+     * the candidate set, so the final effective candidate set is \\(\\mathcal{C} \\backslash \\mathcal{E}\\).
+     *
+     * The recommender is *not* guaranteed to return a full `n` recommendations.  There are many reasons
+     * why it might return a shorter list, including lack of items, lack of coverage for items, or a
+     * predefined notion of a maximum recommendation list length.  However, a negative value for `n` instructs
+     * the recommender to return as many as it can consistent with any limitations built in to its design and/or
+     * supporting algorithms.
      *
      * @param basket     The reference items.
-     * @param n          The number of ratings to return. If negative, no specific size is requested.
+     * @param n          The number of ratings to return. If negative, recommend as many as possible.
      * @param candidates A set of candidate items which can be recommended. If {@code null}, all
      *                   items are considered candidates.
      * @param exclude    A set of items to be excluded. If {@code null}, a default exclude set is
@@ -91,13 +98,11 @@ public interface ItemBasedItemRecommender {
                                      @Nullable Set<Long> exclude);
 
     /**
-     * Produce a set of recommendations for the item, with details. This is the most general recommendation
-     * method, allowing the recommendations to be constrained by both a candidate set and an exclude
-     * set and potentially providing more details on each recommendation. The exclude set is applied to the
-     * candidate set, so the final effective candidate set is <var>candidates</var> minus <var>exclude</var>.
+     * Produce a set of recommendations for the item, with details. This method functions identically to
+     * {@link #recommendRelatedItems(Set, int, Set, Set)}, except that it returns more detailed results.
      *
      * @param basket     The reference items.
-     * @param n          The number of ratings to return. If negative, no specific size is requested.
+     * @param n          The number of ratings to return. If negative, recommend as many as possible.
      * @param candidates A set of candidate items which can be recommended. If {@code null}, all
      *                   items are considered candidates.
      * @param exclude    A set of items to be excluded. If {@code null}, a default exclude set is

@@ -40,6 +40,8 @@ import java.util.List;
 class EntityPartitionCrossfoldMethod implements CrossfoldMethod {
     private static final Logger logger = LoggerFactory.getLogger(EntityPartitionCrossfoldMethod.class);
 
+    EntityPartitionCrossfoldMethod() {}
+
     @Override
     public void crossfold(DataAccessObject input, CrossfoldOutput output, EntityType type) throws IOException {
         final int count = output.getCount();

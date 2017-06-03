@@ -23,8 +23,6 @@ package org.lenskit.transform.normalize;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.bias.BiasModel;
@@ -80,55 +78,5 @@ public class BiasItemVectorNormalizerTest {
         assertThat(out.get(1L), closeTo(-1.0 + 3.0 + 0.5 + 0.2, 0.0001));
         assertThat(out.get(2L), closeTo(-0.5 + 3.0 + 0.5 - 0.1, 0.0001));
         assertThat(out.get(3L), closeTo(0.2 + 3.0 + 0.5, 0.0001));
-    }
-
-
-    @Test
-    public void testNormalizeOldVectorForItem() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, SparseVector.empty());
-
-        MutableSparseVector vec = MutableSparseVector.create(1L, 2L, 3L);
-        vec.set(1L, 3.0);
-        vec.set(2L, 3.5);
-        vec.set(3L, 4.0);
-        assertThat(tx.apply(vec), sameInstance(vec));
-        assertThat(vec.get(1L), closeTo(3.0 - 3.0 - 0.5 - 0.2, 0.0001));
-        assertThat(vec.get(2L), closeTo(3.5 - 3.0 - 0.5 + 0.1, 0.0001));
-        assertThat(vec.get(3L), closeTo(4.0 - 3.0 - 0.5, 0.0001));
-    }
-
-    @Test
-    public void testDenormalizeOldVectorForItem() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, SparseVector.empty());
-
-        MutableSparseVector vec = MutableSparseVector.create(1L, 2L, 3L);
-        vec.set(1L, -1.0);
-        vec.set(2L, -0.5);
-        vec.set(3L, 0.2);
-        assertThat(tx.unapply(vec), sameInstance(vec));
-        assertThat(vec.get(1L), closeTo(-1.0 + 3.0 + 0.5 + 0.2, 0.0001));
-        assertThat(vec.get(2L), closeTo(-0.5 + 3.0 + 0.5 - 0.1, 0.0001));
-        assertThat(vec.get(3L), closeTo(0.2 + 3.0 + 0.5, 0.0001));
-    }
-
-    @Test
-    public void testNormalizeValueForItem() {
-        VectorTransformation tx = normalizer.makeTransformation(42L, SparseVector.empty());
-        assertThat(tx.apply(1L, 3.7), closeTo(0, 0.0001));
-        assertThat(tx.apply(3L, 3.7), closeTo(0.2, 0.0001));
-    }
-
-    @Test
-    public void testDenormalizeValueForItem() {
-        VectorTransformation tx = normalizer.makeTransformation(37L, SparseVector.empty());
-        assertThat(tx.unapply(1L, 0), closeTo(3.0, 0.0001));
-        assertThat(tx.unapply(3L, 0), closeTo(2.8, 0.0001));
-    }
-
-    @Test
-    public void testForUnknownUser() {
-        VectorTransformation tx = normalizer.makeTransformation(92L, SparseVector.empty());
-        assertThat(tx.apply(1L, 4), closeTo(0.8, 0.0001));
-        assertThat(tx.unapply(3L, 1.2), closeTo(4.2, 0.0001));
     }
 }

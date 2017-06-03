@@ -21,6 +21,7 @@
 package org.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
 import org.lenskit.data.entities.DefaultEntityType;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
@@ -32,6 +33,8 @@ import org.lenskit.util.io.ObjectStream;
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Helper class to make it easier to create DAOs.  This base class implements several of the DAO
@@ -40,6 +43,8 @@ import java.util.List;
  * framework (collection predicates, Jooq queries, HQL, or whatever).
  */
 public abstract class AbstractDataAccessObject implements DataAccessObject {
+    private final ConcurrentMap<Class<?>,EntityType> viewClassCache = new ConcurrentSkipListMap<>(Ordering.arbitrary());
+
     @Override
     public Query<Entity> query(EntityType type) {
         return new JavaQuery<>(this, type, Entity.class);
@@ -53,11 +58,16 @@ public abstract class AbstractDataAccessObject implements DataAccessObject {
      */
     @Override
     public <V extends Entity> Query<V> query(Class<V> type) {
-        DefaultEntityType det = type.getAnnotation(DefaultEntityType.class);
-        if (det == null) {
-            throw new IllegalArgumentException(type + " has no default entity type annotation");
+        EntityType etype = viewClassCache.get(type);
+        if (etype == null) {
+            DefaultEntityType det = type.getAnnotation(DefaultEntityType.class);
+            if (det == null) {
+                throw new IllegalArgumentException(type + " has no default entity type annotation");
+            }
+            etype = EntityType.forName(det.value());
+            viewClassCache.put(type, etype);
         }
-        return new JavaQuery<>(this, EntityType.forName(det.value()), type);
+        return new JavaQuery<>(this, etype, type);
     }
 
     /**

@@ -23,6 +23,7 @@ package org.lenskit.config
 import org.junit.Test
 import org.lenskit.LenskitConfiguration
 import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.RecommenderConfigurationException
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.basic.ConstantItemScorer
@@ -35,6 +36,8 @@ import org.lenskit.data.dao.file.StaticDataSource
 import org.lenskit.transform.normalize.BiasUserVectorNormalizer
 import org.lenskit.transform.normalize.UserVectorNormalizer
 
+import static junit.framework.Assert.fail
+import static org.grouplens.lenskit.util.test.ExtraMatchers.matchesPattern
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
@@ -212,6 +215,22 @@ set ConstantItemScorer.Value to Math.PI""");
             assertThat(dom.precision, equalTo(0.5d))
         } finally {
             rec.close()
+        }
+    }
+
+    @Test
+    public void testMissingClassErrors() {
+        ConfigurationLoader loader = new ConfigurationLoader()
+        LenskitConfigScript script = loader.loadScript(
+                """
+root PreferenceDomain
+""")
+        def config
+        try {
+            config = script.configure()
+            fail("script load should fail")
+        } catch (RecommenderConfigurationException rce) {
+            assertThat(rce.hints, contains(matchesPattern(/.*import.*\s+org\.lenskit\.data\.ratings\.PreferenceDomain/)))
         }
     }
 }

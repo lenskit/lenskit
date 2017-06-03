@@ -20,7 +20,11 @@
  */
 
 
+import org.lenskit.bias.BiasModel
+import org.lenskit.bias.ItemBiasModel
+import org.lenskit.transform.normalize.BiasUserVectorNormalizer
 import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
 import org.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
 import org.lenskit.api.ItemScorer
@@ -36,9 +40,9 @@ def common = {
     bind ItemScorer to ItemItemScorer
     set NeighborhoodSize to 20
     set ModelSize to 500
-    bind ItemItemBuildContext toProvider ItemwiseBuildContextProvider
-    within (ItemItemBuildContext) {
-        bind VectorNormalizer to MeanCenteringVectorNormalizer
+    bind UserVectorNormalizer to BiasUserVectorNormalizer
+    within (UserVectorNormalizer) {
+        bind BiasModel to ItemBiasModel
     }
     bind (BaselineScorer, ItemScorer) to ItemMeanRatingItemScorer
     at (RatingPredictor) {

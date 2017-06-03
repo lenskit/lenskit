@@ -22,6 +22,8 @@ package org.lenskit.data.entities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.base.Verify;
+import com.google.common.base.VerifyException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -32,6 +34,7 @@ import org.grouplens.grapht.util.ClassLoaders;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.*;
 
 /**
@@ -93,7 +96,7 @@ public class EntityDefaults {
             DefaultsBean bean = mapper.readValue(stream, DefaultsBean.class);
             return fromBean(type, bean);
         } catch (IOException e) {
-            throw new RuntimeException("error reading defaults", e);
+            throw new UncheckedIOException("error defaults for " + type, e);
         }
     }
 
@@ -168,9 +171,9 @@ public class EntityDefaults {
         for (Map.Entry<String,String> d: bean.getDerivations().entrySet()) {
             EntityType et = EntityType.forName(d.getKey());
             TypedName<?> attr = attrs.get(d.getValue());
-            if (!attr.getType().equals(LONG_TYPE)) {
-                throw new RuntimeException("derived entity derives from non-Long column");
-            }
+            Verify.verify(attr.getType().equals(LONG_TYPE),
+                          "derived entity source column has non-Long type %s",
+                          attr.getType());
             derivs.add(EntityDerivation.create(et, type, (TypedName<Long>) attr));
         }
 
@@ -180,7 +183,7 @@ public class EntityDefaults {
             try {
                 builder = ClassUtils.getClass(bean.getBuilder());
             } catch (ClassNotFoundException ex) {
-                throw new RuntimeException("could not find builder class", ex);
+                throw new VerifyException("bean defaults reference non-existent class " + builderName, ex);
             }
         } else {
             builder = BasicEntityBuilder.class;

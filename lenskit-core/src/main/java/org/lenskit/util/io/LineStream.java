@@ -24,7 +24,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.data.dao.DataAccessException;
 
 import javax.annotation.Nonnull;

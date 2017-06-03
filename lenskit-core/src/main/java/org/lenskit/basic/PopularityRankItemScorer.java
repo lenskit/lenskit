@@ -27,6 +27,8 @@ import org.lenskit.data.ratings.InteractionStatistics;
 import org.lenskit.inject.Shareable;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -34,6 +36,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Item scorer scores items based on their popularity rank.  1 is the most popular item, and 0 is an unknown item.
@@ -43,7 +46,7 @@ public class PopularityRankItemScorer extends AbstractItemScorer implements Seri
     private static final long serialVersionUID = 2L;
 
     private final InteractionStatistics statistics;
-    private final Long2IntMap ranks;
+    private final Long2DoubleSortedArrayMap rankScores;
 
     @Inject
     public PopularityRankItemScorer(final InteractionStatistics stats) {
@@ -55,7 +58,20 @@ public class PopularityRankItemScorer extends AbstractItemScorer implements Seri
                 return Integer.compare(stats.getInteractionCount(l2), stats.getInteractionCount(l1));
             }
         });
-        ranks = LongUtils.itemRanks(LongArrayList.wrap(items));
+        Long2IntMap ranks = LongUtils.itemRanks(LongArrayList.wrap(items));
+        SortedKeyIndex keys = SortedKeyIndex.fromCollection(ranks.keySet());
+        int n = keys.size();
+        double[] values = new double[n];
+        for (int i = 0; i < n; i++) {
+            values[i] = 1.0 - ranks.get(keys.getKey(i)) / ((double) n);
+        }
+        rankScores = Long2DoubleSortedArrayMap.wrap(keys, values);
+    }
+
+    @Nonnull
+    @Override
+    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
+        return rankScores.subMap(LongUtils.asLongSet(items));
     }
 
     @Nonnull
@@ -65,17 +81,8 @@ public class PopularityRankItemScorer extends AbstractItemScorer implements Seri
         LongIterator iter = LongIterators.asLongIterator(items.iterator());
         while (iter.hasNext()) {
             long item = iter.nextLong();
-            int rank = ranks.get(item);
-            results.add(Results.create(item, rankToScore(rank, ranks.size())));
+            results.add(Results.create(item, rankScores.get(item)));
         }
         return Results.newResultMap(results);
-    }
-
-    static double rankToScore(int rank, int n) {
-        if (rank < 0) {
-            return 0;
-        } else {
-            return 1.0 - rank / ((double) n);
-        }
     }
 }

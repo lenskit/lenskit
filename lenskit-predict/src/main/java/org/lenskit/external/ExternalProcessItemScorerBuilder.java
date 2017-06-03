@@ -27,7 +27,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
+import org.lenskit.util.io.LoggingStreamSlurper;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.basic.PrecomputedItemScorer;
 import org.lenskit.data.dao.DataAccessObject;
@@ -210,7 +210,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
      * Build the item scorer.
      * @return An item scorer that will return the scores provided by the external algorithm.
      */
-    public ItemScorer build() {
+    public PrecomputedItemScorer build() {
         Preconditions.checkState(executable != null, "no executable specified");
         List<String> command = Lists.newArrayList();
         command.add(executable);
@@ -280,9 +280,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                  ObjectStream<Rating> ratings = dao.query(Rating.class).stream()) {
                 for (Rating r: ratings) {
                     writer.printf("%d,%d,", r.getUserId(), r.getItemId());
-                    if (r.hasValue()) {
-                        writer.print(r.getValue());
-                    }
+                    writer.print(r.getValue());
                     writer.print(",");
                     long ts = r.getTimestamp();
                     if (ts >= 0) {
