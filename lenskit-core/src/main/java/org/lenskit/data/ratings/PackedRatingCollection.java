@@ -26,7 +26,7 @@ package org.lenskit.data.ratings;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import org.lenskit.util.collections.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import java.util.AbstractList;

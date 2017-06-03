@@ -21,12 +21,13 @@
 package org.lenskit.similarity;
 
 
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class CosineSimilarityTest {
     private static final double EPSILON = 1.0e-6;
@@ -38,10 +39,8 @@ public class CosineSimilarityTest {
         dampedSimilarity = new CosineVectorSimilarity(10);
     }
 
-    private SparseVector emptyVector() {
-        long[] keys = {};
-        double[] values = {};
-        return MutableSparseVector.wrap(keys, values);
+    private Long2DoubleMap emptyVector() {
+        return Long2DoubleMaps.EMPTY_MAP;
     }
 
     @Test
@@ -60,9 +59,9 @@ public class CosineSimilarityTest {
         double[] val1 = {1, 3, 2};
         long[] k2 = {3, 4, 7};
         double[] val2 = {1, 3, 2};
-        SparseVector v1, v2;
-        v1 = MutableSparseVector.wrap(k1, val1).freeze();
-        v2 = MutableSparseVector.wrap(k2, val2).freeze();
+        Long2DoubleMap v1, v2;
+        v1 = Long2DoubleSortedArrayMap.wrapUnsorted(k1, val1);
+        v2 = Long2DoubleSortedArrayMap.wrapUnsorted(k2, val2);
         assertEquals(0, similarity.similarity(v1, v2), EPSILON);
         assertEquals(0, dampedSimilarity.similarity(v1, v2), EPSILON);
     }
@@ -72,8 +71,8 @@ public class CosineSimilarityTest {
         long[] keys = {2, 5, 6};
         double[] val1 = {1, 2, 1};
         double[] val2 = {1, 2, 5};
-        SparseVector v1 = MutableSparseVector.wrap(keys, val1).freeze();
-        SparseVector v2 = MutableSparseVector.wrap(keys, val2).freeze();
+        Long2DoubleMap v1 = Long2DoubleSortedArrayMap.wrapUnsorted(keys, val1);
+        Long2DoubleMap v2 = Long2DoubleSortedArrayMap.wrapUnsorted(keys, val2);
         assertEquals(1, similarity.similarity(v1, v1), EPSILON);
         assertEquals(0.745355993, similarity.similarity(v1, v2), EPSILON);
     }
@@ -83,8 +82,8 @@ public class CosineSimilarityTest {
         long[] keys = {2, 5, 6};
         double[] val1 = {1, 2, 1};
         double[] val2 = {1, 2, 5};
-        SparseVector v1 = MutableSparseVector.wrap(keys, val1).freeze();
-        SparseVector v2 = MutableSparseVector.wrap(keys, val2).freeze();
+        Long2DoubleMap v1 = Long2DoubleSortedArrayMap.wrapUnsorted(keys, val1);
+        Long2DoubleMap v2 = Long2DoubleSortedArrayMap.wrapUnsorted(keys, val2);
         assertEquals(0.375, dampedSimilarity.similarity(v1, v1), EPSILON);
         assertEquals(0.42705098, dampedSimilarity.similarity(v1, v2), EPSILON);
     }
@@ -95,8 +94,8 @@ public class CosineSimilarityTest {
         double[] val1 = {3, 1, 2, 1};
         long[] k2 = {2, 3, 5, 6, 7};
         double[] val2 = {1, 7, 2, 5, 0};
-        SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
-        SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
+        Long2DoubleMap v1 = Long2DoubleSortedArrayMap.wrapUnsorted(k1, val1);
+        Long2DoubleMap v2 = Long2DoubleSortedArrayMap.wrapUnsorted(k2, val2);
         assertEquals(1, similarity.similarity(v1, v1), EPSILON);
         assertEquals(1, similarity.similarity(v2, v2), EPSILON);
         assertEquals(0.29049645, similarity.similarity(v1, v2), EPSILON);

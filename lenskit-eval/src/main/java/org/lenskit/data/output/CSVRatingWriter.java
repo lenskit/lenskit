@@ -59,11 +59,7 @@ class CSVRatingWriter implements RatingWriter {
         List<Object> row = Lists.newArrayListWithCapacity(4);
         row.add(r.getUserId());
         row.add(r.getItemId());
-        if (r.hasValue()) {
-            row.add(r.getValue());
-        } else {
-            row.add(null);
-        }
+        row.add(r.getValue());
         if (includeTimestamps) {
             row.add(r.getTimestamp());
         }

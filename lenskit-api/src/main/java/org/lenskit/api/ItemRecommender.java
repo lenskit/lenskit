@@ -68,8 +68,8 @@ public interface ItemRecommender {
      * set.
      *
      * @param user The user ID.
-     * @param n    The number of recommendations to return.  Negative values indicate no preference of recommendation
-     *             list size.
+     * @param n    The number of recommendations to return. Negative values request as many recommendations
+     *             as possible.
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
@@ -78,13 +78,18 @@ public interface ItemRecommender {
     /**
      * Produce a set of recommendations for the user. This is the most general
      * recommendation method, allowing the recommendations to be constrained by
-     * both a candidate set and an exclude set. The exclude set is applied to
-     * the candidate set, so the final effective candidate set is
-     * <var>canditates</var> minus <var>exclude</var>.
+     * both a candidate set \\(\\mathcal{C}\\) and an exclude set \\(\\mathcal{E}\\). The exclude set is applied to
+     * the candidate set, so the final effective candidate set is \\(\\mathcal{C} \\backslash \\mathcal{E}\\).
+     *
+     * The recommender is *not* guaranteed to return a full `n` recommendations.  There are many reasons
+     * why it might return a shorter list, including lack of items, lack of coverage for items, or a
+     * predefined notion of a maximum recommendation list length.  However, a negative value for `n` instructs
+     * the recommender to return as many as it can consistent with any limitations built in to its design and/or
+     * supporting algorithms.
      *
      * @param user       The user's ID
-     * @param n          The number of ratings to return. If negative, there is
-     *                   no specific recommendation list size requested.
+     * @param n          The number of ratings to return. If negative, the recommender
+     *                   will return as many recommendations as possible.
      * @param candidates A set of candidate items which can be recommended. If
      *                   {@code null}, all items are considered candidates.
      * @param exclude    A set of items to be excluded. If {@code null}, a default
@@ -96,12 +101,12 @@ public interface ItemRecommender {
 
     /**
      * Produce a set of recommendations for the user with additional details. This method functions identically to
-     * {@link #recommend(long, int, Set, Set)}, except that it may produce more detailed results. Implementations will
+     * {@link #recommend(long, int, Set, Set)}, except that it may produce more detailed results. Implementations may
      * return subclasses of {@link ResultList} that provide access to additional details about each recommendation.
      *
      * @param user       The user's ID
-     * @param n          The number of ratings to return. If negative, there is
-     *                   no specific recommendation list size requested.
+     * @param n          The number of ratings to return. If negative, then the recommender will return as many
+     *                   recommendations as possible.
      * @param candidates A set of candidate items which can be recommended. If
      *                   {@code null}, all items are considered candidates.
      * @param exclude    A set of items to be excluded. If {@code null}, a default

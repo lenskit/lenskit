@@ -30,6 +30,8 @@ import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.predict.PredictMetric;
 import org.lenskit.util.table.Table;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -254,7 +256,11 @@ public class SimpleEvaluator {
      */
     public Table execute() {
         for (Crossfolder cf: crossfolders) {
-            cf.execute();
+            try {
+                cf.execute();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             experiment.addDataSets(cf.getDataSets());
         }
         return experiment.execute();

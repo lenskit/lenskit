@@ -35,6 +35,7 @@ import org.grouplens.grapht.reflect.internal.*;
 import org.lenskit.RecommenderConfigurationException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,6 +54,8 @@ import java.util.Set;
  * @since 0.11
  */
 public final class GraphtUtils {
+    private static final Logger logger = LoggerFactory.getLogger(GraphtUtils.class);
+
     private GraphtUtils() {
     }
 
@@ -113,19 +116,24 @@ public final class GraphtUtils {
         Component label = node.getLabel();
 
         if (label.getSatisfaction().hasInstance()) {
+            logger.trace("node {} shareable because it has an instance", node);
             return true;
         }
 
         if (label.getCachePolicy() == CachePolicy.NEW_INSTANCE) {
+            logger.trace("node {} not shareable because it has a new-instance cache policy", node);
             return false;
         }
 
         Class<?> type = label.getSatisfaction().getErasedType();
+        logger.trace("node {} has satisfaction type {}", node, type);
         if (type.getAnnotation(Shareable.class) != null) {
+            logger.trace("node {} shareable because it has the shareable annotation", node);
             return true;
         }
 
         if (type.getAnnotation(Singleton.class) != null) {
+            logger.trace("node {} shareable because it has the singleton annotation", node);
             return true;
         }
 
@@ -133,6 +141,7 @@ public final class GraphtUtils {
         return label.getSatisfaction().visit(new AbstractSatisfactionVisitor<Boolean>() {
             @Override
             public Boolean visitDefault() {
+                logger.trace("node {} not shareable by default", node);
                 return false;
             }
 
@@ -145,8 +154,10 @@ public final class GraphtUtils {
                 /* fine, leave it null */
                 }
                 if (m != null && m.getAnnotation(Shareable.class) != null) {
+                    logger.trace("node {} shareable because it is a provider with a shareable annotation", node);
                     return true;
                 }
+                logger.trace("node {} not shareable because it is an unshareable provider", node);
                 return false;
             }
 
@@ -253,7 +264,11 @@ public final class GraphtUtils {
             boolean isShared = true;
             for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
                 if (!edgeIsTransient(edge)) {
-                    isShared &= shared.contains(edge.getTail());
+                    boolean es = shared.contains(edge.getTail());
+                    isShared &= es;
+                    if (!es) {
+                        logger.trace("node {} not shared due to non-transient dependency on {}", node, edge.getTail());
+                    }
                 }
             }
             if (isShared) {

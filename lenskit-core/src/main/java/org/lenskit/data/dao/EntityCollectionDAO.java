@@ -20,18 +20,24 @@
  */
 package org.lenskit.data.dao;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.grouplens.lenskit.util.io.Describable;
-import org.grouplens.lenskit.util.io.DescriptionWriter;
-import org.lenskit.data.entities.*;
+import org.lenskit.data.entities.Attribute;
+import org.lenskit.data.entities.Entities;
+import org.lenskit.data.entities.Entity;
+import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.store.EntityCollection;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A DAO backed by one or more collections of entities.
@@ -137,20 +143,24 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
             }
         }
 
-        ObjectStream<E> stream =
-                ObjectStreams.transform(baseStream, Entities.projection(query.getViewType()));
+        ObjectStream<E> stream = query.getViewType().equals(Entity.class)
+                ? (ObjectStream<E>) baseStream
+                : ObjectStreams.transform(baseStream, Entities.projection(query.getViewType()));
         List<SortKey> sort = query.getSortKeys();
-        if (sort.isEmpty()) {
+        List<SortKey> dataKeys = data.getSortKeys();
+        // already sorted if sort is a prefix of data keys
+        boolean alreadyInOrder = sort.size() <= dataKeys.size();
+        for (int i = 0; alreadyInOrder && i < sort.size(); i++) {
+            if (!sort.get(i).equals(dataKeys.get(i))) {
+                // oops, we want to sort by sth that isn't pre-sorted.
+                alreadyInOrder = false;
+            }
+        }
+        if (alreadyInOrder) {
             return stream;
         }
 
         // we must sort; need to make list ourselves since makeList lists are immutable
-        ArrayList<E> list;
-        try {
-            list = Lists.newArrayList(stream);
-        } finally {
-            stream.close();
-        }
         Ordering<Entity> ord = null;
         for (SortKey k: sort) {
             if (ord == null) {
@@ -159,8 +169,12 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
                 ord = ord.compound(k.ordering());
             }
         }
-        Collections.sort(list, ord);
-        return ObjectStreams.wrap(list);
+        assert ord != null;
+        try {
+            return ObjectStreams.wrap(ord.immutableSortedCopy(stream));
+        } finally {
+            stream.close();
+        }
     }
 
     @Override

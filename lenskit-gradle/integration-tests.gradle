@@ -45,8 +45,17 @@ file('src/it/gradle').eachDir { testDir ->
     def tname = fname.replaceAll(/(?:^|-)(.)/) { m -> m[1].toUpperCase() }
     def workDir = file("build/gradle-tests/$fname")
 
+    task("copy$tname", type: Copy) {
+        from testDir
+        into workDir
+        from('src/it/gradle') {
+            include '*.gradle'
+        }
+    }
+
     task("test$tname", type: GradleBuild) {
         dependsOn ':lenskit-integration-tests:makeTestRepo'
+        dependsOn "copy$tname"
         mustRunAfter test, ':lenskit-eval:test'
         inputs.dir testDir
         inputs.dir rootProject.uri('build/test-repo')
@@ -63,18 +72,6 @@ file('src/it/gradle').eachDir { testDir ->
 
         onlyIf {
             !file("$testDir/ignore").exists()
-        }
-        doFirst {
-            copy {
-                from testDir
-                into workDir
-            }
-            copy {
-                from 'src/it/gradle'
-                into workDir
-                include '*.gradle'
-            }
-            println "running gradle build for $testDir"
         }
     }
 

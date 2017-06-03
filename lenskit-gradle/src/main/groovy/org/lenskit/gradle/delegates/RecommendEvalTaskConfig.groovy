@@ -46,6 +46,16 @@ class RecommendEvalTaskConfig extends EvalTaskConfig {
      */
     def String labelPrefix
 
+    /**
+     * The per-item output file for separated evaluations.
+     */
+    def itemOutputFile
+
+    /**
+     * Whether or not to treat items separately (Bellogin's 1R).
+     */
+    def boolean separateItems = false
+
     RecommendEvalTaskConfig(Project prj) {
         super(prj, 'recommend')
     }
@@ -55,7 +65,9 @@ class RecommendEvalTaskConfig extends EvalTaskConfig {
         return super.getJson() + [list_size: listSize,
                                   candidates: candidates,
                                   exclude: exclude,
-                                  label_prefix: labelPrefix]
+                                  label_prefix: labelPrefix,
+                                  item_output_file: makeUrl(itemOutputFile),
+                                  separate_items: separateItems]
     }
 
     void listSize(int sz) {
@@ -82,5 +94,13 @@ class RecommendEvalTaskConfig extends EvalTaskConfig {
 
     void labelPrefix(String pfx) {
         labelPrefix = pfx
+    }
+
+    void separateItems(boolean sep) {
+        separateItems = sep
+    }
+
+    void itemOutputFile(f) {
+        itemOutputFile = f
     }
 }

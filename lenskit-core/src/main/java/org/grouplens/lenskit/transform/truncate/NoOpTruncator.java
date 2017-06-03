@@ -20,14 +20,15 @@
  */
 package org.grouplens.lenskit.transform.truncate;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.util.collections.LongUtils;
 
 import java.io.Serializable;
 
 /**
  * A {@code VectorTruncator} that does not actually perform any truncation.
- * Any input vector is left unchanged.
+ * Any input vector is returned unchanged.
  */
 @Shareable
 public class NoOpTruncator implements VectorTruncator, Serializable {
@@ -35,5 +36,8 @@ public class NoOpTruncator implements VectorTruncator, Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void truncate(MutableSparseVector v) {}
+    public Long2DoubleMap truncate(Long2DoubleMap v) {
+        return LongUtils.frozenMap(v);
+    }
 }
+

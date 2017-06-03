@@ -29,7 +29,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.util.math.MeanAccumulator;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -103,7 +104,7 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return new MeanAccumulator();
     }
 
@@ -130,7 +131,9 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
         double gain = computeDCG(actual, ratings);
         logger.debug("user {} has gain of {} (ideal {})", user.getUserId(), gain, idealGain);
         double score = gain / idealGain;
-        context.add(score);
+        synchronized (context) {
+            context.add(score);
+        }
         ImmutableMap.Builder<String,Double> results = ImmutableMap.builder();
         return MetricResult.fromMap(results.put(columnName, score)
                                            .put(columnName + ".Raw", gain)

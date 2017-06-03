@@ -20,54 +20,49 @@
  */
 package org.lenskit.data.ratings;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.lenskit.data.entities.*;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * A user rating an item. A rating is an expression of preference, in the form of a real-valued rating, for an item by
  * a user.  Ratings are also used to represent un-rate events, if the system supports them; these are represented by
  * a rating value of {@link Double#NaN}.
- * <p>
- * To create a rating, use {@link RatingBuilder} or the factory methods {@link #create(long, long, double, long)},
- * {@link #create(long, long, double)}, and {@link #createUnrate(long, long, long)}.
- * </p>
+ *
+ * To create a rating, use {@link RatingBuilder}.  The {@link #newBuilder()} method will create a rating builder.
  *
  * @compat Public
  */
 @BuiltBy(RatingBuilder.class)
 @DefaultEntityType("rating")
-public final class Rating extends AbstractEntity implements Preference, Serializable {
+public class Rating extends AbstractBeanEntity implements Preference, Serializable {
     private static final long serialVersionUID = 2L;
     private static final EntityFactory factory = new EntityFactory();
-    private static final Set<TypedName<?>> FULL_ATTR_NAMES =
-            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
-                                          CommonAttributes.USER_ID,
-                                          CommonAttributes.ITEM_ID,
-                                          CommonAttributes.RATING,
-                                          CommonAttributes.TIMESTAMP);
-    private static final Set<TypedName<?>> NOTIME_ATTR_NAMES =
-            ImmutableSet.<TypedName<?>>of(CommonAttributes.ENTITY_ID,
-                                          CommonAttributes.USER_ID,
-                                          CommonAttributes.ITEM_ID,
-                                          CommonAttributes.RATING);
-
+    public static final EntityType ENTITY_TYPE = CommonTypes.RATING;
+    public static final AttributeSet ATTRIBUTES = AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                      CommonAttributes.USER_ID,
+                                                                      CommonAttributes.ITEM_ID,
+                                                                      CommonAttributes.RATING,
+                                                                      CommonAttributes.TIMESTAMP);
+    private static final BeanEntityLayout LAYOUT = makeLayout(Rating.class);
 
     private final long user;
     private final long item;
     private final double value;
-    private final long timestamp;
 
-    Rating(long eid, long uid, long iid, double v, long time) {
-        super(CommonTypes.RATING, eid);
+    Rating(long eid, long uid, long iid, double v) {
+        super(LAYOUT, CommonTypes.RATING, eid);
         user = uid;
         item = iid;
         value = v;
-        timestamp = time;
+    }
+
+    private Rating(BeanEntityLayout layout, long eid, long uid, long iid, double v) {
+        super(layout, CommonTypes.RATING, eid);
+        user = uid;
+        item = iid;
+        value = v;
     }
 
     /**
@@ -87,10 +82,6 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
 
     /**
      * Create a new rating object.
-     * <p>
-     * In order to prevent computation errors from producing unintended unrate events, this method cannot be used to
-     * create an unrate event.  Instead, use {@link #createUnrate(long, long, long)}.
-     * </p>
      *
      * @param uid The user ID.
      * @param iid The item ID.
@@ -102,24 +93,7 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
      */
     @Deprecated
     public static Rating create(long uid, long iid, double rating, long ts) {
-        if (Double.isNaN(rating)) {
-            throw new IllegalArgumentException("rating is not a number");
-        }
         return factory.rating(uid, iid, rating, ts);
-    }
-
-    /**
-     * Create a an unrate object.
-     *
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param ts The timestamp.
-     * @return The new rating object.
-     * @deprecated Unrates have gone away.
-     */
-    @Deprecated
-    public static Rating createUnrate(long uid, long iid, long ts) {
-        return new Rating(-1, uid, iid, Double.NaN, ts);
     }
 
     /**
@@ -131,78 +105,29 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
     }
 
     @Override
+    @EntityAttribute("user")
     public long getUserId() {
         return user;
     }
 
     @Override
+    @EntityAttribute("item")
     public long getItemId() {
         return item;
     }
 
     public long getTimestamp() {
-        return timestamp;
+        return -1;
     }
 
-    /**
-     * Query whether this rating has a value. Ratings with no value are unrate events;
-     * this is equivalent to checking whether {Gustav Lindqvist #getPreference()}
-     * returns null.
-     *  
-     * @return {code true} if there is a rating (the preference is non-null).
-     * @deprecated Unrates have gone away.
-     */
-    @Deprecated
-    public boolean hasValue() {
-        return !Double.isNaN(value);
-    }
-    
     /**
      * Get the rating value.
      *
      * @return double The rating value, or {@link Double#NaN} if the rating has no value.
      */
+    @EntityAttribute("rating")
     public double getValue() {
         return value;
-    }
-
-    @Override
-    public Set<TypedName<?>> getTypedAttributeNames() {
-        return timestamp >= 0 ? FULL_ATTR_NAMES : NOTIME_ATTR_NAMES;
-    }
-
-    @Override
-    public boolean hasAttribute(String name) {
-        switch (name) {
-        case "id":
-        case "user":
-        case "item":
-        case "rating":
-            return true;
-        case "timestamp":
-            return timestamp > -1;
-        default:
-            return false;
-        }
-    }
-
-    @Nullable
-    @Override
-    public Object maybeGet(String attr) {
-        switch (attr) {
-        case "id":
-            return id;
-        case "user":
-            return user;
-        case "item":
-            return item;
-        case "rating":
-            return value;
-        case "timestamp":
-            return timestamp >= 0 ? timestamp : null;
-        default:
-            return null;
-        }
     }
 
     /**
@@ -213,7 +138,7 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
         RatingBuilder rb = new RatingBuilder();
         rb.setUserId(user)
           .setItemId(item)
-          .setTimestamp(timestamp);
+          .setTimestamp(getTimestamp());
         double v = getValue();
         if (!Double.isNaN(v)) {
             rb.setRating(v);
@@ -230,10 +155,26 @@ public final class Rating extends AbstractEntity implements Preference, Serializ
             return new EqualsBuilder().append(user, r.user)
                                       .append(item, r.item)
                                       .append(value, r.value)
-                                      .append(timestamp, r.timestamp)
+                                      .append(getTimestamp(), r.getTimestamp())
                                       .isEquals();
         } else {
             return super.equals(obj);
+        }
+    }
+
+    public static class WithTimestamp extends Rating {
+        private static final BeanEntityLayout TIMESTAMP_LAYOUT = makeLayout(WithTimestamp.class);
+        private final long timestamp;
+
+        WithTimestamp(long id, long user, long item, double val, long ts) {
+            super(TIMESTAMP_LAYOUT, id, user, item, val);
+            timestamp = ts;
+        }
+
+        @Override
+        @EntityAttribute("timestamp")
+        public long getTimestamp() {
+            return timestamp;
         }
     }
 }

@@ -22,7 +22,6 @@ package org.lenskit.similarity;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Scalars;
 import org.lenskit.util.math.Vectors;
@@ -58,17 +57,6 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
     public CosineVectorSimilarity(@SimilarityDamping double damping) {
         Preconditions.checkArgument(damping >= 0, "negative damping not allowed");
         dampingFactor = damping;
-    }
-
-    @Override
-    public double similarity(SparseVector vec1, SparseVector vec2) {
-        final double dot = vec1.dot(vec2);
-        final double denom = vec1.norm() * vec2.norm() + dampingFactor;
-        if (Scalars.isZero(denom)) {
-            return 0;
-        } else {
-            return dot / denom;
-        }
     }
 
     @Override

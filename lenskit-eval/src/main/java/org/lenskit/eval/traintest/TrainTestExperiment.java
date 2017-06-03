@@ -24,20 +24,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.config.ConfigHelpers;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
+import org.lenskit.util.io.CompressionMode;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.monitor.TrackedJob;
 import org.lenskit.util.parallel.TaskGroup;
 import org.lenskit.util.table.Table;
@@ -58,6 +60,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Semaphore;
 
 /**
  * Sets up and runs train-test evaluations.  This class can be used directly, but it will usually be controlled from
@@ -87,7 +90,9 @@ public class TrainTestExperiment {
     private Path userOutputFile;
     private Path cacheDir;
     private boolean shareModelComponents = true;
-    private int threadCount = 1;
+    private int threadCount = 0;
+    private int parallelTasks = 0;
+    private boolean continueAfterError = false;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
@@ -281,6 +286,43 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Get the number of evaluation tasks to permit to run in parallel.  Reducing this can be useful for reducing
+     * the memory use of LensKit.
+     *
+     * @return The number of evaluation tasks to allow to run in parallel, or 0 if there is no limit.
+     */
+    public int getParallelTasks() {
+        return parallelTasks;
+    }
+
+    /**
+     * Set the number of parallel experiment tasks to run.  If 0 (the default), then up to {@link #getThreadCount()}
+     * jobs can run in parallel.  This can be reduced to reduce memory use (by having fewer models in memory); the
+     * extra threads may still be used to speed up individual evaluations.
+     *
+     * @param pt The number of tasks to run in parallel, or 0 to have no limit.
+     */
+    public void setParallelTasks(int pt) {
+        parallelTasks = pt;
+    }
+
+    /**
+     * Query whether this task will continue in the face of an error.
+     * @return `true` if the experiment will keep going if a segment fails.
+     */
+    public boolean getContinueAfterError() {
+        return continueAfterError;
+    }
+
+    /**
+     * Configure whether the experiment will continue after an error.
+     * @param c `true` to continue after an error.
+     */
+    public void setContinueAfterError(boolean c) {
+        continueAfterError = c;
+    }
+
+    /**
      * Get the class loader for this experiment.
      * @return The class loader that will be used.
      */
@@ -400,9 +442,7 @@ public class TrainTestExperiment {
     }
 
     public ExperimentOutputLayout getOutputLayout() {
-        if (outputLayout == null) {
-            throw new IllegalStateException("experiment not started");
-        }
+        Preconditions.checkState(outputLayout != null, "experiment is not started");
         return outputLayout;
     }
 
@@ -439,7 +479,8 @@ public class TrainTestExperiment {
 
     private TableLayout makeGlobalResultLayout(ExperimentOutputLayout eol) {
         TableLayoutBuilder tlb = TableLayoutBuilder.copy(eol.getConditionLayout());
-        tlb.addColumn("BuildTime")
+        tlb.addColumn("Succeeded")
+           .addColumn("BuildTime")
            .addColumn("TestTime");
         for (EvalTask task: tasks) {
             tlb.addColumns(task.getGlobalColumns());
@@ -471,6 +512,10 @@ public class TrainTestExperiment {
             cache = new ComponentCache(cacheDir, classLoader);
         }
         Map<UUID,TaskGroup> groups = new HashMap<>();
+        Semaphore limit = null;
+        if (parallelTasks > 0) {
+            limit = new Semaphore(parallelTasks);
+        }
 
         // set up the roots
         LenskitConfiguration config = new LenskitConfiguration();
@@ -488,6 +533,7 @@ public class TrainTestExperiment {
             if (group == null) {
                 group = new TaskGroup(true);
                 groups.put(gid, group);
+                group.setContinueAterError(continueAfterError);
             }
             MergePool<Component,Dependency> pool = null;
             if (cache != null) {
@@ -495,7 +541,7 @@ public class TrainTestExperiment {
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
                 TrackedJob j = tracker.makeChild(ExperimentJob.JOB_TYPE, "evaluate " + ai + " on " + ds);
-                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j);
+                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool, j, limit);
                 allJobs.add(job);
                 group.addTask(job);
             }
@@ -504,15 +550,15 @@ public class TrainTestExperiment {
         TaskGroup root;
         if (groups.size() > 1) {
             root = new TaskGroup(false);
+            root.setContinueAterError(continueAfterError);
             for (TaskGroup g: groups.values()) {
                 root.addTask(g);
             }
         } else {
             root = FluentIterable.from(groups.values()).first().orNull();
         }
-        if (root == null) {
-            throw new IllegalStateException("no jobs defined");
-        }
+
+        Preconditions.checkState(root != null, "no jobs defined");
         rootJob = root;
     }
 
@@ -522,15 +568,33 @@ public class TrainTestExperiment {
     private void runJobList() {
         Preconditions.checkState(allJobs != null, "job graph not built");
 
-        for (ExperimentJob job: allJobs) {
-            job.execute();
+        try {
+            rootJob.compute();
+        } catch (Throwable err) {
+            logger.error("experiment failed", err);
+            if (!continueAfterError) {
+                Throwables.throwIfUnchecked(err);
+                // will only happen if an undeclared checked exception slips through
+                throw new UncheckedExecutionException(err);
+            }
         }
     }
 
     private void runJobGraph(int nthreads) {
         Preconditions.checkState(rootJob != null, "job graph not built");
         ForkJoinPool pool = new ForkJoinPool(nthreads);
-        pool.invoke(rootJob);
+        try {
+            pool.invoke(rootJob);
+        } catch (Throwable err) {
+            logger.error("experiment failed", err);
+            if (!continueAfterError) {
+                Throwables.throwIfUnchecked(err);
+                // will only happen if an undeclared checked exception slips through
+                throw new UncheckedExecutionException(err);
+            }
+        } finally {
+            pool.shutdown();
+        }
     }
 
     /**
@@ -572,9 +636,11 @@ public class TrainTestExperiment {
         if (json.has("thread_count")) {
             exp.setThreadCount(json.get("thread_count").asInt(1));
         }
+        exp.setParallelTasks(json.path("parallel_tasks").asInt(0));
         if (json.has("share_model_components")) {
             exp.setShareModelComponents(json.get("share_model_components").asBoolean());
         }
+        exp.setContinueAfterError(json.path("continue_after_error").asBoolean(false));
         if (!json.has("datasets")) {
             throw new IllegalArgumentException("no data sets specified");
         }

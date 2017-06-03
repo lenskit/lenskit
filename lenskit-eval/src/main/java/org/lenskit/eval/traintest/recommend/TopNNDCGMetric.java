@@ -24,8 +24,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.util.math.MeanAccumulator;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -90,7 +91,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, Recommender recommender) {
+    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return new MeanAccumulator();
     }
 
@@ -102,7 +103,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -120,7 +121,9 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
         double score = gain / idealGain;
 
-        context.add(score);
+        synchronized (context) {
+            context.add(score);
+        }
         return MetricResult.singleton(columnName, score);
     }
 

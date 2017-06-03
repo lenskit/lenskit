@@ -46,6 +46,7 @@ dependencies {
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
     testCompile project(':lenskit-knn')
+    testCompile group: 'org.apache.commons', name: 'commons-csv', version: '1.4'
 }
 
 meta {

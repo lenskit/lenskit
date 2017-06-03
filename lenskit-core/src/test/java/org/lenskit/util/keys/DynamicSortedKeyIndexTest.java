@@ -20,13 +20,18 @@
  */
 package org.lenskit.util.keys;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.java.quickcheck.Generator;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static net.java.quickcheck.generator.CombinedGenerators.sortedLists;
@@ -88,10 +93,10 @@ public class DynamicSortedKeyIndexTest {
             Generator<List<Long>> listGen;
             if (i % 2 == 0) {
                 // generate ints
-                listGen = sortedLists(uniqueValues(intGen), 10, 10);
+                listGen = sortedLists(uniqueValues(intGen), 25, 25);
             } else {
                 // generate longs
-                listGen = sortedLists(uniqueValues(longGen), 10, 10);
+                listGen = sortedLists(uniqueValues(longGen), 25, 25);
             }
             List<Long> nums = listGen.next();
             data[i] = new KeyData(nums);
@@ -136,5 +141,23 @@ public class DynamicSortedKeyIndexTest {
         assertThat(keys.tryGetIndex(data.getAfter(0)), lessThan(0));
         assertThat(keys.tryGetIndex(data.getAfter(1)), lessThan(0));
         assertThat(keys.tryGetIndex(data.getAfter(2)), lessThan(0));
+    }
+
+    @Theory
+    public void testABunch(KeyData data) {
+        long[] rawKeys = data.getKeys(10);
+        List<Long> keyList = new LongArrayList(rawKeys);
+        SortedKeyIndex keys = SortedKeyIndex.wrap(rawKeys, rawKeys.length);
+        assertThat(keys.size(), equalTo(10));
+        assertThat(keys.size(), equalTo(10));
+
+        assertThat(keys.getKeyList(), contains(keyList.toArray()));
+        assertThat(keys.keySet(), contains(keyList.toArray()));
+
+        assertThat(keys.tryGetIndex(data.getLow()), lessThan(0));
+        for (int i = 0; i < 10; i++) {
+            assumeThat(keys.tryGetIndex(rawKeys[i]), equalTo(i));
+            assertThat(keys.tryGetIndex(data.getAfter(i)), lessThan(0));
+        }
     }
 }

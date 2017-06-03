@@ -63,7 +63,7 @@ public abstract class EntityBuilder {
 
     /**
      * Set an attribute in the entity.
-     * @param attr The attributre to set.
+     * @param attr The attribute to set.
      * @param <T> The attribute type.
      * @return The entity builder (for chaining).
      * @throws NoSuchAttributeException if the specified attribute is not supported by this entity.

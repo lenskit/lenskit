@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -60,14 +62,14 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, Context context) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Context context) {
         context.addUser(recommendations);
         return MetricResult.empty();
     }
 
     @Nullable
     @Override
-    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
         return new Context();
     }
 
@@ -89,7 +91,7 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
         private Long2IntMap counts = new Long2IntOpenHashMap();
         private int recCount = 0;
 
-        private void addUser(LongList recs) {
+        private synchronized void addUser(LongList recs) {
             LongIterator iter = recs.iterator();
             while (iter.hasNext()) {
                 long item = iter.nextLong();
@@ -99,7 +101,7 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
         }
 
         @Nullable
-        public EntropyResult finish() {
+        public synchronized EntropyResult finish() {
             if (recCount > 0) {
                 double entropy = 0;
                 for (Long2IntMap.Entry e : counts.long2IntEntrySet()) {

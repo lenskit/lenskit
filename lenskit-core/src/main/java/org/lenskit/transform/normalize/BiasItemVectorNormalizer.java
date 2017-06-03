@@ -20,16 +20,11 @@
  */
 package org.lenskit.transform.normalize;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -48,11 +43,6 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
     }
 
     @Override
-    public VectorTransformation makeTransformation(long itemId, SparseVector vector) {
-        return new Transform(itemId);
-    }
-
-    @Override
     public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long itemId, Long2DoubleMap vector) {
         return new Transform(itemId);
     }
@@ -64,34 +54,6 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
         Transform(long iid) {
             item = iid;
             itemBias = model.getIntercept() + model.getItemBias(item);
-        }
-
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            Long2DoubleMap users = model.getUserBiases(vector.keySet());
-            for (VectorEntry e: vector) {
-                vector.set(e, e.getValue() - itemBias - users.get(e.getKey()));
-            }
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            Long2DoubleMap users = model.getUserBiases(vector.keySet());
-            for (VectorEntry e: vector) {
-                vector.set(e, e.getValue() + itemBias + users.get(e.getKey()));
-            }
-            return vector;
-        }
-
-        @Override
-        public double apply(long key, double value) {
-            return value - itemBias - model.getUserBias(key);
-        }
-
-        @Override
-        public double unapply(long key, double value) {
-            return value + itemBias + model.getUserBias(key);
         }
 
         @Override

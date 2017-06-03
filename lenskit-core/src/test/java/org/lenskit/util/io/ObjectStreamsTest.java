@@ -23,15 +23,24 @@ package org.lenskit.util.io;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import net.java.quickcheck.Generator;
 import org.junit.Test;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.IntConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import static net.java.quickcheck.generator.PrimitiveGenerators.integers;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.lenskit.util.test.LenskitGenerators.ratings;
 
 /**
  * Tests for the stream utility methods.  This has the side effect of also testing some of the
@@ -215,4 +224,66 @@ public class ObjectStreamsTest {
         cur = ObjectStreams.consume(3, cur);
         assertThat(cur.readObject(), nullValue());
     }
+
+    /* The following tests are for the stream implementation methods. Boilerplate, but we want to
+     * make sure they route correctly. */
+    //region Stream method tests
+    private List<Rating> makeRatings() {
+        Generator<Rating> rgen = ratings();
+        int n = integers(10, 1000).next();
+
+        return Stream.generate(rgen::next)
+                     .limit(n)
+                     .collect(Collectors.toList());
+    }
+
+    @Test
+    public void testFilter() {
+        List<Rating> ratings = makeRatings();
+        List<Rating> correct = ratings.stream()
+                                      .filter(r -> r.getUserId() % 2 == 1)
+                                      .collect(Collectors.toList());
+        List<Rating> result = ObjectStreams.wrap(ratings)
+                                           .filter(r -> r.getUserId() % 2 == 1)
+                                           .collect(Collectors.toList());
+        assertThat(result, equalTo(correct));
+    }
+
+    @Test
+    public void testMapToInt() {
+        List<Rating> ratings = makeRatings();
+        int correct = ratings.stream()
+                             .mapToInt(r -> (int) r.getUserId())
+                             .sum();
+        int result = ObjectStreams.wrap(ratings)
+                                  .mapToInt(r -> (int) r.getUserId())
+                                  .sum();
+        assertThat(result, equalTo(correct));
+    }
+
+    @Test
+    public void testMapToLong() {
+        List<Rating> ratings = makeRatings();
+        long correct = ratings.stream()
+                             .mapToLong(Rating::getUserId)
+                             .sum();
+        long result = ObjectStreams.wrap(ratings)
+                                  .mapToLong(Rating::getUserId)
+                                  .sum();
+        assertThat(result, equalTo(correct));
+    }
+
+    @Test
+    public void testMapToDouble() {
+        List<Rating> ratings = makeRatings();
+        double correct = ratings.stream()
+                                .mapToDouble(Rating::getValue)
+                                .sum();
+        double result = ObjectStreams.wrap(ratings)
+                                     .mapToDouble(Rating::getValue)
+                                     .sum();
+        assertThat(result, equalTo(correct));
+    }
+
+    //endregion
 }

@@ -29,10 +29,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.EntitySource;
@@ -82,7 +80,6 @@ public class Crossfolder {
     private int partitionCount = 5;
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
-    private boolean skipIfUpToDate = false;
     private CrossfoldMethod method = CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10));
     private boolean writeTimestamps = true;
     private boolean executed = false;
@@ -268,61 +265,22 @@ public class Crossfolder {
     }
 
     /**
-     * Set whether the crossfolder should skip if all files are up to date.  The default is to always re-crossfold, even
-     * if the files are up to date.
-     *
-     * @param skip `true` to skip crossfolding if files are up to date.
-     * @return The crossfolder (for chaining).
-     */
-    public Crossfolder setSkipIfUpToDate(boolean skip) {
-        skipIfUpToDate = skip;
-        return this;
-    }
-
-    public boolean getSkipIfUpToDate() {
-        return skipIfUpToDate;
-    }
-
-    /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      */
-    public void execute() {
-        try {
-            if (skipIfUpToDate) {
-                UpToDateChecker check = new UpToDateChecker();
-                for (EntitySource src: source.getSources()) {
-                    if (src instanceof TextEntitySource) {
-                        Path path = ((TextEntitySource) src).getFile();
-                        check.addInput(Files.getLastModifiedTime(path).toMillis());
-                    }
-                }
-                for (Path p: Iterables.concat(getTrainingFiles(), getTestFiles(), getSpecFiles())) {
-                    check.addOutput(p.toFile());
-                }
-                if (check.isUpToDate()) {
-                    logger.info("crossfold {} up to date", getName());
-                    executed = true;
-                    return;
-                }
-            }
-
-            logger.info("ensuring output directory {} exists", outputDir);
-            Files.createDirectories(outputDir);
-            logger.info("making sure item list is available");
-            JsonNode itemDataInfo = writeItemFile(source);
-            logger.info("writing train-test split files");
-            createTTFiles(source);
-            logger.info("writing manifests and specs");
-            Map<String,Object> metadata = new HashMap<>();
-            for (EntitySource src: source.getSourcesForType(entityType)) {
-                metadata.putAll(src.getMetadata());
-            }
-            writeManifests(source, metadata, itemDataInfo);
-            executed = true;
-        } catch (IOException ex) {
-            // TODO Use application-specific exception
-            throw new RuntimeException("Error writing data sets", ex);
+    public void execute() throws IOException {
+        logger.info("ensuring output directory {} exists", outputDir);
+        Files.createDirectories(outputDir);
+        logger.info("making sure item list is available");
+        JsonNode itemDataInfo = writeItemFile(source);
+        logger.info("writing train-test split files");
+        createTTFiles(source);
+        logger.info("writing manifests and specs");
+        Map<String,Object> metadata = new HashMap<>();
+        for (EntitySource src: source.getSourcesForType(entityType)) {
+            metadata.putAll(src.getMetadata());
         }
+        writeManifests(source, metadata, itemDataInfo);
+        executed = true;
     }
 
     List<Path> getTrainingFiles() {

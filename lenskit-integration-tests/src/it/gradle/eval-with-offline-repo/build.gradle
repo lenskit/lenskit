@@ -50,7 +50,7 @@ task trainTest(type: TrainTest) {
     }
 }
 
-task check(overwrite: true) {
+task verifyOutput {
     dependsOn trainTest
 
     doLast {
@@ -59,3 +59,5 @@ task check(overwrite: true) {
         }
     }
 }
+
+check.dependsOn verifyOutput

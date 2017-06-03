@@ -25,8 +25,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CompactableLongArrayList;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 /**
@@ -132,31 +130,6 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
             slot += 1;
             size += 1;
         }
-    }
-
-    @Override
-    public MutableSparseVector finishVector() {
-        if (scores == null) {
-            return MutableSparseVector.create();
-        }
-
-        assert size == heap.size();
-        int[] indices = new int[size];
-        // Copy backwards so the scored list is sorted.
-        for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeueInt();
-        }
-        assert heap.isEmpty();
-
-        long[] keys = new long[indices.length];
-        double[] values = new double[indices.length];
-        for (int i = 0; i < indices.length; i++) {
-            keys[i] = items.getLong(indices[i]);
-            values[i] = scores.getDouble(indices[i]);
-        }
-        clear();
-
-        return MutableSparseVector.wrapUnsorted(keys, values);
     }
 
     @Override

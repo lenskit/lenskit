@@ -72,7 +72,7 @@ class UserUserImplicitAccuracyTest extends CrossfoldTestSuite {
             assertThat(table.column("MAP").average(),
                     closeTo(0.278d, 0.015d))
             assertThat(table.column("MRR").average(),
-                    closeTo(0.676d, 0.02d))
+                    closeTo(0.676d, 0.03d))
             assertThat(table.column("TopN.nDCG").average(),
                     closeTo(0.56d, 0.015d))
         } else {

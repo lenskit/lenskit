@@ -35,7 +35,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class TextEntitySourceTest {
     private ObjectReader reader = new ObjectMapper().reader();
@@ -56,6 +56,16 @@ public class TextEntitySourceTest {
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
         assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+
+        EntitySource.Layout layout = src.getLayout();
+        assertThat(layout, notNullValue());
+        assertThat(layout.getEntityType(), equalTo(CommonTypes.RATING));
+        assertThat(layout.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.USER_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.RATING,
+                                      CommonAttributes.TIMESTAMP));
     }
 
     @Test
@@ -70,6 +80,7 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.usesHeader(), equalTo(false));
+        assertThat(format.getBaseId(), equalTo(0L));
         assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
     }
 
@@ -119,6 +130,20 @@ public class TextEntitySourceTest {
     }
 
     @Test
+    public void testBaseIdConfig() throws IOException {
+        JsonNode node = reader.readTree("{\"file\": \"ratings.tsv\", \"base_id\": 100}");
+        TextEntitySource fr = TextEntitySource.fromJSON("test", node, Paths.get("").toUri());
+        assertThat(fr, notNullValue());
+        assertThat(fr.getURL(), equalTo(Paths.get("ratings.tsv").toUri().toURL()));
+        assertThat(fr.getFormat(), instanceOf(DelimitedColumnEntityFormat.class));
+        DelimitedColumnEntityFormat format = (DelimitedColumnEntityFormat) fr.getFormat();
+        assertThat(format.getDelimiter(), equalTo("\t"));
+        assertThat(format.getEntityType(), equalTo(EntityType.forName("rating")));
+        assertThat(format.getBaseId(), equalTo(100L));
+        assertThat(format.getEntityBuilder(), equalTo((Class) RatingBuilder.class));
+    }
+
+    @Test
     public void testJSONConfig() throws IOException {
         JsonNode node = reader.readTree("{\"file\": \"ratings.json\", \"name\": \"woozle\", \"format\": \"json\", \"entity_type\": \"item\"}");
         EntitySource raw = EntitySources.fromJSON(node, Paths.get("").toUri());
@@ -132,6 +157,9 @@ public class TextEntitySourceTest {
         assertThat(format.getEntityType(), equalTo(CommonTypes.ITEM));
         assertThat(format.getHeaderLines(), equalTo(0));
         assertThat(format.getEntityBuilder(), equalTo((Class) BasicEntityBuilder.class));
+
+        assertThat(src.getLayout(),
+                   nullValue());
     }
 
     @Test
@@ -224,6 +252,14 @@ public class TextEntitySourceTest {
                                                 "  \"rating\": \"rating\"\n" +
                                                 "}}");
         TextEntitySource fr = TextEntitySource.fromJSON("test", node, baseURI);
+        EntitySource.Layout layout = fr.getLayout();
+        assertThat(layout, notNullValue());
+        assertThat(layout.getEntityType(), equalTo(CommonTypes.RATING));
+        assertThat(layout.getAttributes(),
+                   containsInAnyOrder(CommonAttributes.ENTITY_ID,
+                                      CommonAttributes.USER_ID,
+                                      CommonAttributes.ITEM_ID,
+                                      CommonAttributes.RATING));
 
         try (ObjectStream<Entity> stream = fr.openStream()) {
             Entity first = stream.readObject();

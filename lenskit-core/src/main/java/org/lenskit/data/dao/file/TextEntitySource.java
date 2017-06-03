@@ -32,10 +32,10 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.Describable;
-import org.grouplens.lenskit.util.io.DescriptionWriter;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.util.io.CompressionMode;
+import org.lenskit.util.describe.Describable;
+import org.lenskit.util.describe.DescriptionWriter;
+import org.lenskit.util.io.LKFileUtils;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.io.LineStream;
@@ -97,6 +97,18 @@ public class TextEntitySource implements EntitySource, Describable {
     @Override
     public Set<EntityType> getTypes() {
         return ImmutableSet.of(format.getEntityType());
+    }
+
+    @Nullable
+    @Override
+    public Layout getLayout() {
+        EntityType type = format.getEntityType();
+        AttributeSet attrs = format.getAttributes();
+        if (attrs != null) {
+            return new Layout(type, attrs, format.getEntityBuilder());
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -185,7 +197,7 @@ public class TextEntitySource implements EntitySource, Describable {
         while (header.size() < headerLines) {
             String line = lines.readObject();
             if (line == null) {
-                IOException ex = new IOException(String.format("expected %d header lines, found %d", headerLines, header.size()));
+                IOException ex = new IOException(String.format("%s: expected %d header lines, found %d", sourceURL, headerLines, header.size()));
                 try {
                     lines.close();
                 } catch (Throwable th) {

@@ -21,8 +21,6 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Vectors;
@@ -63,16 +61,6 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
     }
 
     @Override
-    public VectorTransformation makeTransformation(SparseVector reference) {
-        double s = reference.norm();
-        if (Math.abs(s) < tolerance) {
-            return new IdentityVectorNormalizer().makeTransformation(reference);
-        } else {
-            return new ScalingTransform(s);
-        }
-    }
-
-    @Override
     public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
         double s = Vectors.euclideanNorm(reference);
         if (Math.abs(s) < tolerance) {
@@ -90,18 +78,6 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
         }
 
         @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            vector.multiply(1 / factor);
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            vector.multiply(factor);
-            return vector;
-        }
-
-        @Override
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             return input == null ? null : Vectors.multiplyScalar(input, factor);
         }
@@ -111,14 +87,6 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
         public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
             return input == null ? null : Vectors.multiplyScalar(input, 1.0 / factor);
         }
-        @Override
-        public double apply(long key, double value) {
-            return value / factor;
-        }
 
-        @Override
-        public double unapply(long key, double value) {
-            return value * factor;
-        }
     }
 }

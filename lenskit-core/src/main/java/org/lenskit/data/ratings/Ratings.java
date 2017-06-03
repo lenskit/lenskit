@@ -25,19 +25,16 @@ import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * Utilities for working with ratings.
@@ -70,50 +67,38 @@ public final class Ratings {
      * @return A sparse vector mapping user IDs to ratings.
      */
     public static Long2DoubleMap itemRatingVector(@Nonnull Collection<? extends Rating> ratings) {
-        return extractVector(ratings, IdExtractor.USER);
+        return extractVector(ratings.iterator(), IdExtractor.USER, ratings.size());
     }
 
     /**
      * Construct a rating vector that contains the ratings provided for each
      * item. If all ratings in <var>ratings</var> are by the same user, then
-     * this will be a valid user rating vector. If multiple ratings are provided
-     * for the same item, the one with the greatest timestamp is retained. Ties
-     * are broken by preferring ratings which come later when iterating through
-     * the collection.
+     * this will be a valid user rating vector.
      *
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      */
     public static Long2DoubleMap userRatingVector(@Nonnull Collection<Rating> ratings) {
-        return extractVector(ratings, IdExtractor.ITEM);
+        return extractVector(ratings.iterator(), IdExtractor.ITEM, ratings.size());
     }
 
-    private static Long2DoubleMap extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
-        // collect the list of unique IDs
-        // use a list since we'll be sorting anyway
-        Rating[] rs = ratings.toArray(new Rating[ratings.size()]);
-        Arrays.sort(rs, dimension);
+    private static Long2DoubleMap extractVector(Iterator<? extends Rating> ratings, IdExtractor dimension, int n) {
+        LongArrayList ids = new LongArrayList(n > 0 ? n : LongArrayList.DEFAULT_INITIAL_CAPACITY);
+        DoubleArrayList values = new DoubleArrayList(n > 0 ? n : DoubleArrayList.DEFAULT_INITIAL_CAPACITY);
 
-        LongList ids = new LongArrayList(ratings.size());
-        DoubleArrayList values = new DoubleArrayList(ratings.size());
-
-        for (int i = 0; i < rs.length; i++) {
+        while (ratings.hasNext()) {
+            Rating r = ratings.next();
             assert ids.size() == values.size();
-            long id = dimension.getId(rs[i]);
-            // advance to the last one
-            while (i < rs.length - 1 && dimension.getId(rs[i+1]) == id) {
-                i++;
-            }
-            Rating r = rs[i];
-            if (r.hasValue()) {
-                ids.add(id);
-                values.add(r.getValue());
-            }
+            long id = dimension.getId(r);
+            ids.add(id);
+            values.add(r.getValue());
         }
 
-        SortedKeyIndex idx = SortedKeyIndex.fromCollection(ids);
-        assert idx.getKeyList().equals(ids);
-        return Long2DoubleSortedArrayMap.wrap(idx, values.elements());
+        ids.trim();
+        values.trim();
+        assert ids.elements().length == ids.size();
+        assert values.elements().length == values.size();
+        return Long2DoubleSortedArrayMap.wrapUnsorted(ids.elements(), values.elements());
     }
 
     /**
@@ -124,7 +109,7 @@ public final class Ratings {
      * @see #userRatingVector(Collection)
      */
     public static Long2DoubleMap userRatingVector(@WillClose ObjectStream<? extends Rating> ratings) {
-        return userRatingVector(ObjectStreams.makeList(ratings));
+        return extractVector(ratings.iterator(), IdExtractor.ITEM, -1);
     }
 
     /**

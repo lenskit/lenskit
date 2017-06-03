@@ -37,7 +37,6 @@ import java.util.Set;
  *
  * @compat private
  * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RecommenderGraphBuilder {
     private static final int RESOLVE_DEPTH_LIMIT = 100;

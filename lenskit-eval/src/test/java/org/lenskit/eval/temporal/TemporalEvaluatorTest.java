@@ -20,7 +20,9 @@
  */
 package org.lenskit.eval.temporal;
 
-import com.google.common.collect.ImmutableList;
+import net.java.quickcheck.Generator;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,18 +36,24 @@ import org.lenskit.baseline.UserMeanItemScorer;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.test.LenskitGenerators;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 
 public class TemporalEvaluatorTest {
+    public static final int RATING_COUNT = 35;
+
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     public DataAccessObject dao;
@@ -55,45 +63,26 @@ public class TemporalEvaluatorTest {
     @Before
     public void initialize() throws IOException {
         predictOutputFile = folder.newFile("predictions.csv");
-        List<Rating> ratings;
-        ImmutableList.Builder<Rating> bld = ImmutableList.builder();
+        List<Rating> ratings = new ArrayList<>();
+        Generator<Rating> rgen = LenskitGenerators.ratings();
+        Set<Pair<Long,Long>> used = new HashSet<>();
 
-        bld.add(Rating.create(13, 102, 3.5, 1L))
-           .add(Rating.create(13, 105, 3.5, 2L))
-           .add(Rating.create(13, 102, 2.5, 1050L))
-           .add(Rating.create(13, 111, 4.5, 1050L))
-           .add(Rating.create(13, 111, 4.5, 1200L))
-           .add(Rating.create(13, 105, 2.5, 1400L))
-           .add(Rating.create(13, 120, 4.5, 1650L))
-           .add(Rating.create(13, 121, 4.5, 1650L))
-           .add(Rating.create(13, 122, 2.5, 1650L))
-           .add(Rating.create(13, 123, 2.5, 1650L))
-           .add(Rating.create(13, 111, 3.5, 1700L))
-           .add(Rating.create(13, 115, 3.5, 1700L))
-           .add(Rating.create(13, 105, 3.5, 1700L))
-           .add(Rating.create(13, 102, 2.5, 1750L))
-           .add(Rating.create(13, 111, 4.5, 1750L))
-           .add(Rating.create(13, 121, 4.5, 1800L))
-           .add(Rating.create(13, 105, 2.5, 1800L))
-           .add(Rating.create(13, 120, 4.5, 1850L))
-           .add(Rating.create(13, 121, 4.5, 1850L))
-           .add(Rating.create(13, 122, 2.5, 1850L))
-           .add(Rating.create(13, 123, 2.5, 1850L))
-           .add(Rating.create(13, 111, 3.5, 1900L))
-           .add(Rating.create(13, 115, 3.5, 1900L))
-           .add(Rating.create(13, 105, 3.5, 1900L))
-           .add(Rating.create(13, 102, 2.5, 1950L))
-           .add(Rating.create(13, 111, 4.5, 1950L))
-           .add(Rating.create(13, 121, 4.5, 2000L))
-           .add(Rating.create(13, 105, 2.5, 2400L))
-           .add(Rating.create(39, 120, 4.5, 2650L))
-           .add(Rating.create(12, 121, 4.5, 2650L))
-           .add(Rating.create(42, 122, 2.5, 2650L))
-           .add(Rating.create(40, 123, 2.5, 2650L))
-           .add(Rating.create(41, 111, 3.5, 2700L))
-           .add(Rating.create(42, 115, 3.5, 2700L));
+        while (ratings.size() < RATING_COUNT) {
+            Rating r = rgen.next();
+            long uid = r.getUserId() % 5;
+            Pair<Long,Long> ui = ImmutablePair.of(uid, r.getItemId());
+            if (used.contains(ui)) {
+                continue;
+            }
 
-        ratings = bld.build();
+            used.add(ui);
+            Rating r2 = r.copyBuilder()
+                         .setUserId(r.getUserId() % 5)
+                         .build();
+            ratings.add(r2);
+        }
+
+        assumeThat(ratings, hasSize(RATING_COUNT));
 
         dao = StaticDataSource.fromList(ratings).get();
 
@@ -107,6 +96,9 @@ public class TemporalEvaluatorTest {
         tempEval.setOutputFile(predictOutputFile);
     }
 
+    /**
+     * Test that we can run it, and it produces enough data.
+     */
     @Test
     public void ExecuteTest() throws IOException, RecommenderBuildException {
         tempEval.execute();
@@ -114,23 +106,8 @@ public class TemporalEvaluatorTest {
         try (FileReader reader = new FileReader(predictOutputFile)) {
             try (LineNumberReader lnr = new LineNumberReader(reader)) {
                 lnr.skip(Long.MAX_VALUE);
-                long lines = (long) lnr.getLineNumber();
-                assertThat(lines, equalTo(35L));
-            }
-        }
-    }
-
-    @Test
-    public void SetDataSourceDaoTest() throws IOException, RecommenderBuildException {
-        tempEval.setDataSource(dao);
-        tempEval.execute();
-        assertTrue(predictOutputFile.isFile());
-
-        try (FileReader reader = new FileReader(predictOutputFile)) {
-            try (LineNumberReader lnr = new LineNumberReader(reader)) {
-                lnr.skip(Long.MAX_VALUE);
-                long lines = (long) lnr.getLineNumber();
-                assertThat(lines, equalTo(35L));
+                int lines = lnr.getLineNumber();
+                assertThat(lines, equalTo(RATING_COUNT + 1));
             }
         }
     }

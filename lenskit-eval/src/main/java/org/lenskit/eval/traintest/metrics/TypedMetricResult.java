@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest.metrics;
 
 import com.google.common.base.Function;
+import com.google.common.base.VerifyException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
@@ -146,7 +147,7 @@ public abstract class TypedMetricResult extends MetricResult {
             try {
                 return field.get(inst);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("cannot get " + field, e);
+                throw new VerifyException("cannot get " + field, e);
             }
         }
     }
@@ -165,7 +166,7 @@ public abstract class TypedMetricResult extends MetricResult {
             try {
                 return method.invoke(inst);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException("cannot get " + method, e);
+                throw new VerifyException("cannot get " + method, e);
             }
         }
     }

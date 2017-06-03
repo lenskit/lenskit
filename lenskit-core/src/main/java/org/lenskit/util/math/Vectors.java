@@ -55,6 +55,15 @@ public final class Vectors {
         }
     }
 
+    public static Iterable<Long2DoubleMap.Entry> fastEntries(final Long2DoubleMap map) {
+        return new Iterable<Long2DoubleMap.Entry>() {
+            @Override
+            public Iterator<Long2DoubleMap.Entry> iterator() {
+                return fastEntryIterator(map);
+            }
+        };
+    }
+
     /**
      * Compute the sum of the elements of a map.
      * @param v The vector
@@ -89,13 +98,32 @@ public final class Vectors {
      * @return The sum of the squares of the values of {@code v}.
      */
     public static double sumOfSquares(Long2DoubleMap v) {
-        double sum = 0;
-        DoubleIterator iter = v.values().iterator();
-        while (iter.hasNext()) {
-            double d = iter.nextDouble();
-            sum += d * d;
+        if (v instanceof Long2DoubleSortedArrayMap) {
+            return sumOfSquares((Long2DoubleSortedArrayMap) v);
+        } else {
+            double sum = 0;
+            DoubleIterator iter = v.values().iterator();
+            while (iter.hasNext()) {
+                double d = iter.nextDouble();
+                sum += d * d;
+            }
+            return sum;
         }
-        return sum;
+    }
+
+    /**
+     * Compute the sum of the squares of elements of a map (optimized).
+     * @param v The vector
+     * @return The sum of the squares of the values of {@code v}.
+     */
+    public static double sumOfSquares(Long2DoubleSortedArrayMap v) {
+        final int sz = v.size();
+        double ssq = 0;
+        for (int i = 0; i < sz; i++) {
+            double val = v.getValueByIndex(i);
+            ssq += val * val;
+        }
+        return ssq;
     }
 
     /**
@@ -120,30 +148,11 @@ public final class Vectors {
             return dotProduct(v2, v1);
         }
 
-        double result = 0;
-
         if (v1 instanceof Long2DoubleSortedArrayMap && v2 instanceof Long2DoubleSortedArrayMap) {
-            Long2DoubleSortedArrayMap sv1 = (Long2DoubleSortedArrayMap) v1;
-            Long2DoubleSortedArrayMap sv2 = (Long2DoubleSortedArrayMap) v2;
-
-            final int sz1 = v1.size();
-            final int sz2 = v2.size();
-
-            int i1 = 0, i2 = 0;
-            while (i1 < sz1 && i2 < sz2) {
-                final long k1 = sv1.getKeyByIndex(i1);
-                final long k2 = sv2.getKeyByIndex(i2);
-                if (k1 < k2) {
-                    i1++;
-                } else if (k2 < k1) {
-                    i2++;
-                } else {
-                    result += sv1.getValueByIndex(i1) * sv2.getValueByIndex(i2);
-                    i1++;
-                    i2++;
-                }
-            }
+            return dotProduct((Long2DoubleSortedArrayMap) v1, (Long2DoubleSortedArrayMap) v2);
         } else {
+            double result = 0;
+
             Long2DoubleFunction v2d = adaptDefaultValue(v2, 0.0);
             Iterator<Long2DoubleMap.Entry> iter = fastEntryIterator(v1);
             while (iter.hasNext()) {
@@ -151,8 +160,38 @@ public final class Vectors {
                 long k = e.getLongKey();
                 result += e.getDoubleValue() * v2d.get(k); // since default is 0
             }
-        }
 
+            return result;
+        }
+    }
+
+    /**
+     * Compute the dot product of two maps (optimized). This method assumes any value missing in one map is 0, so it is the dot
+     * product of the values of common keys.
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     * @return The sum of the products of corresponding values in the two vectors.
+     */
+    public static double dotProduct(Long2DoubleSortedArrayMap v1, Long2DoubleSortedArrayMap v2) {
+        double result;
+        result = 0;
+        final int sz1 = v1.size();
+        final int sz2 = v2.size();
+
+        int i1 = 0, i2 = 0;
+        while (i1 < sz1 && i2 < sz2) {
+            final long k1 = v1.getKeyByIndex(i1);
+            final long k2 = v2.getKeyByIndex(i2);
+            if (k1 < k2) {
+                i1++;
+            } else if (k2 < k1) {
+                i2++;
+            } else {
+                result += v1.getValueByIndex(i1) * v2.getValueByIndex(i2);
+                i1++;
+                i2++;
+            }
+        }
         return result;
     }
 

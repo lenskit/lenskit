@@ -66,11 +66,10 @@ public class Crossfold implements Command {
         Crossfolder cf;
         try {
             cf = configureCrossfolder(options);
+            cf.execute();
         } catch (IOException e) {
             throw new LenskitCommandException(e);
         }
-
-        cf.execute();
     }
 
     Crossfolder configureCrossfolder(Namespace options) throws IOException {
@@ -131,10 +130,21 @@ public class Crossfold implements Command {
 
             n = options.get("sample_size");
 
-            if (method.equals("partition-users")) {
-                cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
-            } else if (method.equals("sample-users")) {
-                cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
+            switch (method) {
+                case "partition-users":
+                    cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
+                    break;
+                case "sample-users":
+                    cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
+                    break;
+                case "partition-items":
+                    cf.setMethod(CrossfoldMethods.partitionItems(part));
+                    break;
+                case "sample-items":
+                    cf.setMethod(CrossfoldMethods.sampleItems(part, n));
+                    break;
+                default:
+                    throw new IllegalArgumentException("unknown crossfold method " + method);
             }
         }
 
@@ -202,6 +212,16 @@ public class Crossfold implements Command {
             .action(Arguments.storeConst())
             .setConst("sample-users")
             .help("Generate K samples of users");
+        mode.addArgument("--partition-items")
+            .dest("crossfold_mode")
+            .action(Arguments.storeConst())
+            .setConst("partition-items")
+            .help("Partition items into K partitions");
+        mode.addArgument("--sample-items")
+            .dest("crossfold_mode")
+            .action(Arguments.storeConst())
+            .setConst("sample-items")
+            .help("Generate K samples of items");
 
         parser.addArgument("--sample-size")
               .dest("sample_size")

@@ -21,13 +21,9 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
 
@@ -65,16 +61,6 @@ public class DefaultUserVectorNormalizer implements UserVectorNormalizer, Serial
      */
     public VectorNormalizer getVectorNormalizer() {
         return delegate;
-    }
-    
-    @Override
-    public MutableSparseVector normalize(long user, @Nonnull SparseVector vector, @Nullable MutableSparseVector target) {
-        return delegate.normalize(vector, target);
-    }
-
-    @Override
-    public VectorTransformation makeTransformation(long user, SparseVector vector) {
-        return delegate.makeTransformation(vector);
     }
 
     @Override

@@ -23,7 +23,6 @@ package org.lenskit.similarity;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Compute the similarity between sparse vectors.
@@ -32,16 +31,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 @DefaultImplementation(CosineVectorSimilarity.class)
 public interface VectorSimilarity {
-    /**
-     * Compute the similarity between two vectors.
-     *
-     * @param vec1 The left vector to compare.
-     * @param vec2 The right vector to compare.
-     * @return The similarity, in the range [-1,1].
-     * @deprecated Use {@link #similarity(SparseVector, SparseVector)}
-     */
-    @Deprecated
-    double similarity(SparseVector vec1, SparseVector vec2);
 
     /**
      * Compute the similarity between two vectors.
@@ -56,7 +45,7 @@ public interface VectorSimilarity {
      * Query whether this similarity function is sparse (returns 0 for vectors with
      * disjoint key sets).
      *
-     * @return {@code true} iff {@link #similarity(SparseVector, SparseVector)} will always return
+     * @return {@code true} iff {@link #similarity(Long2DoubleMap, Long2DoubleMap)} will always return
      *         true when applied to two vectors with no keys in common.
      */
     boolean isSparse();

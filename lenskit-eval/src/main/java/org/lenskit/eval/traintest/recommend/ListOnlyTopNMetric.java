@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.lenskit.api.Recommender;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
@@ -32,8 +33,8 @@ import java.util.List;
 
 /**
  * Intermediate class for top-N metrics that only depend on the list of recommended items, not their details.
- * Metrics extending this class will implement the {@link #measureUser(TestUser, int, LongList, Object)} method
- * instead of {@link #measureUser(TestUser, int, ResultList, Object)}.  The recommend eval task uses this
+ * Metrics extending this class will implement the {@link #measureUser(Recommender, TestUser, int, LongList, Object)} method
+ * instead of {@link #measureUser(Recommender, TestUser, int, ResultList, Object)}.  The recommend eval task uses this
  * subclass to improve efficiency when results are not used in the evaluation.
  *
  * @param <X> The accumulator type.
@@ -53,14 +54,19 @@ public abstract class ListOnlyTopNMetric<X> extends TopNMetric<X> {
 
     @Nonnull
     @Override
-    public final MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, X context) {
-        return measureUser(user, targetLength,
+    public final MetricResult measureUser(Recommender rec, TestUser user, int targetLength, ResultList recommendations, X context) {
+        return measureUser(rec, user, targetLength,
                            LongUtils.asLongList(recommendations.idList()),
                            context);
     }
 
     /**
      * Measurement method that only uses the recommend list.
+     *
+     * **Thread Safety:** This method may be called concurrently by multiple threads with the same recommender and
+     * context.
+     *
+     * @param rec The recommender used to recommend for this user.
      * @param user The user.
      * @param targetLength The target list length.
      * @param recommendations The list of recommendations.
@@ -68,5 +74,5 @@ public abstract class ListOnlyTopNMetric<X> extends TopNMetric<X> {
      * @return The results of measuring this user.
      */
     @Nonnull
-    public abstract MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, X context);
+    public abstract MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, X context);
 }

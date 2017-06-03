@@ -23,7 +23,6 @@ package org.lenskit.util.collections;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * Accumulate a sorted list of scored IDs.
@@ -53,17 +52,6 @@ public interface Long2DoubleAccumulator {
      * @param score The item's score.
      */
     void put(long item, double score);
-
-    /**
-     * Accumulate the scores into a mutable sparse vector and
-     * reset the accumulator.
-     *
-     * <p>After this method is called, the accumulator is ready for another
-     * accumulation.
-     *
-     * @return A MutableSparseVector of items.
-     */
-    MutableSparseVector finishVector();
 
     /**
      * Accumulate the scores into a map and reset the accumulator.

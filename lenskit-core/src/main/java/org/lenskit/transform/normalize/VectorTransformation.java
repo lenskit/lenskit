@@ -21,7 +21,6 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.util.InvertibleFunction;
 
 /**
@@ -30,35 +29,5 @@ import org.lenskit.util.InvertibleFunction;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface VectorTransformation extends InvertibleFunction<Long2DoubleMap,Long2DoubleMap> {
-    /**
-     * Apply the vector transformation in-place to a vector.
-     *
-     * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
-     */
-    MutableSparseVector apply(MutableSparseVector vector);
 
-    /**
-     * Unapply the vector transformation in-place on a transformed vector. In
-     * some cases, the unapplication may supply values for key domain members
-     * that do not have values.
-     *
-     * @param vector The vector to transform.
-     * @return <var>vector</var> (for chaining).
-     */
-    MutableSparseVector unapply(MutableSparseVector vector);
-
-    /**
-     * Apply the transformation to an individual value.
-     * @param value The value.
-     * @return The transformed values.
-     */
-    double apply(long key, double value);
-
-    /**
-     * Apply the inverse of the transformation to an individual value.
-     * @param value The value.
-     * @return The untransformed value.
-     */
-    double unapply(long key, double value);
 }

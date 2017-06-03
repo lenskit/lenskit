@@ -22,6 +22,7 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Monitor;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
@@ -34,9 +35,10 @@ import org.grouplens.grapht.reflect.Satisfactions;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeInstantiator;
 import org.lenskit.inject.NodeProcessor;
-import org.grouplens.lenskit.util.io.*;
-import org.lenskit.util.UncheckedInterruptException;
+import org.lenskit.util.describe.*;
+import org.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.lenskit.util.io.StagedWrite;
+import org.lenskit.util.parallel.Blockers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,8 +108,10 @@ class ComponentCache implements NodeProcessor {
     @Override
     public DAGNode<Component, Dependency> processNode(@Nonnull DAGNode<Component, Dependency> node,
                                                       @Nonnull DAGNode<Component, Dependency> original) throws InjectionException {
+        logger.debug("resolving node {}", node);
         // We only want to process shareable nodes.
         if (!GraphtUtils.isShareable(node)) {
+            logger.debug("node {} is not shareable", node);
             return node;
         }
 
@@ -132,6 +136,9 @@ class ComponentCache implements NodeProcessor {
             obj = entry.getObject(node);
         } catch (IOException e) {
             throw new InjectionException("Cache I/O error", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new InjectionException("Cache load interrupted", e);
         }
 
         // Build a new satisfaction and a node, with all non-transient edges.
@@ -158,6 +165,7 @@ class ComponentCache implements NodeProcessor {
      */
     private class CacheEntry {
         private final String key;
+        private final Monitor monitor = new Monitor();
         // reference *inside* optional so we don't GC the optional while keeping the object
         // this is null for uncached, empty for cached null
         private Optional<SoftReference<Object>> cachedObject;
@@ -187,35 +195,40 @@ class ComponentCache implements NodeProcessor {
          * @return The object loaded from the cache, or from instantiating {@code node}.
          * @throws IOException If there is an I/O error with the cache.
          */
-        public synchronized Object getObject(DAGNode<Component, Dependency> node) throws IOException, InjectionException {
-            // check soft-reference cache
-            Optional<Object> cached = getMemoryCachedObject();
-            if (cached != null) {
-                logger.debug("reusing {} from memory", cached);
-                return cached.orNull();
+        public Object getObject(DAGNode<Component, Dependency> node) throws IOException, InjectionException, InterruptedException {
+            Blockers.enterMonitor(monitor);
+            try {
+                // check soft-reference cache
+                Optional<Object> cached = getMemoryCachedObject();
+                if (cached != null) {
+                    logger.debug("reusing {} from memory", cached);
+                    return cached.orNull();
+                }
+
+                // Either we have not cached the object, or the cache has left memory
+                Path cacheFile = getCacheFile();
+                cached = getDiskCachedObject(cacheFile, node);
+                if (cached != null) {
+                    return cached.orNull();
+                }
+
+                // No object from the serialization stream, let's try to make one
+                logger.debug("instantiating object for {}", node.getLabel().getSatisfaction());
+                Object result = instantiator.instantiate(node);
+                if (result == null) {
+                    // cache the result
+                    cachedObject = Optional.absent();
+                } else {
+                    cachedObject = Optional.of(new SoftReference<>(result));
+                }
+
+                // now save it to disk, if possible and non-null
+                writeDiskCache(result, cacheFile, node);
+
+                return result;
+            } finally {
+                monitor.leave();
             }
-
-            // Either we have not cached the object, or the cache has left memory
-            Path cacheFile = getCacheFile();
-            cached = getDiskCachedObject(cacheFile, node);
-            if (cached != null) {
-                return cached.orNull();
-            }
-
-            // No object from the serialization stream, let's try to make one
-            logger.debug("instantiating object for {}", node.getLabel().getSatisfaction());
-            Object result = instantiator.instantiate(node);
-            if (result == null) {
-                // cache the result
-                cachedObject = Optional.absent();
-            } else {
-                cachedObject = Optional.of(new SoftReference<>(result));
-            }
-
-            // now save it to disk, if possible and non-null
-            writeDiskCache(result, cacheFile, node);
-
-            return result;
         }
 
 
@@ -300,7 +313,7 @@ class ComponentCache implements NodeProcessor {
             } catch (ClosedByInterruptException | InterruptedIOException ex) {
                 logger.info("Evaluation thread interrupted, aborting");
                 Thread.currentThread().interrupt();
-                throw new UncheckedInterruptException("Evaluation thread interrupted", ex);
+                throw new UncheckedIOException("Evaluation thread interrupted", ex);
             } catch (IOException ex) {
                 logger.warn("ignoring cache file {} due to read error: {}",
                             cacheFile.getFileName(), ex.toString());

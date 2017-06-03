@@ -22,10 +22,7 @@ package org.lenskit.data.ratings;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.EntityBuilder;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
+import org.lenskit.data.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
+public class RatingBuilder extends AbstractBeanEntityBuilder implements Builder<Rating> {
     private static final Logger logger = LoggerFactory.getLogger(RatingBuilder.class);
     private static final AtomicLong idGenerator = new AtomicLong();
     private static volatile boolean hasWarned;
@@ -98,6 +95,7 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
      * @param id The rating ID.
      * @return The builder (for chaining).
      */
+    @EntityAttributeSetter("id")
     public RatingBuilder setId(long id) {
         return (RatingBuilder) super.setId(id);
     }
@@ -115,6 +113,7 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
      * @param uid The user ID.
      * @return The builder (for chaining).
      */
+    @EntityAttributeSetter("user")
     public RatingBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
@@ -134,9 +133,30 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
      * @param iid The item ID.
      * @return The builder (for chaining).
      */
+    @EntityAttributeSetter("item")
     public RatingBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
+        return this;
+    }
+
+    /**
+     * Clear the item ID.
+     * @return The builder (for chaining).
+     */
+    @EntityAttributeClearer("item")
+    public RatingBuilder clearItemId() {
+        hasItemId = false;
+        return this;
+    }
+
+    /**
+     * Clear the user ID.
+     * @return The builder (for chaining).
+     */
+    @EntityAttributeClearer("user")
+    public RatingBuilder clearUserId() {
+        hasUserId = false;
         return this;
     }
 
@@ -150,13 +170,11 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
 
     /**
      * Set the rating value.
-     * <p>
-     * In order to prevent computation errors from producing unintended unrate events, this method cannot be used to
-     * create an unrate event.  Instead, use {@link #clearRating()}.
-     * </p>
+     *
      * @param r The rating value.
      * @return The builder (for chaining).
      */
+    @EntityAttributeSetter("rating")
     public RatingBuilder setRating(double r) {
         if (Double.isNaN(r)) {
             throw new IllegalArgumentException("rating is not a number");
@@ -167,21 +185,13 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
     }
 
     /**
-     * Clear the rating value (so this builder builds unrate events).
+     * Clear the rating value.
      * @return The builder (for chaining).
      */
+    @EntityAttributeClearer("rating")
     public RatingBuilder clearRating() {
         hasRating = false;
         return this;
-    }
-
-    /**
-     * Query whether this builder has a rating.
-     * @return {@code true} if the builder has a rating, {@code false} if it will produce unrate
-     * events.
-     */
-    public boolean hasRating() {
-        return hasRating;
     }
 
     /**
@@ -197,51 +207,15 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
      * @param ts The timestamp.
      * @return The builder (for chaining).
      */
+    @EntityAttributeSetter("timestamp")
     public RatingBuilder setTimestamp(long ts) {
         timestamp = ts;
         return this;
     }
 
-    @Override
-    public <T> EntityBuilder setAttribute(TypedName<T> name, T val) {
-        switch (name.getName()) {
-        case "user":
-            return setUserId((Long) val);
-        case "item":
-            return setItemId((Long) val);
-        case "rating":
-            return setRating((Double) val);
-        case "id":
-            return setId((Long) val);
-        case "timestamp":
-            return setTimestamp((Long) val);
-        default:
-            throw new IllegalArgumentException("invalid column " + name + " for rating object");
-        }
-    }
-
-    @Override
-    public EntityBuilder clearAttribute(TypedName<?> name) {
-        switch (name.getName()) {
-        case "user":
-            hasUserId = false;
-            break;
-        case "item":
-            hasItemId = false;
-            break;
-        case "rating":
-            hasRating = false;
-            break;
-        case "id":
-            idSet = false;
-            break;
-        case "timestamp":
-            timestamp = -1;
-            break;
-        default:
-            throw new IllegalArgumentException("invalid column " + name + " for rating object");
-        }
-        return this;
+    @EntityAttributeClearer("timestamp")
+    public RatingBuilder clearTimestamp() {
+        return setTimestamp(-1);
     }
 
     @Override
@@ -256,6 +230,10 @@ public class RatingBuilder extends EntityBuilder implements Builder<Rating> {
             }
             id = idGenerator.incrementAndGet();
         }
-        return new Rating(id, userId, itemId, rating, timestamp);
+        if (timestamp >= 0) {
+            return new Rating.WithTimestamp(id, userId, itemId, rating, timestamp);
+        } else {
+            return new Rating(id, userId, itemId, rating);
+        }
     }
 }

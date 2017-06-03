@@ -22,17 +22,16 @@ package org.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.threshold.Threshold;
-import org.lenskit.util.collections.Long2DoubleAccumulator;
-import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
-import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
 import org.lenskit.knn.item.ItemSimilarityThreshold;
 import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.knn.item.ModelSize;
 import org.lenskit.util.ProgressLogger;
+import org.lenskit.util.collections.Long2DoubleAccumulator;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
+import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +102,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                 logger.trace("computing similarities for item {} ({} of {})",
                              itemId1, ndone, nitems);
             }
-            SparseVector vec1 = buildContext.itemVector(itemId1);
+            Long2DoubleSortedMap vec1 = buildContext.itemVector(itemId1);
             if (vec1.size() < minCommonUsers) {
                 // if it doesn't have enough users, it can't have enough common users
                 if (logger.isTraceEnabled()) {
@@ -120,7 +119,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
             INNER: while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
-                    SparseVector vec2 = buildContext.itemVector(itemId2);
+                    Long2DoubleSortedMap vec2 = buildContext.itemVector(itemId2);
                     if (!LongUtils.hasNCommonItems(vec1.keySet(), vec2.keySet(), minCommonUsers)) {
                         // items have insufficient users in common, skip them
                         continue INNER;

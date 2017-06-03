@@ -21,9 +21,8 @@
 package org.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.inject.Shareable;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.io.Serializable;
@@ -37,27 +36,7 @@ import java.io.Serializable;
 public class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -6708410675383598691L;
 
-    private static final VectorTransformation IDENTITY_TRANSFORM = new VectorTransformation() {
-
-        @Override
-        public MutableSparseVector unapply(MutableSparseVector vector) {
-            return vector;
-        }
-
-        @Override
-        public MutableSparseVector apply(MutableSparseVector vector) {
-            return vector;
-        }
-
-        @Override
-        public double apply(long key, double value) {
-            return value;
-        }
-
-        @Override
-        public double unapply(long key, double value) {
-            return value;
-        }
+    private static final InvertibleFunction<Long2DoubleMap,Long2DoubleMap> IDENTITY_TRANSFORM = new VectorTransformation() {
 
         @Override
         public Long2DoubleMap apply(Long2DoubleMap vector) {
@@ -71,12 +50,7 @@ public class IdentityVectorNormalizer extends AbstractVectorNormalizer implement
     };
 
     @Override
-    public VectorTransformation makeTransformation(SparseVector ratings) {
-        return IDENTITY_TRANSFORM;
-    }
-
-    @Override
-    public VectorTransformation makeTransformation(Long2DoubleMap reference) {
+    public InvertibleFunction<Long2DoubleMap,Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
         return IDENTITY_TRANSFORM;
     }
 }

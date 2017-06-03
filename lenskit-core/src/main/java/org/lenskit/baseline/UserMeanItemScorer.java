@@ -23,8 +23,6 @@ package org.lenskit.baseline;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
@@ -32,8 +30,7 @@ import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.lenskit.util.math.Vectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -55,8 +52,6 @@ import java.util.Map;
  * the mean of any kind of user-based score.
  */
 public class UserMeanItemScorer extends AbstractItemScorer {
-    private static final Logger logger = LoggerFactory.getLogger(UserMeanItemScorer.class);
-
     private final ItemScorer baseline;
     private final RatingVectorPDAO rvDAO;
     private final double damping;
@@ -86,20 +81,20 @@ public class UserMeanItemScorer extends AbstractItemScorer {
             Map<Long, Double> scores = baseline.score(user, items);
             return Results.newResultMap(Iterables.transform(scores.entrySet(), Results.fromEntryFunction()));
         } else {
-            MutableSparseVector vec = MutableSparseVector.create(userRatings);
             // score everything, both rated and not, for offsets
-            LongSet allItems = new LongOpenHashSet(vec.keySet());
+            LongSet allItems = new LongOpenHashSet(userRatings.keySet());
             allItems.addAll(items);
             Map<Long, Double> baseScores = baseline.score(user, allItems);
 
+            Long2DoubleMap offsets = new Long2DoubleOpenHashMap();
             // subtract scores from ratings, yielding offsets
-            Long2DoubleFunction bsf = LongUtils.asLong2DoubleFunction(baseScores);
-            for (VectorEntry e: vec) {
-                double base = bsf.get(e.getKey());
-                vec.set(e, e.getValue() - base);
+            Long2DoubleFunction bsf = LongUtils.asLong2DoubleMap(baseScores);
+            for (Long2DoubleMap.Entry e: userRatings.long2DoubleEntrySet()) {
+                double base = bsf.get(e.getLongKey());
+                offsets.put(e.getLongKey(), e.getDoubleValue() - base);
             }
 
-            double meanOffset = vec.sum() / (vec.size() + damping);
+            double meanOffset = Vectors.sum(offsets) / (offsets.size() + damping);
 
             // to score: fill with baselines, add user mean offset
             List<Result> results = new ArrayList<>(items.size());

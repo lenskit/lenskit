@@ -9,10 +9,8 @@ repositories {
 dependencies {
     analyze localGroovy()
     analyze group: 'org.lenskit', name: 'lenskit-test', version: project.lenskitVersion
-    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2340'
-    analyze group: 'org.renjin.cran', name: 'assertive.files', version: '0.0-2-b9'
-    analyze group: 'org.renjin.cran', name: 'assertive.sets', version: '0.0-3-b2'
-    analyze group: 'org.renjin.cran', name: 'assertive.properties', version: '0.0-4-b2'
+    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2348'
+    analyze group: 'org.renjin.cran', name: 'assertthat', version: '0.1-b308'
 }
 
 task verifyR(type: JavaExec) {
