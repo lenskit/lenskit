@@ -31,8 +31,8 @@ import java.util.Iterator;
 import java.util.Random;
 
 /**
- * Randomly generates training pairs by selecting a random user and two random rated items.
- * Rejection sampling is used to generate samples with these properties:
+ * Randomly generates training pairs by selecting a random user and two random rated items, allowing BPR to be used for
+ * ratings (as opposed to only being used for unary data). Rejection sampling is used to generate samples with these properties:
  * If the two random rated items have different ratings, than those items are returned as a training pair.
  * Otherwise, the algorithm will loop until it finds a training pair.
  */
