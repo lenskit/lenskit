@@ -94,11 +94,19 @@ public class BPRMFModelProvider implements Provider<MFModel> {
         // and is therefore a reasonable "max_error".
         RollingWindowMeanAccumulator optAccum = new RollingWindowMeanAccumulator(10000, -30);
 
+        // set up user index and matrix
         int userCount = dao.getEntityIds(CommonTypes.USER).size();
+        for(long uid : dao.getEntityIds(CommonTypes.USER)) {
+            userIndex.internId(uid);
+        }
         RealMatrix userFeatures = MatrixUtils.createRealMatrix(userCount, featureCount);
         initFeatures(userFeatures);
 
+        // set up item index and matrix
         int itemCount = dao.getEntityIds(CommonTypes.ITEM).size();
+        for(long iid : dao.getEntityIds(CommonTypes.ITEM)) {
+            itemIndex.internId(iid);
+        }
         RealMatrix itemFeatures = MatrixUtils.createRealMatrix(itemCount, featureCount);
         initFeatures(itemFeatures);
 

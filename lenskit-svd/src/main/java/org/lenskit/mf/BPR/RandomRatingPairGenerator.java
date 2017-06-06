@@ -42,7 +42,6 @@ public class RandomRatingPairGenerator implements TrainingPairGenerator {
     private final int batchSize;
     private final LongList userIds;
 
-    @Inject
     public RandomRatingPairGenerator(RatingMatrix snapshot, Random rand) {
     this(snapshot, rand, snapshot.getRatings().size());
     }
