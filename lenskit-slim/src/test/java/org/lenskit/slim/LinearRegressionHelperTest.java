@@ -23,15 +23,11 @@ package org.lenskit.slim;
 import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.lenskit.slim.LinearRegressionHelper.*;
-
 
 
 /**
@@ -88,7 +84,7 @@ public class LinearRegressionHelperTest {
         map.put(2L, 3.0);
         map.put(3L, 4.0);
         map.put(5L, 3.0);
-        Long2DoubleMap mapFiltered = filterValues(map, 3.0);
+        Long2DoubleMap mapFiltered = filterValues(map, 3.0, Double.MIN_VALUE);
         assertThat(mapFiltered.keySet(), containsInAnyOrder(1L, 3L));
         assertThat(mapFiltered.values(), containsInAnyOrder(2.0, 4.0));
     }
@@ -134,5 +130,6 @@ public class LinearRegressionHelperTest {
         assertThat(map, is(mapExpected));
 
     }
+
 
 }

@@ -77,7 +77,6 @@ public final class LinearRegressionHelper {
      * @return
      */
     public static Long2DoubleMap addVectors(Long2DoubleMap a, Long2DoubleMap b) {
-        //Long2DoubleMap sumOfTwoVectors = Vectors.combine(a, b, 1.0, 0.0);
         Long2DoubleMap sumOfTwoVectors = new Long2DoubleOpenHashMap(a);
         for (Map.Entry<Long, Double> e : b.entrySet()) {
             long key = e.getKey();
@@ -100,40 +99,28 @@ public final class LinearRegressionHelper {
         LongOpenHashBigSet aSet = new LongOpenHashBigSet(a.keySet());
         LongOpenHashBigSet bSet = new LongOpenHashBigSet(b.keySet());
         aSet.retainAll(bSet); // intersection of two key sets
-        //productOfTwoVectors.defaultReturnValue(0.0);
-        //b.forEach((k, v) -> productOfTwoVectors.merge(k, v, (oldVal, newVal) -> oldVal * newVal));
+
         for (long key : aSet) {
-            //double prod = a.getOrDefault(key, 0.0)*b.getOrDefault(key, 0.0);
             double prod = a.get(key)*b.get(key);
             productOfTwoVectors.put(key, prod);
         }
         return productOfTwoVectors;
     }
 
-//    /**
-//     * multiply vector by a real value
-//     * @param a
-//     * @param c
-//     * @return
-//     */
-//    public static Long2DoubleMap multiply(Long2DoubleMap a, double c) {
-//        Long2DoubleMap scalingVector = new Long2DoubleOpenHashMap();
-//        a.forEach((k, v) -> scalingVector.put((long) k, (v*c)));
-//        return scalingVector;
-//    }
 
     /**
      * return a new map with all values in input map but not equal to the given value
      * @param a input map
      * @param value a value needs to be filtered out
-     * @return
+     * @param epsilon tolerance
+     * @return a map with the values in {@code a} whose absolute value of differences from {@code value} is greater than {@code epsilon}.
      */
-    public static Long2DoubleMap filterValues(Long2DoubleMap a, double value) {
+    public static Long2DoubleMap filterValues(Long2DoubleMap a, double value, double epsilon) {
         Long2DoubleMap result = new Long2DoubleOpenHashMap();
         for (Map.Entry<Long, Double> e : a.entrySet()) {
             long key = e.getKey();
             double v = e.getValue();
-            if (!Scalars.isZero(abs(v - value))) {
+            if (abs(v - value) > epsilon) {
                 result.put(key, v);
             }
         }

@@ -22,7 +22,6 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.inject.Transient;
-import org.lenskit.knn.item.model.ItemItemModel;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,25 +31,19 @@ import javax.inject.Provider;
 /**
  * Slim Model Provider.
  * Create a map of item Ids to the corresponding weight vector trained
- * This class inject ItemItemModel of knn package in order to get neighborhood items of the label vector which is also an item.
- * Injecting ItemItemModel means we could use any kind of similarity strategy to find item-item neighbors,
- * then use those those neighborhood item vectors to train SLIM model.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SLIMModelProvider implements Provider<SLIMModel>{
     private static final Logger logger = LoggerFactory.getLogger(SLIMModelProvider.class);
 
-    private final ItemItemModel itemSimilarityModel;
     private final SLIMBuildContext buildContext;
     private final SLIMScoringStrategy lrModel;
 
 
     @Inject
-    public SLIMModelProvider(ItemItemModel m,
-                             @Transient SLIMBuildContext context,
+    public SLIMModelProvider(@Transient SLIMBuildContext context,
                              SLIMScoringStrategy regressionModel) {
-        itemSimilarityModel = m;
         buildContext = context;
         lrModel = regressionModel;
     }
@@ -58,9 +51,13 @@ public class SLIMModelProvider implements Provider<SLIMModel>{
     @Override
     public SLIMModel get() {
         Long2ObjectMap<Long2DoubleMap> trainedWeight = new Long2ObjectOpenHashMap<>(1000);
-        LongSortedSet items = itemSimilarityModel.getItemUniverse();
-        for (long item : items) {
-            LongSet neighbors = LongUtils.frozenSet(itemSimilarityModel.getNeighbors(item).keySet());
+        LongSortedSet items = buildContext.getItemUniverse();
+
+        OUTER: for (long item : items) {
+            LongSet neighbors = LongUtils.frozenSet(buildContext.getItemNeighbors(item));
+            if (neighbors.isEmpty()) {
+                continue OUTER;
+            }
             Long2ObjectMap<Long2DoubleMap> trainingData = new Long2ObjectOpenHashMap<>();
             Long2ObjectMap<Long2DoubleMap> innerProducts = new Long2ObjectOpenHashMap<>();
             Long2DoubleMap labels = LongUtils.frozenMap(buildContext.getItemRatings(item));

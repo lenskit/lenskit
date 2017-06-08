@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2014 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -18,17 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.slim;
 
-import org.grouplens.lenskit.iterative.IterationCount
-import org.lenskit.api.ItemScorer
-import org.lenskit.slim.SLIMModelSize
-import org.lenskit.slim.SLIMScorer
+import org.grouplens.grapht.annotation.DefaultDouble;
+import org.lenskit.inject.Parameter;
 
-dumpGraph {
-    output "${config.analysisDir}/slim.dot"
-    algorithm {
-        bind ItemScorer to SLIMScorer
-        set IterationCount to 50
-        set SLIMModelSize to 20
-    }
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
+/**
+ * The tolerance used to throw away zero elements of the learned weight vector
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@Documented
+@DefaultDouble(Double.MIN_VALUE)
+@Parameter(Double.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Epsilon {
 }

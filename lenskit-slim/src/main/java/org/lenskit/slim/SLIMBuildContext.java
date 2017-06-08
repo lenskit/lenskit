@@ -20,12 +20,10 @@
  */
 package org.lenskit.slim;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -42,27 +40,33 @@ public class SLIMBuildContext implements Serializable {
 
     @Nonnull
     private final
-    Map<Long,Long2DoubleMap> itemVectors;
+    Long2ObjectMap<Long2DoubleSortedMap> itemVectors;
     @Nonnull
     private final
-    Map<Long,Long2DoubleMap> innerProducts;
+    Long2ObjectMap<LongSortedSet> itemNeighbors;
     @Nonnull
-    private final Long2ObjectMap<LongOpenHashBigSet> userItems;
+    private final
+    Long2ObjectMap<Long2DoubleSortedMap> innerProducts;
+    @Nonnull
+    private final Long2ObjectMap<LongSortedSet> userItems;
 
 
     /**
      * Set up a new item build context
      *
      * @param itemRatings Map of item IDs to item rating vectors.
-     * @param innerProducts Map of item IDs to inner-products with other item rating vectors
-     * @param userItems Map of user IDs to user rated items
+     * @param itemNgbrs Map of item IDs to neighbor items ids.
+     * @param innerProds Map of item IDs to inner-products with other item rating vectors
+     * @param userItemSets of user IDs to user rated items
      */
-    public SLIMBuildContext(@Nonnull Long2ObjectMap<Long2DoubleMap> itemRatings,
-                            @Nonnull Long2ObjectMap<Long2DoubleMap> innerProducts,
-                            @Nonnull Long2ObjectMap<LongOpenHashBigSet> userItems) {
+    public SLIMBuildContext(@Nonnull Long2ObjectMap<Long2DoubleSortedMap> itemRatings,
+                            @Nonnull Long2ObjectMap<LongSortedSet> itemNgbrs,
+                            @Nonnull Long2ObjectMap<Long2DoubleSortedMap> innerProds,
+                            @Nonnull Long2ObjectMap<LongSortedSet> userItemSets) {
         itemVectors = itemRatings;
-        this.innerProducts = innerProducts;
-        this.userItems = userItems;
+        itemNeighbors = itemNgbrs;
+        innerProducts = innerProds;
+        userItems = userItemSets;
     }
 
 
@@ -72,16 +76,16 @@ public class SLIMBuildContext implements Serializable {
      * @return a mapping of neighborhoods' id to inner-products
      */
     @Nonnull
-    public Long2DoubleMap getInnerProducts(long itemId) {
-        Long2DoubleMap innerProduct = innerProducts.get(itemId);
+    public Long2DoubleSortedMap getInnerProducts(long itemId) {
+        Long2DoubleSortedMap innerProduct = innerProducts.get(itemId);
         if (innerProduct == null) {
-            innerProduct = new Long2DoubleOpenHashMap();
+            innerProduct = Long2DoubleSortedMaps.EMPTY_MAP;
         }
         return innerProduct;
     }
 
     @Nonnull
-    public Map<Long,Long2DoubleMap> getInnerProducts() { return innerProducts;}
+    public Long2ObjectMap<Long2DoubleSortedMap> getInnerProducts() { return innerProducts;}
 
     /**
      * Get the items rated by a particular user
@@ -89,19 +93,24 @@ public class SLIMBuildContext implements Serializable {
      * @return The items rated by {@code user}
      */
     @Nonnull
-    public LongOpenHashBigSet getUserItems(long user) {
-        LongOpenHashBigSet items = userItems.get(user);
+    public LongSortedSet getUserItems(long user) {
+        LongSortedSet items = userItems.get(user);
         if (items == null) {
-            items = new LongOpenHashBigSet();
+            items = LongSortedSets.EMPTY_SET;
         }
         return items;
     }
 
+    /**
+     * Get the rating map for a given item {@code item}
+     * @param item The item to query for
+     * @return Map of item ids to ratings
+     */
     @Nonnull
-    public Long2DoubleMap getItemRatings(long item) {
-        Long2DoubleMap itemRatings = itemVectors.get(item);
+    public Long2DoubleSortedMap getItemRatings(long item) {
+        Long2DoubleSortedMap itemRatings = itemVectors.get(item);
         if (itemRatings == null) {
-            itemRatings = new Long2DoubleOpenHashMap();
+            itemRatings = Long2DoubleSortedMaps.EMPTY_MAP;
         }
         return itemRatings;
     }
@@ -112,9 +121,39 @@ public class SLIMBuildContext implements Serializable {
      * @return Map of item IDs to item rating vectors.
      */
     @Nonnull
-    public Map<Long,Long2DoubleMap> getItemVectors() {
+    public Long2ObjectMap<Long2DoubleSortedMap> getItemVectors() {
         return itemVectors;
     }
 
+    /**
+     * Get all item ids
+     * @return Set of all item IDs.
+     */
+    @Nonnull
+    public LongSortedSet getItemUniverse() {
+        return LongUtils.frozenSet(itemVectors.keySet());
+    }
+
+    /**
+     * Get all user ids
+     * @return Set of all user IDs.
+     */
+    @Nonnull
+    public LongSortedSet getAllUsers() {
+        return LongUtils.frozenSet(userItems.keySet());
+    }
+    /**
+     * Get neighborhood items for a given item {@code item}
+     * @param item The item id to query for
+     * @return Set of neighborhood item IDs.
+     */
+    @Nonnull
+    public LongSortedSet getItemNeighbors(long item) {
+        LongSortedSet ngbrs = itemNeighbors.get(item);
+        if (ngbrs == null) {
+            ngbrs = LongSortedSets.EMPTY_SET;
+        }
+        return ngbrs;
+    }
 
 }

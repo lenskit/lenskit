@@ -55,8 +55,8 @@ public class SLIMScoringStrategyTest {
 
     /**
      * create simulated weights which the linear regression tries to learn
-     * @param maxItemId max value of item Id
-     * @param maxWeight max value of simulated weight
+     * @param maxItemId upper bound of item Id
+     * @param maxWeight max possible value of simulated weight
      * @return simulated weight vector
      */
     static Long2DoubleMap createWeights(long maxItemId, int maxWeight) {
@@ -66,7 +66,7 @@ public class SLIMScoringStrategyTest {
             int maxW = rnd.nextInt(maxWeight) + 1;
             weights.put(w, maxW*rnd.nextDouble());
         }
-        weights = filterValues(weights, 0.0);
+        weights = filterValues(weights, 0.0, Double.MIN_VALUE);
         //logger.info("original weights is {} and size is {}", weights, weights.size());
         return LongUtils.frozenMap(weights);
     }
@@ -120,33 +120,34 @@ public class SLIMScoringStrategyTest {
      */
     static Long2ObjectMap<Long2DoubleMap> createInnerProducts(Long2ObjectMap<Long2DoubleMap> itemVectors, Long2DoubleMap labels, long maxItemId) {
         Long2ObjectMap<Long2DoubleMap> innerProducts = new Long2ObjectOpenHashMap<>();
-        LongOpenHashBigSet itemIdSet = new LongOpenHashBigSet(itemVectors.keySet());
-        Iterator<Map.Entry<Long, Long2DoubleMap>> iter = itemVectors.entrySet().iterator();
+        LongSortedSet itemIdSet = LongUtils.frozenSet(itemVectors.keySet());
+        LongIterator iter = itemIdSet.iterator();
 
         while (iter.hasNext()) {
-            Map.Entry<Long, Long2DoubleMap> entry = iter.next();
-            long temIId = entry.getKey();
-            Long2DoubleMap itemIRatings = entry.getValue();
-            itemIdSet.remove(temIId);
+            long itemIId = iter.nextLong();
+            Long2DoubleMap itemIRatings = itemVectors.get(itemIId);
 
-            for (long itemJId : itemIdSet) {
+            LongIterator iterInner = itemIdSet.iterator(itemIId);
+            while (iterInner.hasNext()) {
+                long itemJId = iterInner.nextLong();
                 Long2DoubleMap itemJRatings = itemVectors.get(itemJId);
                 double innerProduct = Vectors.dotProduct(itemIRatings, itemJRatings);
                 double innerProdItemILabel = Vectors.dotProduct(itemIRatings, labels);
                 double innerProdItemJLabel = Vectors.dotProduct(itemJRatings, labels);
 
                 Long2DoubleMap dotJIs = innerProducts.get(itemJId);
-                Long2DoubleMap dotIJs = innerProducts.get(temIId);
+                Long2DoubleMap dotIJs = innerProducts.get(itemIId);
                 if (dotJIs == null) dotJIs = new Long2DoubleOpenHashMap();
                 if (dotIJs == null) dotIJs = new Long2DoubleOpenHashMap();
-                dotJIs.put(temIId, innerProduct);
+                dotJIs.put(itemIId, innerProduct);
                 dotJIs.put(maxItemId, innerProdItemJLabel);
                 dotIJs.put(itemJId, innerProduct);
                 dotIJs.put(maxItemId, innerProdItemILabel);
                 innerProducts.put(itemJId, dotJIs);
-                innerProducts.put(temIId, dotIJs);
+                innerProducts.put(itemIId, dotIJs);
             }
         }
+
         return innerProducts;
     }
 
@@ -179,7 +180,7 @@ public class SLIMScoringStrategyTest {
         // Covariance update
 //        timer.reset();
 //        timer.start();
-        CovarianceUpdate modelCov = new CovarianceUpdate(parameters);
+        CovarianceUpdate modelCov = new CovarianceUpdate(parameters, Double.MIN_VALUE);
         Long2DoubleMap predictedWCov = modelCov.fit(y, data);
 //        timer.stop();
 
@@ -213,7 +214,7 @@ public class SLIMScoringStrategyTest {
         double lossFunAfter = model.computeLossFunction(resAfter, predictedW);
 
         //Covariance update
-        CovarianceUpdate modelCov = new CovarianceUpdate(parameters);
+        CovarianceUpdate modelCov = new CovarianceUpdate(parameters, Double.MIN_VALUE);
         Long2DoubleMap predictedWCov = modelCov.fit(y, data);
         Long2DoubleMap resCovBefore = modelCov.computeResiduals(y, data, weights);
         Long2DoubleMap resCovAfter = modelCov.computeResiduals(y, data, predictedWCov);
@@ -276,7 +277,7 @@ public class SLIMScoringStrategyTest {
         Long2DoubleMap resNaiveWeight3 = model.computeResiduals(labels, data, weight3);
 
         //Covariance update
-        CovarianceUpdate modelCov = new CovarianceUpdate(parameters);
+        CovarianceUpdate modelCov = new CovarianceUpdate(parameters, Double.MIN_VALUE);
         Long2DoubleMap resCovWeight1 = modelCov.computeResiduals(labels, data, weight1);
         Long2DoubleMap resCovWeight2 = modelCov.computeResiduals(labels, data, weight2);
         Long2DoubleMap resCovWeight3 = modelCov.computeResiduals(labels, data, weight3);

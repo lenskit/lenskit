@@ -20,20 +20,22 @@
  */
 package org.lenskit.slim;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import java.util.Map;
+import org.grouplens.grapht.annotation.DefaultInteger;
+import org.lenskit.inject.Parameter;
 
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * not used. wonder if abstract class is better than interface for different updates??
+ * Number of neighbors to retain in the SLIM training matrix.  Only the <i>n</i> most
+ * similar neighbors are retained for each item in model build. If 0, then all
+ * neighbors are retained.
  */
-
-public interface UpdateDescentRule {
-    /**
-     * learning process
-     * @param labels label vector
-     * @param trainingMatrix observations matrix row: user ratings for different items, column: item ratings of different users
-     * @return weight vector
-     */
-    Long2DoubleMap fit(Long2DoubleMap labels, Map<Long, Long2DoubleMap> trainingMatrix);
+@Documented
+@DefaultInteger(30)
+@Parameter(Integer.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SLIMModelSize {
 }

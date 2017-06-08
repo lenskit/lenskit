@@ -35,7 +35,11 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
-import org.lenskit.knn.item.ModelSize;
+import org.lenskit.transform.normalize.DefaultItemVectorNormalizer;
+import org.lenskit.transform.normalize.ItemVectorNormalizer;
+import org.lenskit.transform.normalize.UnitVectorNormalizer;
+import org.lenskit.transform.normalize.VectorNormalizer;
+
 import org.lenskit.util.math.Vectors;
 
 import java.util.*;
@@ -44,7 +48,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.lenskit.slim.LinearRegressionHelper.*;
 
-
 /**
  * Build Slim model recommender test.
  *
@@ -52,7 +55,7 @@ import static org.lenskit.slim.LinearRegressionHelper.*;
  */
 public class SLIMModelRecommenderBuildTest {
     private static final int userNum = 200; // number of total user
-    private static final int itemNum = 100; // upper bound of item id (exclusive)
+    private static final int itemNum = 200; // upper bound of item id (exclusive)
     private Long2DoubleMap y;
     private Long2ObjectMap<Long2DoubleMap> data;
     private Long2DoubleMap weights;
@@ -89,7 +92,7 @@ public class SLIMModelRecommenderBuildTest {
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
         //int userNum = 200; // number of total user
-        int maxRatingNum = 10; // each user's max possible rating number (less than maxItemId)
+        int maxRatingNum = 50; // each user's max possible rating number (less than maxItemId)
         int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
 
@@ -144,10 +147,16 @@ public class SLIMModelRecommenderBuildTest {
                 .to(SLIMScorer.class);
         config.bind(StoppingCondition.class)
                 .to(IterationCountStoppingCondition.class);
+        config.bind(ItemVectorNormalizer.class)
+                .to(DefaultItemVectorNormalizer.class);
+        config.bind(VectorNormalizer.class)
+                .to(UnitVectorNormalizer.class);
         config.set(IterationCount.class)
                 .to(15);
-        config.set(ModelSize.class)
+        config.set(SLIMModelSize.class)
                 .to(30);
+        config.set(MinCoRatedItems.class)
+                .to(2);
 
         return LenskitRecommenderEngine.build(config);
     }
@@ -176,14 +185,14 @@ public class SLIMModelRecommenderBuildTest {
     @Test
     public void testWeights() {
         int sizeOfWeights = weights.size();
-        assertThat(sizeOfWeights, equalTo(100));
+        assertThat(sizeOfWeights, equalTo(200));
     }
 
     @Test
     public void testDataSize() {
         Long2ObjectMap<Long2DoubleMap> dataT = transposeMap(data);
-        int userNum = dataT.keySet().size();
-        assertThat(userNum, equalTo(200));
+        int totalUsers = dataT.keySet().size();
+        assertThat(totalUsers, equalTo(200));
     }
 
 

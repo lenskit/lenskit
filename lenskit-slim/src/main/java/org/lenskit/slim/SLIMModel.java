@@ -21,11 +21,13 @@
 package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
@@ -43,7 +45,12 @@ public class SLIMModel implements Serializable {
         trainedWeights = weights;
     }
 
+    @Nonnull
     public Long2DoubleMap getWeights(long item) {
-        return LongUtils.frozenMap(trainedWeights.get(item));
+        Long2DoubleMap weights = trainedWeights.get(item);
+        if (weights == null) {
+            weights = Long2DoubleMaps.EMPTY_MAP;
+        }
+        return LongUtils.frozenMap(weights);
     }
 }
