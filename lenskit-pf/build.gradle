@@ -33,14 +33,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-rootProject.name = 'lenskit'
+apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/test-utils.gradle"
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict', 'lenskit-pf'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+dependencies {
+    compile project(':lenskit-core')
+}
+
+meta {
+    name 'LensKit PF CF'
+    description 'Poisson factorization collaborative filtering for LensKit'
+}
