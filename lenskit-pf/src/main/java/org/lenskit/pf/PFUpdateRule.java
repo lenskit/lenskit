@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.inject.Shareable;
 
@@ -64,7 +65,10 @@ public final class PFUpdateRule implements Serializable {
 
         random.setSeed(0L);
         int size = snapshot.getRatings().size();
-        
+        int validationSize = size/100;
+        random.ints(validationSize, 0, size).distinct().iterator().hasNext();
+        snapshot.getRatings();
+
 
 
     }
