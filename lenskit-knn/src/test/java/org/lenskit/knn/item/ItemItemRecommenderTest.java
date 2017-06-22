@@ -48,6 +48,8 @@ import static org.junit.Assert.*;
 
 public class ItemItemRecommenderTest {
 
+    private DataAccessObject data;
+    private LenskitConfiguration config;
     private LenskitRecommender session;
     private ItemRecommender recommender;
 
@@ -69,17 +71,16 @@ public class ItemItemRecommenderTest {
         rs.add(Rating.create(6, 8, 2));
         rs.add(Rating.create(1, 9, 3));
         rs.add(Rating.create(3, 9, 4));
-        StaticDataSource source = StaticDataSource.fromList(rs);
-        LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(DataAccessObject.class).toProvider(source);
+        data = StaticDataSource.fromList(rs).get();
+        config = new LenskitConfiguration();
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        session = engine.createRecommender();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, data);
+        session = engine.createRecommender(data);
         recommender = session.getItemRecommender();
     }
 
@@ -131,9 +132,6 @@ public class ItemItemRecommenderTest {
         assertThat(score.getNeighborhoodSize(), equalTo(3));
     }
 
-    /**
-     * Tests {@code recommend(long, SparseVector)}.
-     */
     @Test
     public void testItemItemRecommender1() {
         List<Long> recs = recommender.recommend(1);
@@ -303,6 +301,27 @@ public class ItemItemRecommenderTest {
 
         exclude.add(6);
         recs = recommender.recommend(5, -1, candidates, exclude);
+        assertThat(recs, hasSize(0));
+    }
+
+    @Test
+    public void testRecommendWithMinCommonUsers() {
+        config.set(MinCommonUsers.class).to(1);
+        session = LenskitRecommenderEngine.build(config, data).createRecommender(data);
+        recommender = session.getItemRecommender();
+        List<Long> recs = recommender.recommend(1);
+        assertThat(recs, hasSize(0));
+
+        recs = recommender.recommend(2);
+        assertThat(recs, contains(9L));
+    }
+
+    @Test
+    public void testRecommendWithMinCommonUsers3() {
+        config.set(MinCommonUsers.class).to(3);
+        session = LenskitRecommenderEngine.build(config, data).createRecommender(data);
+        recommender = session.getItemRecommender();
+        List<Long> recs = recommender.recommend(2);
         assertThat(recs, hasSize(0));
     }
 }

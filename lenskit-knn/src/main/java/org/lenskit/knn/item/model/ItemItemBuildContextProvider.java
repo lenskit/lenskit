@@ -23,6 +23,7 @@ package org.lenskit.knn.item.model;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Transient;
+import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.collections.LongUtils;
@@ -47,6 +48,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
     private final RatingVectorPDAO rvDAO;
     private final UserVectorNormalizer normalizer;
+    private final int minCommonUsers;
 
     /**
      * Construct an item-item build context provider.
@@ -56,9 +58,11 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
      */
     @Inject
     public ItemItemBuildContextProvider(@Transient RatingVectorPDAO rvd,
-                                        @Transient UserVectorNormalizer normalizer) {
+                                        @Transient UserVectorNormalizer normalizer,
+                                        @MinCommonUsers int minCU) {
         rvDAO = rvd;
         this.normalizer = normalizer;
+        minCommonUsers = minCU;
     }
 
     /**
@@ -75,6 +79,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<Long2DoubleMap> itemRatingData = new Long2ObjectOpenHashMap<>(1000);
         Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<>(1000);
         buildItemRatings(itemRatingData, userItems);
+        pruneItems(itemRatingData);
 
         SortedKeyIndex items = SortedKeyIndex.fromCollection(itemRatingData.keySet());
         final int n = items.size();
@@ -123,8 +128,26 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
                     ivect.put(uid, rating.getDoubleValue());
                 }
 
-                // get the item's candidate set
-                userItems.put(uid, LongUtils.packedSet(normed.keySet()));
+                // store the user's item set
+                // if the user only has 1 rating, they will never be for a neighborhood
+                if (normed.size() > 1) {
+                    userItems.put(uid, LongUtils.packedSet(normed.keySet()));
+                }
+            }
+        }
+    }
+
+    private void pruneItems(Long2ObjectMap<Long2DoubleMap> itemRatingData) {
+        if (minCommonUsers <= 0) {
+            return;
+        }
+
+        // copy items to array to all
+        long[] items = itemRatingData.keySet().toLongArray();
+        for (long item: items) {
+            Long2DoubleMap iv = itemRatingData.get(item);
+            if (iv.size() < minCommonUsers) {
+                itemRatingData.remove(item);
             }
         }
     }
