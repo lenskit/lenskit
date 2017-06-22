@@ -67,12 +67,12 @@ public class RandomSplitData implements DataSplitStrategy, Serializable {
     }
 
     @Override
-    public KeyIndex userIndex() {
+    public KeyIndex getUserIndex() {
         return userIndex;
     }
 
     @Override
-    public KeyIndex itemIndex() {
+    public KeyIndex getItemIndex() {
         return itemIndex;
     }
 }

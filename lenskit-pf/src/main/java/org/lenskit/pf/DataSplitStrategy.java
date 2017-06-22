@@ -12,7 +12,7 @@ public interface DataSplitStrategy {
 
     List<RatingMatrixEntry> getValidationRatings();
 
-    KeyIndex userIndex();
+    KeyIndex getUserIndex();
 
-    KeyIndex itemIndex();
+    KeyIndex getItemIndex();
 }
