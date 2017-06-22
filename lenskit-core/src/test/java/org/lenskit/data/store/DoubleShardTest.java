@@ -56,6 +56,20 @@ public class DoubleShardTest {
     public void testClearObject() {
         DoubleShard shard = DoubleShard.create();
         shard.put(0, 3.5);
+        shard.put(1, 7.0);
+        shard.put(0, null);
+        assertThat(shard.size(), equalTo(2));
+        assertThat(shard.get(0), nullValue());
+        assertThat(shard.isNull(0), equalTo(true));
+        assertThat(shard.get(1), equalTo(7.0));
+        assertThat(shard.isNull(1), equalTo(false));
+    }
+
+    @Test
+    public void testPutClearAdapt() {
+        DoubleShard shard = DoubleShard.create();
+        shard.put(0, 3.5);
+        shard = shard.adapt(7.8);
         shard.put(1, 7.8);
         shard.put(0, null);
         assertThat(shard.size(), equalTo(2));
