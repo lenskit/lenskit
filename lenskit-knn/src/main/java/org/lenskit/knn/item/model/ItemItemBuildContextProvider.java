@@ -65,6 +65,11 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         minCommonUsers = minCU;
     }
 
+    public ItemItemBuildContextProvider(@Transient RatingVectorPDAO rvd,
+                                        @Transient UserVectorNormalizer normalizer) {
+        this(rvd, normalizer, 1);
+    }
+
     /**
      * Constructs and returns a new ItemItemBuildContext.
      *
