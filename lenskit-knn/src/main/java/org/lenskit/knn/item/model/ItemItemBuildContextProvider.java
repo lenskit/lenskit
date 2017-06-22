@@ -79,7 +79,9 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<Long2DoubleMap> itemRatingData = new Long2ObjectOpenHashMap<>(1000);
         Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<>(1000);
         buildItemRatings(itemRatingData, userItems);
-        pruneItems(itemRatingData);
+        int oldN = itemRatingData.size();
+        pruneItems(itemRatingData, userItems);
+        logger.info("retaining data for {} of {} items", itemRatingData.size(), oldN);
 
         SortedKeyIndex items = SortedKeyIndex.fromCollection(itemRatingData.keySet());
         final int n = items.size();
@@ -137,7 +139,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         }
     }
 
-    private void pruneItems(Long2ObjectMap<Long2DoubleMap> itemRatingData) {
+    private void pruneItems(Long2ObjectMap<Long2DoubleMap> itemRatingData, Long2ObjectMap<LongSortedSet> userItems) {
         if (minCommonUsers <= 0) {
             return;
         }
@@ -149,6 +151,10 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
             if (iv.size() < minCommonUsers) {
                 itemRatingData.remove(item);
             }
+        }
+
+        for (Long2ObjectMap.Entry<LongSortedSet> e: userItems.long2ObjectEntrySet()) {
+            e.setValue(LongUtils.setIntersect(e.getValue(), itemRatingData.keySet()));
         }
     }
 }
