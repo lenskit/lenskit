@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 
-public class RandomSplitDataTest {
+public class RandomDataSplitStrategyTest {
     private Long2ObjectMap<Long2DoubleMap> data;
     private RatingMatrix snapshot;
 
@@ -56,7 +56,7 @@ public class RandomSplitDataTest {
 
     @Test
     public void testDataSize() {
-        RandomSplitData splitData = new RandomSplitData(snapshot, new Random(), 0, 0.1);
+        RandomDataSplitStrategy splitData = new RandomDataSplitStrategy(snapshot, new Random(), 0, 0.1);
         List<RatingMatrixEntry> validations = splitData.getValidationRatings();
         List<RatingMatrixEntry> trainings = splitData.getTrainingRatings();
         assertThat(validations.size(), equalTo(3));
@@ -64,15 +64,18 @@ public class RandomSplitDataTest {
     }
 
     @Test
-    public void testGetTrainingRatings() throws Exception {
-
-
-    }
-
-    @Test
-    public void testGetValidationRatings() throws Exception {
-        RandomSplitData splitData = new RandomSplitData(snapshot, new Random(), 0, 0.1);
+    public void testGetRatings() throws Exception {
+        RandomDataSplitStrategy splitData = new RandomDataSplitStrategy(snapshot, new Random(), 0, 0.2);
         List<RatingMatrixEntry> validations = splitData.getValidationRatings();
+        List<RatingMatrixEntry> trainingRatings = splitData.getTrainingRatings();
+
+        for (RatingMatrixEntry re : trainingRatings) {
+            long userId = re.getUserId();
+            long itemId = re.getItemId();
+            double rating = re.getValue();
+            assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
+            assertThat(rating, equalTo(data.get(itemId).get(userId)));
+        }
 
         for (RatingMatrixEntry re : validations) {
             long userId = re.getUserId();
@@ -81,30 +84,47 @@ public class RandomSplitDataTest {
             assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
             assertThat(rating, equalTo(data.get(itemId).get(userId)));
         }
+
     }
 
+
     @Test
-    public void testGetUserIndex() {
-        RandomSplitData splitData = new RandomSplitData(snapshot, new Random(), 0, 0.1);
+    public void testGetIndex() {
+        RandomDataSplitStrategy splitData = new RandomDataSplitStrategy(snapshot, new Random(), 0, 0.1);
         KeyIndex userIndex = splitData.getUserIndex();
         KeyIndex itemIndex = splitData.getItemIndex();
         List<RatingMatrixEntry> validations = splitData.getValidationRatings();
-
         for (RatingMatrixEntry re : validations) {
             int user = re.getUserIndex();
             int item = re.getItemIndex();
             long userId = re.getUserId();
             long itemId = re.getItemId();
-            double rating = re.getValue();
             assertThat(user, equalTo(userIndex.tryGetIndex(userId)));
             assertThat(item, equalTo(itemIndex.tryGetIndex(itemId)));
-            assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
+        }
+
+        List<RatingMatrixEntry> trainingRatings = splitData.getTrainingRatings();
+        for (RatingMatrixEntry re : trainingRatings) {
+            int user = re.getUserIndex();
+            int item = re.getItemIndex();
+            long userId = re.getUserId();
+            long itemId = re.getItemId();
+            assertThat(user, equalTo(userIndex.tryGetIndex(userId)));
+            assertThat(item, equalTo(itemIndex.tryGetIndex(itemId)));
+        }
+
+        KeyIndex snapshotUserIndex = snapshot.userIndex();
+        KeyIndex snapshotItemIndex = snapshot.itemIndex();
+        int size = snapshotUserIndex.getUpperBound();
+        for (int i = 0; i < size; i++) {
+            assertThat(snapshotUserIndex.getKey(i), equalTo(userIndex.getKey(i)));
+        }
+
+        size = snapshotItemIndex.getUpperBound();
+        for (int i = 0; i < size; i++) {
+            assertThat(snapshotItemIndex.getKey(i), equalTo(itemIndex.getKey(i)));
         }
     }
 
-    @Test
-    public void testGetItemIndex() {
-
-    }
 
 }

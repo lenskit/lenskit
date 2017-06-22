@@ -20,17 +20,17 @@ import java.util.Random;
 
 @Shareable
 @Immutable
-public class RandomSplitData implements DataSplitStrategy, Serializable {
+public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable {
     private final List<RatingMatrixEntry> allRatings;
     private final ImmutableSet<Integer> indicesOfRatings;
     private final KeyIndex userIndex;
     private final KeyIndex itemIndex;
 
     @Inject
-    public RandomSplitData(RatingMatrix snapshot,
-                           Random rnd,
-                           @RandomSeed int seed,
-                           @SplitProportion double proportion) {
+    public RandomDataSplitStrategy(RatingMatrix snapshot,
+                                   Random rnd,
+                                   @RandomSeed int seed,
+                                   @SplitProportion double proportion) {
         rnd.setSeed((long)seed);
         userIndex = snapshot.userIndex().frozenCopy();
         itemIndex = snapshot.itemIndex().frozenCopy();
