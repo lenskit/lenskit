@@ -71,7 +71,7 @@ public class LinearRegressionHelperTest {
         map1.put(2L, 3.0);
         map1.put(7L, 2.0);
         map1.put(5L, 4.0);
-        Long2DoubleMap product = multiply(map, map1);
+        Long2DoubleMap product = ebeMultiply(map, map1);
         assertThat(product.keySet(), containsInAnyOrder(2L, 5L));
         assertThat(product.values(), containsInAnyOrder(3.0*3.0,3*4.0));
 

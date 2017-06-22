@@ -27,6 +27,7 @@ import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
 import org.lenskit.inject.Transient;
+import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.similarity.VectorSimilarity;
 import org.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.lenskit.util.IdBox;
@@ -69,7 +70,7 @@ public class SLIMBuildContextProvider implements Provider<SLIMBuildContext> {
                                     @Transient ItemVectorNormalizer normlzr,
                                     @Transient VectorSimilarity sim,
                                     @Transient Threshold threshld,
-                                    @MinCoRatedItems int minCI,
+                                    @MinCommonUsers int minCI,
                                     @SLIMModelSize int size) {
         this.dao = dao;
         normalizer = normlzr;

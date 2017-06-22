@@ -20,22 +20,21 @@
  */
 package org.lenskit.slim;
 
-import org.grouplens.grapht.annotation.DefaultInteger;
+import org.grouplens.grapht.annotation.DefaultBoolean;
 import org.lenskit.inject.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * The minimum users two items must have in common in order to be included in the similarity model.
- * Items with fewer than this many users in common will be ignored, i.e. treated as having no similarity.
- * A hard threshold allows for performance optimizations.
+ * Whether or not including intercept in linear regression.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Qualifier
 @Documented
-@Parameter(int.class)
-@DefaultInteger(0)
+@DefaultBoolean(false)
+@Parameter(Boolean.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-public @interface MinCoRatedItems {
+public @interface IncludeIntercept {
 }

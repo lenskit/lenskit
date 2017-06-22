@@ -36,5 +36,5 @@ import java.lang.annotation.*;
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Epsilon {
+public @interface MinItemWeight {
 }

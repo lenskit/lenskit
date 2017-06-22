@@ -43,7 +43,7 @@ public final class SLIMUpdateParameters implements Serializable {
 
 
     @Inject
-    public SLIMUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @Intercept boolean intercept, StoppingCondition stop) {
+    public SLIMUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @IncludeIntercept boolean intercept, StoppingCondition stop) {
         this.beta = beta;
         this.lambda = lambda;
         this.intercept = intercept;

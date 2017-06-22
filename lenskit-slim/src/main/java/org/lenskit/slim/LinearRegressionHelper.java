@@ -94,15 +94,21 @@ public final class LinearRegressionHelper {
      * @param b
      * @return
      */
-    public static Long2DoubleMap multiply(Long2DoubleMap a, Long2DoubleMap b) {
-        Long2DoubleMap productOfTwoVectors = new Long2DoubleOpenHashMap();
-        LongOpenHashBigSet aSet = new LongOpenHashBigSet(a.keySet());
-        LongOpenHashBigSet bSet = new LongOpenHashBigSet(b.keySet());
-        aSet.retainAll(bSet); // intersection of two key sets
+    public static Long2DoubleMap ebeMultiply(Long2DoubleMap a, Long2DoubleMap b) {
+        if (a.size() > b.size()) {
+            return ebeMultiply(b, a);
+        }
 
-        for (long key : aSet) {
-            double prod = a.get(key)*b.get(key);
-            productOfTwoVectors.put(key, prod);
+        Long2DoubleMap productOfTwoVectors = new Long2DoubleOpenHashMap();
+        final LongIterator iter = a.keySet().iterator();
+        while (iter.hasNext()) {
+            long key = iter.nextLong();
+            double valueOfA = a.getOrDefault(key, 0.0);
+            double valueOfB = b.getOrDefault(key, 0.0);
+            if ( valueOfA != 0.0 &  valueOfB != 0.0) {
+                double prod = valueOfA*valueOfB;
+                productOfTwoVectors.put(key, prod);
+            }
         }
         return productOfTwoVectors;
     }

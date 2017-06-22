@@ -45,7 +45,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
 
     @Inject
     public CovarianceUpdate(SLIMUpdateParameters parameters,
-                            @Epsilon Double eps) {
+                            @MinItemWeight Double eps) {
         super(parameters);
         epsilon = eps;
     }
@@ -130,7 +130,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
             }
             k++;
             lossDiff = Math.abs(loss[0] - loss[1]); // compute difference of loss function between two round of coordinate descent updates
-            logger.info("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
+            logger.debug("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
         }
         return LongUtils.frozenMap(weights);
     }
@@ -182,7 +182,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
 
             k++;
             lossDiff = Math.abs(loss[0] - loss[1]);
-            logger.info("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
+            logger.debug("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
         }
         return LongUtils.frozenMap(weights);
     }

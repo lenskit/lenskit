@@ -35,6 +35,7 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
+import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.transform.normalize.DefaultItemVectorNormalizer;
 import org.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.lenskit.transform.normalize.UnitVectorNormalizer;
@@ -155,7 +156,7 @@ public class SLIMModelRecommenderBuildTest {
                 .to(15);
         config.set(SLIMModelSize.class)
                 .to(30);
-        config.set(MinCoRatedItems.class)
+        config.set(MinCommonUsers.class)
                 .to(2);
 
         return LenskitRecommenderEngine.build(config);

@@ -94,7 +94,7 @@ public final class NaiveUpdate extends SLIMScoringStrategy {
             }
             k++;
             lossDiff = Math.abs(loss[0] - loss[1]);
-            //logger.info("loss function reduced to {}", loss[0]);
+            logger.debug("loss function reduced to {}", loss[0]);
         }
         return LongUtils.frozenMap(weights);
     }
