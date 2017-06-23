@@ -24,6 +24,7 @@ import org.lenskit.data.entities.Entity;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An index to look up entities by attribute value.
@@ -38,4 +39,10 @@ interface EntityIndex {
      */
     @Nonnull
     List<Entity> getEntities(@Nonnull Object value);
+
+    /**
+     * Get the set of entity values in the index.
+     * @return The set of entity values.
+     */
+    Set<?> getValues();
 }

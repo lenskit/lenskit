@@ -25,6 +25,7 @@ import org.lenskit.data.entities.Entity;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Generic implementation of the entity index.
@@ -40,5 +41,10 @@ class GenericEntityIndex implements EntityIndex {
     @Override
     public List<Entity> getEntities(@Nonnull Object value) {
         return entities.get(value);
+    }
+
+    @Override
+    public Set<?> getValues() {
+        return entities.keySet();
     }
 }

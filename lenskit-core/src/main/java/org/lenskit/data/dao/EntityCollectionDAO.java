@@ -23,21 +23,19 @@ package org.lenskit.data.dao;
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 import org.lenskit.data.store.EntityCollection;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
+import org.lenskit.util.io.AbstractObjectStream;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A DAO backed by one or more collections of entities.
@@ -161,20 +159,48 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
         }
 
         // we must sort; need to make list ourselves since makeList lists are immutable
-        Ordering<Entity> ord = null;
-        for (SortKey k: sort) {
-            if (ord == null) {
-                ord = k.ordering();
-            } else {
-                ord = ord.compound(k.ordering());
-            }
-        }
+        Ordering<Entity> ord = query.getOrdering();
         assert ord != null;
         try {
             return ObjectStreams.wrap(ord.immutableSortedCopy(stream));
         } finally {
             stream.close();
         }
+    }
+
+    @Override
+    public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, TypedName<Long> grpCol) {
+        EntityCollection data = storage.get(query.getEntityType());
+        if (data == null) {
+            return ObjectStreams.empty();
+        }
+
+        Map<Long, List<Entity>> groups = data.grouped(grpCol);
+        return new AbstractObjectStream<IdBox<List<E>>>() {
+            Iterator<Map.Entry<Long, List<Entity>>> iter = groups.entrySet().iterator();
+
+            @Override
+            public IdBox<List<E>> readObject() {
+                while (iter.hasNext()) {
+                    Map.Entry<Long, List<Entity>> entry = iter.next();
+                    Stream<Entity> data = entry.getValue()
+                                               .stream()
+                                               .filter(query);
+                    Ordering<Entity> ord = query.getOrdering();
+                    if (ord != null) {
+                        data = data.sorted(ord);
+                    }
+                    List<E> list = data.map(Entities.projection(query.getViewType()))
+                                       .collect(Collectors.toList());
+                    if (!list.isEmpty()) {
+                        return IdBox.create(entry.getKey(), list);
+                    }
+                }
+
+                // we're done
+                return null;
+            }
+        };
     }
 
     @Override

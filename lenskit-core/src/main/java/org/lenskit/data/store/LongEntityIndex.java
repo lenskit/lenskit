@@ -28,6 +28,7 @@ import org.lenskit.util.keys.KeyedObjectMap;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Generic implementation of the entity index.
@@ -57,5 +58,10 @@ class LongEntityIndex implements EntityIndex {
         } else {
             return box.getValue();
         }
+    }
+
+    @Override
+    public Set<?> getValues() {
+        return entityLists.keySet();
     }
 }

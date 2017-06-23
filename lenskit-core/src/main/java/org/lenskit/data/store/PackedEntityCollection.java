@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
@@ -150,6 +151,28 @@ class PackedEntityCollection extends EntityCollection implements Describable {
         } else {
             return stream().filter(e -> value.equals(e.maybeGet(name)))
                            .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public Map<Long, List<Entity>> grouped(TypedName<Long> attr) {
+        Preconditions.checkArgument(attr != CommonAttributes.ENTITY_ID,
+                                    "cannot group by entity ID");
+        int idx = attributes.lookup(attr);
+        if (idx < 0) {
+            return Collections.emptyMap();
+        }
+
+        PackIndex index = indexes[idx];
+        if (index != null) {
+            return index.getValues()
+                    .stream()
+                    .collect(Collectors.toMap(l -> (Long) l,
+                                              l -> new EntityList(index.getPositions(l))));
+        } else {
+            return stream()
+                    .filter(e -> e.hasAttribute(attr))
+                    .collect(Collectors.groupingBy(e -> e.getLong(attr)));
         }
     }
 
