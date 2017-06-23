@@ -48,7 +48,7 @@ public class LinearRegressionHelperTest {
         map1.put(2L, 3.0);
         map1.put(7L, 2.0);
         map1.put(5L, 4.0);
-        Long2DoubleMap sum = Vectors.combineAndLimit(map, map1);
+        Long2DoubleMap sum = Vectors.add(map, map1);
         Long2DoubleMap sumExpected = new Long2DoubleOpenHashMap();
         sumExpected.put(1L, 2.0);
         sumExpected.put(2L, 6.0);

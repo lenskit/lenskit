@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Map;
 
-import static org.lenskit.util.math.Vectors.combineAndLimit;
+import static org.lenskit.util.math.Vectors.add;
 
 
 /**
@@ -70,7 +70,7 @@ public abstract class SLIMScoringStrategy {
      */
     public Long2DoubleMap computeResiduals(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> dataMatrix, Long2DoubleMap weights) {
         Long2DoubleMap predictions = predict(dataMatrix, weights);
-        return combineAndLimit(labels, Vectors.multiplyScalar(predictions,-1.0));
+        return add(labels, Vectors.multiplyScalar(predictions,-1.0));
     }
 
     /**
@@ -105,7 +105,7 @@ public abstract class SLIMScoringStrategy {
      */
     public Long2DoubleMap updateResiduals(Long2DoubleMap r, Long2DoubleMap column, double weightToUpdate, double weightUpdated) {
         Long2DoubleMap residualsIncrement = Vectors.multiplyScalar(column, (weightToUpdate - weightUpdated));
-        Long2DoubleMap residulsUpdated = combineAndLimit(r, residualsIncrement);
+        Long2DoubleMap residulsUpdated = add(r, residualsIncrement);
         return residulsUpdated;
     }
 
@@ -122,7 +122,7 @@ public abstract class SLIMScoringStrategy {
             long key = column.getKey();
             Long2DoubleMap value = column.getValue();
             Long2DoubleMap vector = Vectors.multiplyScalar(value, weights.get(key));
-            predictions = combineAndLimit(predictions, vector);
+            predictions = add(predictions, vector);
         }
         return predictions;
     }

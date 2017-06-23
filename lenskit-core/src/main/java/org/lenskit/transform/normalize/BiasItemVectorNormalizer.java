@@ -59,13 +59,13 @@ public class BiasItemVectorNormalizer extends AbstractItemVectorNormalizer {
         @Override
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             Long2DoubleMap biases = model.getUserBiases(input.keySet());
-            return Vectors.combine(input, biases, 1.0, itemBias);
+            return Vectors.combineAndLimit(input, biases, 1.0, itemBias);
         }
 
         @Override
         public Long2DoubleMap apply(Long2DoubleMap input) {
             Long2DoubleMap biases = model.getUserBiases(input.keySet());
-            return Vectors.combine(input, biases, -1.0, -itemBias);
+            return Vectors.combineAndLimit(input, biases, -1.0, -itemBias);
         }
     }
 }

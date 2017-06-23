@@ -164,7 +164,7 @@ public class VectorsTest {
         x.put(5L, 4.0);
         Long2DoubleMap y = Long2DoubleMaps.singleton(4L, 0.5);
 
-        Long2DoubleMap res = Vectors.combine(x, y, 2, 1);
+        Long2DoubleMap res = Vectors.combineAndLimit(x, y, 2, 1);
         assertThat(res.get(4L), closeTo(5.5, 1e-6));
         assertThat(res.get(5L), closeTo(5.0, 1e-6));
         assertThat(res.get(1L), equalTo(0.0));
@@ -177,7 +177,7 @@ public class VectorsTest {
         x.put(5L, 4.0);
         Long2DoubleMap y = Long2DoubleMaps.singleton(4L, 0.5);
 
-        Long2DoubleMap res = Vectors.combine(Long2DoubleSortedArrayMap.create(x), y, 2, 1);
+        Long2DoubleMap res = Vectors.combineAndLimit(Long2DoubleSortedArrayMap.create(x), y, 2, 1);
         assertThat(res.get(4L), closeTo(5.5, 1e-6));
         assertThat(res.get(5L), closeTo(5.0, 1e-6));
         assertThat(res.get(1L), equalTo(0.0));
