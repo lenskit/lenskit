@@ -98,7 +98,7 @@ public class TypeUtils {
      * Resolve a type name into a type.  This is like class lookup with a few additions:
      *
      * - Aliases for common types (`string`, `int`, `long`, `double`)
-     * - Lists are handled with an array syntax (`string[]` becomes `List<String>`)
+     * - Lists are handled with an array syntax (`string[]` becomes {@code List<String>})
      *
      * @param type The type name to resolve.
      * @return The type.

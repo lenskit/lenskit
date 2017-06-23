@@ -113,7 +113,8 @@ public abstract class AbstractResult implements Result, KeyedObject {
      * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
      * checking equality.
      *
-     * @param r The other result.
+     * @param r1 The first result.
+     * @param r2 The other result.
      * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
      */
     public static EqualsBuilder startEquality(Result r1, Result r2) {
