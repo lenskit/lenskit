@@ -3,11 +3,15 @@ package org.lenskit.pf;
 
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.inject.Shareable;
 
+import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 
+
+@Shareable
 public class RandomInitializationStrategy implements Serializable, InitializationStrategy {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
     private final RealMatrix gammaShp;
     private final RealMatrix gammaRte;

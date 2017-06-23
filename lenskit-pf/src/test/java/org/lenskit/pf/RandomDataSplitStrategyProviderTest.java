@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 
-public class RandomDataSplitStrategyTest {
+public class RandomDataSplitStrategyProviderTest {
     private Long2ObjectMap<Long2DoubleMap> data;
     private RatingMatrix snapshot;
 
@@ -56,7 +56,7 @@ public class RandomDataSplitStrategyTest {
 
     @Test
     public void testDataSize() {
-        RandomDataSplitStrategy splitData = new RandomDataSplitStrategy(snapshot, new Random(), 0, 0.1);
+        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
         List<RatingMatrixEntry> validations = splitData.getValidationRatings();
         List<RatingMatrixEntry> trainings = splitData.getTrainingRatings();
         assertThat(validations.size(), equalTo(3));
@@ -65,7 +65,7 @@ public class RandomDataSplitStrategyTest {
 
     @Test
     public void testGetRatings() throws Exception {
-        RandomDataSplitStrategy splitData = new RandomDataSplitStrategy(snapshot, new Random(), 0, 0.2);
+        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.2);
         List<RatingMatrixEntry> validations = splitData.getValidationRatings();
         List<RatingMatrixEntry> trainingRatings = splitData.getTrainingRatings();
 
@@ -90,7 +90,7 @@ public class RandomDataSplitStrategyTest {
 
     @Test
     public void testGetIndex() {
-        RandomDataSplitStrategy splitData = new RandomDataSplitStrategy(snapshot, new Random(), 0, 0.1);
+        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
         KeyIndex userIndex = splitData.getUserIndex();
         KeyIndex itemIndex = splitData.getItemIndex();
         List<RatingMatrixEntry> validations = splitData.getValidationRatings();

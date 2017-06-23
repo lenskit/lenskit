@@ -1,6 +1,5 @@
 package org.lenskit.pf;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
