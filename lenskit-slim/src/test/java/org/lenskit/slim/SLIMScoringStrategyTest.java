@@ -21,7 +21,6 @@
 package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,8 +35,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import static org.lenskit.slim.LinearRegressionHelper.*;
 
 /**
  * SLIMScoringStrategy test.
@@ -66,7 +63,7 @@ public class SLIMScoringStrategyTest {
             int maxW = rnd.nextInt(maxWeight) + 1;
             weights.put(w, maxW*rnd.nextDouble());
         }
-        weights = filterValues(weights, 0.0, Double.MIN_VALUE);
+        weights = Vectors.filterValues(weights, 0.0, Double.MIN_VALUE);
         //logger.info("original weights is {} and size is {}", weights, weights.size());
         return LongUtils.frozenMap(weights);
     }
@@ -161,7 +158,7 @@ public class SLIMScoringStrategyTest {
         long maxUserId = Collections.max(userIdSet);
         y = new Long2DoubleOpenHashMap(dataWithLabels.get(maxUserId));
         dataWithLabels.remove(maxUserId);
-        data = transposeMap(dataWithLabels);
+        data = Vectors.transposeMap(dataWithLabels);
         innerProducts = createInnerProducts(data, y, itemNum);
     }
 

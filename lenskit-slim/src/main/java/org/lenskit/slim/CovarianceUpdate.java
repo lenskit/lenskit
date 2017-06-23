@@ -107,7 +107,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
                     dotProdsOfXsY.put(j, dotProdOfXjY);
                 }
 
-                Long2DoubleMap nonzeroWeights = filterValues(weights, 0.0, epsilon);
+                Long2DoubleMap nonzeroWeights = Vectors.filterValues(weights, 0.0, epsilon);
 
                 // Storing dot product of column j and column k(s) into innerProdsOfXs
                 Long2DoubleMap dotProdsOfXjXks = innerProdsOfXs.get(j);
@@ -170,7 +170,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
                 if (dotProdsOfXjXks == null) { dotProdsOfXjXks = new Long2DoubleOpenHashMap(); }
                 double dotProdOfXjY = dotProdsOfXjXks.get(itemYId);
 
-                Long2DoubleMap nonzeroWeights = filterValues(weights, 0.0, epsilon);
+                Long2DoubleMap nonzeroWeights = Vectors.filterValues(weights, 0.0, epsilon);
                 nonzeroWeights.remove(j);
 
                 double weightToUpdate = weights.get(j);

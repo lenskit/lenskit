@@ -22,12 +22,12 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
+import org.lenskit.util.math.Vectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.lenskit.slim.LinearRegressionHelper.*;
 
 
 /**
@@ -48,7 +48,7 @@ public class LinearRegressionHelperTest {
         map1.put(2L, 3.0);
         map1.put(7L, 2.0);
         map1.put(5L, 4.0);
-        Long2DoubleMap sum = addVectors(map, map1);
+        Long2DoubleMap sum = Vectors.combineAndLimit(map, map1);
         Long2DoubleMap sumExpected = new Long2DoubleOpenHashMap();
         sumExpected.put(1L, 2.0);
         sumExpected.put(2L, 6.0);
@@ -71,7 +71,7 @@ public class LinearRegressionHelperTest {
         map1.put(2L, 3.0);
         map1.put(7L, 2.0);
         map1.put(5L, 4.0);
-        Long2DoubleMap product = ebeMultiply(map, map1);
+        Long2DoubleMap product = Vectors.ebeMultiply(map, map1);
         assertThat(product.keySet(), containsInAnyOrder(2L, 5L));
         assertThat(product.values(), containsInAnyOrder(3.0*3.0,3*4.0));
 
@@ -84,7 +84,7 @@ public class LinearRegressionHelperTest {
         map.put(2L, 3.0);
         map.put(3L, 4.0);
         map.put(5L, 3.0);
-        Long2DoubleMap mapFiltered = filterValues(map, 3.0, Double.MIN_VALUE);
+        Long2DoubleMap mapFiltered = Vectors.filterValues(map, 3.0, Double.MIN_VALUE);
         assertThat(mapFiltered.keySet(), containsInAnyOrder(1L, 3L));
         assertThat(mapFiltered.values(), containsInAnyOrder(2.0, 4.0));
     }
@@ -99,7 +99,7 @@ public class LinearRegressionHelperTest {
         Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
         mapT.put(1L, temp);
         mapT.put(2L, temp);
-        Long2ObjectMap<Long2DoubleMap> map = transposeMap(mapT);
+        Long2ObjectMap<Long2DoubleMap> map = Vectors.transposeMap(mapT);
         //logger.info("transpose matrix is {}, original matrix is {}", map, mapT);
 
         assertThat(mapT.keySet().size(), equalTo(2));

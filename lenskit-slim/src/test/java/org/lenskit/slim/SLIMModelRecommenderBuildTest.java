@@ -47,7 +47,6 @@ import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.lenskit.slim.LinearRegressionHelper.*;
 
 /**
  * Build Slim model recommender test.
@@ -172,7 +171,7 @@ public class SLIMModelRecommenderBuildTest {
         long maxUserId = Collections.max(userIdSet);
         y = new Long2DoubleOpenHashMap(dataWithLabels.get(maxUserId));
         dataWithLabels.remove(maxUserId);
-        data = transposeMap(dataWithLabels);
+        data = Vectors.transposeMap(dataWithLabels);
         setup(data);
     }
 
@@ -191,7 +190,7 @@ public class SLIMModelRecommenderBuildTest {
 
     @Test
     public void testDataSize() {
-        Long2ObjectMap<Long2DoubleMap> dataT = transposeMap(data);
+        Long2ObjectMap<Long2DoubleMap> dataT = Vectors.transposeMap(data);
         int totalUsers = dataT.keySet().size();
         assertThat(totalUsers, equalTo(200));
     }
@@ -226,7 +225,7 @@ public class SLIMModelRecommenderBuildTest {
     @Test
     public void testSLIMScorer() {
         LenskitRecommenderEngine engine = makeEngine();
-        Long2ObjectMap<Long2DoubleMap> dataTrans = transposeMap(data);
+        Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
         Iterator<Long> iter = dataTrans.keySet().iterator();
         long user = iter.next();
         try (Recommender rec = engine.createRecommender(dao)) {
@@ -245,7 +244,7 @@ public class SLIMModelRecommenderBuildTest {
     @Test
     public void testRecommender() {
         LenskitRecommenderEngine engine = makeEngine();
-        Long2ObjectMap<Long2DoubleMap> dataTrans = transposeMap(data);
+        Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
         Iterator<Long> iter = dataTrans.keySet().iterator();
         long existingUserId = iter.next();
         int notRatedItemSize = itemNum - dataTrans.get(existingUserId).keySet().size();

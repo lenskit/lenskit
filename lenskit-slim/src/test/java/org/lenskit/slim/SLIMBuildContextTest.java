@@ -104,7 +104,7 @@ public class SLIMBuildContextTest {
     public void testGetUserItems() {
         LongSortedSet allUsers = context.getAllUsers();
         assertThat(allUsers, containsInAnyOrder(1L,2L,3L,4L,5L,6L));
-        Long2ObjectMap<Long2DoubleMap> dataT = LinearRegressionHelper.transposeMap(data);
+        Long2ObjectMap<Long2DoubleMap> dataT = Vectors.transposeMap(data);
 
         for (long user : allUsers) {
             assertThat(dataT.get(user).keySet(), containsInAnyOrder(context.getUserItems(user).toArray()));
