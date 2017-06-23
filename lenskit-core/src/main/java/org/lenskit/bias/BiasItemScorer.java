@@ -20,18 +20,22 @@
  */
 package org.lenskit.bias;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.results.Results;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Score items using a user-item bias model.  This scorer is good as a baseline scorer for many situations.
@@ -51,6 +55,20 @@ public class BiasItemScorer extends AbstractItemScorer {
     @Override
     public Result score(long user, long item) {
         return Results.create(item, model.getIntercept() + model.getUserBias(user) + model.getItemBias(item));
+    }
+
+    @Nonnull
+    @Override
+    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
+        LongSet itemSet = LongUtils.frozenSet(items);
+        Long2DoubleOpenHashMap map = new Long2DoubleOpenHashMap(model.getItemBiases(itemSet));
+        double base = model.getIntercept() + model.getUserBias(user);
+        LongIterator iter = LongIterators.asLongIterator(items.iterator());
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
+            map.addTo(item, base);
+        }
+        return map;
     }
 
     @Nonnull
