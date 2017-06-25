@@ -1,5 +1,7 @@
 package org.lenskit.pf;
 
+import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -28,7 +30,7 @@ public class RandomDataSplitStrategyProviderTest {
     public void setUp() throws Exception {
         List<Rating> rs = new ArrayList<>();
         double[][] ratings = {
-                {11, 12, 13, 14, 15},
+                {0, 12, 13, 14, 15},
                 {21, 22, 23, 24, 25},
                 {31, 32, 33, 34, 35},
                 {41, 42, 43, 44, 45},
@@ -57,24 +59,34 @@ public class RandomDataSplitStrategyProviderTest {
     @Test
     public void testDataSize() {
         RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
-        List<RatingMatrixEntry> validations = splitData.getValidationRatings();
-        List<RatingMatrixEntry> trainings = splitData.getTrainingRatings();
+        DataSplitStrategy splitStrategy = splitData.get();
+        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
+        Int2ObjectMap<Int2DoubleMap> trainingRaings = splitStrategy.getTrainingMatrix();
         assertThat(validations.size(), equalTo(3));
-        assertThat(trainings.size(), equalTo(27));
+        int trainingSize = 0;
+        for (int item : trainingRaings.keySet()) {
+            trainingSize += trainingRaings.get(item).size();
+        }
+        assertThat(trainingSize, equalTo(26));
     }
 
     @Test
     public void testGetRatings() throws Exception {
         RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.2);
-        List<RatingMatrixEntry> validations = splitData.getValidationRatings();
-        List<RatingMatrixEntry> trainingRatings = splitData.getTrainingRatings();
+        DataSplitStrategy splitStrategy = splitData.get();
+        KeyIndex userIndex = splitStrategy.getUserIndex();
+        KeyIndex itemIndex = splitStrategy.getItemIndex();
+        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
+        Int2ObjectMap<Int2DoubleMap> trainingRatings = splitStrategy.getTrainingMatrix();
 
-        for (RatingMatrixEntry re : trainingRatings) {
-            long userId = re.getUserId();
-            long itemId = re.getItemId();
-            double rating = re.getValue();
-            assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
-            assertThat(rating, equalTo(data.get(itemId).get(userId)));
+        for (int item : trainingRatings.keySet()) {
+            for (int user : trainingRatings.get(item).keySet()) {
+                long userId = userIndex.getKey(user);
+                long itemId = itemIndex.getKey(item);
+                double rating = trainingRatings.get(item).get(user);
+                assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
+                assertThat(rating, equalTo(data.get(itemId).get(userId)));
+            }
         }
 
         for (RatingMatrixEntry re : validations) {
@@ -91,9 +103,12 @@ public class RandomDataSplitStrategyProviderTest {
     @Test
     public void testGetIndex() {
         RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
-        KeyIndex userIndex = splitData.getUserIndex();
-        KeyIndex itemIndex = splitData.getItemIndex();
-        List<RatingMatrixEntry> validations = splitData.getValidationRatings();
+        DataSplitStrategy splitStrategy = splitData.get();
+        KeyIndex userIndex = splitStrategy.getUserIndex();
+        KeyIndex itemIndex = splitStrategy.getItemIndex();
+        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
+        Int2ObjectMap<Int2DoubleMap> trainingRatings = splitStrategy.getTrainingMatrix();
+
         for (RatingMatrixEntry re : validations) {
             int user = re.getUserIndex();
             int item = re.getItemIndex();
@@ -103,18 +118,19 @@ public class RandomDataSplitStrategyProviderTest {
             assertThat(item, equalTo(itemIndex.tryGetIndex(itemId)));
         }
 
-        List<RatingMatrixEntry> trainingRatings = splitData.getTrainingRatings();
-        for (RatingMatrixEntry re : trainingRatings) {
-            int user = re.getUserIndex();
-            int item = re.getItemIndex();
-            long userId = re.getUserId();
-            long itemId = re.getItemId();
-            assertThat(user, equalTo(userIndex.tryGetIndex(userId)));
-            assertThat(item, equalTo(itemIndex.tryGetIndex(itemId)));
-        }
 
         KeyIndex snapshotUserIndex = snapshot.userIndex();
         KeyIndex snapshotItemIndex = snapshot.itemIndex();
+        for (int item : trainingRatings.keySet()) {
+            for (int user : trainingRatings.get(item).keySet()) {
+                long userId = userIndex.getKey(user);
+                long itemId = itemIndex.getKey(item);
+                assertThat(user, equalTo(snapshotUserIndex.tryGetIndex(userId)));
+                assertThat(item, equalTo(snapshotItemIndex.tryGetIndex(itemId)));
+            }
+        }
+
+
         int size = snapshotUserIndex.getUpperBound();
         for (int i = 0; i < size; i++) {
             assertThat(snapshotUserIndex.getKey(i), equalTo(userIndex.getKey(i)));

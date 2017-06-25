@@ -42,7 +42,7 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
 
 
     @Override
-    public DataSplitStrategy get() {
+    public RandomDataSplitStrategy get() {
         final List<RatingMatrixEntry> allRatings = ImmutableList.copyOf(snapshot.getRatings());
         final int size = allRatings.size();
         final int validationSize = Math.toIntExact(Math.round(size*proportion));
@@ -67,31 +67,34 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
                 int itemIndex = e.getItemIndex();
                 double rating = e.getValue();
 
-                Int2DoubleMap itemRatings = trainingRatings.get(itemIndex);
-                if (itemRatings == null) itemRatings = new Int2DoubleOpenHashMap();
-                itemRatings.put(userIndex, rating);
-                trainingRatings.put(itemIndex, itemRatings);
+                if (rating > 0) {
+                    Int2DoubleMap itemRatings = trainingRatings.get(itemIndex);
+                    if (itemRatings == null) itemRatings = new Int2DoubleOpenHashMap();
+                    itemRatings.put(userIndex, rating);
+                    trainingRatings.put(itemIndex, itemRatings);
 
-                IntSet userItems = userItemIndices.get(userIndex);
-                if (userItems == null) userItems = new IntOpenHashSet();
-                userItems.add(itemIndex);
-                userItemIndices.put(userIndex, userItems);
+                    IntSet userItems = userItemIndices.get(userIndex);
+                    if (userItems == null) userItems = new IntOpenHashSet();
+                    userItems.add(itemIndex);
+                    userItemIndices.put(userIndex, userItems);
+                }
             }
         }
 
         final KeyIndex userIndex = snapshot.userIndex().frozenCopy();
         final KeyIndex itemIndex = snapshot.itemIndex().frozenCopy();
-        Int2ObjectMap<ImmutableSet> userItems = new Int2ObjectOpenHashMap<>();
+        Int2ObjectMap<ImmutableSet<Integer>> userItems = new Int2ObjectOpenHashMap<>();
 
         Iterator<Map.Entry<Integer,IntSet>> userItemsIter = userItemIndices.entrySet().iterator();
         while (userItemsIter.hasNext()) {
             Map.Entry<Integer,IntSet> entry = userItemsIter.next();
             int user = entry.getKey();
-            ImmutableSet items = ImmutableSet.copyOf(entry.getValue());
+            IntSet itemInds = entry.getValue();
+            ImmutableSet<Integer> items = ImmutableSet.copyOf(itemInds);
             userItems.put(user, items);
             userItemsIter.remove();
         }
 
-        return new RandomDataSplitStrategy(trainingRatings, ImmutableList.copyOf(validationRatings), userIndex, itemIndex);
+        return new RandomDataSplitStrategy(trainingRatings, ImmutableList.copyOf(validationRatings), userItems, userIndex, itemIndex);
     }
 }

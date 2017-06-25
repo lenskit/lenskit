@@ -3,12 +3,13 @@ package org.lenskit.pf;
 
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 
-
+@DefaultProvider(RandomInitializationStrategyProvider.class)
 @Shareable
 public class RandomInitializationStrategy implements Serializable, InitializationStrategy {
     private static final long serialVersionUID = 3L;
