@@ -29,6 +29,14 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Random;
 
+/**
+ * A provider for {@link RandomInitializationStrategy}
+ * Initialize the user parameters and item parameters to the prior with a small random offset
+ * Set the user activity and item popularity shape parameters with
+ * k_u_shp = a' + Ka; tau_i_shp = c' + Kc
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class RandomInitializationStrategyProvider implements Provider<InitializationStrategy> {
 
     private final PFHyperParameters hyperParameters;

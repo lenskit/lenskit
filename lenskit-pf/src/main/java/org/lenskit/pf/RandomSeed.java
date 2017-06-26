@@ -26,6 +26,9 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * Seed of random generator used by {@link RandomInitializationStrategyProvider} and {@link RandomDataSplitStrategyProvider}
+ */
 @Documented
 @DefaultInteger(0)
 @Parameter(Integer.class)

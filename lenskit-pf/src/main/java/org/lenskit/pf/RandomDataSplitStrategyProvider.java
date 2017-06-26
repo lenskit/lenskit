@@ -34,12 +34,23 @@ import javax.inject.Provider;
 
 import java.util.*;
 
-
+/**
+ * A provider for {@link RandomDataSplitStrategy}
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrategy> {
     private final RatingMatrix snapshot;
     private final Random random;
     private final double proportion;
 
+    /**
+     * Construct random data split configuration
+     * @param snapshot a snapshot of ratings
+     * @param rnd random generator
+     * @param seed seed of {@code rnd}
+     * @param proportion proportion of validation data
+     */
     @Inject
     public RandomDataSplitStrategyProvider(@Transient @Nonnull RatingMatrix snapshot,
                                            Random rnd,

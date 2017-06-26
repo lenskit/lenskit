@@ -20,7 +20,6 @@
  */
 package org.lenskit.pf;
 
-
 import org.lenskit.inject.Shareable;
 import org.lenskit.mf.funksvd.FeatureCount;
 
@@ -28,12 +27,10 @@ import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 import java.io.Serializable;
 
-
 /**
  * Hyper-parameters of poisson factorization
  *
  */
-
 @Shareable
 @Immutable
 public final class PFHyperParameters implements Serializable {

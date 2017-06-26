@@ -20,7 +20,6 @@
  */
 package org.lenskit.pf;
 
-
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -30,13 +29,33 @@ import org.lenskit.util.keys.KeyIndex;
 
 import java.util.List;
 
+/**
+ * Strategy of splitting ratings data into training data and validation data.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @DefaultImplementation(RandomDataSplitStrategy.class)
 public interface DataSplitStrategy {
 
+    /**
+     * Get the training mapping from item indices to maps of item ratings (user indices to user ratings)
+     *
+     * @return The training map
+     */
     Int2ObjectMap<Int2DoubleMap> getTrainingMatrix();
 
+    /**
+     * Get a list of validation ratings
+     *
+     * @return The validation list of RatingMatrixEntry
+     */
     List<RatingMatrixEntry> getValidationRatings();
 
+    /**
+     * Get the mapping from user indices to sets of user consumed items
+     *
+     * @return The map of user indices to user consumed items indices
+     */
     Int2ObjectMap<ImmutableSet<Integer>> getUserItemIndices();
 
     KeyIndex getUserIndex();

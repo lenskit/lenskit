@@ -26,6 +26,9 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * Max value of the random offset when initializing the shape parameters
+ */
 @Documented
 @DefaultDouble(0.01)
 @Parameter(Double.class)

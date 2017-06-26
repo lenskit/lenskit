@@ -88,11 +88,11 @@ public class HPFRecommenderBuildTest {
 //        config.set(IterationCount.class)
 //                .to(10);
         config.bind(StoppingCondition.class)
-                .to(ErrorThresholdStoppingCondition.class);
+                .to(ErrorThresholdStoppingCondition.class); // this stopping condition may have bug
         config.set(IterationFrequency.class)
                 .to(10);
         config.set(MinimumIterations.class)
-                .to(20);
+                .to(1000);
         config.set(StoppingThreshold.class)
                 .to(0.000001);
         config.set(FeatureCount.class)
@@ -138,12 +138,12 @@ public class HPFRecommenderBuildTest {
         try (Recommender rec = engine.createRecommender(dao)) {
             Map<Long,Double> results = rec.getItemScorer().score(1L,items);
             assertThat(results, notNullValue());
-            System.out.println(results);
-            System.out.println(rec.getItemScorer().score(2L,items));
-            System.out.println(rec.getItemScorer().score(3L,items));
-            System.out.println(rec.getItemScorer().score(4L,items));
-            System.out.println(rec.getItemScorer().score(5L,items));
-            System.out.println(rec.getItemScorer().score(6L,items));
+//            System.out.println(results);
+//            System.out.println(rec.getItemScorer().score(2L,items));
+//            System.out.println(rec.getItemScorer().score(3L,items));
+//            System.out.println(rec.getItemScorer().score(4L,items));
+//            System.out.println(rec.getItemScorer().score(5L,items));
+//            System.out.println(rec.getItemScorer().score(6L,items));
         }
     }
 

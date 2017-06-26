@@ -26,6 +26,9 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * Select either using poisson probability as prediction or using rate of poisson distribution as prediction
+ */
 @Documented
 @DefaultBoolean(true)
 @Parameter(Boolean.class)

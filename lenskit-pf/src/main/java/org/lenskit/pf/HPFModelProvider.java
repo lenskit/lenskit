@@ -38,10 +38,21 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * HPF recommender builder based on the paper "Scalable Recommendation with Poisson Factorization".
+ *
+ * <p>
+ * This recommender builder constructs an hierarchical Poisson matrix factorization recommender(HPF)
+ * using a mean-field variational inference algorithm.
+ * These are documented in
+ * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.
+ * This implementation is based in part on
+ * <a href="https://github.com/premgopalan/hgaprec">The authors' github repository</a>.</p>
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 public class HPFModelProvider implements Provider<HPFModel> {
     private static Logger logger = LoggerFactory.getLogger(HPFModelProvider.class);
 
@@ -131,11 +142,9 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
 
             // update user parameters
-            Iterator<Map.Entry<Integer,ImmutableSet<Integer>>> userParamsIter = userItems.entrySet().iterator();
-            while (userParamsIter.hasNext()) {
-                Map.Entry<Integer,ImmutableSet<Integer>> entry = userParamsIter.next();
-                int user = entry.getKey();
-                ImmutableSet<Integer> items = entry.getValue();
+            for (int user=0; user < userNum; user++) {
+                Set<Integer> items = userItems.get(user);
+                if (items == null) items = Collections.emptySet();
                 double kappaRteU = 0.0;
 
                 for (int k = 0; k < featureCount; k++) {
@@ -161,11 +170,10 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
 
             // update item parameters
-            Iterator<Map.Entry<Integer,Int2DoubleMap>> itemParamsIter = train.entrySet().iterator();
-            while (itemParamsIter.hasNext()) {
-                Map.Entry<Integer,Int2DoubleMap> entry = itemParamsIter.next();
-                int item = entry.getKey();
-                Int2DoubleMap itemRatings = entry.getValue();
+            for (int item = 0; item < itemNum; item++) {
+
+                Int2DoubleMap itemRatings = train.get(item);
+                if (itemRatings == null) itemRatings = Int2DoubleMaps.EMPTY_MAP;
                 double tauRteI = 0.0;
 
                 for (int k = 0; k < featureCount; k++) {
@@ -193,6 +201,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 tauRte.setEntry(item, tauRteI);
             }
 
+            // compute average predictive log likelihood of validation data per {@code iterationfrequency} iterations
             int iterCount = controller.getIterationCount();
             if ((iterCount % iterationFrequency) == 0) {
                 Iterator<RatingMatrixEntry> valIter = validation.iterator();
@@ -209,7 +218,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                         eThetaBeta += eThetaUK * eBetaIK;
                     }
                     double pLL = 0.0;
-                    if (domain.getMaximum() == 1 & domain.getMinimum() == 1) {
+                    if (domain == null) {
                         pLL = (rating == 0) ? (-eThetaBeta) : Math.log(1 - Math.exp(-eThetaBeta));
                     } else {
                         pLL = rating * Math.log(eThetaBeta) - eThetaBeta - Gamma.logGamma(rating + 1);
@@ -219,12 +228,13 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 avgPLLCurr = avgPLLCurr / validation.size();
                 diffPLL = Math.abs((avgPLLCurr - avgPLLPre) / avgPLLPre);
                 avgPLLPre = avgPLLCurr;
-                logger.info("iteration {} with average predictive log likelihood {}", iterCount, avgPLLCurr);
-                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
+                logger.debug("iteration {} with current average predictive log likelihood {} and the change is {}", iterCount, avgPLLCurr, diffPLL);
+//                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
             }
-            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
+//            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
         }
 
+        // construct feature matrix used by HPFModel
         RealMatrix eTheta = MatrixUtils.createRealMatrix(userNum, featureCount);
         RealMatrix eBeta = MatrixUtils.createRealMatrix(itemNum, featureCount);
         for (int user = 0; user < userNum; user++) {

@@ -20,7 +20,6 @@
  */
 package org.lenskit.pf;
 
-
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -33,6 +32,11 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * A implementation of DataSplitStrategy using randomly split rating data into training data and validation
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @DefaultProvider(RandomDataSplitStrategyProvider.class)
 @Shareable
 public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable {

@@ -20,7 +20,6 @@
  */
 package org.lenskit.pf;
 
-
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.grapht.annotation.DefaultProvider;
@@ -28,6 +27,11 @@ import org.lenskit.inject.Shareable;
 
 import java.io.Serializable;
 
+/**
+ * Random initialization of variable parameters
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 @DefaultProvider(RandomInitializationStrategyProvider.class)
 @Shareable
 public class RandomInitializationStrategy implements Serializable, InitializationStrategy {

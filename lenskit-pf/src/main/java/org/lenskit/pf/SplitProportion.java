@@ -26,6 +26,9 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * The proportion of validations. The default value is based on the original paper.
+ */
 @Documented
 @DefaultDouble(0.1)
 @Parameter(Double.class)
