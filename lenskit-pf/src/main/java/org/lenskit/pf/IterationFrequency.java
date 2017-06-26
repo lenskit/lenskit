@@ -20,17 +20,20 @@
  */
 package org.lenskit.pf;
 
-import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.grapht.annotation.DefaultInteger;
 import org.lenskit.inject.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * The number of frequency used to compute the convergence condition (average predictive log likelihood of validation ratings)
+ */
 @Documented
-@DefaultDouble(1.0)
-@Parameter(Double.class)
+@DefaultInteger(100)
+@Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HyperParameterBPrime {
+public @interface IterationFrequency {
 }

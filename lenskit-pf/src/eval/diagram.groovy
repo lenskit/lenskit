@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Copyright 2010-2014 Regents of the University of Minnesota and contributors
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -18,19 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.pf;
 
-import org.grouplens.grapht.annotation.DefaultDouble;
-import org.lenskit.inject.Parameter;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
+import org.grouplens.lenskit.iterative.IterationCount
+import org.lenskit.api.ItemScorer
+import org.lenskit.pf.HPFItemScorer
+import org.lenskit.mf.funksvd.FeatureCount
+import org.lenskit.mf.svd.*
 
-@Documented
-@DefaultDouble(1.0)
-@Parameter(Double.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface HyperParameterBPrime {
+dumpGraph {
+    output "${config.analysisDir}/funksvd.dot"
+    algorithm {
+        bind ItemScorer to HPFItemScorer
+        set IterationCount to 100
+        set FeatureCount to 100
+    }
 }
