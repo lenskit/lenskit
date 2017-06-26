@@ -20,24 +20,15 @@
  */
 package org.lenskit.pf;
 
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.stat.interval.IntervalUtils;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;
-import org.lenskit.inject.Shareable;
 import org.lenskit.inject.Transient;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.KeyIndex;
 
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -50,7 +41,7 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
     private final double proportion;
 
     @Inject
-    public RandomDataSplitStrategyProvider(@Transient RatingMatrix snapshot,
+    public RandomDataSplitStrategyProvider(@Transient @Nonnull RatingMatrix snapshot,
                                            Random rnd,
                                            @RandomSeed int seed,
                                            @SplitProportion double proportion) {

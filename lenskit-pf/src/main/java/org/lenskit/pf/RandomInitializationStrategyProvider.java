@@ -39,11 +39,11 @@ public class RandomInitializationStrategyProvider implements Provider<Initializa
     private final long rndSeed;
 
     @Inject
-    public RandomInitializationStrategyProvider(@Transient PFHyperParameters hyperParams,
+    public RandomInitializationStrategyProvider(PFHyperParameters hyperParams,
                                                 @Transient DataSplitStrategy data,
                                                 @MaxRandomOffsetForShape double maxOffS,
                                                 @MaxRandomOffsetForRate double mOffR,
-                                                @RandomSeed long seed) {
+                                                @RandomSeed int seed) {
         hyperParameters = hyperParams;
         userNum = data.getUserIndex().size();
         itemNum = data.getItemIndex().size();

@@ -30,6 +30,7 @@ import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrixEntry;
+import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.KeyIndex;
 
 import javax.annotation.Nullable;
@@ -40,27 +41,29 @@ import java.util.List;
 import java.util.Map;
 
 public class HPFModelProvider implements Provider<HPFModel> {
-    private final RandomInitializationStrategy randomInitials;
-    private final RandomDataSplitStrategy ratings;
+    private final InitializationStrategy randomInitials;
+    private final DataSplitStrategy ratings;
     private final StoppingCondition stoppingCondition;
     private final PFHyperParameters hyperParameters;
+    private final int iterationFrequency;
 
     @Nullable
     private PreferenceDomain domain;
 
 
     @Inject
-    public HPFModelProvider(RandomInitializationStrategy rndInitls,
-                            RandomDataSplitStrategy rndRatings,
+    public HPFModelProvider(@Transient InitializationStrategy rndInitls,
+                            @Transient DataSplitStrategy rndRatings,
                             StoppingCondition stop,
                             @Nullable PreferenceDomain dom,
-                            PFHyperParameters hyperParams) {
+                            PFHyperParameters hyperParams,
+                            @IterationFrequency int iterFreq) {
         randomInitials = rndInitls;
         ratings = rndRatings;
         stoppingCondition = stop;
         domain = dom;
         hyperParameters = hyperParams;
-
+        iterationFrequency = iterFreq;
     }
 
     @Override
@@ -187,7 +190,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
 
             int iterCount = controller.getIterationCount();
-            if ((iterCount % 100) == 0) {
+            if ((iterCount % iterationFrequency) == 0) {
                 Iterator<RatingMatrixEntry> valIter = validation.iterator();
 
                 while (valIter.hasNext()) {

@@ -28,7 +28,7 @@ import org.lenskit.util.keys.KeyIndex;
 
 @DefaultProvider(HPFModelProvider.class)
 @Shareable
-public class HPFModel extends MFModel {
+public final class HPFModel extends MFModel {
     private static final long serialVersionUID = 4L;
 
     public HPFModel(RealMatrix umat, RealMatrix imat,

@@ -24,13 +24,12 @@ package org.lenskit.pf;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Shareable;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.KeyIndex;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -56,16 +55,20 @@ public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable 
         userIndex = userInd;
         itemIndex = itemInd;
     }
+
     @Override
+    @Nonnull
     public Int2ObjectMap<Int2DoubleMap> getTrainingMatrix() {
         return training;
     }
 
     @Override
+    @Nonnull
     public List<RatingMatrixEntry> getValidationRatings() {
         return validation;
     }
 
+    @Override
     public Int2ObjectMap<ImmutableSet<Integer>> getUserItemIndices() {
         return userItemIndices;
     }

@@ -23,7 +23,9 @@ package org.lenskit.pf;
 
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
+@DefaultImplementation(RandomInitializationStrategy.class)
 public interface InitializationStrategy {
 
     RealMatrix getGammaShp();
