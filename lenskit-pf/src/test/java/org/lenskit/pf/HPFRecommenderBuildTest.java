@@ -20,20 +20,14 @@
  */
 package org.lenskit.pf;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.iterative.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.api.RatingPredictor;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.api.*;
 import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
@@ -46,6 +40,7 @@ import org.lenskit.mf.funksvd.FeatureCount;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -58,12 +53,12 @@ public class HPFRecommenderBuildTest {
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<>();
         double[][] ratings = {
-                {0, 12, 13, 14, 15},
-                {21, 22, 23, 24, 25},
-                {31, 32, 33, 34, 35},
-                {41, 42, 43, 44, 45},
-                {51, 52, 53, 54, 55},
-                {61, 62, 63, 64, 65}};
+                {0, 1, 1, 1, 1},
+                {1, 0, 1, 0, 0},
+                {1, 1, 1, 1, 0},
+                {1, 1, 0, 0, 1},
+                {1, 1, 1, 1, 1},
+                {0, 0, 0, 1, 0}};
         EntityFactory ef = new EntityFactory();
         data = new Long2ObjectOpenHashMap<>();
         for (int user = 1; user <= ratings.length; user++) {
@@ -88,8 +83,16 @@ public class HPFRecommenderBuildTest {
                 .to(PackedRatingMatrix.class);
         config.bind(ItemScorer.class)
                 .to(HPFItemScorer.class);
+//        config.bind(StoppingCondition.class)
+//                .to(IterationCountStoppingCondition.class);
+//        config.set(IterationCount.class)
+//                .to(10);
         config.bind(StoppingCondition.class)
                 .to(ErrorThresholdStoppingCondition.class);
+        config.set(IterationFrequency.class)
+                .to(10);
+        config.set(MinimumIterations.class)
+                .to(20);
         config.set(StoppingThreshold.class)
                 .to(0.000001);
         config.set(FeatureCount.class)
@@ -99,7 +102,7 @@ public class HPFRecommenderBuildTest {
     }
 
     @Test
-    public void testFunkSVDRecommenderEngineCreate() throws RecommenderBuildException {
+    public void testHPFRecommenderEngineCreate() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
         try (Recommender rec = engine.createRecommender(dao)) {
 
@@ -123,6 +126,24 @@ public class HPFRecommenderBuildTest {
             assertThat(rec1.getItemScorer(),
                     not(sameInstance(rec2.getItemScorer())));
             assertThat(rec1.get(HPFModel.class), sameInstance(rec2.get(HPFModel.class)));
+        }
+    }
+
+    @Test
+    public void testHPFRecommenderScorer() throws RecommenderBuildException {
+        LenskitRecommenderEngine engine = makeEngine();
+        LongArrayList items = new LongArrayList();
+        long[] itemIds = {1L, 2L, 3L, 4L, 5L};
+        items.addElements(0, itemIds);
+        try (Recommender rec = engine.createRecommender(dao)) {
+            Map<Long,Double> results = rec.getItemScorer().score(1L,items);
+            assertThat(results, notNullValue());
+            System.out.println(results);
+            System.out.println(rec.getItemScorer().score(2L,items));
+            System.out.println(rec.getItemScorer().score(3L,items));
+            System.out.println(rec.getItemScorer().score(4L,items));
+            System.out.println(rec.getItemScorer().score(5L,items));
+            System.out.println(rec.getItemScorer().score(6L,items));
         }
     }
 

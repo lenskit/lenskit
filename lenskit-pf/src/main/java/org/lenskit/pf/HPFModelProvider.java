@@ -32,6 +32,8 @@ import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.KeyIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -41,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 
 public class HPFModelProvider implements Provider<HPFModel> {
+    private static Logger logger = LoggerFactory.getLogger(HPFModelProvider.class);
+
     private final InitializationStrategy randomInitials;
     private final DataSplitStrategy ratings;
     private final StoppingCondition stoppingCondition;
@@ -206,7 +210,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     }
                     double pLL = 0.0;
                     if (domain.getMaximum() == 1 & domain.getMinimum() == 1) {
-                        pLL = (rating == 0) ? -eThetaBeta : Math.log(1 - Math.exp(-eThetaBeta));
+                        pLL = (rating == 0) ? (-eThetaBeta) : Math.log(1 - Math.exp(-eThetaBeta));
                     } else {
                         pLL = rating * Math.log(eThetaBeta) - eThetaBeta - Gamma.logGamma(rating + 1);
                     }
@@ -215,7 +219,10 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 avgPLLCurr = avgPLLCurr / validation.size();
                 diffPLL = Math.abs((avgPLLCurr - avgPLLPre) / avgPLLPre);
                 avgPLLPre = avgPLLCurr;
+                logger.info("iteration {} with average predictive log likelihood {}", iterCount, avgPLLCurr);
+                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
             }
+            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
         }
 
         RealMatrix eTheta = MatrixUtils.createRealMatrix(userNum, featureCount);
