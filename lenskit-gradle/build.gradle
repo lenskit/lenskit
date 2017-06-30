@@ -8,6 +8,7 @@ dependencies {
     compile 'org.joda:joda-convert:1.8.1'
     compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.18'
 }
 
 apply from: 'integration-tests.gradle'
