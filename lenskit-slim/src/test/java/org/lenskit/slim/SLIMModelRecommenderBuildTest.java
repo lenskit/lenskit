@@ -21,9 +21,7 @@
 package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.iterative.IterationCount;
-import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
-import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
@@ -51,8 +49,8 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SLIMModelRecommenderBuildTest {
-    private static final int userNum = 200; // number of total user
-    private static final int itemNum = 200; // upper bound of item id (exclusive)
+    private static final int userNum = 2000; // number of total user
+    private static final int itemNum = 2000; // upper bound of item id (exclusive)
     private Long2DoubleMap y;
     private Long2ObjectMap<Long2DoubleMap> data;
     private Long2DoubleMap weights;
@@ -89,7 +87,7 @@ public class SLIMModelRecommenderBuildTest {
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
         //int userNum = 200; // number of total user
-        int maxRatingNum = 50; // each user's max possible rating number (less than maxItemId)
+        int maxRatingNum = 100; // each user's max possible rating number (less than maxItemId)
         int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
         double ratingRange = 5.0;
 
@@ -143,17 +141,19 @@ public class SLIMModelRecommenderBuildTest {
         config.bind(ItemScorer.class)
                 .to(SLIMItemScorer.class);
         config.bind(StoppingCondition.class)
-                .to(IterationCountStoppingCondition.class);
+                .to(ThresholdStoppingCondition.class);
         config.bind(ItemVectorNormalizer.class)
                 .to(DefaultItemVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
                 .to(IdentityVectorNormalizer.class);
         config.set(IterationCount.class)
-                .to(15);
+                .to(50);
         config.set(SLIMModelSize.class)
-                .to(30);
+                .to(100);
         config.set(MinCommonUsers.class)
                 .to(2);
+        config.set(StoppingThreshold.class)
+                .to(1.0e-2);
 
         return LenskitRecommenderEngine.build(config);
     }

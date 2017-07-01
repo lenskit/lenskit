@@ -20,14 +20,11 @@
  */
 package org.lenskit.slim;
 
-import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.util.math.Scalars;
-import java.util.Map;
 import static java.lang.Math.abs;
 
 
 /**
- * Several simple vector algebra used by SLIM learning process
+ * simple vector algebra used by SLIM learning process
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class LinearRegressionHelper {
@@ -39,7 +36,7 @@ public final class LinearRegressionHelper {
      */
     public static double softThresholding(double z, double gamma) {
         if (z > 0 && gamma < abs(z)) return z - gamma;
-        //if (z < 0 && gamma < abs(z)) return z + gamma; // comment this line to get non-negative weights during learning process
+//        if (z < 0 && gamma < abs(z)) return z + gamma; // comment this line to get non-negative weights during learning process
         return 0.0;
     }
 

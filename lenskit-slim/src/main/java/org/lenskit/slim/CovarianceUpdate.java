@@ -181,8 +181,10 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
             }
 
             k++;
-            lossDiff = Math.abs(loss[0] - loss[1]);
-            logger.debug("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
+//            lossDiff = Math.abs(loss[0] - loss[1]);
+            lossDiff = computeLossFunction(residuals, weights);
+//            logger.debug("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
+            logger.info("train item {}: {}th round iteration and loss function reduced to {} \n",itemYId, k, lossDiff);
         }
         return LongUtils.frozenMap(weights);
     }
