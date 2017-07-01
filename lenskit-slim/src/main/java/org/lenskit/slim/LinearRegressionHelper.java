@@ -39,7 +39,7 @@ public final class LinearRegressionHelper {
      */
     public static double softThresholding(double z, double gamma) {
         if (z > 0 && gamma < abs(z)) return z - gamma;
-        if (z < 0 && gamma < abs(z)) return z + gamma; // comment this line to get non-negative weights during learning process
+        //if (z < 0 && gamma < abs(z)) return z + gamma; // comment this line to get non-negative weights during learning process
         return 0.0;
     }
 

@@ -36,10 +36,7 @@ import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
 import org.lenskit.knn.item.MinCommonUsers;
-import org.lenskit.transform.normalize.DefaultItemVectorNormalizer;
-import org.lenskit.transform.normalize.ItemVectorNormalizer;
-import org.lenskit.transform.normalize.UnitVectorNormalizer;
-import org.lenskit.transform.normalize.VectorNormalizer;
+import org.lenskit.transform.normalize.*;
 
 import org.lenskit.util.math.Vectors;
 
@@ -144,13 +141,13 @@ public class SLIMModelRecommenderBuildTest {
 
         config.bind(DataAccessObject.class).to(dao);
         config.bind(ItemScorer.class)
-                .to(SLIMScorer.class);
+                .to(SLIMItemScorer.class);
         config.bind(StoppingCondition.class)
                 .to(IterationCountStoppingCondition.class);
         config.bind(ItemVectorNormalizer.class)
                 .to(DefaultItemVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
-                .to(UnitVectorNormalizer.class);
+                .to(IdentityVectorNormalizer.class);
         config.set(IterationCount.class)
                 .to(15);
         config.set(SLIMModelSize.class)
@@ -201,7 +198,7 @@ public class SLIMModelRecommenderBuildTest {
         LenskitRecommenderEngine engine = makeEngine();
         try (Recommender rec = engine.createRecommender(dao)) {
             assertThat(rec.getItemScorer(),
-                    instanceOf(SLIMScorer.class));
+                    instanceOf(SLIMItemScorer.class));
             assertThat(rec.getItemRecommender(),
                     instanceOf(TopNItemRecommender.class));
         }
@@ -226,17 +223,33 @@ public class SLIMModelRecommenderBuildTest {
     public void testSLIMScorer() {
         LenskitRecommenderEngine engine = makeEngine();
         Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
+        Random random = new Random();
+        int size = dataTrans.keySet().size();
+        int randomUser = random.nextInt(size);
         Iterator<Long> iter = dataTrans.keySet().iterator();
         long user = iter.next();
+        for (int i = 1; i < randomUser; i++) {
+            user = iter.next();
+        }
+
+        Long2DoubleMap userRatings = dataTrans.get(user);
         try (Recommender rec = engine.createRecommender(dao)) {
             ItemScorer scorer = rec.getItemScorer();
             assertThat(scorer, notNullValue());
             ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(data.keySet()));
-            for (long item : data.keySet()) {
+            double rmse = 0.0;
+            for (long item : userRatings.keySet()) {
                 Result r = details.get(item);
                 assertThat(r, notNullValue());
+                double actual = userRatings.get(item);
+                double prediction = r.getScore();
+                rmse += Math.pow((actual - prediction),2);
+                System.out.println("user actual rating and prediction: " + actual + "   " + prediction);
             }
 
+            rmse /= userRatings.keySet().size();
+            rmse = Math.sqrt(rmse);
+            System.out.println("rmse is: " + rmse);
         }
 
     }

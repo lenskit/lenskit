@@ -30,11 +30,11 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.EntityFactory;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingVectorPDAO;
+import org.lenskit.data.ratings.StandardRatingVectorPDAO;
 import org.lenskit.similarity.CosineVectorSimilarity;
 import org.lenskit.similarity.VectorSimilarity;
-import org.lenskit.transform.normalize.DefaultItemVectorNormalizer;
-import org.lenskit.transform.normalize.ItemVectorNormalizer;
-import org.lenskit.transform.normalize.UnitVectorNormalizer;
+import org.lenskit.transform.normalize.*;
 import org.lenskit.util.collections.Long2DoubleAccumulator;
 import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.lenskit.util.math.Vectors;
@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
 
 public class SLIMBuildContextTest {
     private DataAccessObject dao;
-    private ItemVectorNormalizer normalizer;
+    private UserVectorNormalizer normalizer;
     private VectorSimilarity itemSimilarity;
     private Threshold threshold;
     private final int minCommonUsers = 1;
@@ -84,10 +84,11 @@ public class SLIMBuildContextTest {
 
         StaticDataSource source = StaticDataSource.fromList(rs);
         dao = source.get();
-        normalizer = new DefaultItemVectorNormalizer(new UnitVectorNormalizer());
+        RatingVectorPDAO rvPDAO = new StandardRatingVectorPDAO(dao);
+        normalizer = new DefaultUserVectorNormalizer(new UnitVectorNormalizer());
         itemSimilarity = new CosineVectorSimilarity();
         threshold = new RealThreshold(0.0);
-        contextProvider = new SLIMBuildContextProvider( dao, normalizer, itemSimilarity,
+        contextProvider = new SLIMBuildContextProvider( rvPDAO, normalizer, itemSimilarity,
                                                         threshold, minCommonUsers, modelSize);
         context = contextProvider.get();
 

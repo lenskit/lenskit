@@ -166,7 +166,7 @@ public class SLIMScoringStrategyTest {
     public void testTrainedWeights() {
 
 //        StopWatch timer = new StopWatch();
-        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(50));
+        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, new IterationCountStoppingCondition(50));
 
         // Naive update
 //        timer.start();
@@ -200,7 +200,7 @@ public class SLIMScoringStrategyTest {
 
     @Test
     public void testLossFunctionAfterTraining() {
-        final SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(50));
+        final SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, new IterationCountStoppingCondition(50));
 
         //Naive update
         NaiveUpdate model = new NaiveUpdate(parameters);
@@ -265,7 +265,7 @@ public class SLIMScoringStrategyTest {
         weight3.put(3L, 4.0);
         weight3.put(5L, 5.0);
 
-        final SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, false, new IterationCountStoppingCondition(50));
+        final SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, new IterationCountStoppingCondition(50));
 
         //Naive update
         NaiveUpdate model = new NaiveUpdate(parameters);

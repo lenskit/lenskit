@@ -41,16 +41,16 @@ import java.util.*;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SLIMScorer extends AbstractItemScorer {
-    private static final Logger logger = LoggerFactory.getLogger(SLIMScorer.class);
+public class SLIMItemScorer extends AbstractItemScorer {
+    private static final Logger logger = LoggerFactory.getLogger(SLIMItemScorer.class);
 
     protected final SLIMModel model;
     private final RatingVectorPDAO rvDAO;
 
 
     @Inject
-    public SLIMScorer(SLIMModel m,
-                      RatingVectorPDAO dao) {
+    public SLIMItemScorer(SLIMModel m,
+                          RatingVectorPDAO dao) {
         model = m;
         rvDAO = dao;
     }

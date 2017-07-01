@@ -38,23 +38,19 @@ public final class SLIMUpdateParameters implements Serializable {
     private static final long serialVersionUID = 2L;
     private final double beta;
     private final double lambda;
-    private final boolean intercept;
     private final StoppingCondition stoppingCondition;
 
 
     @Inject
-    public SLIMUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, @IncludeIntercept boolean intercept, StoppingCondition stop) {
+    public SLIMUpdateParameters(@RidgeRegressionTerm double beta, @RegularizationTerm double lambda, StoppingCondition stop) {
         this.beta = beta;
         this.lambda = lambda;
-        this.intercept = intercept;
         stoppingCondition = stop;
     }
 
     public double getBeta() { return beta; }
 
     public double getLambda() { return lambda; }
-
-    public boolean getIntercept() { return intercept; }
 
     public StoppingCondition getStoppingCondition() { return stoppingCondition; }
 

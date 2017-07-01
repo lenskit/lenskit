@@ -23,13 +23,11 @@ package org.lenskit.slim;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.entities.CommonAttributes;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.Ratings;
+import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.similarity.VectorSimilarity;
-import org.lenskit.transform.normalize.ItemVectorNormalizer;
+import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.IdBox;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.collections.Long2DoubleAccumulator;
@@ -44,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,21 +55,21 @@ public class SLIMBuildContextProvider implements Provider<SLIMBuildContext> {
     private static final Logger logger = LoggerFactory.getLogger(SLIMBuildContextProvider.class);
 
 
-    private final DataAccessObject dao;
-    private final ItemVectorNormalizer normalizer;
+    private final RatingVectorPDAO rvDAO;
+    private final UserVectorNormalizer normalizer;
     private final VectorSimilarity itemSimilarity;
     private final Threshold threshold;
     private final int minCommonUsers;
     private final int modelSize;
 
     @Inject
-    public SLIMBuildContextProvider(@Transient DataAccessObject dao,
-                                    @Transient ItemVectorNormalizer normlzr,
+    public SLIMBuildContextProvider(@Transient RatingVectorPDAO dao,
+                                    @Transient UserVectorNormalizer normlzr,
                                     @Transient VectorSimilarity sim,
                                     @Transient Threshold threshld,
                                     @MinCommonUsers int minCI,
                                     @SLIMModelSize int size) {
-        this.dao = dao;
+        this.rvDAO = dao;
         normalizer = normlzr;
         itemSimilarity = sim;
         threshold = threshld;
@@ -109,37 +106,40 @@ public class SLIMBuildContextProvider implements Provider<SLIMBuildContext> {
      */
     private void buildItemRatings(Long2ObjectMap<Long2DoubleSortedMap> itemVectors,
                                   Long2ObjectMap<LongSortedSet> userItems) {
-        Long2ObjectMap<LongSet> userItemsTemp = new Long2ObjectOpenHashMap<>();
-        try (ObjectStream<IdBox<List<Rating>>> stream = dao.query(Rating.class)
-                                                           .groupBy(CommonAttributes.ITEM_ID)
-                                                           .stream()) {
-            for (IdBox<List<Rating>> item : stream) {
-                long itemId = item.getId();
-                List<Rating> itemRatings = item.getValue();
-                Long2DoubleOpenHashMap ratings = new Long2DoubleOpenHashMap(Ratings.itemRatingVector(itemRatings));
-                Long2DoubleMap normed = normalizer.makeTransformation(itemId, ratings).apply(ratings);
+        // initialize the transposed array to collect item vector data
+        Long2ObjectMap<Long2DoubleMap> itemRatings = new Long2ObjectOpenHashMap<>();
+        try (ObjectStream<IdBox<Long2DoubleMap>> stream = rvDAO.streamUsers()) {
+            for (IdBox<Long2DoubleMap> user : stream) {
+                long uid = user.getId();
+                Long2DoubleMap ratings = user.getValue();
+                Long2DoubleMap normed = normalizer.makeTransformation(uid, ratings).apply(ratings);
                 assert normed != null;
 
-                LongIterator iter = normed.keySet().iterator();
+                Iterator<Long2DoubleMap.Entry> iter = Vectors.fastEntryIterator(normed);
                 while (iter.hasNext()) {
-                    long userId = iter.nextLong();
-                    LongSet userRatedItems = userItemsTemp.get(userId);
-                    if (userRatedItems == null) userRatedItems = new LongOpenHashSet();
-                    userRatedItems.add(itemId);
-                    userItemsTemp.put(userId, userRatedItems);
+                    Long2DoubleMap.Entry rating = iter.next();
+                    final long item = rating.getLongKey();
+                    // get the item's rating accumulator
+                    Long2DoubleMap ivect = itemRatings.get(item);
+                    if (ivect == null) {
+                        ivect = new Long2DoubleOpenHashMap(100);
+                        itemRatings.put(item, ivect);
+                    }
+                    ivect.put(uid, rating.getDoubleValue());
                 }
 
-                itemVectors.put(itemId, LongUtils.frozenMap(normed));
+                // get the item's candidate set
+                userItems.put(uid, LongUtils.packedSet(normed.keySet()));
             }
         }
 
-        Iterator<Map.Entry<Long,LongSet>> userItemsIter = userItemsTemp.entrySet().iterator();
-        while (userItemsIter.hasNext()) {
-            Map.Entry<Long,LongSet> entry = userItemsIter.next();
-            long item = entry.getKey();
-            LongSortedSet value = LongUtils.frozenSet(entry.getValue());
-            userItems.put(item, value);
-            userItemsIter.remove();
+        Iterator<Long2ObjectMap.Entry<Long2DoubleMap>> iter = itemRatings.long2ObjectEntrySet().iterator();
+        while (iter.hasNext()) {
+            Long2ObjectMap.Entry<Long2DoubleMap> entry = iter.next();
+            long item = entry.getLongKey();
+            Long2DoubleMap ratings = entry.getValue();
+            itemVectors.put(item, LongUtils.frozenMap(ratings));
+            iter.remove();
         }
     }
 
