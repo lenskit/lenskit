@@ -36,6 +36,7 @@ import org.lenskit.similarity.CosineVectorSimilarity;
 import org.lenskit.similarity.VectorSimilarity;
 import org.lenskit.transform.normalize.*;
 import org.lenskit.util.collections.Long2DoubleAccumulator;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.lenskit.util.math.Vectors;
 
@@ -114,35 +115,69 @@ public class SLIMBuildContextTest {
 
     @Test
     public void testGetItemRatings() {
+        Long2ObjectMap<Long2DoubleMap> userViewData = Vectors.transposeMap(data);
         Iterator<Map.Entry<Long,Long2DoubleMap>> iter = data.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry<Long,Long2DoubleMap> entry = iter.next();
-            long item = entry.getKey();
-            Long2DoubleMap ratings = entry.getValue();
-            double norm = Vectors.euclideanNorm(ratings);
-            Long2DoubleMap actual = Vectors.multiplyScalar(ratings, 1/norm);
-            assertThat(actual, is(context.getItemRatings(item)));
+            final long item = entry.getKey();
+            Long2DoubleMap ratings = LongUtils.frozenMap(entry.getValue());
+            Long2DoubleMap ratingsNorm = new Long2DoubleOpenHashMap(ratings.size());
+            Iterator<Long2DoubleMap.Entry> itemRatingsIter = ratings.long2DoubleEntrySet().iterator();
+            while (itemRatingsIter.hasNext()) {
+                Long2DoubleMap.Entry ratingEntry = itemRatingsIter.next();
+                final long user = ratingEntry.getLongKey();
+                final double rating = ratingEntry.getDoubleValue();
+                final double norm = Vectors.euclideanNorm(userViewData.get(user));
+                final double ratingNorm = rating / norm;
+                ratingsNorm.put(user, ratingNorm);
+                assertThat(ratingNorm, closeTo(context.getItemRatings(item).get(user), 1.0e-10));
+            }
+            Long2DoubleMap contextRatings = context.getItemRatings(item);
+            Long2DoubleMap ratingsFinal = LongUtils.frozenMap(ratingsNorm);
+            System.out.println("actual ratings: " + ratingsFinal);
+            System.out.println("context ratings: " + contextRatings);
         }
     }
 
     @Test
     public void testGetInnerProducts() {
-        Iterator<Map.Entry<Long,Long2DoubleMap>> outer = data.entrySet().iterator();
+        Long2ObjectMap<Long2DoubleMap> userViewData = Vectors.transposeMap(data);
+        Iterator<Map.Entry<Long,Long2DoubleMap>> iter1 = data.entrySet().iterator();
+        while (iter1.hasNext()) {
+            Map.Entry<Long,Long2DoubleMap> entry = iter1.next();
+            final long item1 = entry.getKey();
+            Long2DoubleMap ratings1 = entry.getValue();
+            Long2DoubleMap ratingsNorm1 = new Long2DoubleOpenHashMap(ratings1.size());
+            Iterator<Long2DoubleMap.Entry> itemRatingsIter = ratings1.long2DoubleEntrySet().iterator();
+            while (itemRatingsIter.hasNext()) {
+                Long2DoubleMap.Entry ratingEntry = itemRatingsIter.next();
+                final long user = ratingEntry.getLongKey();
+                final double rating = ratingEntry.getDoubleValue();
+                final double norm = Vectors.euclideanNorm(userViewData.get(user));
+                final double ratingNorm = rating / norm;
+                ratingsNorm1.put(user, ratingNorm);
+            }
 
-        while(outer.hasNext()) {
-            Map.Entry<Long,Long2DoubleMap> e1 = outer.next();
-            long item1 = e1.getKey();
-            Long2DoubleMap ratings1 = e1.getValue();
-            Iterator<Map.Entry<Long,Long2DoubleMap>> inner = data.entrySet().iterator();
-            while (inner.hasNext()) {
-                Map.Entry<Long,Long2DoubleMap> e2 = inner.next();
-                long item2 = e2.getKey();
+            Iterator<Map.Entry<Long,Long2DoubleMap>> iter2 = data.entrySet().iterator();
+            while (iter2.hasNext()) {
+                Map.Entry<Long, Long2DoubleMap> entry2 = iter2.next();
+                final long item2 = entry2.getKey();
                 if (item1 != item2) {
-                    Long2DoubleMap ratings2 = e2.getValue();
-                    double actual = Vectors.dotProduct(ratings1, ratings2)/
-                            (Vectors.euclideanNorm(ratings1)*Vectors.euclideanNorm(ratings2));
-                    double expected = context.getInnerProducts(item1).get(item2);
-                    assertThat(actual, closeTo(expected, 1.0e-15));
+                    Long2DoubleMap ratings2 = entry2.getValue();
+                    Long2DoubleMap ratingsNorm2 = new Long2DoubleOpenHashMap(ratings2.size());
+                    Iterator<Long2DoubleMap.Entry> itemRatingsIter2 = ratings2.long2DoubleEntrySet().iterator();
+                    while (itemRatingsIter2.hasNext()) {
+                        Long2DoubleMap.Entry ratingEntry = itemRatingsIter2.next();
+                        final long user = ratingEntry.getLongKey();
+                        final double rating = ratingEntry.getDoubleValue();
+                        final double norm = Vectors.euclideanNorm(userViewData.get(user));
+                        final double ratingNorm = rating / norm;
+                        ratingsNorm2.put(user, ratingNorm);
+                    }
+                    double actualDot = Vectors.dotProduct(ratingsNorm1, ratingsNorm2);
+                    double contextDot = context.getInnerProducts(item1).get(item2);
+                    assertThat(actualDot, closeTo(contextDot, 1.0e-10));
+                    System.out.println("actual and context computed inner-products for item pair {" + item1 + ", " + item2 + "} is: {" + actualDot + ", " + contextDot + "}");
                 }
             }
         }
