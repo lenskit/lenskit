@@ -114,6 +114,16 @@ public final class LongUtils {
     }
 
     /**
+     * Create a flyweight vector with a key set and value function.
+     * @param keys The key set.
+     * @param valueFunc Function to compute keys from values.
+     * @return The flyweight map.
+     */
+    public static Long2DoubleMap flyweightMap(LongSet keys, LongToDoubleFunction valueFunc) {
+        return new FlyweightLong2DoubleMap(keys, valueFunc);
+    }
+
+    /**
      * Get a Fastutil {@link it.unimi.dsi.fastutil.longs.LongCollection} from a {@link java.util.Collection} of longs.
      * This method simply casts the collection, if possible, and returns a
      * wrapper otherwise.
