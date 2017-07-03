@@ -122,7 +122,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
             scores[slot] = score;
         } else {
             // we are reusing slots
-            if (score <= scores[heap.first()]) {
+            if (!heap.isEmpty() && score <= scores[heap.first()]) {
                 return; // the item won't beat anything else
             }
             items.set(slot, item);
