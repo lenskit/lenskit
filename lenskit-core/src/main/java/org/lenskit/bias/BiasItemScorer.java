@@ -20,7 +20,6 @@
  */
 package org.lenskit.bias;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -61,14 +60,8 @@ public class BiasItemScorer extends AbstractItemScorer {
     @Override
     public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
         LongSet itemSet = LongUtils.frozenSet(items);
-        Long2DoubleOpenHashMap map = new Long2DoubleOpenHashMap(model.getItemBiases(itemSet));
         double base = model.getIntercept() + model.getUserBias(user);
-        LongIterator iter = LongIterators.asLongIterator(items.iterator());
-        while (iter.hasNext()) {
-            long item = iter.nextLong();
-            map.addTo(item, base);
-        }
-        return map;
+        return LongUtils.flyweightMap(itemSet, iid -> base + model.getItemBias(iid));
     }
 
     @Nonnull
