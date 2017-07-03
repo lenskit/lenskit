@@ -20,9 +20,7 @@
  */
 package org.lenskit.basic;
 
-import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.api.ItemBasedItemRecommender;
@@ -36,10 +34,10 @@ import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.LongPredicate;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**
@@ -48,7 +46,6 @@ import java.util.stream.LongStream;
 public class PopularItemRecommender extends AbstractItemRecommender implements ItemRecommender, ItemBasedItemRecommender {
     private final DataAccessObject data;
     private final InteractionStatistics statistics;
-    private final long[] sortedItems;
 
     /**
      * Create a new popular item recommender.
@@ -58,14 +55,12 @@ public class PopularItemRecommender extends AbstractItemRecommender implements I
     public PopularItemRecommender(InteractionStatistics stats, DataAccessObject dao) {
         data = dao;
         statistics = stats;
-        sortedItems = stats.getKnownItems().toLongArray();
-        LongArrays.quickSort(sortedItems, (l1, l2) -> Doubles.compare(stats.getInteractionCount(l2),
-                                                                      stats.getInteractionCount(l1)));
     }
 
     private LongList recommendWithPredicate(int n, LongPredicate filter) {
-        LongList list = new LongArrayList(sortedItems.length);
-        LongStream str = Arrays.stream(sortedItems);
+        LongList items = statistics.getItemsByPopularity();
+        LongList list = new LongArrayList(items.size());
+        LongStream str = IntStream.range(0, items.size()).mapToLong(items::getLong);
         if (filter != null) {
             str = str.filter(filter);
         }
