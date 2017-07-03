@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.LongConsumer;
 
 /**
  * A bare entity collection that stores ID-only entities.
@@ -53,7 +54,7 @@ class BareEntityCollection extends EntityCollection implements Describable {
         entityType = et;
         idSet = ids;
         Hasher hash = Hashing.md5().newHasher();
-        idSet.forEach(hash::putLong);
+        idSet.forEach((LongConsumer) hash::putLong);
         contentHash = hash.hash();
     }
 
