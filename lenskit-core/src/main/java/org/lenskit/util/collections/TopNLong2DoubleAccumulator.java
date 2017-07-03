@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
+import java.util.Arrays;
+
 /**
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
@@ -53,7 +55,10 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
 
         // heap must have n+1 slots to hold extra item before removing smallest
         scores = new double[n+1];
-        items = new CompactableLongArrayList();
+        // fill with MIN_VALUE so we can fast-track
+        Arrays.fill(scores, Double.MIN_VALUE);
+
+        items = new CompactableLongArrayList(findInitialSize(count));
         heap = new DoubleHeapIndirectPriorityQueue(scores);
 
         // item lists are lazy-allocated
@@ -112,9 +117,14 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
          * then we deal with it based on whether we're oversized.
          */
         if (slot == items.size()) {
+            // we are still adding items
             items.add(item);
             scores[slot] = score;
         } else {
+            // we are reusing slots
+            if (score <= scores[heap.first()]) {
+                return; // the item won't beat anything else
+            }
             items.set(slot, item);
             scores[slot] = score;
         }
