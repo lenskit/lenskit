@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.AbstractObjectBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.AbstractObjectSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
@@ -424,7 +423,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
     }
 
-    private class EntryIter extends AbstractObjectBidirectionalIterator<Entry> {
+    private class EntryIter implements ObjectBidirectionalIterator<Entry> {
         IntBidirectionalIterator iter;
 
         public EntryIter() {
