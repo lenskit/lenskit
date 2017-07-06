@@ -49,8 +49,8 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SLIMModelRecommenderBuildTest {
-    private static final int userNum = 2000; // number of total user
-    private static final int itemNum = 2000; // upper bound of item id (exclusive)
+    private static final int userNum = 200; // number of total user
+    private static final int itemNum = 200; // upper bound of item id (exclusive)
     private Long2DoubleMap y;
     private Long2ObjectMap<Long2DoubleMap> data;
     private Long2DoubleMap weights;
@@ -142,12 +142,12 @@ public class SLIMModelRecommenderBuildTest {
                 .to(SLIMItemScorer.class);
         config.bind(StoppingCondition.class)
                 .to(ThresholdStoppingCondition.class);
-        config.bind(ItemVectorNormalizer.class)
-                .to(DefaultItemVectorNormalizer.class);
+        config.bind(UserVectorNormalizer.class)
+                .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
-                .to(IdentityVectorNormalizer.class);
-        config.set(IterationCount.class)
-                .to(50);
+                .to(UnitVectorNormalizer.class);
+//        config.set(IterationCount.class)
+//                .to(10);
         config.set(SLIMModelSize.class)
                 .to(100);
         config.set(MinCommonUsers.class)
@@ -223,34 +223,33 @@ public class SLIMModelRecommenderBuildTest {
     public void testSLIMScorer() {
         LenskitRecommenderEngine engine = makeEngine();
         Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
-        Random random = new Random();
-        int size = dataTrans.keySet().size();
-        int randomUser = random.nextInt(size);
-        Iterator<Long> iter = dataTrans.keySet().iterator();
-        long user = iter.next();
-        for (int i = 1; i < randomUser; i++) {
-            user = iter.next();
-        }
 
-        Long2DoubleMap userRatings = dataTrans.get(user);
-        try (Recommender rec = engine.createRecommender(dao)) {
-            ItemScorer scorer = rec.getItemScorer();
-            assertThat(scorer, notNullValue());
-            ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(data.keySet()));
-            double rmse = 0.0;
-            for (long item : userRatings.keySet()) {
-                Result r = details.get(item);
-                assertThat(r, notNullValue());
-                double actual = userRatings.get(item);
-                double prediction = r.getScore();
-                rmse += Math.pow((actual - prediction),2);
-                System.out.println("user actual rating and prediction: " + actual + "   " + prediction);
+        Iterator<Long> iter = dataTrans.keySet().iterator();
+
+        while (iter.hasNext()) {
+            final long user = iter.next();
+            Long2DoubleMap userRatings = dataTrans.get(user);
+            try (Recommender rec = engine.createRecommender(dao)) {
+                ItemScorer scorer = rec.getItemScorer();
+                assertThat(scorer, notNullValue());
+                ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(userRatings.keySet()));
+                double rmse = 0.0;
+                for (long item : userRatings.keySet()) {
+                    Result r = details.get(item);
+                    assertThat(r, notNullValue());
+                    double actual = userRatings.get(item);
+                    double prediction = r.getScore();
+                    rmse += Math.pow((actual - prediction),2);
+                    System.out.println("user " + user + " item " + item + ": actual rating and prediction: " + actual + "   " + prediction);
+                }
+
+                rmse /= userRatings.keySet().size();
+                rmse = Math.sqrt(rmse);
+                System.out.println("rmse is: " + rmse);
             }
 
-            rmse /= userRatings.keySet().size();
-            rmse = Math.sqrt(rmse);
-            System.out.println("rmse is: " + rmse);
         }
+
 
     }
 

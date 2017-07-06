@@ -92,6 +92,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
         double lossDiff = Double.POSITIVE_INFINITY;
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
         int k = 0;
+        // TODO fix controller to use ThresholdStoppingCondition and iteration count
         while (controller.keepTraining(lossDiff)) {
             LongIterator items = trainingDataMatrix.keySet().iterator();
             while (items.hasNext()) {
@@ -157,10 +158,10 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
 
         Long2DoubleMap residuals = computeResiduals(labels, trainingDataMatrix, weights);
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
-        double[] loss = {0.0, 0.0};
-        double lossDiff = Double.POSITIVE_INFINITY;
-        int k = 0;
-        while (controller.keepTraining(lossDiff)) {
+
+        double lossValue = Double.POSITIVE_INFINITY;
+
+        while (controller.keepTraining(lossValue)) {
             LongIterator items = trainingDataMatrix.keySet().iterator();
             // one round of coordinate descent update
             while (items.hasNext()) {
@@ -177,14 +178,11 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
                 double weightUpdated = updateWeight(itemXj, dotProdOfXjY, dotProdsOfXjXks, nonzeroWeights, lambda, beta);
                 weights.put(j, weightUpdated);
                 residuals = updateResiduals(residuals, itemXj, weightToUpdate, weightUpdated);
-                loss[k%2] = computeLossFunction(residuals, weights);
             }
 
-            k++;
-//            lossDiff = Math.abs(loss[0] - loss[1]);
-            lossDiff = computeLossFunction(residuals, weights);
-//            logger.debug("{}th iteration and loss function reduced to {} and {} \n and weights is {}", k, loss[0], loss[1], weights);
-            logger.info("train item {}: {}th round iteration and loss function reduced to {} \n",itemYId, k, lossDiff);
+            lossValue = computeLossFunction(residuals, weights);
+            int iterationCount = controller.getIterationCount();
+            logger.debug("train item {}: {}th round iteration and loss function reduced to {} \n",itemYId, iterationCount, lossValue);
         }
         return LongUtils.frozenMap(weights);
     }

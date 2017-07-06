@@ -21,11 +21,17 @@
 package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
+import org.lenskit.transform.normalize.UserVectorNormalizer;
+import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -46,13 +52,17 @@ public class SLIMItemScorer extends AbstractItemScorer {
 
     protected final SLIMModel model;
     private final RatingVectorPDAO rvDAO;
+    @Nonnull
+    private final UserVectorNormalizer normalizer;
 
 
     @Inject
     public SLIMItemScorer(SLIMModel m,
-                          RatingVectorPDAO dao) {
+                          RatingVectorPDAO dao,
+                          UserVectorNormalizer normlzr) {
         model = m;
         rvDAO = dao;
+        normalizer = normlzr;
     }
 
     /**
@@ -64,13 +74,29 @@ public class SLIMItemScorer extends AbstractItemScorer {
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
         logger.debug("scoring {} items for user {} with details", items.size(), user);
         Long2DoubleMap ratings = Long2DoubleSortedArrayMap.create(rvDAO.userRatingVector(user));
+        InvertibleFunction<Long2DoubleMap, Long2DoubleMap> transform = normalizer.makeTransformation(user, ratings);
+        Long2DoubleMap ratingNormalized = transform.apply(ratings);
+        Long2DoubleMap resultsNormalized = new Long2DoubleOpenHashMap(items.size());
         List<Result> results = new ArrayList<>();
 
-        for (long item: items) {
+        LongIterator iter = LongIterators.asLongIterator(items.iterator());
+        while (iter.hasNext()) {
+            final long item = iter.nextLong();
             Long2DoubleMap weight = model.getWeights(item);
-            double score = Vectors.dotProduct(ratings, weight);
+            double score = Vectors.dotProduct(ratingNormalized, weight);
+            resultsNormalized.put(item, score);
+        }
+
+        Long2DoubleMap resultsUnNormalized = transform.unapply(resultsNormalized);
+
+        ObjectIterator<Long2DoubleMap.Entry> resultsIter = resultsUnNormalized.long2DoubleEntrySet().iterator();
+        while(resultsIter.hasNext()) {
+            Long2DoubleMap.Entry entry = resultsIter.next();
+            final long item = entry.getLongKey();
+            final double score = entry.getDoubleValue();
             results.add(Results.create(item, score));
         }
+
         return Results.newResultMap(results);
     }
 

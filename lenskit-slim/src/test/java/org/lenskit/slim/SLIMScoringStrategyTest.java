@@ -22,6 +22,7 @@ package org.lenskit.slim;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -166,7 +167,7 @@ public class SLIMScoringStrategyTest {
     public void testTrainedWeights() {
 
 //        StopWatch timer = new StopWatch();
-        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, new IterationCountStoppingCondition(50));
+        SLIMUpdateParameters parameters = new SLIMUpdateParameters(3, 0.2, new ThresholdStoppingCondition(1.0e-3, 10));
 
         // Naive update
 //        timer.start();
@@ -191,9 +192,9 @@ public class SLIMScoringStrategyTest {
             Map.Entry<Long,Double> entry = iter.next();
             long id = entry.getKey();
             double value = entry.getValue();
-            assertThat(value, closeTo(predictedW.get(id), 1));
-            assertThat(value, closeTo(predictedWCov.get(id), 1));
-            assertThat(value, closeTo(predictedWCovPreComPuted.get(id), 1));
+            assertThat(value, closeTo(predictedW.get(id), 0.5));
+            assertThat(value, closeTo(predictedWCov.get(id), 0.5));
+            assertThat(value, closeTo(predictedWCovPreComPuted.get(id), 0.5));
         }
 
     }
