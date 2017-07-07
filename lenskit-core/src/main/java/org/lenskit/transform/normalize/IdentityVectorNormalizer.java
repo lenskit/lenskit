@@ -33,7 +33,7 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-public class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
+public final class IdentityVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -6708410675383598691L;
 
     private static final InvertibleFunction<Long2DoubleMap,Long2DoubleMap> IDENTITY_TRANSFORM = new VectorTransformation() {
@@ -52,5 +52,15 @@ public class IdentityVectorNormalizer extends AbstractVectorNormalizer implement
     @Override
     public InvertibleFunction<Long2DoubleMap,Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
         return IDENTITY_TRANSFORM;
+    }
+
+    @Override
+    public int hashCode() {
+        return IdentityVectorNormalizer.class.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof IdentityVectorNormalizer;
     }
 }

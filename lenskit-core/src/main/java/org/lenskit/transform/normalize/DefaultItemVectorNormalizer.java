@@ -57,4 +57,12 @@ public class DefaultItemVectorNormalizer implements ItemVectorNormalizer, Serial
     public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(long itemId, Long2DoubleMap vector) {
         return delegate.makeTransformation(vector);
     }
+
+    /**
+     * Get the underlying vector normalizer.
+     * @return The underlying vector normalizer.
+     */
+    public VectorNormalizer getVectorNormalizer() {
+        return delegate;
+    }
 }
