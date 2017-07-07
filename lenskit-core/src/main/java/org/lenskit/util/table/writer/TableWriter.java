@@ -26,7 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import javax.annotation.concurrent.ThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Write rows to a table.

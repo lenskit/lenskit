@@ -24,7 +24,7 @@ import org.lenskit.inject.Shareable;
 import org.lenskit.knn.MinNeighbors;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.List;

@@ -33,7 +33,7 @@ import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.Serializable;

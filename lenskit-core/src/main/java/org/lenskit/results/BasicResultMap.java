@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.objects.*;
 import org.lenskit.api.Result;
 import org.lenskit.util.keys.KeyedObjectMap;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;

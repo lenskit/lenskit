@@ -27,7 +27,7 @@ import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 
-import javax.annotation.concurrent.ThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 import javax.inject.Inject;
 import java.util.List;
 

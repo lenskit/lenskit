@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.MoreArrays;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.util.*;
 

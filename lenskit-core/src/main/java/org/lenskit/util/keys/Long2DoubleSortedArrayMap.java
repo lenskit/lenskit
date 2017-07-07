@@ -34,7 +34,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Scalars;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;

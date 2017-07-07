@@ -22,7 +22,7 @@ package org.lenskit.util.parallel;
 
 /**
  * Interface for objects that can report at runtime whether they are thread-safe.  Classes that are known always to be
- * thread-safe should carry the {@link javax.annotation.concurrent.Immutable} or {@link javax.annotation.concurrent.ThreadSafe}
+ * thread-safe should carry the {@link net.jcip.annotations.Immutable} or {@link net.jcip.annotations.ThreadSafe}
  * annotation; this is primarily intended for wrapper classes whose thread safety depends on the thread safety of their
  * delegates.
  */
