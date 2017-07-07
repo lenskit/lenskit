@@ -89,9 +89,9 @@ public class SLIMItemScorer extends AbstractItemScorer {
 //            System.out.println("score class user " + user + " item " + item + ": actual rating, normalized rating and prediction: " + ratings.get(item) + "  " + ratingNormalized.get(item) + "  " + score);
         }
 
-        Long2DoubleMap resultsNormalizedReversed = transform.unapply(resultsNormalized);
+        Long2DoubleMap resultsReversed = transform.unapply(resultsNormalized);
 
-        ObjectIterator<Long2DoubleMap.Entry> resultsIter = resultsNormalizedReversed.long2DoubleEntrySet().iterator();
+        ObjectIterator<Long2DoubleMap.Entry> resultsIter = resultsReversed.long2DoubleEntrySet().iterator();
         while(resultsIter.hasNext()) {
             Long2DoubleMap.Entry entry = resultsIter.next();
             final long item = entry.getLongKey();

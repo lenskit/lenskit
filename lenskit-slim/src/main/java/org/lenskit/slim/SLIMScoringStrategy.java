@@ -23,6 +23,7 @@ package org.lenskit.slim;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ import static org.lenskit.util.math.Vectors.add;
 
 /**
  * Linear regression which minimize following loss function
- * 1/2*||a_j - A*w_j||^2 + beta/2*||wj||^2 + lambda*||w_j||
+ * 1/2*||a_j - A*w_j||^2 + beta/2*||w_j||^2 + lambda*||w_j||
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -73,29 +74,21 @@ public abstract class SLIMScoringStrategy {
         return add(labels, Vectors.multiplyScalar(predictions,-1.0));
     }
 
-    /**
-     * learning process
-     *
-     * @param labels label vector
-     * @param trainingDataMatrix observations matrix row: user ratings for different items, column: item ratings of different users
-     * @return a trained weight vector
-     */
-    public abstract Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix);
 
     /**
      * learning process passed in pre-computed inner-products to speed up learning iterations
      *
-     * @param labels label vector
+     * @param labels The label vector
      * @param trainingDataMatrix Map of Item IDs to item rating vectors.
      * @param covM Map of Item IDs to item-item inner-products vectors
-     * @param item item ID of label vector {@code labels}
+     * @param item item ID of The label vector {@code labels}
      * @return a trained weight vector
      */
     public abstract Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix, Long2ObjectMap<Long2DoubleMap> covM, long item);
 
 
     /**
-     * optimized computation of updating residual after one element of weight vector changed
+     * optimized computation of updating residual after one element of the weight vector changed
      *
      * @param r original residual vector
      * @param column one column of training matrix whose index equal to index of weight that is just updated
@@ -118,12 +111,16 @@ public abstract class SLIMScoringStrategy {
      */
     public Long2DoubleMap predict(Long2ObjectMap<Long2DoubleMap> testData, Long2DoubleMap weights) {
         Long2DoubleMap predictions = new Long2DoubleOpenHashMap();
-        for (Map.Entry<Long, Long2DoubleMap> column : testData.entrySet()) {
-            long key = column.getKey();
-            Long2DoubleMap value = column.getValue();
+
+        ObjectIterator<Long2ObjectMap.Entry<Long2DoubleMap>> iter = testData.long2ObjectEntrySet().iterator();
+        while (iter.hasNext()) {
+            Long2ObjectMap.Entry<Long2DoubleMap> entry = iter.next();
+            final long key = entry.getLongKey();
+            Long2DoubleMap value = entry.getValue();
             Long2DoubleMap vector = Vectors.multiplyScalar(value, weights.get(key));
             predictions = add(predictions, vector);
         }
+
         return predictions;
     }
 

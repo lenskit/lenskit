@@ -46,7 +46,7 @@ public final class NaiveUpdate extends SLIMScoringStrategy {
 
     /**
      * Naive update for one element of weight vector in a circle of coordinate descent
-     * Slight different from formula (7) (8) in order to support non-normalized rating vector
+     * Slight different from formula (7) (8) in order to support non-unit-normalized rating vector
      *
      * @param colXj column of Xj
      * @param weightToUpdate an element of weight vector needs to update
@@ -61,27 +61,27 @@ public final class NaiveUpdate extends SLIMScoringStrategy {
         return softThresholding(firstTerm, lambda) / (norm2OfXj + beta);
     }
 
+
     /**
      * Training process of SLIM using naive coordinate descent update
      *
-     * @param labels label vector
+     * @param labels The label vector
      * @param trainingDataMatrix Map of item IDs to item rating vectors.
-     * @return weight vectors learned
+     * @return weight vector learned
      */
+
     @Override
-    public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix) {
+    public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix, Long2ObjectMap<Long2DoubleMap> covM, long itemYId) {
         Long2DoubleMap weights = new Long2DoubleOpenHashMap();
 
         final double lambda = updateParameters.getLambda();
         final double beta = updateParameters.getBeta();
 
-
         Long2DoubleMap residuals = computeResiduals(labels, trainingDataMatrix, weights);
-        double[] loss = {0.0, 0.0};
-        double lossDiff = Double.POSITIVE_INFINITY;
+        double lossValue = Double.POSITIVE_INFINITY;
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
-        int k = 0;
-        while (controller.keepTraining(lossDiff)) {
+
+        while (controller.keepTraining(lossValue)) {
             LongIterator items = trainingDataMatrix.keySet().iterator();
             while (items.hasNext()) {
                 long j = items.nextLong();
@@ -90,18 +90,12 @@ public final class NaiveUpdate extends SLIMScoringStrategy {
                 double weightUpdated = updateWeight(column, weightToUpdate, residuals, lambda, beta);
                 weights.put(j, weightUpdated);
                 residuals = updateResiduals(residuals, column, weightToUpdate, weightUpdated);
-                loss[k%2] = computeLossFunction(residuals, weights);
             }
-            k++;
-            lossDiff = Math.abs(loss[0] - loss[1]);
-            logger.debug("loss function reduced to {}", loss[0]);
+            lossValue = computeLossFunction(residuals, weights);
+            int iterationCount = controller.getIterationCount();
+            logger.debug("train item {}: {}th round iteration and loss function reduced to {} \n",itemYId, iterationCount, lossValue);
         }
         return LongUtils.frozenMap(weights);
-    }
-
-    @Override
-    public Long2DoubleMap fit(Long2DoubleMap labels, Long2ObjectMap<Long2DoubleMap> trainingDataMatrix, Long2ObjectMap<Long2DoubleMap> covM, long item) {
-        return fit(labels, trainingDataMatrix);
     }
 
 }

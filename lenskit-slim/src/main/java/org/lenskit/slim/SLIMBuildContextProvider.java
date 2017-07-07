@@ -45,7 +45,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * SLIM model build context provider
+ * SLIM model build context provider using all item ratings as neighbors to train SLIM model
  * Build the necessary context for SLIM model
  * including user-item rating map, item neighbors map, item-item inner-products map and users' rated items
  *
@@ -54,27 +54,15 @@ import java.util.Map;
 public class SLIMBuildContextProvider implements Provider<SLIMBuildContext> {
     private static final Logger logger = LoggerFactory.getLogger(SLIMBuildContextProvider.class);
 
-
     private final RatingVectorPDAO rvDAO;
     private final UserVectorNormalizer normalizer;
-    private final VectorSimilarity itemSimilarity;
-    private final Threshold threshold;
-    private final int minCommonUsers;
-    private final int modelSize;
+
 
     @Inject
     public SLIMBuildContextProvider(@Transient RatingVectorPDAO dao,
-                                    @Transient UserVectorNormalizer normlzr,
-                                    @Transient VectorSimilarity sim,
-                                    @Transient Threshold threshld,
-                                    @MinCommonUsers int minCI,
-                                    @SLIMModelSize int size) {
+                                    @Transient UserVectorNormalizer normlzr) {
         this.rvDAO = dao;
         normalizer = normlzr;
-        itemSimilarity = sim;
-        threshold = threshld;
-        minCommonUsers = minCI;
-        modelSize = size;
 
     }
 
@@ -194,108 +182,14 @@ public class SLIMBuildContextProvider implements Provider<SLIMBuildContext> {
      * @param itemNeighbors mapping from items ids to sets of similar items (to be filled)
      */
     private void buildItemNeighbors(Long2ObjectMap<Long2DoubleSortedMap> itemVectors, Long2ObjectMap<LongSortedSet> itemNeighbors) {
-        logger.info("building item-item model for {} items", itemVectors.keySet().size());
-        logger.debug("using similarity function {}", itemSimilarity);
-        logger.debug("similarity function is {}",
-                itemSimilarity.isSparse() ? "sparse" : "non-sparse");
-        logger.debug("similarity function is {}",
-                itemSimilarity.isSymmetric() ? "symmetric" : "non-symmetric");
-
         LongSortedSet allItems = LongUtils.frozenSet(itemVectors.keySet());
 
-        Long2ObjectMap<Long2DoubleAccumulator> rows = makeAccumulators(allItems);
-
-        final int nitems = allItems.size();
-        LongIterator outer = allItems.iterator();
-
-        ProgressLogger progress = ProgressLogger.create(logger)
-                .setCount(nitems)
-                .setLabel("item-item model build")
-                .setWindow(50)
-                .start();
-        int ndone = 0;
-        int npairs = 0;
-        OUTER: while (outer.hasNext()) {
-            ndone += 1;
-            final long itemId1 = outer.nextLong();
-            if (logger.isTraceEnabled()) {
-                logger.trace("computing similarities for item {} ({} of {})",
-                        itemId1, ndone, nitems);
-            }
-            Long2DoubleSortedMap vec1 = LongUtils.frozenMap(itemVectors.get(itemId1));
-            if (vec1.size() < minCommonUsers) {
-                // if it doesn't have enough users, it can't have enough common users
-                if (logger.isTraceEnabled()) {
-                    logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
-                }
-                progress.advance();
-                continue OUTER;
-            }
-
-            LongIterator itemIter = itemSimilarity.isSymmetric() ? allItems.iterator(itemId1) : allItems.iterator();
-
-            Long2DoubleAccumulator row = rows.get(itemId1);
-            INNER: while (itemIter.hasNext()) {
-                long itemId2 = itemIter.nextLong();
-                if (itemId1 != itemId2) {
-                    Long2DoubleSortedMap vec2 = LongUtils.frozenMap(itemVectors.get(itemId2));
-                    if (!LongUtils.hasNCommonItems(vec1.keySet(), vec2.keySet(), minCommonUsers)) {
-                        // items have insufficient users in common, skip them
-                        continue INNER;
-                    }
-
-                    double sim = itemSimilarity.similarity(vec1, vec2);
-                    if (threshold.retain(sim)) {
-                        row.put(itemId2, sim);
-                        npairs += 1;
-                        if (itemSimilarity.isSymmetric()) {
-                            rows.get(itemId2).put(itemId1, sim);
-                            npairs += 1;
-                        }
-                    }
-                }
-            }
-
-            progress.advance();
-        }
-        progress.finish();
-        logger.info("built model of {} similarities for {} items in {}",
-                npairs, ndone, progress.elapsedTime());
-
-        Long2ObjectMap<LongSet> neighborSets = finishRows(rows);
-
-        //frozen each set and fill up itemNeighbors
-        Iterator<Map.Entry<Long,LongSet>> itemNeighborIter = neighborSets.entrySet().iterator();
-        while (itemNeighborIter.hasNext()) {
-            Map.Entry<Long,LongSet> entry = itemNeighborIter.next();
-            long item = entry.getKey();
-            LongSortedSet value = LongUtils.frozenSet(entry.getValue());
-            itemNeighbors.put(item, value);
-            itemNeighborIter.remove();
-        }
-    }
-
-    private Long2ObjectMap<Long2DoubleAccumulator> makeAccumulators(LongSet items) {
-        Long2ObjectMap<Long2DoubleAccumulator> rows = new Long2ObjectOpenHashMap<>(items.size());
-        LongIterator iter = items.iterator();
+        LongIterator iter = allItems.iterator();
         while (iter.hasNext()) {
-            long item = iter.nextLong();
-            Long2DoubleAccumulator accum;
-            if (modelSize == 0) {
-                accum = new UnlimitedLong2DoubleAccumulator();
-            } else {
-                accum = new TopNLong2DoubleAccumulator(modelSize);
-            }
-            rows.put(item, accum);
+            final long item = iter.nextLong();
+            LongOpenHashSet itemNgbrCopied = new LongOpenHashSet(allItems);
+            itemNgbrCopied.remove(item);
+            itemNeighbors.put(item, LongUtils.frozenSet(itemNgbrCopied));
         }
-        return rows;
-    }
-
-    private Long2ObjectMap<LongSet> finishRows(Long2ObjectMap<Long2DoubleAccumulator> rows) {
-        Long2ObjectMap<LongSet> results = new Long2ObjectOpenHashMap<>(rows.size());
-        for (Long2ObjectMap.Entry<Long2DoubleAccumulator> e: rows.long2ObjectEntrySet()) {
-            results.put(e.getLongKey(), e.getValue().finishSet());
-        }
-        return results;
     }
 }

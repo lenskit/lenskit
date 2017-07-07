@@ -34,6 +34,7 @@ import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
 
 import org.lenskit.knn.item.MinCommonUsers;
+import org.lenskit.knn.item.ModelSize;
 import org.lenskit.transform.normalize.*;
 
 import org.lenskit.util.math.Vectors;
@@ -71,7 +72,6 @@ public class SLIMModelRecommenderBuildTest {
             weights.put(w, maxW*rnd.nextDouble());
         }
 
-        //logger.info("original weights is {} and size is {}", weights, weights.size());
         return weights;
     }
 
@@ -86,7 +86,6 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> simulatedData = new Long2ObjectOpenHashMap<>();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        //int USER_NUM = 200; // number of total user
         int maxRatingNum = 100; // each user's max possible rating number (less than maxItemId)
         int maxUserId = 5000; // greater than USER_NUM (userId not necessarily ranging from 0 to USER_NUM)
         double ratingRange = 5.0;
@@ -96,7 +95,7 @@ public class SLIMModelRecommenderBuildTest {
 
             long userId = rndGen.nextInt(maxUserId); // produce random user Id
             int userRatingNum = rndGen.nextInt(maxRatingNum) + 1; // produce random total rating number of a user (non-empty)
-//            int userRatingNum = ITEM_NUM;  // non-sparse rating matrix
+//            int userRatingNum = ITEM_NUM;  // non-sparse rating matrix for user rating all items
             Long2DoubleMap userRatings = new Long2DoubleOpenHashMap();
             int i = 0;
             while (i < userRatingNum) {
@@ -113,7 +112,6 @@ public class SLIMModelRecommenderBuildTest {
         }
 
         simulatedData.put((long)maxUserId, labels); // put simulated label into last row
-        //logger.info("rating matrix is {}", simulatedData);
         return simulatedData;
     }
 
@@ -150,12 +148,12 @@ public class SLIMModelRecommenderBuildTest {
                 .to(IdentityVectorNormalizer.class);
 //        config.set(IterationCount.class)
 //                .to(10);
-        config.set(SLIMModelSize.class)
-                .to(0);
+        config.set(ModelSize.class)
+                .to(100);
         config.set(MinCommonUsers.class)
                 .to(2);
         config.set(StoppingThreshold.class)
-                .to(1.0e-5);
+                .to(1.0e-2);
 
         return LenskitRecommenderEngine.build(config);
     }
@@ -233,25 +231,25 @@ public class SLIMModelRecommenderBuildTest {
             try (Recommender rec = engine.createRecommender(dao)) {
                 ItemScorer scorer = rec.getItemScorer();
                 assertThat(scorer, notNullValue());
-                ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(userRatings.keySet()));
-                double rmse = 0.0;
-                for (long item : userRatings.keySet()) {
-                    Result r = details.get(item);
-                    assertThat(r, notNullValue());
-                    double actual = userRatings.get(item);
-                    double prediction = r.getScore();
-                    rmse += Math.pow((actual - prediction),2);
-                    System.out.println("user " + user + " item " + item + ": actual rating and prediction: " + actual + "   " + prediction);
-                }
+//                ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(userRatings.keySet()));
+//                double rmse = 0.0;
+//                for (long item : userRatings.keySet()) {
+//                    Result r = details.get(item);
+//                    assertThat(r, notNullValue());
+//                    double actual = userRatings.get(item);
+//                    double prediction = r.getScore();
+//                    rmse += Math.pow((actual - prediction),2);
+//                    System.out.println("user " + user + " item " + item + ": actual rating and prediction: " + actual + "   " + prediction);
+//                }
 
-                rmse /= userRatings.keySet().size();
-                rmse = Math.sqrt(rmse);
+//                rmse /= userRatings.keySet().size();
+//                rmse = Math.sqrt(rmse);
 //                Map<Long,Double> scoreMap = details.scoreMap();
 //                System.out.println("user " + user + " actual ratings in test class: ");
 //                System.out.println(LongUtils.frozenMap(userRatings));
 //                System.out.println("user " + user + " actual prediction in test class: ");
 //                System.out.println(LongUtils.frozenMap(scoreMap));
-                System.out.println("rmse is: " + rmse);
+//                System.out.println("rmse is: " + rmse);
             }
 
         }

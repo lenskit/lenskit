@@ -47,8 +47,8 @@ public class SLIMScoringStrategyTest {
     private Long2ObjectMap<Long2DoubleMap> data;
     private static Long2DoubleMap weights;
     private Long2ObjectMap<Long2DoubleMap> innerProducts;
-    private static final int userNum = 100; // number of total user
-    private static final int itemNum = 20; // upper bound of item id (exclusive)
+    private static final int USER_NUM = 100; // number of total user
+    private static final int ITEM_NUM = 20; // upper bound of item id (exclusive)
 
 
     /**
@@ -80,13 +80,12 @@ public class SLIMScoringStrategyTest {
         Long2ObjectMap<Long2DoubleMap> simulatedData = new Long2ObjectOpenHashMap<>();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        //int userNum = 200; // number of total user
         int maxRatingNum = 10; // each user's max possible rating number (less than maxItemId)
-        int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
+        int maxUserId = 5000; // greater than USER_NUM (userId not necessarily ranging from 0 to USER_NUM)
         double ratingRange = 5.0;
 
         int size = 0;
-        while (size < userNum) {
+        while (size < USER_NUM) {
 
             long userId = rndGen.nextInt(maxUserId); // produce random user Id
             int userRatingNum = rndGen.nextInt(maxRatingNum) + 1; // produce random total rating number of a user
@@ -105,7 +104,6 @@ public class SLIMScoringStrategyTest {
             size = simulatedData.keySet().size();
         }
         simulatedData.put((long)maxUserId, labels); // put simulated label into last row
-        //logger.info("rating matrix is {}", simulatedData);
         return simulatedData;
     }
 
@@ -153,14 +151,14 @@ public class SLIMScoringStrategyTest {
     @Before
     public void buildModel() {
         int maxWeight = 5;
-        weights = createWeights(itemNum, maxWeight);
-        Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(itemNum, weights));
+        weights = createWeights(ITEM_NUM, maxWeight);
+        Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(ITEM_NUM, weights));
         LongOpenHashBigSet userIdSet = new LongOpenHashBigSet(dataWithLabels.keySet());
         long maxUserId = Collections.max(userIdSet);
         y = new Long2DoubleOpenHashMap(dataWithLabels.get(maxUserId));
         dataWithLabels.remove(maxUserId);
         data = Vectors.transposeMap(dataWithLabels);
-        innerProducts = createInnerProducts(data, y, itemNum);
+        innerProducts = createInnerProducts(data, y, ITEM_NUM);
     }
 
     @Test
@@ -172,20 +170,14 @@ public class SLIMScoringStrategyTest {
         // Naive update
 //        timer.start();
         NaiveUpdate model = new NaiveUpdate(parameters);
-        Long2DoubleMap predictedW = model.fit(y, data);
+        Long2DoubleMap predictedW = model.fit(y, data, innerProducts, ITEM_NUM);
 //        timer.stop();
 
         // Covariance update
 //        timer.reset();
 //        timer.start();
         CovarianceUpdate modelCov = new CovarianceUpdate(parameters, Double.MIN_VALUE);
-        Long2DoubleMap predictedWCov = modelCov.fit(y, data);
-//        timer.stop();
-
-        // Covariance update with pre-compute inner-products
-//        timer.reset();
-//        timer.start();
-        Long2DoubleMap predictedWCovPreComPuted = modelCov.fit(y, data, innerProducts, itemNum);
+        Long2DoubleMap predictedWCov = modelCov.fit(y, data, innerProducts, ITEM_NUM);
 //        timer.stop();
         Iterator<Map.Entry<Long,Double>> iter = weights.entrySet().iterator();
         while(iter.hasNext()) {
@@ -194,7 +186,6 @@ public class SLIMScoringStrategyTest {
             double value = entry.getValue();
             assertThat(value, closeTo(predictedW.get(id), 0.5));
             assertThat(value, closeTo(predictedWCov.get(id), 0.5));
-            assertThat(value, closeTo(predictedWCovPreComPuted.get(id), 0.5));
         }
 
     }
@@ -205,7 +196,7 @@ public class SLIMScoringStrategyTest {
 
         //Naive update
         NaiveUpdate model = new NaiveUpdate(parameters);
-        Long2DoubleMap predictedW = model.fit(y, data);
+        Long2DoubleMap predictedW = model.fit(y, data, innerProducts, ITEM_NUM);
         Long2DoubleMap resBefore = model.computeResiduals(y, data, weights);
         Long2DoubleMap resAfter = model.computeResiduals(y, data, predictedW);
         double lossFunBefore = model.computeLossFunction(resBefore, weights);
@@ -213,24 +204,17 @@ public class SLIMScoringStrategyTest {
 
         //Covariance update
         CovarianceUpdate modelCov = new CovarianceUpdate(parameters, Double.MIN_VALUE);
-        Long2DoubleMap predictedWCov = modelCov.fit(y, data);
+        Long2DoubleMap predictedWCov = modelCov.fit(y, data, innerProducts, ITEM_NUM);
         Long2DoubleMap resCovBefore = modelCov.computeResiduals(y, data, weights);
         Long2DoubleMap resCovAfter = modelCov.computeResiduals(y, data, predictedWCov);
         double lossFunCovBefore = modelCov.computeLossFunction(resCovBefore, weights);
         double lossFunCovAfter = modelCov.computeLossFunction(resCovAfter, predictedWCov);
 
-        //Covariance update with pre-computed inner-products
-        Long2DoubleMap predictedWCovPreComputed = modelCov.fit(y, data, innerProducts, itemNum);
-        Long2DoubleMap resCovPreComputedAfter = modelCov.computeResiduals(y, data, predictedWCovPreComputed);
-        double lossFunCovPreComputedAfter = modelCov.computeLossFunction(resCovPreComputedAfter, predictedWCovPreComputed);
-
         assertThat(lossFunBefore, equalTo(lossFunCovBefore));
         assertThat(lossFunAfter, lessThan(lossFunBefore));
         assertThat(lossFunCovAfter, lessThan(lossFunCovBefore));
-        assertThat(lossFunCovPreComputedAfter, lessThan(lossFunCovBefore));
 
         assertThat(lossFunAfter, closeTo(lossFunCovAfter, 1.0e-5));
-        assertThat(lossFunCovAfter, closeTo(lossFunCovPreComputedAfter, 1.0e-5));
 
     }
 

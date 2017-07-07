@@ -53,9 +53,9 @@ public class SLIMModelProvider implements Provider<SLIMModel>{
         Long2ObjectMap<Long2DoubleMap> trainedWeight = new Long2ObjectOpenHashMap<>(1000);
         LongSortedSet items = buildContext.getItemUniverse();
         int size = items.size();
-        logger.info("total {} item need to be trained", size);
+        logger.debug("total {} item need to be trained", size);
         OUTER: for (long item : items) {
-            LongSet neighbors = LongUtils.frozenSet(buildContext.getItemNeighbors(item));
+            LongSortedSet neighbors = LongUtils.frozenSet(buildContext.getItemNeighbors(item));
             if (neighbors.isEmpty()) {
                 continue OUTER;
             }

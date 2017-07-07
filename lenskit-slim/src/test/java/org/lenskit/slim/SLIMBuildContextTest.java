@@ -32,12 +32,15 @@ import org.lenskit.data.entities.EntityFactory;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.data.ratings.StandardRatingVectorPDAO;
+import org.lenskit.knn.item.ItemVectorSimilarity;
+import org.lenskit.knn.item.model.*;
 import org.lenskit.similarity.CosineVectorSimilarity;
 import org.lenskit.similarity.VectorSimilarity;
 import org.lenskit.transform.normalize.*;
 import org.lenskit.util.collections.Long2DoubleAccumulator;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
+import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
 import org.lenskit.util.math.Vectors;
 
 import java.util.*;
@@ -49,12 +52,13 @@ import static org.junit.Assert.*;
 public class SLIMBuildContextTest {
     private DataAccessObject dao;
     private UserVectorNormalizer normalizer;
-    private VectorSimilarity itemSimilarity;
+    private ItemVectorSimilarity itemSimilarity;
     private Threshold threshold;
     private final int minCommonUsers = 1;
     private final int modelSize = 3;
     private SLIMBuildContextProvider contextProvider;
     private SLIMBuildContext context;
+    private SLIMBuildContext fsSLIMContext;
     private Long2ObjectMap<Long2DoubleMap> data;
 
     @Before
@@ -87,11 +91,16 @@ public class SLIMBuildContextTest {
         dao = source.get();
         RatingVectorPDAO rvPDAO = new StandardRatingVectorPDAO(dao);
         normalizer = new DefaultUserVectorNormalizer(new UnitVectorNormalizer());
-        itemSimilarity = new CosineVectorSimilarity();
+        // SLIMBuildContext using all items
+        context = new SLIMBuildContextProvider(rvPDAO, normalizer).get();
+
+        // FsSLIMBuildContext using similar items
+        itemSimilarity = new ItemVectorSimilarity(new CosineVectorSimilarity());
         threshold = new RealThreshold(0.0);
-        contextProvider = new SLIMBuildContextProvider( rvPDAO, normalizer, itemSimilarity,
-                                                        threshold, minCommonUsers, modelSize);
-        context = contextProvider.get();
+        ItemItemBuildContext iiBuildContext = new ItemItemBuildContextProvider(rvPDAO, normalizer).get();
+        NeighborIterationStrategy ngbrIterStrategy = new DefaultNeighborIterationStrategyProvider(itemSimilarity).get();
+        ItemItemModel itemItemModel = new ItemItemModelProvider(itemSimilarity, iiBuildContext, threshold, ngbrIterStrategy, minCommonUsers, modelSize).get();
+        fsSLIMContext = new FsSLIMBuildContextProvider(rvPDAO, normalizer, itemItemModel).get();
 
     }
 
@@ -100,16 +109,22 @@ public class SLIMBuildContextTest {
     public void testGetItemUniverse() {
         LongSortedSet allItems = context.getItemUniverse();
         assertThat(allItems, containsInAnyOrder(1L, 2L, 3L, 4L, 5L));
+
+        LongSortedSet allItemsFs = fsSLIMContext.getItemUniverse();
+        assertThat(allItemsFs, containsInAnyOrder(1L, 2L, 3L, 4L, 5L));
     }
 
     @Test
     public void testGetUserItems() {
         LongSortedSet allUsers = context.getAllUsers();
         assertThat(allUsers, containsInAnyOrder(1L,2L,3L,4L,5L,6L));
+        LongSortedSet allUsersFs = context.getAllUsers();
+        assertThat(allUsersFs, containsInAnyOrder(1L,2L,3L,4L,5L,6L));
         Long2ObjectMap<Long2DoubleMap> dataT = Vectors.transposeMap(data);
 
         for (long user : allUsers) {
             assertThat(dataT.get(user).keySet(), containsInAnyOrder(context.getUserItems(user).toArray()));
+            assertThat(dataT.get(user).keySet(), containsInAnyOrder(fsSLIMContext.getUserItems(user).toArray()));
         }
     }
 
@@ -131,6 +146,7 @@ public class SLIMBuildContextTest {
                 final double ratingNorm = rating / norm;
                 ratingsNorm.put(user, ratingNorm);
                 assertThat(ratingNorm, closeTo(context.getItemRatings(item).get(user), 1.0e-10));
+                assertThat(ratingNorm, closeTo(fsSLIMContext.getItemRatings(item).get(user), 1.0e-10));
             }
 //            Long2DoubleMap contextRatings = context.getItemRatings(item);
 //            Long2DoubleMap ratingsFinal = LongUtils.frozenMap(ratingsNorm);
@@ -177,6 +193,8 @@ public class SLIMBuildContextTest {
                     double actualDot = Vectors.dotProduct(ratingsNorm1, ratingsNorm2);
                     double contextDot = context.getInnerProducts(item1).get(item2);
                     assertThat(actualDot, closeTo(contextDot, 1.0e-10));
+                    double contextDotFs = fsSLIMContext.getInnerProducts(item1).get(item2);
+                    assertThat(actualDot, closeTo(contextDotFs, 1.0e-10));
 //                    System.out.println("actual and context computed inner-products for item pair {" + item1 + ", " + item2 + "} is: {" + actualDot + ", " + contextDot + "}");
                 }
             }
@@ -185,21 +203,45 @@ public class SLIMBuildContextTest {
 
     @Test
     public void testItemNeighbors() {
-        Iterator<Map.Entry<Long,Long2DoubleMap>> iter = data.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry<Long,Long2DoubleMap> e = iter.next();
-            long item = e.getKey();
-            Long2DoubleMap sim = context.getInnerProducts(item);
-            Long2DoubleAccumulator accum = new TopNLong2DoubleAccumulator(modelSize);
-            Iterator<Map.Entry<Long,Double>> simIter = sim.entrySet().iterator();
-            while (simIter.hasNext()) {
-                Map.Entry<Long,Double> entry = simIter.next();
-                long item2 = entry.getKey();
-                double value = entry.getValue();
-                accum.put(item2, value);
+        LongIterator iter1 = data.keySet().iterator();
+        while (iter1.hasNext()) {
+            long item1 = iter1.nextLong();
+            LongOpenHashSet neighbors = new LongOpenHashSet();
+            LongIterator iter2 = data.keySet().iterator();
+            while (iter2.hasNext()) {
+                long item2 = iter2.nextLong();
+                if (item1 != item2) neighbors.add(item2);
             }
-            LongSet neighbors = accum.finishSet();
-            assertThat(context.getItemNeighbors(item), containsInAnyOrder(neighbors.toArray()));
+            assertThat(context.getItemNeighbors(item1), containsInAnyOrder(neighbors.toArray()));
         }
     }
+
+    @Test
+    public void testItemNeighborsFsSLIM() {
+        Iterator<Map.Entry<Long,Long2DoubleMap>> iter1 = data.entrySet().iterator();
+
+        while (iter1.hasNext()) {
+            Map.Entry<Long,Long2DoubleMap> entry1 = iter1.next();
+            long item1 = entry1.getKey();
+            Long2DoubleMap itemRatings1 = fsSLIMContext.getItemRatings(item1);
+            Long2DoubleAccumulator accum = new TopNLong2DoubleAccumulator(modelSize);
+
+            Iterator<Map.Entry<Long,Long2DoubleMap>> iter2 = data.entrySet().iterator();
+            while (iter2.hasNext()) {
+                Map.Entry<Long,Long2DoubleMap> entry2 = iter2.next();
+                long item2 = entry2.getKey();
+                if (item1 != item2) {
+                    Long2DoubleMap itemRatings2 = fsSLIMContext.getItemRatings(item2);
+                    if (LongUtils.hasNCommonItems(LongUtils.frozenSet(itemRatings1.keySet()), LongUtils.frozenSet(itemRatings2.keySet()), minCommonUsers)) {
+                        double similarity = Vectors.dotProduct(itemRatings1, itemRatings2) / (Vectors.euclideanNorm(itemRatings1) * Vectors.euclideanNorm(itemRatings2));
+                        accum.put(item2, similarity);
+                    }
+                }
+            }
+
+            LongSet neighbors = accum.finishSet();
+            assertThat(fsSLIMContext.getItemNeighbors(item1), containsInAnyOrder(neighbors.toArray()));
+        }
+    }
+
 }

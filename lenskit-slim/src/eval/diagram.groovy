@@ -21,14 +21,14 @@
 
 import org.grouplens.lenskit.iterative.IterationCount
 import org.lenskit.api.ItemScorer
-import org.lenskit.slim.SLIMModelSize
-import org.lenskit.slim.SLIMScorer
+import org.lenskit.knn.item.ModelSize
+import org.lenskit.slim.SLIMItemScorer
 
 dumpGraph {
     output "${config.analysisDir}/slim.dot"
     algorithm {
-        bind ItemScorer to SLIMScorer
+        bind ItemScorer to SLIMItemScorer
         set IterationCount to 50
-        set SLIMModelSize to 20
+        set ModelSize to 100
     }
 }

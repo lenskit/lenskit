@@ -27,14 +27,13 @@ import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Map;
 
 /**
  * Create a data context used to train slim model
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@DefaultProvider(SLIMBuildContextProvider.class)
+@DefaultProvider(FsSLIMBuildContextProvider.class)
 public class SLIMBuildContext implements Serializable {
     private static final long serialVersionUID = 1L;
 
