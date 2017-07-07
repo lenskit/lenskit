@@ -160,6 +160,8 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
         TrainingLoopController controller = updateParameters.getTrainingLoopController();
 
         double lossValue = Double.POSITIVE_INFINITY;
+//        double lossValue = computeLossFunction(residuals, weights);
+//        System.out.println("initial loss is: " + lossValue);
 
         while (controller.keepTraining(lossValue)) {
             LongIterator items = trainingDataMatrix.keySet().iterator();
@@ -183,6 +185,7 @@ public final class CovarianceUpdate extends SLIMScoringStrategy implements Seria
             lossValue = computeLossFunction(residuals, weights);
             int iterationCount = controller.getIterationCount();
             logger.debug("train item {}: {}th round iteration and loss function reduced to {} \n",itemYId, iterationCount, lossValue);
+//            System.out.println("train item " + itemYId + ": " + iterationCount + "th round iteration and loss function reduced to " + lossValue);
         }
         return LongUtils.frozenMap(weights);
     }

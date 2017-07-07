@@ -49,8 +49,8 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SLIMModelRecommenderBuildTest {
-    private static final int userNum = 200; // number of total user
-    private static final int itemNum = 200; // upper bound of item id (exclusive)
+    private static final int USER_NUM = 200; // number of total user
+    private static final int ITEM_NUM = 100; // upper bound of item id (exclusive)
     private Long2DoubleMap y;
     private Long2ObjectMap<Long2DoubleMap> data;
     private Long2DoubleMap weights;
@@ -86,16 +86,17 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> simulatedData = new Long2ObjectOpenHashMap<>();
         Long2DoubleMap labels = new Long2DoubleOpenHashMap();
 
-        //int userNum = 200; // number of total user
+        //int USER_NUM = 200; // number of total user
         int maxRatingNum = 100; // each user's max possible rating number (less than maxItemId)
-        int maxUserId = 5000; // greater than userNum (userId not necessarily ranging from 0 to userNum)
+        int maxUserId = 5000; // greater than USER_NUM (userId not necessarily ranging from 0 to USER_NUM)
         double ratingRange = 5.0;
 
         int size = 0;
-        while (size < userNum) {
+        while (size < USER_NUM) {
 
             long userId = rndGen.nextInt(maxUserId); // produce random user Id
             int userRatingNum = rndGen.nextInt(maxRatingNum) + 1; // produce random total rating number of a user (non-empty)
+//            int userRatingNum = ITEM_NUM;  // non-sparse rating matrix
             Long2DoubleMap userRatings = new Long2DoubleOpenHashMap();
             int i = 0;
             while (i < userRatingNum) {
@@ -110,6 +111,7 @@ public class SLIMModelRecommenderBuildTest {
             simulatedData.put(userId, userRatings);
             size = simulatedData.keySet().size();
         }
+
         simulatedData.put((long)maxUserId, labels); // put simulated label into last row
         //logger.info("rating matrix is {}", simulatedData);
         return simulatedData;
@@ -145,25 +147,24 @@ public class SLIMModelRecommenderBuildTest {
         config.bind(UserVectorNormalizer.class)
                 .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
-                .to(UnitVectorNormalizer.class);
+                .to(IdentityVectorNormalizer.class);
 //        config.set(IterationCount.class)
 //                .to(10);
         config.set(SLIMModelSize.class)
-                .to(100);
+                .to(0);
         config.set(MinCommonUsers.class)
                 .to(2);
         config.set(StoppingThreshold.class)
-                .to(1.0e-2);
+                .to(1.0e-5);
 
         return LenskitRecommenderEngine.build(config);
     }
 
     @Before
     public void buildModel() {
-        //int itemNum = 100;
         int maxWeight = 5;
-        this.weights = createWeights(itemNum, maxWeight);
-        Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(itemNum, weights));
+        this.weights = createWeights(ITEM_NUM, maxWeight);
+        Long2ObjectMap<Long2DoubleMap> dataWithLabels = new Long2ObjectOpenHashMap<>(createDataModel(ITEM_NUM, weights));
         LongOpenHashBigSet userIdSet = new LongOpenHashBigSet(dataWithLabels.keySet());
         long maxUserId = Collections.max(userIdSet);
         y = new Long2DoubleOpenHashMap(dataWithLabels.get(maxUserId));
@@ -176,20 +177,20 @@ public class SLIMModelRecommenderBuildTest {
     @Test
     public void testLabels() {
         int sizeOfy = y.size();
-        assertThat(sizeOfy, equalTo(200));
+        assertThat(sizeOfy, equalTo(USER_NUM));
     }
 
     @Test
     public void testWeights() {
         int sizeOfWeights = weights.size();
-        assertThat(sizeOfWeights, equalTo(200));
+        assertThat(sizeOfWeights, equalTo(ITEM_NUM));
     }
 
     @Test
     public void testDataSize() {
         Long2ObjectMap<Long2DoubleMap> dataT = Vectors.transposeMap(data);
         int totalUsers = dataT.keySet().size();
-        assertThat(totalUsers, equalTo(200));
+        assertThat(totalUsers, equalTo(USER_NUM));
     }
 
 
@@ -245,6 +246,11 @@ public class SLIMModelRecommenderBuildTest {
 
                 rmse /= userRatings.keySet().size();
                 rmse = Math.sqrt(rmse);
+//                Map<Long,Double> scoreMap = details.scoreMap();
+//                System.out.println("user " + user + " actual ratings in test class: ");
+//                System.out.println(LongUtils.frozenMap(userRatings));
+//                System.out.println("user " + user + " actual prediction in test class: ");
+//                System.out.println(LongUtils.frozenMap(scoreMap));
                 System.out.println("rmse is: " + rmse);
             }
 
@@ -259,13 +265,13 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
         Iterator<Long> iter = dataTrans.keySet().iterator();
         long existingUserId = iter.next();
-        int notRatedItemSize = itemNum - dataTrans.get(existingUserId).keySet().size();
+        int notRatedItemSize = ITEM_NUM - dataTrans.get(existingUserId).keySet().size();
         long nonExistingUserId = Collections.max(dataTrans.keySet()) + 1;
         try (Recommender rec = engine.createRecommender(dao)) {
             List<Long> existingUserRec = rec.getItemRecommender().recommend(existingUserId);
             List<Long> nonExistingUserRec = rec.getItemRecommender().recommend(nonExistingUserId);
             assertThat(existingUserRec, hasSize(notRatedItemSize));
-            assertThat(nonExistingUserRec, hasSize(itemNum));
+            assertThat(nonExistingUserRec, hasSize(ITEM_NUM));
         }
 
     }

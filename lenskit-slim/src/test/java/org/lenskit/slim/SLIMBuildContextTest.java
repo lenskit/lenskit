@@ -132,10 +132,10 @@ public class SLIMBuildContextTest {
                 ratingsNorm.put(user, ratingNorm);
                 assertThat(ratingNorm, closeTo(context.getItemRatings(item).get(user), 1.0e-10));
             }
-            Long2DoubleMap contextRatings = context.getItemRatings(item);
-            Long2DoubleMap ratingsFinal = LongUtils.frozenMap(ratingsNorm);
-            System.out.println("actual ratings: " + ratingsFinal);
-            System.out.println("context ratings: " + contextRatings);
+//            Long2DoubleMap contextRatings = context.getItemRatings(item);
+//            Long2DoubleMap ratingsFinal = LongUtils.frozenMap(ratingsNorm);
+//            System.out.println("actual ratings: " + ratingsFinal);
+//            System.out.println("context ratings: " + contextRatings);
         }
     }
 
@@ -177,7 +177,7 @@ public class SLIMBuildContextTest {
                     double actualDot = Vectors.dotProduct(ratingsNorm1, ratingsNorm2);
                     double contextDot = context.getInnerProducts(item1).get(item2);
                     assertThat(actualDot, closeTo(contextDot, 1.0e-10));
-                    System.out.println("actual and context computed inner-products for item pair {" + item1 + ", " + item2 + "} is: {" + actualDot + ", " + contextDot + "}");
+//                    System.out.println("actual and context computed inner-products for item pair {" + item1 + ", " + item2 + "} is: {" + actualDot + ", " + contextDot + "}");
                 }
             }
         }

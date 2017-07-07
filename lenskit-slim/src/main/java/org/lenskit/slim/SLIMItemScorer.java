@@ -32,6 +32,7 @@ import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -85,17 +86,27 @@ public class SLIMItemScorer extends AbstractItemScorer {
             Long2DoubleMap weight = model.getWeights(item);
             double score = Vectors.dotProduct(ratingNormalized, weight);
             resultsNormalized.put(item, score);
+//            System.out.println("score class user " + user + " item " + item + ": actual rating, normalized rating and prediction: " + ratings.get(item) + "  " + ratingNormalized.get(item) + "  " + score);
         }
 
-        Long2DoubleMap resultsUnNormalized = transform.unapply(resultsNormalized);
+        Long2DoubleMap resultsNormalizedReversed = transform.unapply(resultsNormalized);
 
-        ObjectIterator<Long2DoubleMap.Entry> resultsIter = resultsUnNormalized.long2DoubleEntrySet().iterator();
+        ObjectIterator<Long2DoubleMap.Entry> resultsIter = resultsNormalizedReversed.long2DoubleEntrySet().iterator();
         while(resultsIter.hasNext()) {
             Long2DoubleMap.Entry entry = resultsIter.next();
             final long item = entry.getLongKey();
             final double score = entry.getDoubleValue();
             results.add(Results.create(item, score));
         }
+
+//        System.out.println("user " + user + " actual ratings in scorer class: ");
+//        System.out.println(LongUtils.frozenMap(ratings));
+//        System.out.println("user " + user + " actual prediction in scorer class: ");
+//        System.out.println(LongUtils.frozenMap(resultsNormalizedReversed));
+//        System.out.println("user " + user + " normalized ratings in scorer class: ");
+//        System.out.println(LongUtils.frozenMap(ratingNormalized));
+//        System.out.println("user " + user + " normalized prediction in scorer class: ");
+//        System.out.println(LongUtils.frozenMap(resultsNormalized));
 
         return Results.newResultMap(results);
     }
