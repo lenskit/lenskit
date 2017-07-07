@@ -20,19 +20,20 @@
  */
 package org.lenskit.util.collections;
 
-import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
+import com.google.common.primitives.Doubles;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
+import it.unimi.dsi.fastutil.ints.IntPriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-
-import java.util.Arrays;
 
 /**
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
  */
 public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator {
-    private final int count;
-    private double[] scores;
+    private final int targetCount;
+    private DoubleArrayList scores;
     private CompactableLongArrayList items;
 
     // The index of the empty space to use.  Once the accumulator is at capacity, this will be the
@@ -40,7 +41,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
     private int slot;
     // The current size of the accumulator.
     private int size;
-    private DoubleHeapIndirectPriorityQueue heap;
+    private IntPriorityQueue heap;
 
     /**
      * Create a new accumulator to accumulate the top <var>n</var> IDs.
@@ -48,20 +49,21 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
      * @param n The number of IDs to retain.
      */
     public TopNLong2DoubleAccumulator(int n) {
-        this.count = n;
+        this.targetCount = n;
 
         slot = 0;
         size = 0;
 
-        // heap must have n+1 slots to hold extra item before removing smallest
-        scores = new double[n+1];
-        // fill with MIN_VALUE so we can fast-track
-        Arrays.fill(scores, Double.MIN_VALUE);
-
-        items = new CompactableLongArrayList(findInitialSize(count));
-        heap = new DoubleHeapIndirectPriorityQueue(scores);
+        int isz = findInitialSize(targetCount + 1);
+        scores = new DoubleArrayList(isz);
+        items = new CompactableLongArrayList(isz);
+        heap = new IntHeapPriorityQueue(this::comparePositions);
 
         // item lists are lazy-allocated
+    }
+
+    private int comparePositions(int i1, int i2) {
+        return Doubles.compare(scores.getDouble(i1), scores.getDouble(i2));
     }
 
     /**
@@ -101,15 +103,14 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
 
     @Override
     public void put(long item, double score) {
-        assert slot <= count;
+        assert slot <= targetCount;
         assert heap.size() == size;
 
         if (items == null) {
-            int isize = findInitialSize(count + 1);
-
-            scores = new double[count + 1];
-            items = new CompactableLongArrayList(isize);
-            heap = new DoubleHeapIndirectPriorityQueue(scores);
+            int isz = findInitialSize(targetCount + 1);
+            scores = new DoubleArrayList(isz);
+            items = new CompactableLongArrayList(isz);
+            heap = new IntHeapPriorityQueue(this::comparePositions);
         }
 
         /*
@@ -119,20 +120,20 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
         if (slot == items.size()) {
             // we are still adding items
             items.add(item);
-            scores[slot] = score;
+            scores.add(score);
         } else {
             // we are reusing slots
-            if (!heap.isEmpty() && score <= scores[heap.first()]) {
+            if (!heap.isEmpty() && score <= scores.getDouble(heap.firstInt())) {
                 return; // the item won't beat anything else
             }
             items.set(slot, item);
-            scores[slot] = score;
+            scores.set(slot, score);
         }
         heap.enqueue(slot);
 
-        if (size == count) {
+        if (size == targetCount) {
             // already at capacity, so remove and reuse smallest item
-            slot = heap.dequeue();
+            slot = heap.dequeueInt();
         } else {
             // we have free space, so increment the slot and size
             slot += 1;
@@ -150,7 +151,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeue();
+            indices[i] = heap.dequeueInt();
         }
         assert heap.isEmpty();
 
@@ -158,7 +159,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
             keys[i] = items.getLong(indices[i]);
-            values[i] = scores[indices[i]];
+            values[i] = scores.getDouble(indices[i]);
         }
         clear();
 
@@ -171,7 +172,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
 
         LongSet longs = new LongOpenHashSet(size);
         while (!heap.isEmpty()) {
-            longs.add(items.getLong(heap.dequeue()));
+            longs.add(items.getLong(heap.dequeueInt()));
         }
         clear();
 
@@ -184,7 +185,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
-            indices[i] = heap.dequeue();
+            indices[i] = heap.dequeueInt();
         }
         LongList list = new LongArrayList(size);
         for (int i : indices) {

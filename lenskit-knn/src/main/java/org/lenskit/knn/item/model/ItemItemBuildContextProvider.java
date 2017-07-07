@@ -129,7 +129,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
                     // get the item's rating accumulator
                     Long2DoubleMap ivect = itemRatings.get(item);
                     if (ivect == null) {
-                        ivect = new Long2DoubleOpenHashMap(100);
+                        ivect = new Long2DoubleOpenHashMap();
                         itemRatings.put(item, ivect);
                     }
                     ivect.put(uid, rating.getDoubleValue());
