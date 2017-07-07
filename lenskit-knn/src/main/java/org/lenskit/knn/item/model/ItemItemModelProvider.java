@@ -22,6 +22,7 @@ package org.lenskit.knn.item.model;
 
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.*;
+import net.jcip.annotations.NotThreadSafe;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
@@ -39,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import net.jcip.annotations.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Map;
@@ -123,8 +123,10 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                         .peek(iv -> progress.advance());
         Long2ObjectMap<Long2DoubleMap> sims;
         if (itemSimilarity.isSymmetric()) {
+            logger.info("using symmetric similarity collector");
             sims = rowStream.collect(new SymmetricCollector());
         } else {
+            logger.info("using asymmteric similarity collector");
             sims = rowStream.collect(new BasicCollector());
         }
 
@@ -164,7 +166,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
     @Nonnull
     private Long2DoubleAccumulator newAccumulator() {
         Long2DoubleAccumulator accum;
-        if (modelSize == 0) {
+        if (modelSize <= 0) {
             accum = new UnlimitedLong2DoubleAccumulator();
         } else {
             accum = new TopNLong2DoubleAccumulator(modelSize);
@@ -194,7 +196,15 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
         @Override
         public BiConsumer<Map<Long, Long2DoubleMap>, IdBox<Long2DoubleMap>> accumulator() {
             return (acc, row) -> {
-                Long2DoubleMap res = acc.putIfAbsent(row.getId(), LongUtils.frozenMap(row.getValue()));
+                Long2DoubleMap r2;
+                if (modelSize <= 0) {
+                    r2 = LongUtils.frozenMap(row.getValue());
+                } else {
+                    Long2DoubleAccumulator racc = new TopNLong2DoubleAccumulator(modelSize);
+                    racc.putAll(row.getValue());
+                    r2 = racc.finishMap();
+                }
+                Long2DoubleMap res = acc.putIfAbsent(row.getId(), r2);
                 assert res == null;
             };
         }

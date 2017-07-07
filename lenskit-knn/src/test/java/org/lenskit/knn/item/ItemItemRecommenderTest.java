@@ -20,6 +20,7 @@
  */
 package org.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.junit.After;
@@ -32,11 +33,13 @@ import org.lenskit.api.*;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.similarity.VectorSimilarity;
 import org.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.transform.normalize.VectorNormalizer;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +109,8 @@ public class ItemItemRecommenderTest {
         assertThat(scores.containsKey(8L), equalTo(false));
     }
 
+
+
     /**
      * Check that we score items but do not provide scores for items
      * the user has previously rated.  User 5 has rated only item 8
@@ -134,6 +139,38 @@ public class ItemItemRecommenderTest {
 
     @Test
     public void testItemItemRecommender1() {
+        List<Long> recs = recommender.recommend(1);
+        assertThat(recs, hasSize(0));
+
+        recs = recommender.recommend(2);
+        assertThat(recs,
+                   contains(9L));
+
+        recs = recommender.recommend(3);
+        assertThat(recs,
+                   contains(6L));
+
+        recs = recommender.recommend(4);
+        assertThat(recs,
+                   containsInAnyOrder(6L, 9L));
+        assertEquals(2, recs.size());
+
+        recs = recommender.recommend(5);
+        assertThat(recs,
+                   containsInAnyOrder(6L, 7L, 9L));
+
+        recs = recommender.recommend(6);
+        assertThat(recs,
+                   containsInAnyOrder(6L, 7L, 9L));
+    }
+
+    @Test
+    public void testItemItemRecommenderNonSymmetric() {
+        config.bind(ItemSimilarity.class)
+              .to(NonSymmetricSimilarity.class);
+        session = LenskitRecommender.build(config, data);
+        recommender = session.getItemRecommender();
+
         List<Long> recs = recommender.recommend(1);
         assertThat(recs, hasSize(0));
 
@@ -323,5 +360,29 @@ public class ItemItemRecommenderTest {
         recommender = session.getItemRecommender();
         List<Long> recs = recommender.recommend(2);
         assertThat(recs, hasSize(0));
+    }
+
+    public static class NonSymmetricSimilarity implements ItemSimilarity {
+        final VectorSimilarity delegate;
+
+        @Inject
+        public NonSymmetricSimilarity(VectorSimilarity dlg) {
+            delegate = dlg;
+        }
+
+        @Override
+        public double similarity(long i1, Long2DoubleMap v1, long i2, Long2DoubleMap v2) {
+            return delegate.similarity(v1, v2);
+        }
+
+        @Override
+        public boolean isSparse() {
+            return delegate.isSparse();
+        }
+
+        @Override
+        public boolean isSymmetric() {
+            return false;
+        }
     }
 }
