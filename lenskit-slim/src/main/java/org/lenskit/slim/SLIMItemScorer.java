@@ -32,7 +32,6 @@ import org.lenskit.data.ratings.RatingVectorPDAO;
 import org.lenskit.results.Results;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.util.InvertibleFunction;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -102,7 +101,7 @@ public class SLIMItemScorer extends AbstractItemScorer {
 //        System.out.println("user " + user + " actual ratings in scorer class: ");
 //        System.out.println(LongUtils.frozenMap(ratings));
 //        System.out.println("user " + user + " actual prediction in scorer class: ");
-//        System.out.println(LongUtils.frozenMap(resultsNormalizedReversed));
+//        System.out.println(LongUtils.frozenMap(resultsReversed));
 //        System.out.println("user " + user + " normalized ratings in scorer class: ");
 //        System.out.println(LongUtils.frozenMap(ratingNormalized));
 //        System.out.println("user " + user + " normalized prediction in scorer class: ");

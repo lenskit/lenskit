@@ -28,6 +28,8 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.*;
+import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
@@ -37,6 +39,7 @@ import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.knn.item.ModelSize;
 import org.lenskit.transform.normalize.*;
 
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Vectors;
 
 import java.util.*;
@@ -88,7 +91,8 @@ public class SLIMModelRecommenderBuildTest {
 
         int maxRatingNum = 100; // each user's max possible rating number (less than maxItemId)
         int maxUserId = 5000; // greater than USER_NUM (userId not necessarily ranging from 0 to USER_NUM)
-        double ratingRange = 5.0;
+
+        double ratingValue[] = {1, 2, 3, 4, 5};
 
         int size = 0;
         while (size < USER_NUM) {
@@ -100,7 +104,8 @@ public class SLIMModelRecommenderBuildTest {
             int i = 0;
             while (i < userRatingNum) {
                 long itemId = rndGen.nextInt(maxItemId);
-                double rating = ratingRange * rndGen.nextDouble();
+                double rating = ratingValue[rndGen.nextInt(5)];
+//                double rating = ratingRange * rndGen.nextDouble();
                 userRatings.put(itemId, rating);
                 i = userRatings.keySet().size();
             }
@@ -142,16 +147,21 @@ public class SLIMModelRecommenderBuildTest {
                 .to(SLIMItemScorer.class);
         config.bind(StoppingCondition.class)
                 .to(ThresholdStoppingCondition.class);
+//        config.bind(SLIMBuildContext.class)
+//                .toProvider(SLIMBuildContextProvider.class);
         config.bind(UserVectorNormalizer.class)
-                .to(DefaultUserVectorNormalizer.class);
-        config.bind(VectorNormalizer.class)
-                .to(IdentityVectorNormalizer.class);
+                .to(BaselineSubtractingUserVectorNormalizer.class);
+//        config.bind(VectorNormalizer.class)
+//                .to(IdentityVectorNormalizer.class);
+        config.within(UserVectorNormalizer.class)
+                .bind(BaselineScorer.class, ItemScorer.class)
+                .to(ItemMeanRatingItemScorer.class);
 //        config.set(IterationCount.class)
 //                .to(10);
         config.set(ModelSize.class)
                 .to(100);
-        config.set(MinCommonUsers.class)
-                .to(2);
+//        config.set(MinCommonUsers.class)
+//                .to(2);
         config.set(StoppingThreshold.class)
                 .to(1.0e-2);
 
@@ -224,6 +234,8 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
 
         Iterator<Long> iter = dataTrans.keySet().iterator();
+//        final double userNum = dataTrans.size();
+//        double rmseByUser = 0.0;
 
         while (iter.hasNext()) {
             final long user = iter.next();
@@ -244,16 +256,17 @@ public class SLIMModelRecommenderBuildTest {
 
 //                rmse /= userRatings.keySet().size();
 //                rmse = Math.sqrt(rmse);
+//                rmseByUser += rmse;
 //                Map<Long,Double> scoreMap = details.scoreMap();
 //                System.out.println("user " + user + " actual ratings in test class: ");
 //                System.out.println(LongUtils.frozenMap(userRatings));
 //                System.out.println("user " + user + " actual prediction in test class: ");
 //                System.out.println(LongUtils.frozenMap(scoreMap));
-//                System.out.println("rmse is: " + rmse);
+//                System.out.println("user " + user + " rmse is: " + rmse);
             }
-
         }
-
+//        rmseByUser /= userNum;
+//        System.out.println("SLIM recommender RMSE is " + rmseByUser);
 
     }
 
