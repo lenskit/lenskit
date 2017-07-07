@@ -34,6 +34,7 @@ import org.lenskit.util.collections.Long2DoubleAccumulator;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
+import org.lenskit.util.reflect.ClassQueries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,9 +104,15 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                                                 .setWindow(50)
                                                 .start();
         int ndone = 0;
+        Stream<Long> idStream;
+        if (ClassQueries.isThreadSafe(itemSimilarity)) {
+            idStream = allItems.parallelStream();
+        } else {
+            logger.warn("similarity {} is not thread-safe, disabling parallel build", itemSimilarity);
+            idStream = allItems.stream();
+        }
         Stream<IdBox<Long2DoubleMap>> rowStream =
-                allItems.parallelStream()
-                        .map(i -> IdBox.create(i, buildContext.itemVector(i)))
+                idStream.map(i -> IdBox.create(i, buildContext.itemVector(i)))
                         .peek(iv -> {
                             if (logger.isTraceEnabled()) {
                                 logger.trace("computing similarities for item {}", iv.getId());

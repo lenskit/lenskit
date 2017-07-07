@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
+import net.jcip.annotations.ThreadSafe;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Scalars;
 
@@ -38,6 +39,7 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
+@ThreadSafe
 public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 3023239202579332883L;
 

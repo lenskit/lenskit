@@ -23,6 +23,8 @@ package org.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.inject.Shareable;
 import org.lenskit.similarity.VectorSimilarity;
+import org.lenskit.util.parallel.MaybeThreadSafe;
+import org.lenskit.util.reflect.ClassQueries;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -33,7 +35,7 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
+public class ItemVectorSimilarity implements ItemSimilarity, Serializable, MaybeThreadSafe {
     private static final long serialVersionUID = 1L;
 
     private VectorSimilarity delegate;
@@ -56,6 +58,11 @@ public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
     @Override
     public boolean isSymmetric() {
         return delegate.isSymmetric();
+    }
+
+    @Override
+    public boolean isThreadSafe() {
+        return ClassQueries.isThreadSafe(delegate);
     }
 
     @Override
