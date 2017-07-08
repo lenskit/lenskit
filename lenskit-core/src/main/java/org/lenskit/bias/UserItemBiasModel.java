@@ -26,7 +26,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 
 /**

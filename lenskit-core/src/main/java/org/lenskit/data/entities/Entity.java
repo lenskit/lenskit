@@ -22,7 +22,7 @@ package org.lenskit.data.entities;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;

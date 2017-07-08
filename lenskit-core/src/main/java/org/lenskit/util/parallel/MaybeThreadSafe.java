@@ -18,31 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.store;
-
-import org.lenskit.data.entities.Entity;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Set;
+package org.lenskit.util.parallel;
 
 /**
- * An index to look up entities by attribute value.
- *
- * @see EntityIndexBuilder
+ * Interface for objects that can report at runtime whether they are thread-safe.  Classes that are known always to be
+ * thread-safe should carry the {@link net.jcip.annotations.Immutable} or {@link net.jcip.annotations.ThreadSafe}
+ * annotation; this is primarily intended for wrapper classes whose thread safety depends on the thread safety of their
+ * delegates.
  */
-interface EntityIndex {
+public interface MaybeThreadSafe {
     /**
-     * Get the entities with the associated attribute value.
-     * @param value The attribute value.
-     * @return The list of entities.
+     * Query whether this object is thread-safe.
+     * @return `true` if the object is thread-safe.
      */
-    @Nonnull
-    List<Entity> getEntities(@Nonnull Object value);
-
-    /**
-     * Get the set of entity values in the index.
-     * @return The set of entity values.
-     */
-    Set<?> getValues();
+    boolean isThreadSafe();
 }

@@ -24,7 +24,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 
 /**

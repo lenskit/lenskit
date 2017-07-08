@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.NoSuchElementException;

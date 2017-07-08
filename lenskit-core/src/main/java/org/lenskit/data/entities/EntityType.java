@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;

@@ -28,11 +28,13 @@ import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.AbstractObjectSortedSet;
+import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Scalars;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -362,7 +364,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
 
         @Override
-        public ObjectIterator<Entry> fastIterator() {
+        public ObjectBidirectionalIterator<Entry> fastIterator() {
             return new FastEntryIter();
         }
 
@@ -421,7 +423,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
     }
 
-    private class EntryIter extends AbstractObjectBidirectionalIterator<Entry> {
+    private class EntryIter implements ObjectBidirectionalIterator<Entry> {
         IntBidirectionalIterator iter;
 
         public EntryIter() {
@@ -456,7 +458,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
     }
 
-    private class FastEntryIter extends AbstractObjectBidirectionalIterator<Entry> {
+    private class FastEntryIter implements ObjectBidirectionalIterator<Entry> {
         IntBidirectionalIterator iter = IntIterators.fromTo(keys.getLowerBound(), keys.getUpperBound());
         IndirectEntry entry = new IndirectEntry(0);
 

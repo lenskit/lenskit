@@ -35,7 +35,7 @@ import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
 
-import javax.annotation.concurrent.ThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.Serializable;

@@ -20,29 +20,30 @@
  */
 package org.lenskit.data.store;
 
-import org.lenskit.data.entities.Entity;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Set;
-
 /**
- * An index to look up entities by attribute value.
- *
- * @see EntityIndexBuilder
+ * Long attribute store specialization.
  */
-interface EntityIndex {
-    /**
-     * Get the entities with the associated attribute value.
-     * @param value The attribute value.
-     * @return The list of entities.
-     */
-    @Nonnull
-    List<Entity> getEntities(@Nonnull Object value);
+class DoubleAttrStoreBuilder extends AttrStoreBuilder {
+    DoubleAttrStoreBuilder() {
+        super(DoubleShard::create);
+    }
 
-    /**
-     * Get the set of entity values in the index.
-     * @return The set of entity values.
-     */
-    Set<?> getValues();
+    double getDouble(int idx) {
+        int si = idx / Shard.SHARD_SIZE;
+        int vi = idx % Shard.SHARD_SIZE;
+        return ((DoubleShard) shards.get(si)).getDouble(vi);
+    }
+
+    @Override
+    AttrStore build() {
+        if (!shards.isEmpty()) {
+            shards.get(shards.size() - 1).compact();
+        }
+        return new DoubleAttrStore(shards, size);
+    }
+
+    @Override
+    AttrStore tempBuild() {
+        return new DoubleAttrStore(shards, size);
+    }
 }

@@ -21,6 +21,7 @@
 package org.lenskit.util.collections;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -30,6 +31,8 @@ import org.lenskit.util.keys.SortedKeyIndex;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
+import java.util.function.*;
+import java.util.stream.Collector;
 
 /**
  * Utilities for working with longs and collections of them from Fastutil.
@@ -108,6 +111,16 @@ public final class LongUtils {
                 return Doubles.compare(v1, v2);
             }
         };
+    }
+
+    /**
+     * Create a flyweight vector with a key set and value function.
+     * @param keys The key set.
+     * @param valueFunc Function to compute keys from values.
+     * @return The flyweight map.
+     */
+    public static Long2DoubleMap flyweightMap(LongSet keys, LongToDoubleFunction valueFunc) {
+        return new FlyweightLong2DoubleMap(keys, valueFunc);
     }
 
     /**
@@ -521,5 +534,63 @@ public final class LongUtils {
             }
         }
         return LongUtils.packedSet(selected);
+    }
+
+    public static <T, E> Collector<T,?,Long2ObjectMap<List<E>>> mapCollector(ToLongFunction<T> kf, Function<T, E> vf) {
+        return new MapCollector<>(kf, vf);
+    }
+
+    private static class MapCollector<T, E> implements Collector<T, Long2ObjectMap<List<E>>, Long2ObjectMap<List<E>>> {
+        private final ToLongFunction<T> keyFunction;
+        private final Function<T, E> valueFunction;
+
+        MapCollector(ToLongFunction<T> kf, Function<T, E> vf) {
+            keyFunction = kf;
+            valueFunction = vf;
+        }
+
+        @Override
+        public Supplier<Long2ObjectMap<List<E>>> supplier() {
+            return Long2ObjectOpenHashMap::new;
+        }
+
+        @Override
+        public BiConsumer<Long2ObjectMap<List<E>>, T> accumulator() {
+            return (m, v) -> {
+                long k = keyFunction.applyAsLong(v);
+                List<E> lst = m.get(k);
+                if (lst == null) {
+                    lst = new ArrayList<>();
+                    m.put(k, lst);
+                }
+                lst.add(valueFunction.apply(v));
+            };
+        }
+
+        @Override
+        public BinaryOperator<Long2ObjectMap<List<E>>> combiner() {
+            return (m1, m2) -> {
+                for (Long2ObjectMap.Entry<List<E>> e2: m2.long2ObjectEntrySet()) {
+                    List<E> l2 = e2.getValue();
+                    List<E> l1 = m1.get(e2.getLongKey());
+                    if (l1 == null) {
+                        m1.put(e2.getLongKey(), l2);
+                    } else {
+                        l1.addAll(l2);
+                    }
+                }
+                return m1;
+            };
+        }
+
+        @Override
+        public Function<Long2ObjectMap<List<E>>, Long2ObjectMap<List<E>>> finisher() {
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return ImmutableSet.of(Characteristics.IDENTITY_FINISH);
+        }
     }
 }
