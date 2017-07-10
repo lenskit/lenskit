@@ -35,8 +35,8 @@
 import org.grouplens.lenskit.build.GitExtension
 
 plugins {
-    id "org.sonarqube" version "2.3"
     id 'com.gradle.build-scan' version '1.8'
+    id "org.sonarqube" version "2.3"
 }
 
 apply plugin: 'base'
