@@ -20,9 +20,12 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.base.Preconditions;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -37,6 +40,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.LongConsumer;
 
 /**
  * A bare entity collection that stores ID-only entities.
@@ -50,7 +54,7 @@ class BareEntityCollection extends EntityCollection implements Describable {
         entityType = et;
         idSet = ids;
         Hasher hash = Hashing.md5().newHasher();
-        idSet.forEach(hash::putLong);
+        idSet.forEach((LongConsumer) hash::putLong);
         contentHash = hash.hash();
     }
 
@@ -101,6 +105,13 @@ class BareEntityCollection extends EntityCollection implements Describable {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public Long2ObjectMap<List<Entity>> grouped(TypedName<Long> attr) {
+        Preconditions.checkArgument(attr != CommonAttributes.ENTITY_ID,
+                                    "cannot group by entity ID");
+        return Long2ObjectMaps.EMPTY_MAP;
     }
 
     @Override

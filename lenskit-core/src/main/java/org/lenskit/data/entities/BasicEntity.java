@@ -23,7 +23,7 @@ package org.lenskit.data.entities;
 import com.google.common.base.Predicates;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;

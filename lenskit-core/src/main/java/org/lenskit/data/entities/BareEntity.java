@@ -21,7 +21,7 @@
 package org.lenskit.data.entities;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.Collections;
 import java.util.Set;
 

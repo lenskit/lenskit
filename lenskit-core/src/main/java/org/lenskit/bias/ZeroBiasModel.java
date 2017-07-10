@@ -22,7 +22,7 @@ package org.lenskit.bias;
 
 import org.lenskit.inject.Shareable;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import javax.inject.Inject;
 
 /**

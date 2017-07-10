@@ -21,6 +21,7 @@
 package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
@@ -52,6 +53,16 @@ public interface Long2DoubleAccumulator {
      * @param score The item's score.
      */
     void put(long item, double score);
+
+    /**
+     * Add all items from a map to the accumulator.
+     * @param map The map.
+     */
+    default void putAll(Long2DoubleMap map) {
+        for (Long2DoubleMap.Entry e: Long2DoubleMaps.fastIterable(map)) {
+            put(e.getLongKey(), e.getDoubleValue());
+        }
+    }
 
     /**
      * Accumulate the scores into a map and reset the accumulator.

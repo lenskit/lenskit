@@ -24,10 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
+import org.lenskit.data.entities.*;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.keys.KeyedObjectMap;
@@ -38,6 +35,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 class MapEntityCollection extends EntityCollection implements Serializable, Describable {
     private static long serialVersionUID = 1L;
@@ -100,6 +98,24 @@ class MapEntityCollection extends EntityCollection implements Serializable, Desc
             }
         }
         return results.build();
+    }
+
+    @Override
+    public Map<Long,List<Entity>> grouped(TypedName<Long> attr) {
+        Preconditions.checkArgument(attr != CommonAttributes.ENTITY_ID,
+                                    "cannot group by entity ID");
+        EntityIndex idx = indexes.get(attr.getName());
+        if (idx == null) {
+            return store.values()
+                        .stream()
+                        .filter(e -> e.hasAttribute(attr))
+                        .collect(Collectors.groupingBy(e -> e.getLong(attr)));
+        } else {
+            return idx.getValues()
+                      .stream()
+                      .collect(Collectors.toMap(l -> (Long) l,
+                                                idx::getEntities));
+        }
     }
 
     @Nonnull

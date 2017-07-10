@@ -21,6 +21,7 @@
 package org.lenskit.similarity;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import net.jcip.annotations.ThreadSafe;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 
@@ -48,6 +49,7 @@ import static java.lang.Math.max;
  * @see SigWeightThreshold
  */
 @Shareable
+@ThreadSafe
 public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, Serializable {
 
     private static final long serialVersionUID = 1L;

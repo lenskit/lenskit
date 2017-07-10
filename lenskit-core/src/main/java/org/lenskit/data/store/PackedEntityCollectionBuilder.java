@@ -72,7 +72,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
                 asb = new AttrStoreBuilder(IntShard::create);
             } else if (attr.getType().equals(TypeToken.of(Double.class))) {
                 logger.debug("{}: storing double column {}", et, attr.getName());
-                asb = new AttrStoreBuilder(DoubleShard::create);
+                asb = new DoubleAttrStoreBuilder();
             } else {
                 logger.debug("{}: storing object column {}", et, attr);
                 asb = new AttrStoreBuilder(ObjectShard::new);

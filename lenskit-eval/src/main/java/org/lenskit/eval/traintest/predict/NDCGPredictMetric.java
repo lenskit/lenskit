@@ -29,7 +29,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.util.math.MeanAccumulator;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -39,6 +38,7 @@ import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.math.MeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,6 +111,7 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(MeanAccumulator context) {
+        logger.warn("Predict nDCG is deprecated, use nDCG in a rank context");
         return MetricResult.singleton(columnName, context.getMean());
     }
 

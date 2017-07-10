@@ -21,6 +21,7 @@
 package org.lenskit.data.dao;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Ordering;
 import org.lenskit.data.entities.Attribute;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
@@ -78,6 +79,22 @@ public class EntityQuery<E extends Entity> implements Predicate<Entity> {
      */
     public List<SortKey> getSortKeys() {
         return sortKeys;
+    }
+
+    /**
+     * Get the sort order as an ordering.
+     * @return An ordering representing the {@linkplain #getSortKeys() sort order} of this query.
+     */
+    public Ordering<Entity> getOrdering() {
+        Ordering<Entity> ord = null;
+        for (SortKey k: sortKeys) {
+            if (ord == null) {
+                ord = k.ordering();
+            } else {
+                ord = ord.compound(k.ordering());
+            }
+        }
+        return ord;
     }
 
     /**

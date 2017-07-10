@@ -27,7 +27,7 @@ import org.lenskit.data.entities.*;
 import org.lenskit.data.store.EntityCollection;
 import org.lenskit.data.store.EntityCollectionBuilder;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import net.jcip.annotations.NotThreadSafe;
 import java.util.*;
 
 /**

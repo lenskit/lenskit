@@ -58,14 +58,14 @@ class TopNNDCGMetricTest {
                                          Results.create(2, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
     }
 
@@ -83,14 +83,14 @@ class TopNNDCGMetricTest {
                                          Results.create(2, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
     }
 
@@ -109,14 +109,14 @@ class TopNNDCGMetricTest {
                                          Results.create(1, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(5 / 6.25d, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(5 / 6.25d, 1.0e-6d))
     }
 
@@ -136,15 +136,15 @@ class TopNNDCGMetricTest {
                                          Results.create(3, 2.5))
         def result = metric.measureUser(null, user, 2, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values.keySet(), contains('nDCG'))
         // should be 1 because only the first 2 test ratings are considered
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values['nDCG'],
                    closeTo(1, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1, 1.0e-6d))
     }
 
@@ -171,8 +171,8 @@ class TopNNDCGMetricTest {
 
         def result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo((1 + 5/6.25d) * 0.5, 1.0e-6d))
     }
 }

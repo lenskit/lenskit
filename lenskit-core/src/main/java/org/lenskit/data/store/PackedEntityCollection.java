@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.store;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hasher;
@@ -57,6 +58,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
     private final AttributeSet attributes;
     private final LongAttrStore idStore;
     private final AttrStore[] attrStores;
+    private final AttrSetter[] storeSetters;
     private final PackIndex[] indexes;
     private final int size;
     private transient HashCode contentHash;
@@ -69,6 +71,19 @@ class PackedEntityCollection extends EntityCollection implements Describable {
         indexes = idxes;
         idStore = (LongAttrStore) stores[0];
         size = idStore.size();
+
+        storeSetters = new AttrSetter[stores.length];
+        for (int i = 0; i < stores.length; i++) {
+            AttrStore as = stores[i];
+            TypedName<?> an = attributes.getAttribute(i);
+            if (as instanceof LongAttrStore && an.getRawType().equals(Long.class)) {
+                storeSetters[i] = new LongAttrSetter((TypedName) an, (LongAttrStore) as);
+            } else if (as instanceof DoubleAttrStore && an.getRawType().equals(Double.class)) {
+                storeSetters[i] = new DoubleAttrSetter((TypedName) an, (DoubleAttrStore) as);
+            } else {
+                storeSetters[i] = new ObjectAttrSetter(an, as);
+            }
+        }
 
         if (ebc == null || ebc.equals(BasicEntityBuilder.class)) {
             entityBuilder = IndirectEntity::new;
@@ -136,6 +151,28 @@ class PackedEntityCollection extends EntityCollection implements Describable {
         } else {
             return stream().filter(e -> value.equals(e.maybeGet(name)))
                            .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public Map<Long, List<Entity>> grouped(TypedName<Long> attr) {
+        Preconditions.checkArgument(attr != CommonAttributes.ENTITY_ID,
+                                    "cannot group by entity ID");
+        int idx = attributes.lookup(attr);
+        if (idx < 0) {
+            return Collections.emptyMap();
+        }
+
+        PackIndex index = indexes[idx];
+        if (index != null) {
+            return index.getValues()
+                    .stream()
+                    .collect(Collectors.toMap(l -> (Long) l,
+                                              l -> new EntityList(index.getPositions(l))));
+        } else {
+            return stream()
+                    .filter(e -> e.hasAttribute(attr))
+                    .collect(Collectors.groupingBy(e -> e.getLong(attr)));
         }
     }
 
@@ -372,12 +409,65 @@ class PackedEntityCollection extends EntityCollection implements Describable {
             EntityBuilder eb = factory.newInstance();
             eb.setId(idStore.getLong(position));
             for (int i = 1; i < attributes.size(); i++) {
-                Object obj = attrStores[i].get(position);
-                if (obj != null) {
-                    eb.setAttribute((TypedName) attributes.getAttribute(i), obj);
-                }
+                storeSetters[i].invoke(eb, position);
             }
             return eb.build();
+        }
+    }
+
+    private static abstract class AttrSetter {
+        abstract void invoke(EntityBuilder eb, int position);
+    }
+
+    private static class ObjectAttrSetter extends AttrSetter {
+        private final TypedName<?> attrName;
+        private final AttrStore attrStore;
+
+        ObjectAttrSetter(TypedName<?> name, AttrStore store) {
+            attrName = name;
+            attrStore = store;
+        }
+
+        @Override
+        void invoke(EntityBuilder eb, int position) {
+            Object obj = attrStore.get(position);
+            if (obj != null) {
+                eb.setAttribute((TypedName) attrName, obj);
+            }
+        }
+    }
+
+    private static class LongAttrSetter extends AttrSetter {
+        private final TypedName<Long> attrName;
+        private final LongAttrStore attrStore;
+
+        LongAttrSetter(TypedName<Long> name, LongAttrStore store) {
+            attrName = name;
+            attrStore = store;
+        }
+
+        @Override
+        void invoke(EntityBuilder eb, int position) {
+            if (!attrStore.isNull(position)) {
+                eb.setLongAttribute(attrName, attrStore.getLong(position));
+            }
+        }
+    }
+
+    private static class DoubleAttrSetter extends AttrSetter {
+        private final TypedName<Double> attrName;
+        private final DoubleAttrStore attrStore;
+
+        DoubleAttrSetter(TypedName<Double> name, DoubleAttrStore store) {
+            attrName = name;
+            attrStore = store;
+        }
+
+        @Override
+        void invoke(EntityBuilder eb, int position) {
+            if (!attrStore.isNull(position)) {
+                eb.setDoubleAttribute(attrName, attrStore.getDouble(position));
+            }
         }
     }
 }

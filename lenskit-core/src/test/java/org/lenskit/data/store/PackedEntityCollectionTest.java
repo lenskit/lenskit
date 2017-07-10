@@ -25,8 +25,11 @@ import org.junit.Test;
 import org.lenskit.data.entities.*;
 import org.lenskit.data.ratings.Rating;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -144,6 +147,34 @@ public class PackedEntityCollectionTest {
                    contains(rating));
         assertThat(ec.find(CommonAttributes.ITEM_ID, 10L),
                    hasSize(0));
+    }
+
+    @Test
+    public void testGroupEntities() {
+        EntityFactory efac = new EntityFactory();
+        Rating r1 = efac.rating(100, 200, 3.5);
+        Rating r2 = efac.rating(100, 201, 4.0);
+        Rating r3 = efac.rating(101, 200, 2.0);
+        EntityCollection ec = EntityCollection.newBuilder(CommonTypes.RATING,
+                                                          AttributeSet.create(CommonAttributes.ENTITY_ID,
+                                                                              CommonAttributes.USER_ID,
+                                                                              CommonAttributes.ITEM_ID,
+                                                                              CommonAttributes.RATING))
+                                              .add(r1)
+                                              .add(r2)
+                                              .add(r3)
+                                              .addIndex(CommonAttributes.USER_ID)
+                                              .build();
+
+        Map<Long,List<Entity>> groups = ec.grouped(CommonAttributes.USER_ID);
+        assertThat(groups.keySet(), containsInAnyOrder(100L, 101L));
+        assertThat(groups, hasEntry(equalTo(101L), contains(r3)));
+        assertThat(groups, hasEntry(equalTo(100L), containsInAnyOrder(r1, r2)));
+
+        groups = ec.grouped(CommonAttributes.ITEM_ID);
+        assertThat(groups.keySet(), containsInAnyOrder(200L, 201L));
+        assertThat(groups, hasEntry(equalTo(201L), contains(r2)));
+        assertThat(groups, hasEntry(equalTo(200L), containsInAnyOrder(r1, r3)));
     }
 
     @Test

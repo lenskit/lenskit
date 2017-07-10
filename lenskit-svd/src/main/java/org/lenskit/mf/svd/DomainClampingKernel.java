@@ -26,7 +26,7 @@ import org.lenskit.inject.Shareable;
 import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import javax.inject.Inject;
 import java.io.Serializable;
 
