@@ -230,7 +230,7 @@ public final class Vectors {
      * @param o The offset to add.
      * @return A vector with the same keys as {@code x}, transformed by the specified linear formula.
      */
-    public static Long2DoubleMap combineAndLimit(Long2DoubleMap x, Long2DoubleFunction y, double sy, double o) {
+    public static Long2DoubleMap combine(Long2DoubleMap x, Long2DoubleFunction y, double sy, double o) {
         SortedKeyIndex idx = SortedKeyIndex.fromCollection(x.keySet());
         final int n = idx.size();
         double[] values = new double[n];

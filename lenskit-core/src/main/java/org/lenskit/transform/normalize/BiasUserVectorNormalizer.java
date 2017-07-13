@@ -59,13 +59,13 @@ public class BiasUserVectorNormalizer extends AbstractUserVectorNormalizer {
         @Override
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             Long2DoubleMap biases = model.getItemBiases(input.keySet());
-            return Vectors.combineAndLimit(input, biases, 1.0, userBias);
+            return Vectors.combine(input, biases, 1.0, userBias);
         }
 
         @Override
         public Long2DoubleMap apply(Long2DoubleMap input) {
             Long2DoubleMap biases = model.getItemBiases(input.keySet());
-            return Vectors.combineAndLimit(input, biases, -1.0, -userBias);
+            return Vectors.combine(input, biases, -1.0, -userBias);
         }
     }
 }
