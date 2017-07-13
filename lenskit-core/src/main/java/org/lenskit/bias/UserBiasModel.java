@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 
 /**
  * Bias model that provides global and user biases.  The user biases are precomputed and are *not* refreshed based

@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.equalTo
 File resultsFile = new File("results.csv")
 File userFile = new File("users.csv")
 File predictFile = new File("predictions.csv")
+File rankFile = new File("ranks.csv.gz")
 File recommendFile = new File("recommendations.csv.gz")
 
 assertThat("output file exists",
@@ -48,6 +49,8 @@ assertThat("user file exists",
            userFile, existingFile());
 assertThat("prediction file exists",
            predictFile, existingFile());
+assertThat("ranking file exists",
+           rankFile, existingFile());
 assertThat("recommendation file exists",
            recommendFile, existingFile());
 resultsFile.withReader { rdr ->

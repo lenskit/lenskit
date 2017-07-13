@@ -29,6 +29,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
+import org.lenskit.api.RatingPredictor
 import org.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.basic.ConstantItemScorer
@@ -211,5 +212,41 @@ algorithm('A2') {
         assertThat(csv*.User.toSet(), containsInAnyOrder("1", "3"))
         assertThat(csv*.TargetItem.toSet(), containsInAnyOrder("2", "3", "4"))
         assertThat(csv*.RecipRank*.toDouble().sum() / 3.0d, closeTo(result.column("MRR").get(0), 1.0e-6d ))
+    }
+
+    @Test
+    void testMissingItemRecommender() {
+        List<DataSet> sets = crossfoldRatings()
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to ItemMeanRatingItemScorer
+            bind ItemRecommender to null
+        }
+        experiment.addDataSets(sets)
+        def task = new RecommendEvalTask()
+        experiment.addTask(task)
+        task = new PredictEvalTask()
+        experiment.addTask(task)
+        def result = experiment.execute()
+        assertThat(result, notNullValue())
+        assertThat(result, hasSize(2))
+        assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
+    }
+
+    @Test
+    void testMissingRatingPredictor() {
+        List<DataSet> sets = crossfoldRatings()
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to PopularityRankItemScorer
+            bind RatingPredictor to null
+        }
+        experiment.addDataSets(sets)
+        def task = new RecommendEvalTask()
+        experiment.addTask(task)
+        task = new PredictEvalTask()
+        experiment.addTask(task)
+        def result = experiment.execute()
+        assertThat(result, notNullValue())
+        assertThat(result, hasSize(2))
+        assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
     }
 }

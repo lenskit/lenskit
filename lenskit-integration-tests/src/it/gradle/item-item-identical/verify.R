@@ -8,7 +8,10 @@ preds.wide = reshape(predictions[c("User", "Item", "Algorithm", "Prediction")],
                      direction="wide")
 
 message("Checking predictions")
-pred.range = abs(preds.wide$Prediction.Standard - preds.wide$Prediction.Normalizing)
+pred.range = with(preds.wide, {
+    pmax(abs(Prediction.Standard - Prediction.Normalizing),
+         abs(Prediction.Standard - Prediction.NonSymmetric))
+})
 bad.preds = pred.range > 0.001
 nbad = sum(bad.preds, na.rm=TRUE)
 

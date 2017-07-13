@@ -103,17 +103,6 @@ class LongCollectionWrapper implements LongCollection {
         return base.toArray();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @deprecated see {@link LongCollection#longIterator()}
-     */
-    @Override
-    @Deprecated
-    public LongIterator longIterator() {
-        return iterator();
-    }
-
     @Override
     public <T> T[] toArray(T[] a) {
         return base.toArray(a);

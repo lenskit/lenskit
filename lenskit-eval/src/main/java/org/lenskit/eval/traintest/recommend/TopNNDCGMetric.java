@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.util.math.MeanAccumulator;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -34,6 +33,7 @@ import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.math.MeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ import java.util.Collections;
  */
 public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(TopNNDCGMetric.class);
-    public static final String DEFAULT_COLUMN = "TopN.nDCG";
+    public static final String DEFAULT_COLUMN = "nDCG";
     private final String columnName;
     private final Discount discount;
 

@@ -30,6 +30,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.AbstractCollection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A collection of entities of a single type.  This collection augments the `Collection` interface with logic for
@@ -131,6 +132,13 @@ public abstract class EntityCollection extends AbstractCollection<Entity> {
      */
     @Nonnull
     public abstract List<Entity> find(String name, Object value);
+
+    /**
+     * Get a grouped view of the data.
+     * @param attr The grouping attribute.
+     * @return A map of values to entities with that value in the specified attribute.
+     */
+    public abstract Map<Long,List<Entity>> grouped(TypedName<Long> attr);
 
     /**
      * Get the sort keys, if this collection stores attributes in sorted order.

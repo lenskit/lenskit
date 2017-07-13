@@ -29,7 +29,7 @@ import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.concurrent.ThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Iterator;

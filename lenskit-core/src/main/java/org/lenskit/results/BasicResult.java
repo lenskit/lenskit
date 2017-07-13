@@ -23,7 +23,7 @@ package org.lenskit.results;
 import com.google.common.base.MoreObjects;
 import org.lenskit.api.Result;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.*;
 
 /**

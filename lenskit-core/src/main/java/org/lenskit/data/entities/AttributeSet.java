@@ -26,7 +26,7 @@ import com.google.common.collect.Interners;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.*;
 import java.util.*;
 

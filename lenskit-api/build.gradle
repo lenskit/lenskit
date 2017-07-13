@@ -36,6 +36,7 @@
 apply from: "$rootDir/gradle/maven.gradle"
 
 dependencies {
+    compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
 }
 
 meta {

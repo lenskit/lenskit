@@ -33,7 +33,7 @@ import org.lenskit.util.TypeUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 

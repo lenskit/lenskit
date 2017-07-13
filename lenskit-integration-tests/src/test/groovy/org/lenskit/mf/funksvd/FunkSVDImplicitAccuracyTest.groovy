@@ -78,7 +78,7 @@ class FunkSVDImplicitAccuracyTest extends CrossfoldTestSuite {
                     closeTo(0.0565d, 0.0025d))
             assertThat(table.column("MRR").average(),
                     closeTo(0.08d, 0.012d))
-            assertThat(table.column("TopN.nDCG").average(),
+            assertThat(table.column("nDCG").average(),
                     closeTo(0.303d, 0.01d))
         } else {
             runList << table
@@ -106,7 +106,7 @@ class FunkSVDImplicitAccuracyTest extends CrossfoldTestSuite {
         System.out.format("ran %d times\n", nruns)
         def map = list*.column("MAP")*.average()
         def mrr = list*.column("MRR")*.average()
-        def ndcg = list*.column("TopN.nDCG")*.average()
+        def ndcg = list*.column("nDCG")*.average()
         System.out.format("MAP: min=%.4f, max=%.4f, mean=%.4f\n",
                           map.min(), map.max(), map.sum() / map.size())
         System.out.format("MRR: min=%.4f, max=%.4f, mean=%.4f\n",

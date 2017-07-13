@@ -22,6 +22,7 @@ package org.lenskit.gradle
 
 import com.google.common.io.Files
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.ParallelizableTask
@@ -30,6 +31,7 @@ import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
 import org.lenskit.gradle.delegates.RecommendEvalTaskConfig
 import org.lenskit.gradle.traits.GradleUtils
+import org.yaml.snakeyaml.Yaml
 
 import java.util.concurrent.Callable
 
@@ -149,7 +151,14 @@ class TrainTest extends LenskitTask implements GradleUtils {
     def dataSet(Map<String,Object> options, DataSetProvider cf) {
         inputs.files cf
         if (options.isolate) {
-            throw new UnsupportedOperationException("isolation not currently supported")
+            dataSets.add {
+                def parser = new Yaml()
+                logger.info 'parsing and isolating {}', cf.dataSetFile
+                def json = parser.load cf.dataSetFile.text
+                json.isolate = true
+                json.base_uri = cf.dataSetFile.toURI().toString()
+                return json
+            }
         } else {
             dataSets.add {
                 makeUrl(cf.dataSetFile, getSpecFile())
@@ -186,11 +195,26 @@ class TrainTest extends LenskitTask implements GradleUtils {
     }
 
     /**
-     * Configure a prediction task.
+     * Configure a top-N recommendation task.
      * @param block The block.
      */
     void recommend(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
         def task = new RecommendEvalTaskConfig(project)
+        task.configure block
+        evalTasks.add(task)
+    }
+
+    /**
+     * Configure a rank effectiveness task.  This is built on {@link #recommend(Closure)}, but sets options to defaults
+     * that make the resulting task a rank effectiveness measure when used with suitable metrics such as NDCG.
+     *
+     * @param block The configuration block.
+     */
+    void rank(@DelegatesTo(RecommendEvalTaskConfig) Closure block) {
+        def task = new RecommendEvalTaskConfig(project)
+        task.labelPrefix = 'Rank'
+        task.candidates = 'user.testItems'
+        task.listSize = -1
         task.configure block
         evalTasks.add(task)
     }

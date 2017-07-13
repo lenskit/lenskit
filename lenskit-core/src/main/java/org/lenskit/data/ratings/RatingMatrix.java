@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.util.keys.KeyIndex;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.Collection;
 import java.util.List;
 

@@ -20,9 +20,8 @@
  */
 package org.lenskit.data.ratings;
 
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import com.google.common.primitives.Doubles;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
@@ -34,7 +33,7 @@ import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.SortedKeyIndex;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.Serializable;
@@ -52,6 +51,7 @@ public class InteractionStatistics implements Serializable {
     private final EntityType entityType;
     private final SortedKeyIndex items;
     private final int[] interactionCounts;
+    private final LongArrayList itemList;
 
     /**
      * Construct a new interaction statistics object.
@@ -67,6 +67,9 @@ public class InteractionStatistics implements Serializable {
         for (int i = 0; i < n; i++) {
             interactionCounts[i] = counts.get(items.getKey(i));
         }
+        long[] iarray = items.keySet().toLongArray();
+        LongArrays.quickSort(iarray, (l1, l2) -> Doubles.compare(counts.get(l2), counts.get(l1)));
+        itemList = LongArrayList.wrap(iarray);
     }
 
     /**
@@ -116,6 +119,14 @@ public class InteractionStatistics implements Serializable {
      */
     public LongSortedSet getKnownItems() {
         return items.keySet();
+    }
+
+    /**
+     * Get the list of items by decreasing popularity.
+     * @return The list of items, ordered by non-increasing popularity.
+     */
+    public LongList getItemsByPopularity() {
+        return LongLists.unmodifiable(itemList);
     }
 
     /**

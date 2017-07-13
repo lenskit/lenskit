@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +39,10 @@ class PackIndex {
 
     PackIndex(Map<?,IntList> map) {
         indexMap = map;
+    }
+
+    Set<?> getValues() {
+        return indexMap.keySet();
     }
 
     IntList getPositions(Object value) {
