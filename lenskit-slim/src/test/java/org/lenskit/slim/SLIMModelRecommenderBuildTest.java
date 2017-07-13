@@ -234,8 +234,8 @@ public class SLIMModelRecommenderBuildTest {
         Long2ObjectMap<Long2DoubleMap> dataTrans = Vectors.transposeMap(data);
 
         Iterator<Long> iter = dataTrans.keySet().iterator();
-        final double userNum = dataTrans.size();
-        double rmseByUser = 0.0;
+//        final double userNum = dataTrans.size();
+//        double rmseByUser = 0.0;
 
         while (iter.hasNext()) {
             final long user = iter.next();
@@ -243,30 +243,30 @@ public class SLIMModelRecommenderBuildTest {
             try (Recommender rec = engine.createRecommender(dao)) {
                 ItemScorer scorer = rec.getItemScorer();
                 assertThat(scorer, notNullValue());
-                ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(userRatings.keySet()));
-                double rmse = 0.0;
-                for (long item : userRatings.keySet()) {
-                    Result r = details.get(item);
-                    assertThat(r, notNullValue());
-                    double actual = userRatings.get(item);
-                    double prediction = r.getScore();
-                    rmse += Math.pow((actual - prediction),2);
-                    System.out.println("user " + user + " item " + item + ": actual rating and prediction: " + actual + "   " + prediction);
-                }
-
-                rmse /= userRatings.keySet().size();
-                rmse = Math.sqrt(rmse);
-                rmseByUser += rmse;
-                Map<Long,Double> scoreMap = details.scoreMap();
-                System.out.println("user " + user + " actual ratings in test class: ");
-                System.out.println(LongUtils.frozenMap(userRatings));
-                System.out.println("user " + user + " actual prediction in test class: ");
-                System.out.println(LongUtils.frozenMap(scoreMap));
-                System.out.println("user " + user + " rmse is: " + rmse);
+//                ResultMap details = scorer.scoreWithDetails(user, new ArrayList<>(userRatings.keySet()));
+//                double rmse = 0.0;
+//                for (long item : userRatings.keySet()) {
+//                    Result r = details.get(item);
+//                    assertThat(r, notNullValue());
+//                    double actual = userRatings.get(item);
+//                    double prediction = r.getScore();
+//                    rmse += Math.pow((actual - prediction),2);
+//                    System.out.println("user " + user + " item " + item + ": actual rating and prediction: " + actual + "   " + prediction);
+//                }
+//
+//                rmse /= userRatings.keySet().size();
+//                rmse = Math.sqrt(rmse);
+//                rmseByUser += rmse;
+//                Map<Long,Double> scoreMap = details.scoreMap();
+//                System.out.println("user " + user + " actual ratings in test class: ");
+//                System.out.println(LongUtils.frozenMap(userRatings));
+//                System.out.println("user " + user + " actual prediction in test class: ");
+//                System.out.println(LongUtils.frozenMap(scoreMap));
+//                System.out.println("user " + user + " rmse is: " + rmse);
             }
         }
-        rmseByUser /= userNum;
-        System.out.println("SLIM recommender RMSE is " + rmseByUser);
+//        rmseByUser /= userNum;
+//        System.out.println("SLIM recommender RMSE is " + rmseByUser);
 
     }
 

@@ -21,8 +21,7 @@
 package org.lenskit.util.math;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -32,6 +31,7 @@ import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -337,12 +337,12 @@ public final class Vectors {
      */
     public static Long2ObjectMap<Long2DoubleMap> transposeMap(Long2ObjectMap<Long2DoubleMap> matrix) {
         Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
-        for (Map.Entry<Long, Long2DoubleMap> rowEntry : matrix.entrySet()) {
-            long rowNum = rowEntry.getKey();
+        for (Long2ObjectMap.Entry<Long2DoubleMap> rowEntry : matrix.long2ObjectEntrySet()) {
+            long rowNum = rowEntry.getLongKey();
             Long2DoubleMap rowValue = rowEntry.getValue();
-            for (Map.Entry<Long, Double> entry : rowValue.entrySet()) {
-                long colNum = entry.getKey();
-                double Value = entry.getValue();
+            for (Long2DoubleMap.Entry entry : rowValue.long2DoubleEntrySet()) {
+                long colNum = entry.getLongKey();
+                double Value = entry.getDoubleValue();
                 Long2DoubleMap rowOfMapT = mapT.get(colNum);
                 if (rowOfMapT == null) rowOfMapT = new Long2DoubleOpenHashMap();
                 rowOfMapT.put(rowNum, Value);
@@ -360,9 +360,9 @@ public final class Vectors {
      */
     public static Long2DoubleMap add(Long2DoubleMap a, Long2DoubleMap b) {
         Long2DoubleMap sumOfTwoVectors = new Long2DoubleOpenHashMap(a);
-        for (Map.Entry<Long, Double> e : b.entrySet()) {
-            long key = e.getKey();
-            double value = e.getValue();
+        for (Long2DoubleMap.Entry e : b.long2DoubleEntrySet()) {
+            long key = e.getLongKey();
+            double value = e.getDoubleValue();
             double sum = sumOfTwoVectors.get(key) + value;
             sumOfTwoVectors.put(key, sum);
         }
@@ -403,10 +403,10 @@ public final class Vectors {
      */
     public static Long2DoubleMap filterValues(Long2DoubleMap a, double value, double epsilon) {
         Long2DoubleMap result = new Long2DoubleOpenHashMap();
-        for (Map.Entry<Long, Double> e : a.entrySet()) {
-            long key = e.getKey();
-            double v = e.getValue();
-            if (abs(v - value) > epsilon) {
+        for (Long2DoubleMap.Entry e : a.long2DoubleEntrySet()) {
+            long key = e.getLongKey();
+            double v = e.getDoubleValue();
+            if (Math.abs(v - value) > epsilon) {
                 result.put(key, v);
             }
         }
