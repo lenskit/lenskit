@@ -3,8 +3,8 @@
 [![Build Status](https://travis-ci.org/lenskit/lenskit.png?branch=master)](https://travis-ci.org/lenskit/lenskit)
 [![Windows build status](https://ci.appveyor.com/api/projects/status/github/lenskit/lenskit?branch=master)](https://ci.appveyor.com/project/elehack/lenskit)
 [![Test coverage](https://codecov.io/gh/lenskit/lenskit/branch/master/graph/badge.svg)](https://codecov.io/gh/lenskit/lenskit)
-[![SonarQube test coverage](https://img.shields.io/sonar/https/sonarcloud.io/lenskit/coverage.svg)](https://sonarcloud.io/dashboard?id=lenskit)
-[![SonarQube technical debt](https://img.shields.io/sonar/https/sonarcloud.io/lenskit/tech_debt.svg)](https://sonarcloud.io/dashboard?id=lenskit)
+[![SonarQube test coverage](https://sonarcloud.io/api/badges/measure?key=lenskit&metric=coverage)](https://sonarcloud.io/dashboard?id=lenskit)
+[![SonarQube technical debt](https://sonarcloud.io/api/badges/measure?key=lenskit&metric=sqale_debt_ratio)](https://sonarcloud.io/dashboard?id=lenskit)
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/9190.svg)](https://scan.coverity.com/projects/lenskit-lenskit)
 [![Join the chat at https://gitter.im/lenskit/lenskit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lenskit/lenskit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
