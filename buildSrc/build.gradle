@@ -52,14 +52,3 @@ dependencies {
     compile 'org.apache.maven:maven-model:3.0.4'
     compile 'com.google.guava:guava:19.0'
 }
-
-apply plugin: 'idea'
-idea {
-    module {
-        outputDir = sourceSets.main.output.classesDir
-        testOutputDir = sourceSets.test.output.classesDir
-        downloadSources = true
-        downloadJavadoc = true
-        inheritOutputDirs = false
-    }
-}
