@@ -50,7 +50,7 @@ if ((findProperty('idea.active') ?: 'false').asBoolean()) {
     }
 } else {
     dependencies {
-        compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7   '
+        compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.11'
     }
 }
 

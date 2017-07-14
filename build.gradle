@@ -35,14 +35,21 @@
 import org.grouplens.lenskit.build.GitExtension
 
 plugins {
-    id "org.sonarqube" version "2.3"
+    id 'com.gradle.build-scan' version '1.8'
+    id "org.sonarqube" version "2.5"
 }
+
 apply plugin: 'base'
 apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
 
-ext.guavaVersion = '21.0'
+ext.guavaVersion = '22.0'
+
+buildScan {
+    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+    licenseAgree = 'yes'
+}
 
 configurations {
     allDeps // collect all external dependencies of all modules
@@ -126,11 +133,6 @@ subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
-
-    sourceSets.all { ss ->
-        // generate resources & classes to same dir
-        ss.output.resourcesDir = ss.output.classesDir
-    }
 
     // don't package until testing
     tasks.matching({it.name == 'uploadArchives'}).each { task ->

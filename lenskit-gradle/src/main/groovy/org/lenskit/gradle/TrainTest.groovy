@@ -22,10 +22,8 @@ package org.lenskit.gradle
 
 import com.google.common.io.Files
 import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
-import org.gradle.api.tasks.ParallelizableTask
 import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.delegates.DataSetConfig
 import org.lenskit.gradle.delegates.EvalTaskConfig
@@ -38,7 +36,6 @@ import java.util.concurrent.Callable
 /**
  * Run a train-test evaluation.
  */
-@ParallelizableTask
 class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The output file for recommendation output.

@@ -24,7 +24,6 @@ import groovy.json.JsonOutput
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.ParallelizableTask
 import org.lenskit.gradle.traits.DataSources
 
 /**
@@ -34,7 +33,6 @@ import org.lenskit.gradle.traits.DataSources
  * @see DataSources
  * @see <http://mooc.lenskit.org/documentation/evaluator/data/>
  */
-@ParallelizableTask
 class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
