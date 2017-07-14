@@ -20,9 +20,7 @@
  */
 package org.lenskit.inject;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.CachePolicy;
@@ -46,6 +44,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Helper utilities for Grapht integration.
@@ -93,16 +92,10 @@ public final class GraphtUtils {
      * @return The set of nodes that have placeholder satisfactions.
      */
     public static Set<DAGNode<Component, Dependency>> getPlaceholderNodes(DAGNode<Component,Dependency> graph) {
-        Predicate<Component> isPlaceholder = new Predicate<Component>() {
-            @Override
-            public boolean apply(@Nullable Component input) {
-                return input != null && input.getSatisfaction() instanceof PlaceholderSatisfaction;
-            }
-        };
-        Predicate<DAGNode<Component, ?>> nodePredicate = DAGNode.labelMatches(isPlaceholder);
-        return FluentIterable.from(graph.getReachableNodes())
-                             .filter(nodePredicate)
-                             .toSet();
+        return graph.getReachableNodes()
+                    .stream()
+                    .filter(n -> n.getLabel().getSatisfaction() instanceof PlaceholderSatisfaction)
+                    .collect(Collectors.toSet());
     }
 
     /**
@@ -186,53 +179,36 @@ public final class GraphtUtils {
         return desireIsTransient(desire);
     }
 
-    public static Predicate<DAGEdge<?, Dependency>> edgeIsTransient() {
-        return new Predicate<DAGEdge<?, Dependency>>() {
-            @Override
-            public boolean apply(@Nullable DAGEdge<?, Dependency> input) {
-                Desire desire = input == null ? null : input.getLabel().getInitialDesire();
-                return desire != null && !desireIsTransient(desire);
-            }
-        };
-    }
-
-    private static Function<DAGEdge<Component,Dependency>,List<String>> ORDER_KEY = new Function<DAGEdge<Component, Dependency>, List<String>>() {
-        @Nullable
-        @Override
-        public List<String> apply(@Nullable DAGEdge<Component,Dependency> input) {
-            if (input == null) {
-                throw new NullPointerException("cannot order null edge");
-            }
-            Desire desire = input.getLabel().getInitialDesire();
-            InjectionPoint ip = desire.getInjectionPoint();
-            List<String> key = new ArrayList<>(4);
-            if (ip instanceof ConstructorParameterInjectionPoint) {
-                ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
-                key.add("0: constructor");
-                key.add(Integer.toString(cpi.getParameterIndex()));
-            } else if (ip instanceof SetterInjectionPoint) {
-                SetterInjectionPoint spi = (SetterInjectionPoint) ip;
-                key.add("1: setter");
-                key.add(spi.getMember().getName());
-                key.add(Integer.toString(spi.getParameterIndex()));
-            } else if (ip instanceof FieldInjectionPoint) {
-                FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
-                key.add("2: field");
-                key.add(fpi.getMember().getName());
-            } else if (ip instanceof NoArgumentInjectionPoint) {
-                /* this shouldn't really happen */
-                NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
-                key.add("8: no-arg");
-                key.add(fpi.getMember().getName());
-            } else if (ip instanceof SimpleInjectionPoint) {
-                key.add("5: simple");
-            } else {
-                key.add("9: unknown");
-                key.add(ip.getClass().getName());
-            }
-            return key;
+    private static List<String> extractOrderKey(DAGEdge<Component,Dependency> node) {
+        Desire desire = node.getLabel().getInitialDesire();
+        InjectionPoint ip = desire.getInjectionPoint();
+        List<String> key = new ArrayList<>(4);
+        if (ip instanceof ConstructorParameterInjectionPoint) {
+            ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
+            key.add("0: constructor");
+            key.add(Integer.toString(cpi.getParameterIndex()));
+        } else if (ip instanceof SetterInjectionPoint) {
+            SetterInjectionPoint spi = (SetterInjectionPoint) ip;
+            key.add("1: setter");
+            key.add(spi.getMember().getName());
+            key.add(Integer.toString(spi.getParameterIndex()));
+        } else if (ip instanceof FieldInjectionPoint) {
+            FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
+            key.add("2: field");
+            key.add(fpi.getMember().getName());
+        } else if (ip instanceof NoArgumentInjectionPoint) {
+            /* this shouldn't really happen */
+            NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
+            key.add("8: no-arg");
+            key.add(fpi.getMember().getName());
+        } else if (ip instanceof SimpleInjectionPoint) {
+            key.add("5: simple");
+        } else {
+            key.add("9: unknown");
+            key.add(ip.getClass().getName());
         }
-    };
+        return key;
+    }
 
     /**
      * An ordering over dependency edges.
@@ -240,7 +216,7 @@ public final class GraphtUtils {
     public static final Ordering<DAGEdge<Component, Dependency>> DEP_EDGE_ORDER =
             Ordering.<String>natural()
                     .lexicographical()
-                    .onResultOf(ORDER_KEY);
+                    .onResultOf(GraphtUtils::extractOrderKey);
 
     /**
      * Find the set of shareable nodes (objects that will be replaced with instance satisfactions in
@@ -253,28 +229,26 @@ public final class GraphtUtils {
     public static LinkedHashSet<DAGNode<Component, Dependency>> getShareableNodes(DAGNode<Component, Dependency> graph) {
         LinkedHashSet<DAGNode<Component, Dependency>> shared = Sets.newLinkedHashSet();
 
-        List<DAGNode<Component, Dependency>> nodes = graph.getSortedNodes();
-        for (DAGNode<Component, Dependency> node : nodes) {
-            if (!isShareable(node)) {
-                continue;
-            }
-
-            // see if we depend on any non-shared nodes
-            // since nodes are sorted, all shared nodes will have been seen
-            boolean isShared = true;
-            for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
-                if (!edgeIsTransient(edge)) {
-                    boolean es = shared.contains(edge.getTail());
-                    isShared &= es;
-                    if (!es) {
-                        logger.trace("node {} not shared due to non-transient dependency on {}", node, edge.getTail());
-                    }
-                }
-            }
-            if (isShared) {
-                shared.add(node);
-            }
-        }
+        graph.getSortedNodes()
+             .stream()
+             .filter(GraphtUtils::isShareable)
+             .forEach(node -> {
+                 // see if we depend on any non-shared nodes
+                 // since nodes are sorted, all shared nodes will have been seen
+                 boolean isShared = true;
+                 for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
+                     if (!edgeIsTransient(edge)) {
+                         boolean es = shared.contains(edge.getTail());
+                         isShared &= es;
+                         if (!es) {
+                             logger.debug("node {} not shared due to non-transient dependency on {}", node, edge.getTail());
+                         }
+                     }
+                 }
+                 if (isShared) {
+                     shared.add(node);
+                 }
+             });
 
         return shared;
     }
@@ -290,21 +264,17 @@ public final class GraphtUtils {
     public static DAGNode<Component,Dependency> findSatisfyingNode(DAGNode<Component,Dependency> graph,
                                                                    final QualifierMatcher qmatch,
                                                                    final Class<?> type) {
-        Predicate<DAGEdge<Component,Dependency>> pred = new Predicate<DAGEdge<Component, Dependency>>() {
-            @Override
-            public boolean apply(@Nullable DAGEdge<Component, Dependency> input) {
-                return input != null
-                       && type.isAssignableFrom(input.getTail()
-                                                     .getLabel()
-                                                     .getSatisfaction()
-                                                     .getErasedType())
-                       && qmatch.apply(input.getLabel()
-                                            .getInitialDesire()
-                                            .getInjectionPoint()
-                                            .getQualifier());
-            }
-        };
+        Predicate<DAGEdge<Component,Dependency>> pred = input ->
+                type.isAssignableFrom(input.getTail()
+                                           .getLabel()
+                                           .getSatisfaction()
+                                           .getErasedType())
+                        && qmatch.apply(input.getLabel()
+                                             .getInitialDesire()
+                                             .getInjectionPoint()
+                                             .getQualifier());
         DAGEdge<Component, Dependency> edge = graph.findEdgeBFS(pred);
+
         if (edge != null) {
             return edge.getTail();
         } else {
