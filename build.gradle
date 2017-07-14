@@ -44,7 +44,7 @@ apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
 
-ext.guavaVersion = '21.0'
+ext.guavaVersion = '22.0'
 
 buildScan {
     licenseAgreementUrl = 'https://gradle.com/terms-of-service'
