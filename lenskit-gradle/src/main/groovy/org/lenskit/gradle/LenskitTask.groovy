@@ -78,11 +78,6 @@ abstract class LenskitTask extends JavaExec {
         return this
     }
 
-    /*
-    * The list of jvm argument prroperties
-    * */
-    def List<String> jvmArgs
-
     LenskitTask() {
         def ext = project.extensions.getByType(LenskitExtension)
         conventionMapping.jvmArgs = { ext.jvmArgs } // map jvmargs default to the jvmargs from the extension

@@ -134,11 +134,6 @@ subprojects {
     sourceCompatibility = '1.8'
     targetCompatibility = '1.8'
 
-    sourceSets.all { ss ->
-        // generate resources & classes to same dir
-        ss.output.resourcesDir = ss.output.classesDir
-    }
-
     // don't package until testing
     tasks.matching({it.name == 'uploadArchives'}).each { task ->
         task.mustRunAfter check

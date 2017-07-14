@@ -8,7 +8,7 @@ task recommend(type: JavaExec) {
 
     main 'org.lenskit.cli.Main'
     args 'recommend'
-    args '-C', "$buildDir/classes/main"
+    args '-C', "$compileJava.destinationDir"
     args '-c', 'predictor.groovy'
     args "--tsv-file", ratingsFile
     args '--item-names', "$mlDataDir/movies.csv"

@@ -21,6 +21,7 @@ import org.gradle.maven.MavenPomArtifact
 public class MavenRepublish extends ConventionTask {
     public def Set<Configuration> configurations = []
     def repoRoot
+    private def depFileCache = null
 
     public MavenRepublish() {
         conventionMapping.repoRoot = {
@@ -28,7 +29,11 @@ public class MavenRepublish extends ConventionTask {
         }
     }
 
-    Multimap<ModuleComponentIdentifier,File> resolveDepFiles() {
+    Multimap<ModuleComponentIdentifier,File> resolveDepFiles(cache = true) {
+        if (cache && depFileCache != null) {
+            return depFileCache
+        }
+
         Multimap<ModuleComponentIdentifier,File> depFiles = HashMultimap.create()
         def ids = []
         for (cfg in configurations) {
@@ -85,6 +90,8 @@ public class MavenRepublish extends ConventionTask {
                 }
             }
         }
+
+        depFileCache = depFiles
         return depFiles
     }
 
@@ -114,7 +121,7 @@ public class MavenRepublish extends ConventionTask {
     @TaskAction
     void republish() {
         def root = getRepoRoot()
-        for (e in resolveDepFiles().asMap().entrySet()) {
+        for (e in resolveDepFiles(false).asMap().entrySet()) {
             logger.info("copying {} artifacts for {}", e.value.size(), e.key)
             def path = getComponentPath(e.key)
             project.copy {
