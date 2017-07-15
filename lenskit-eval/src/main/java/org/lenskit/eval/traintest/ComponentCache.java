@@ -21,8 +21,8 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Monitor;
+import net.jcip.annotations.ThreadSafe;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.jcip.annotations.ThreadSafe;
 import javax.inject.Provider;
 import java.io.*;
 import java.lang.ref.SoftReference;
@@ -54,6 +53,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -346,9 +346,14 @@ class ComponentCache implements NodeProcessor {
         public void describe(DAGNode<Component, Dependency> node, DescriptionWriter description) {
             node.getLabel().getSatisfaction().visit(new LabelDescriptionVisitor(description));
             description.putField("cachePolicy", node.getLabel().getCachePolicy().name());
+
             List<DAGNode<Component, Dependency>> edges =
-                    Lists.transform(GraphtUtils.DEP_EDGE_ORDER.sortedCopy(node.getOutgoingEdges()),
-                                    DAGEdge.<Component,Dependency>extractTail());
+                    node.getOutgoingEdges()
+                    .stream()
+                    .sorted(GraphtUtils.DEP_EDGE_ORDER)
+                    .map(DAGEdge::getTail)
+                    .collect(Collectors.toList());
+
             description.putList("dependencies", edges, INSTANCE);
         }
     }
