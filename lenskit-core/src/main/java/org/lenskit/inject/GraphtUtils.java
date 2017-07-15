@@ -20,7 +20,6 @@
  */
 package org.lenskit.inject;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.CachePolicy;
@@ -29,7 +28,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.*;
-import org.grouplens.grapht.reflect.internal.*;
+import org.grouplens.grapht.reflect.internal.SimpleInjectionPoint;
 import org.lenskit.RecommenderConfigurationException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
@@ -39,11 +38,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -183,24 +182,17 @@ public final class GraphtUtils {
         Desire desire = node.getLabel().getInitialDesire();
         InjectionPoint ip = desire.getInjectionPoint();
         List<String> key = new ArrayList<>(4);
-        if (ip instanceof ConstructorParameterInjectionPoint) {
-            ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
+        Member member = ip.getMember();
+        if (member instanceof Constructor) {
             key.add("0: constructor");
-            key.add(Integer.toString(cpi.getParameterIndex()));
-        } else if (ip instanceof SetterInjectionPoint) {
-            SetterInjectionPoint spi = (SetterInjectionPoint) ip;
+            key.add(Integer.toString(ip.getParameterIndex()));
+        } else if (member instanceof Method) {
             key.add("1: setter");
-            key.add(spi.getMember().getName());
-            key.add(Integer.toString(spi.getParameterIndex()));
-        } else if (ip instanceof FieldInjectionPoint) {
-            FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
+            key.add(member.getName());
+            key.add(Integer.toString(ip.getParameterIndex()));
+        } else if (member instanceof Field) {
             key.add("2: field");
-            key.add(fpi.getMember().getName());
-        } else if (ip instanceof NoArgumentInjectionPoint) {
-            /* this shouldn't really happen */
-            NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
-            key.add("8: no-arg");
-            key.add(fpi.getMember().getName());
+            key.add(member.getName());
         } else if (ip instanceof SimpleInjectionPoint) {
             key.add("5: simple");
         } else {
@@ -264,21 +256,19 @@ public final class GraphtUtils {
     public static DAGNode<Component,Dependency> findSatisfyingNode(DAGNode<Component,Dependency> graph,
                                                                    final QualifierMatcher qmatch,
                                                                    final Class<?> type) {
-        Predicate<DAGEdge<Component,Dependency>> pred = input ->
-                type.isAssignableFrom(input.getTail()
-                                           .getLabel()
-                                           .getSatisfaction()
-                                           .getErasedType())
-                        && qmatch.apply(input.getLabel()
-                                             .getInitialDesire()
-                                             .getInjectionPoint()
-                                             .getQualifier());
-        DAGEdge<Component, Dependency> edge = graph.findEdgeBFS(pred);
+        Optional<DAGEdge<Component, Dependency>> edge =
+                graph.breadthFirstEdges()
+                     .filter(e -> type.isAssignableFrom(e.getTail()
+                                                         .getLabel()
+                                                         .getSatisfaction()
+                                                         .getErasedType()))
+                     .filter(e -> qmatch.apply(e.getLabel()
+                                                .getInitialDesire()
+                                                .getInjectionPoint()
+                                                .getQualifier()))
+                .findFirst();
 
-        if (edge != null) {
-            return edge.getTail();
-        } else {
-            return null;
-        }
+        return edge.map(DAGEdge::getTail)
+                   .orElse(null);
     }
 }

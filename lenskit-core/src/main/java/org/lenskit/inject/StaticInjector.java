@@ -82,7 +82,7 @@ public class StaticInjector implements Injector {
     public <T> T tryGetInstance(Class<T> type) throws InjectionException {
         Desire d = Desires.create(null, type, true);
         DAGEdge<Component, Dependency> e =
-                graph.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(d));
+                graph.getOutgoingEdgeWithLabel(l -> l.hasInitialDesire(d));
 
         if (e != null) {
             return type.cast(instantiator.instantiate(e.getTail()));
