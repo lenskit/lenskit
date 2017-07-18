@@ -85,6 +85,9 @@ class TrainTest extends LenskitTask implements GradleUtils {
         conventionMapping.threadCount = {
             project.lenskit.threadCount
         }
+        conventionMapping.parallelTasks = {
+            (project.findProperty('lenskit.parallelTasks') ?: '0') as Integer
+        }
         conventionMapping.outputFile = {
             "$project.buildDir/${name}.csv"
         }
