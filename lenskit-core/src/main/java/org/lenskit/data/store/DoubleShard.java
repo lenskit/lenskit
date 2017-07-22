@@ -198,7 +198,7 @@ abstract class DoubleShard extends Shard {
                     full.size = n;
                     full.mask = mask != null ? (BitSet) mask.clone() : null;
                     for (int i = 0; i < n; i++) {
-                        full.data[i] = data[i] / 2;
+                        full.data[i] = data[i] * 0.5;
                     }
                     return full;
                 }
