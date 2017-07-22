@@ -56,9 +56,7 @@ public class CSVWriter extends AbstractTableWriter {
      * @throws IOException if there is an error writing the column headers.
      */
     public CSVWriter(@WillCloseWhenClosed @Nonnull Writer w, @Nullable TableLayout l) throws IOException {
-        if (w == null) {
-            throw new NullPointerException("writer must not be null");
-        }
+        Preconditions.checkNotNull(w, "writer");
 
         layout = l;
         if (w instanceof BufferedWriter) {
