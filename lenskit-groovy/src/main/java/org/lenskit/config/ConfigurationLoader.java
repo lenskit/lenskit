@@ -25,9 +25,9 @@ import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.util.ClassDirectory;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.RecommenderConfigurationException;
+import org.lenskit.util.ClassDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,6 +140,7 @@ public class ConfigurationLoader {
      */
     public LenskitConfigScript loadScript(@Nonnull File file) throws IOException, RecommenderConfigurationException {
         Preconditions.checkNotNull(file, "Configuration file");
+        logger.info("loading recommender configuration from {}", file);
         return loadScript(new GroovyCodeSource(file), file.toURI());
     }
 
