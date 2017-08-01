@@ -124,7 +124,7 @@ public class AlgorithmInstance {
             script.setDelegate(dsl);
             script.configure();
         } catch (IOException e) {
-            throw new EvaluationException("cannot load configuration from " + file);
+            throw new EvaluationException("cannot load configuration from " + file, e);
         }
         List<AlgorithmInstance> multi = dsl.getInstances();
         if (multi.isEmpty()) {
