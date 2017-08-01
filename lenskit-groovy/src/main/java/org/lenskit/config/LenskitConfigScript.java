@@ -20,7 +20,6 @@
  */
 package org.lenskit.config;
 
-import com.google.common.base.Joiner;
 import groovy.lang.Binding;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
@@ -31,8 +30,6 @@ import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,7 +42,6 @@ import java.util.Set;
 public abstract class LenskitConfigScript extends Script {
     protected final Logger logger = LoggerFactory.getLogger(LenskitConfigScript.class);
     private LenskitConfigDSL delegate;
-    private Map<String,Set<String>> badProperties = new LinkedHashMap<>();
 
     protected LenskitConfigScript() {
         this(new Binding());
@@ -99,11 +95,20 @@ public abstract class LenskitConfigScript extends Script {
      */
     public Object propertyMissing(String name) {
         if (Character.isUpperCase(name.charAt(0))) {
-            logger.error("unresolved class or property {}", name);
+            logger.error("unresolved class or property {}, missing import?", name);
             Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
             logger.debug("found {} packages with classes named {}", packages.size(), name);
-            badProperties.put(name, packages);
-            return null;
+            if (packages.isEmpty()) {
+                throw new MissingPropertyException(name, getClass());
+            }
+
+            String message = "Unresolved property in evaluation script: " + name;
+            RecommenderConfigurationException ex = new RecommenderConfigurationException(message);
+            for (String pkg: packages) {
+                logger.info("consider importing {}.{}", pkg, name);
+                ex.addHint("consider importing %s.%s", pkg, name);
+            }
+            throw ex;
         } else {
             logger.error("unresolved property {} in configuration script", name);
             throw new MissingPropertyException(name, getClass());
@@ -115,26 +120,12 @@ public abstract class LenskitConfigScript extends Script {
      * @throws RecommenderConfigurationException if there is an error with the configuration.
      */
     private void runScript() throws RecommenderConfigurationException {
-        badProperties.clear();
         try {
             run();
         } catch (RecommenderConfigurationException rce) {
             throw rce;
         } catch (Exception ex) {
             throw new RecommenderConfigurationException("error configuring recommender", ex);
-        }
-        if (!badProperties.isEmpty()) {
-            String message = "Unresolved properties in evaluation script: ";
-            message += Joiner.on(", ").join(badProperties.keySet());
-            RecommenderConfigurationException ex = new RecommenderConfigurationException(message);
-            for (Map.Entry<String,Set<String>> bpe: badProperties.entrySet()) {
-                logger.error("Script references unknown class or property {}", bpe.getKey());
-                for (String pkg: bpe.getValue()) {
-                    logger.info("consider importing {}.{}", pkg, bpe.getKey());
-                    ex.addHint("consider importing %s.%s", pkg, bpe.getKey());
-                }
-            }
-            throw ex;
         }
     }
 
