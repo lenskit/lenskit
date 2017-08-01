@@ -153,6 +153,9 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
         }
         size += 1;
         lastEntityId = id;
+        if (ids != null) {
+            ids.add(id);
+        }
 
         for (AttrStoreBuilder storeBuilder : storeBuilders) {
             if (storeBuilder.size() < size) {
