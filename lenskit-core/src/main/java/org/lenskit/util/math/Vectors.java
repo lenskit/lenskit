@@ -136,6 +136,15 @@ public final class Vectors {
     }
 
     /**
+     * Convert a vector to a unit vector.
+     * @param v The vector.
+     * @return A vector with Euclidean norm of 1.
+     */
+    public static Long2DoubleMap unitVector(Long2DoubleMap v) {
+        return multiplyScalar(v, 1.0 / euclideanNorm(v));
+    }
+
+    /**
      * Compute the dot product of two maps. This method assumes any value missing in one map is 0, so it is the dot
      * product of the values of common keys.
      * @param v1 The first vector.

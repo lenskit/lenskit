@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.util.Map;
@@ -181,5 +182,47 @@ public class VectorsTest {
         assertThat(res.get(4L), closeTo(5.5, 1e-6));
         assertThat(res.get(5L), closeTo(5.0, 1e-6));
         assertThat(res.get(1L), equalTo(0.0));
+    }
+
+    @Test
+    public void testUnitEmpty() {
+        Long2DoubleMap unit = Vectors.unitVector(Long2DoubleMaps.EMPTY_MAP);
+        assertThat(unit.size(), equalTo(0));
+    }
+
+    @Test
+    public void testUnitSingletonUnit() {
+        Long2DoubleMap unit = Vectors.unitVector(Long2DoubleMaps.singleton(42L, 1.0));
+        assertThat(unit.size(), equalTo(1));
+        assertThat(unit, hasEntry(equalTo(42L), closeTo(1.0, 1.0e-6)));
+    }
+
+    @Test
+    public void testUnitSingleton() {
+        Long2DoubleMap unit = Vectors.unitVector(Long2DoubleMaps.singleton(42L, 5.0));
+        assertThat(unit.size(), equalTo(1));
+        assertThat(unit, hasEntry(equalTo(42L), closeTo(1.0, 1.0e-6)));
+    }
+
+    @Test
+    public void testUnitVector() {
+        for (Map<Long,Double> map: someMaps(longs(), doubles(-100, 100))) {
+            if (map.isEmpty()) {
+                continue;
+            }
+
+            Long2DoubleMap vec = LongUtils.frozenMap(map);
+            double norm = Vectors.euclideanNorm(vec);
+
+            Long2DoubleMap unit = Vectors.unitVector(vec);
+            assertThat(unit.size(), equalTo(vec.size()));
+            assertThat(unit.keySet(), equalTo(vec.keySet()));
+            assertThat(Vectors.euclideanNorm(unit),
+                       closeTo(1.0, 1.0e-6));
+            Long2DoubleMaps.fastForEach(unit, e -> {
+                assertThat(e.getDoubleValue() * norm,
+                           closeTo(vec.get(e.getLongKey()), 1.0e-6));
+            });
+        }
     }
 }
