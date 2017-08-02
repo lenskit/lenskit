@@ -62,17 +62,5 @@ public class LenskitPlugin implements Plugin<Project> {
                 prop.setProperty(lenskit, val)
             }
         }
-        addLenskitConfiguration(project, lenskit)
-    }
-
-    void addLenskitConfiguration(Project project, LenskitExtension lenskit) {
-        def cfg = project.configurations.create('lenskit')
-        // got this trick from JacocoPlugin - if there are no dependencies, make some
-        cfg.incoming.beforeResolve {
-            if (cfg.dependencies.isEmpty()) {
-                logger.info 'Adding LensKit CLI dependency for version {}', lenskit.version
-                cfg.dependencies.add(project.dependencies.create("org.grouplens.lenskit:lenskit-cli:$lenskit.version"))
-            }
-        }
     }
 }
