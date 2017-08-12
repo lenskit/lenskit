@@ -45,7 +45,7 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
     compile group: 'net.jcip', name: 'jcip-annotations', version: '1.0'
     compile group: 'it.unimi.dsi', name:'fastutil', version: '8.1.0'
-    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.11.0-SNAPSHOT'
+    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.11.0-BETA3'
     compile group: 'com.google.guava', name: 'guava', version: guavaVersion
     compile group: 'org.joda', name: 'joda-convert', version: '1.8.1'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.7.4'
