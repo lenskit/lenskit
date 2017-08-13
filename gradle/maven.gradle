@@ -37,15 +37,6 @@
  * This build script contains code for uploading to Maven.
  */
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'net.elehack.gradle:gradle-util:0.3'
-    }
-}
-
 apply plugin: 'maven'
 apply plugin: 'signing'
 
