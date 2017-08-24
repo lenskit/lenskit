@@ -73,7 +73,7 @@ class UserUserImplicitAccuracyTest extends CrossfoldTestSuite {
                     closeTo(0.278d, 0.015d))
             assertThat(table.column("MRR").average(),
                     closeTo(0.676d, 0.03d))
-            assertThat(table.column("TopN.nDCG").average(),
+            assertThat(table.column("nDCG").average(),
                     closeTo(0.56d, 0.015d))
         } else {
             runList << table
@@ -101,7 +101,7 @@ class UserUserImplicitAccuracyTest extends CrossfoldTestSuite {
         System.out.format("ran %d times\n", nruns)
         def map = list*.column("MAP")*.average()
         def mrr = list*.column("MRR")*.average()
-        def ndcg = list*.column("TopN.nDCG")*.average()
+        def ndcg = list*.column("nDCG")*.average()
         System.out.format("MAP: min=%.4f, max=%.4f, mean=%.4f\n",
                 map.min(), map.max(), map.sum() / map.size())
         System.out.format("MRR: min=%.4f, max=%.4f, mean=%.4f\n",

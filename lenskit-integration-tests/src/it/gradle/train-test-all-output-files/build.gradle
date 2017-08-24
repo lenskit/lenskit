@@ -50,6 +50,10 @@ task trainTest(type: TrainTest) {
             columnName 'PredRankAcc'
         }
     }
+    rank {
+        outputFile 'ranks.csv.gz'
+        metric 'ndcg'
+    }
     recommend {
         listSize 10
         outputFile 'recommendations.csv.gz'
@@ -58,7 +62,7 @@ task trainTest(type: TrainTest) {
         metric 'length'
         metric 'entropy'
         metric('ndcg') {
-            columnName 'nDCG'
+            columnName 'nDCG-X'
         }
         metric'ndpm'
         metric 'popularity'

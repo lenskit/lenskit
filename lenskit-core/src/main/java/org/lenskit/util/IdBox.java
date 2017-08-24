@@ -24,7 +24,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.util.keys.KeyedObject;
 
-import javax.annotation.concurrent.Immutable;
+import net.jcip.annotations.Immutable;
 import java.util.function.Function;
 
 /**

@@ -21,13 +21,11 @@
 package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.data.ratings.Rating;
@@ -39,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 class GroupedCrossfoldMethod implements CrossfoldMethod {
     protected final Logger logger = LoggerFactory.getLogger(getClass());

@@ -74,6 +74,28 @@ public abstract class EntityBuilder {
     }
 
     /**
+     * Set an attribute in the entity.
+     * @param name The name of the attribute to set.
+     * @param val The attribute value.
+     * @return The entity builder (for chaining).
+     * @throws NoSuchAttributeException if the specified attribute is not supported by this entity.
+     */
+    public EntityBuilder setLongAttribute(TypedName<Long> name, long val) {
+        return setAttribute(name, val);
+    }
+
+    /**
+     * Set an attribute in the entity.
+     * @param name The name of the attribute to set.
+     * @param val The attribute value.
+     * @return The entity builder (for chaining).
+     * @throws NoSuchAttributeException if the specified attribute is not supported by this entity.
+     */
+    public EntityBuilder setDoubleAttribute(TypedName<Double> name, double val) {
+        return setAttribute(name, val);
+    }
+
+    /**
      * Clear an attribute.
      * @param name The name of the attribute to clear.
      * @return The entity builder (for chaining).

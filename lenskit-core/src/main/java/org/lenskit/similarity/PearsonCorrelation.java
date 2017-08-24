@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import net.jcip.annotations.ThreadSafe;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
 
@@ -47,6 +48,7 @@ import static java.lang.Math.sqrt;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
+@ThreadSafe
 public class PearsonCorrelation implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 1L;
 

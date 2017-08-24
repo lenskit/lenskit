@@ -22,20 +22,22 @@ package org.lenskit.results;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
-import org.lenskit.api.ResultMap;
 import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 /**
  * Utility functions for working with results.
@@ -130,6 +132,14 @@ public final class Results {
     @Nonnull
     public static <R extends Result> BasicResultMap newResultMap(R... results) {
         return new BasicResultMap(Arrays.asList(results));
+    }
+
+    /**
+     * A Java 8 collector that makes result lists.
+     * @return A new result list collector.
+     */
+    public static Collector<Result,?,ResultList> listCollector() {
+        return new ListCollector();
     }
 
     /**
@@ -236,6 +246,36 @@ public final class Results {
         @Override
         public long getKey(Result obj) {
             return obj.getId();
+        }
+    }
+
+    private static class ListCollector implements Collector<Result,ImmutableList.Builder<Result>,ResultList> {
+        @Override
+        public Supplier<ImmutableList.Builder<Result>> supplier() {
+            return ImmutableList::builder;
+        }
+
+        @Override
+        public BiConsumer<ImmutableList.Builder<Result>, Result> accumulator() {
+            return ImmutableList.Builder::add;
+        }
+
+        @Override
+        public BinaryOperator<ImmutableList.Builder<Result>> combiner() {
+            return (b1, b2) -> {
+                b1.addAll(b2.build());
+                return b1;
+            };
+        }
+
+        @Override
+        public java.util.function.Function<ImmutableList.Builder<Result>, ResultList> finisher() {
+            return lb -> new BasicResultList(lb.build());
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return Collections.emptySet();
         }
     }
 }

@@ -111,7 +111,20 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
      * @param name The attribute name to clear.
      */
     public void clearExtraAttribute(TypedName<?> name) {
+    }
 
+    @Override
+    public EntityBuilder setLongAttribute(TypedName<Long> name, long val) {
+        AttrMethod e = findEntry(name);
+        if (e instanceof LongAttrMethod) {
+            ((LongAttrMethod) e).set(this, val);
+        } else if (e != null) {
+            e.set(this, val);
+        } else {
+            setExtraAttribute(name, val);
+        }
+
+        return this;
     }
 
     @Override
@@ -150,6 +163,7 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         for (Map.Entry<TypedName<?>,Method> ce: setters.entrySet()) {
             TypedName<?> attr = ce.getKey();
             Method smethod = ce.getValue();
+            Class smVtype = smethod.getParameterTypes()[0];
             Method cmethod = clearers.get(ce.getKey().getName());
             ClassNode cn = new ClassNode();
             cn.name = String.format("org/lenskit/generated/entities/AttrSet$$%s$$%s",
@@ -157,12 +171,26 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
                                     ce.getValue().getName());
             cn.access = ACC_PUBLIC;
             cn.version = V1_8;
-            cn.superName = getInternalName(AttrMethod.class);
-            MethodNode ctor = generateBeanConstructor();
+            Class<? extends AttrMethod> sc;
+            if (attr.getRawType().equals(Long.class) && smVtype.equals(long.class)) {
+                sc = LongAttrMethod.class;
+            } else if (attr.getRawType().equals(Double.class) && smVtype.equals(double.class)) {
+                sc = DoubleAttrMethod.class;
+            } else {
+                sc = AttrMethod.class;
+            }
+            cn.superName = getInternalName(sc);
+            MethodNode ctor = generateBeanConstructor(sc);
             cn.methods.add(ctor);
 
             MethodNode setter = generateSetter(type, smethod);
             cn.methods.add(setter);
+            if (attr.getRawType().equals(Long.class) && smVtype.equals(long.class)) {
+                cn.methods.add(generateLongSetter(type, smethod));
+            }
+            if (attr.getRawType().equals(Double.class) && smVtype.equals(double.class)) {
+                cn.methods.add(generateDoubleSetter(type, smethod));
+            }
 
             MethodNode clearer = generateClearer(type, smethod, cmethod);
             cn.methods.add(clearer);
@@ -179,7 +207,7 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         return ael;
     }
 
-    private static MethodNode generateBeanConstructor() {
+    private static MethodNode generateBeanConstructor(Class<? extends AttrMethod> superclass) {
         MethodNode ctor = new MethodNode();
         ctor.access = ACC_PUBLIC;
         ctor.desc = getMethodDescriptor(VOID_TYPE, getType(TypedName.class));
@@ -192,7 +220,7 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         // load the attribute
         ctor.visitVarInsn(ALOAD, 1);
         // invoke superclass constructor with attribute
-        ctor.visitMethodInsn(INVOKESPECIAL, getInternalName(AttrMethod.class),
+        ctor.visitMethodInsn(INVOKESPECIAL, getInternalName(superclass),
                              "<init>", ctor.desc, false);
         ctor.visitInsn(RETURN);
         return ctor;
@@ -216,6 +244,54 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
         setter.visitVarInsn(ALOAD, 2);
         // convert attribute value if necessary
         setter.maxStack += CGUtils.adaptToType(setter, smethod.getParameterTypes()[0]);
+        // call real setter
+        setter.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                               smethod.getName(), getMethodDescriptor(smethod),
+                               false);
+        setter.visitInsn(RETURN);
+        return setter;
+    }
+
+    private static MethodNode generateLongSetter(Class<? extends AbstractBeanEntityBuilder> type, Method smethod) {
+        MethodNode setter = new MethodNode();
+        setter.access = ACC_PUBLIC;
+        setter.desc = getMethodDescriptor(VOID_TYPE,
+                                          getType(AbstractBeanEntityBuilder.class),
+                                          getType(long.class));
+        setter.name = "set";
+        setter.exceptions = Collections.emptyList();
+        setter.maxLocals = 4;
+        setter.maxStack = 3;
+        // load target object
+        setter.visitVarInsn(ALOAD, 1);
+        // cast target object
+        setter.visitTypeInsn(CHECKCAST, getInternalName(type));
+        // load attribute value
+        setter.visitVarInsn(LLOAD, 2);
+        // call real setter
+        setter.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
+                               smethod.getName(), getMethodDescriptor(smethod),
+                               false);
+        setter.visitInsn(RETURN);
+        return setter;
+    }
+
+    private static MethodNode generateDoubleSetter(Class<? extends AbstractBeanEntityBuilder> type, Method smethod) {
+        MethodNode setter = new MethodNode();
+        setter.access = ACC_PUBLIC;
+        setter.desc = getMethodDescriptor(VOID_TYPE,
+                                          getType(AbstractBeanEntityBuilder.class),
+                                          getType(double.class));
+        setter.name = "set";
+        setter.exceptions = Collections.emptyList();
+        setter.maxLocals = 4;
+        setter.maxStack = 3;
+        // load target object
+        setter.visitVarInsn(ALOAD, 1);
+        // cast target object
+        setter.visitTypeInsn(CHECKCAST, getInternalName(type));
+        // load attribute value
+        setter.visitVarInsn(DLOAD, 2);
         // call real setter
         setter.visitMethodInsn(INVOKEVIRTUAL, getInternalName(type),
                                smethod.getName(), getMethodDescriptor(smethod),
@@ -277,6 +353,22 @@ public class AbstractBeanEntityBuilder extends EntityBuilder {
 
         public abstract void set(AbstractBeanEntityBuilder receiver, Object value);
         public abstract void clear(AbstractBeanEntityBuilder receiver);
+    }
+
+    public abstract static class LongAttrMethod extends AttrMethod {
+        protected LongAttrMethod(TypedName<?> n) {
+            super(n);
+        }
+
+        public abstract void set(AbstractBeanEntityBuilder receiver, long value);
+    }
+
+    public abstract static class DoubleAttrMethod extends AttrMethod {
+        protected DoubleAttrMethod(TypedName<?> n) {
+            super(n);
+        }
+
+        public abstract void set(AbstractBeanEntityBuilder receiver, double value);
     }
 
     private static class ReflectionAttrMethod extends AttrMethod {

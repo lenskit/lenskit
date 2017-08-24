@@ -20,29 +20,24 @@
  */
 package org.lenskit.data.store;
 
-import org.lenskit.data.entities.Entity;
-
-import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * An index to look up entities by attribute value.
- *
- * @see EntityIndexBuilder
+ * Long-specialized attribute store.
  */
-interface EntityIndex {
-    /**
-     * Get the entities with the associated attribute value.
-     * @param value The attribute value.
-     * @return The list of entities.
-     */
-    @Nonnull
-    List<Entity> getEntities(@Nonnull Object value);
+class DoubleAttrStore extends AttrStore {
+    List<DoubleShard> doubleShards;
 
-    /**
-     * Get the set of entity values in the index.
-     * @return The set of entity values.
-     */
-    Set<?> getValues();
+    DoubleAttrStore(List<Shard> shards, int total) {
+        super(shards, total);
+        doubleShards = shards.stream()
+                             .map(s -> (DoubleShard) s)
+                             .collect(Collectors.toList());
+    }
+
+    double getDouble(int idx) {
+        return doubleShards.get(Shard.indexOfShard(idx))
+                           .getDouble(Shard.indexWithinShard(idx));
+    }
 }

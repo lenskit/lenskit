@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
@@ -33,6 +32,7 @@ import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * Utility methods for vector arithmetic.
@@ -301,13 +301,13 @@ public final class Vectors {
      * @param function The transformation to apply.
      * @return A new vector that is the result of applying `function` to each value in `input`.
      */
-    public static Long2DoubleMap transform(Long2DoubleMap input, UnivariateFunction function) {
+    public static Long2DoubleMap transform(Long2DoubleMap input, DoubleUnaryOperator function) {
         // FIXME Improve performance when input is also sorted
         SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
         int n = idx.size();
         double[] values = new double[n];
         for (int i = 0; i < n; i++) {
-            values[i] = function.value(input.get(idx.getKey(i)));
+            values[i] = function.applyAsDouble(input.get(idx.getKey(i)));
         }
 
         return Long2DoubleSortedArrayMap.wrap(idx, values);

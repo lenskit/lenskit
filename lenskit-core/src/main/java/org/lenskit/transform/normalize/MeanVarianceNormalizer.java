@@ -23,11 +23,6 @@ package org.lenskit.transform.normalize;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.apache.commons.math3.analysis.FunctionUtils;
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.function.Add;
-import org.apache.commons.math3.analysis.function.Multiply;
-import org.apache.commons.math3.analysis.function.Subtract;
 import org.lenskit.inject.Shareable;
 import org.lenskit.util.InvertibleFunction;
 import org.lenskit.util.math.Scalars;
@@ -125,35 +120,17 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
     class Transform implements VectorTransformation {
         private final double mean;
         private final double stdev;
-        private final UnivariateFunction function;
-        private final UnivariateFunction inverse;
 
         public Transform(double m, double sd) {
             mean = m;
-            stdev = sd;
-
-            // set up the function
-            UnivariateFunction op = FunctionUtils.fix2ndArgument(new Subtract(), mean);
-            if (!Scalars.isZero(stdev)) {
-                // we have a standard deviation, divide by it
-                op = FunctionUtils.compose(FunctionUtils.fix2ndArgument(new Multiply(), 1.0 / stdev), op);
-            }
-            function = op;
-
-            // set up its inverse
-            op = FunctionUtils.fix2ndArgument(new Add(), mean);
-            if (!Scalars.isZero(stdev)) {
-                // we have a standard deviation, first multiply it
-                op = FunctionUtils.compose(op, FunctionUtils.fix2ndArgument(new Multiply(), stdev));
-            }
-            inverse = op;
+            stdev = Scalars.isZero(sd) ? 1 : sd;
         }
 
         @Override
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             if (input == null) return null;
 
-            return Vectors.transform(input, inverse);
+            return Vectors.transform(input, (v) -> (mean + v * stdev));
         }
 
         @Nullable
@@ -161,7 +138,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
             if (input == null) return null;
 
-            return Vectors.transform(input, function);
+            return Vectors.transform(input, (v) -> ((v - mean) / stdev));
         }
 
     }

@@ -21,9 +21,14 @@
 package org.lenskit.data.store;
 
 import org.junit.Test;
+import org.lenskit.util.math.Scalars;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static net.java.quickcheck.generator.PrimitiveGenerators.doubles;
+import static net.java.quickcheck.generator.PrimitiveGenerators.integers;
+import static net.java.quickcheck.generator.iterable.Iterables.toIterable;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class DoubleShardTest {
     @Test
@@ -56,6 +61,20 @@ public class DoubleShardTest {
     public void testClearObject() {
         DoubleShard shard = DoubleShard.create();
         shard.put(0, 3.5);
+        shard.put(1, 7.0);
+        shard.put(0, null);
+        assertThat(shard.size(), equalTo(2));
+        assertThat(shard.get(0), nullValue());
+        assertThat(shard.isNull(0), equalTo(true));
+        assertThat(shard.get(1), equalTo(7.0));
+        assertThat(shard.isNull(1), equalTo(false));
+    }
+
+    @Test
+    public void testPutClearAdapt() {
+        DoubleShard shard = DoubleShard.create();
+        shard.put(0, 3.5);
+        shard = shard.adapt(7.8);
         shard.put(1, 7.8);
         shard.put(0, null);
         assertThat(shard.size(), equalTo(2));
@@ -63,5 +82,43 @@ public class DoubleShardTest {
         assertThat(shard.isNull(0), equalTo(true));
         assertThat(shard.get(1), equalTo(7.8));
         assertThat(shard.isNull(1), equalTo(false));
+    }
+
+    @Test
+    public void testStorableInts() {
+        for (int n: toIterable(integers(-512, 512), 10000)) {
+            double d = n;
+            assertThat(String.format("value %f should be %s", d, Math.abs(n) < 64 ? "storable" : "unstorable"),
+                       DoubleShard.Compact.isStorable(d),
+                       equalTo(n > -64 && n < 64));
+        }
+    }
+
+    @Test
+    public void testStorableHalfPrecision() {
+        for (int n: toIterable(integers(-127, 127), 10000)) {
+            double d = n / 2.0;
+            assertThat(String.format("value %f should be storable", d),
+                       DoubleShard.Compact.isStorable(d),
+                       equalTo(true));
+        }
+    }
+
+    @Test
+    public void testStorableQuarterPrecision() {
+        for (int n: toIterable(integers(-255, 255), 10000)) {
+            double d = n / 4.0;
+            assertThat(String.format("value %f should be %s", d, n % 2 == 0 ? "storable" : "unstorable"),
+                       DoubleShard.Compact.isStorable(d),
+                       equalTo(n % 2 == 0));
+        }
+    }
+
+    @Test
+    public void testStorableDoubles() {
+        for (double d: toIterable(doubles(), 10000)) {
+            assertThat(DoubleShard.Compact.isStorable(d),
+                       equalTo(d > -64 && d < 64 && Scalars.isZero(Math.IEEEremainder(d, 0.5))));
+        }
     }
 }

@@ -24,17 +24,16 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 /**
- * An object shard.
+ * A shard of doubles.
  */
-class DoubleShard extends Shard {
-    private double[] data = new double[SHARD_SIZE];
-    private BitSet mask;
-    private int size = 0;
+abstract class DoubleShard extends Shard {
+    protected BitSet mask;
+    protected int size = 0;
 
     private DoubleShard() {}
 
     static DoubleShard create() {
-        return new DoubleShard();
+        return new Compact();
     }
 
     @Override
@@ -45,11 +44,6 @@ class DoubleShard extends Shard {
         } else {
             return null;
         }
-    }
-
-    double getDouble(int idx) {
-        assert idx >= 0 && idx < size;
-        return data[idx];
     }
 
     @Override
@@ -64,7 +58,7 @@ class DoubleShard extends Shard {
     }
 
     void clear(int idx) {
-        assert idx >= 0 && idx < data.length;
+        assert idx >= 0 && idx < capacity();
         if (idx >= size) {
             size = idx + 1;
         }
@@ -76,7 +70,7 @@ class DoubleShard extends Shard {
     }
 
     void put(int idx, double value) {
-        assert idx >= 0 && idx < data.length;
+        assert idx >= 0 && idx < capacity();
         if (idx >= size) {
             if (idx > size && mask == null) {
                 mask = new BitSet(SHARD_SIZE);
@@ -84,7 +78,7 @@ class DoubleShard extends Shard {
             }
             size = idx + 1;
         }
-        data[idx] = value;
+        putDouble(idx, value);
         if (mask != null) {
             mask.set(idx);
         }
@@ -97,21 +91,120 @@ class DoubleShard extends Shard {
     }
 
     @Override
-    Shard adapt(Object obj) {
-        if (obj instanceof Double || obj == null) {
-            return this;
-        } else {
-            throw new IllegalArgumentException("cannot store obj in double");
-        }
-    }
-
-    @Override
     int size() {
         return size;
     }
 
+    abstract int capacity();
+
+    abstract double getDouble(int idx);
+    abstract void putDouble(int idx, double v);
     @Override
-    void compact() {
-        data = Arrays.copyOf(data, size);
+    abstract DoubleShard adapt(Object v);
+
+    private static class Full extends DoubleShard {
+        private double[] data = new double[SHARD_SIZE];
+
+        double getDouble(int idx) {
+            assert idx >= 0 && idx < size;
+            return data[idx];
+        }
+
+        @Override
+        void putDouble(int idx, double v) {
+            data[idx] = v;
+        }
+
+        @Override
+        void compact() {
+            data = Arrays.copyOf(data, size);
+        }
+
+        @Override
+        int capacity() {
+            return data.length;
+        }
+
+        @Override
+        DoubleShard adapt(Object obj) {
+            if (obj instanceof Double || obj == null) {
+                return this;
+            } else {
+                throw new IllegalArgumentException("cannot store obj in double");
+            }
+        }
+    }
+
+    /**
+     * Fixed-point storage for values with precision of 0.5.
+     */
+    static class Compact extends DoubleShard {
+        private byte[] data = new byte[SHARD_SIZE];
+
+        double getDouble(int idx) {
+            assert idx >= 0 && idx < size;
+            double v = data[idx];
+            return v / 2;
+        }
+
+        @Override
+        void putDouble(int idx, double v) {
+            assert isStorable(v);
+            assert idx >= 0 && idx < size;
+            double ri = Math.rint(v * 2);
+            data[idx] = (byte) ri;
+        }
+
+        @Override
+        void compact() {
+            data = Arrays.copyOf(data, size);
+        }
+
+        @Override
+        int capacity() {
+            return data.length;
+        }
+
+        static boolean isStorable(double v) {
+            // WARNING here lies IEEE 754 bit-bashing
+            long bits = Double.doubleToRawLongBits(v);
+            int e = (int)((bits >> 52) & 0x7ffL) - 1023;
+            long f = (bits & 0xfffffffffffffL);
+            if (e == -1023 && f == 0) {
+                // zero
+                return true;
+            } else if (e < -1 || e > 5) {
+                // out of range (-64,64)
+                return false;
+            } else {
+                // in range (-64,64); is it at appropriate resolution?
+                // f is 52 bits long; only the first e+1 can be set
+                long m2 = (f >> (51-e)) << (51-e);
+                return m2 == f;
+            }
+        }
+
+        @Override
+        DoubleShard adapt(Object obj) {
+            if (obj == null) {
+                return this;
+            } else if (obj instanceof Double) {
+                double v = (double) obj;
+                if (isStorable(v)) {
+                    return this;
+                } else {
+                    Full full = new Full();
+                    int n = size;
+                    full.size = n;
+                    full.mask = mask != null ? (BitSet) mask.clone() : null;
+                    for (int i = 0; i < n; i++) {
+                        full.data[i] = data[i] / 2;
+                    }
+                    return full;
+                }
+            } else {
+                throw new IllegalArgumentException("cannot store obj in double");
+            }
+        }
     }
 }

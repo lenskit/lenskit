@@ -20,24 +20,37 @@
  */
 package org.lenskit.knn.item.model;
 
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.*;
+import net.jcip.annotations.NotThreadSafe;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
 import org.lenskit.knn.item.ItemSimilarityThreshold;
 import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.knn.item.ModelSize;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.collections.Long2DoubleAccumulator;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.collections.TopNLong2DoubleAccumulator;
 import org.lenskit.util.collections.UnlimitedLong2DoubleAccumulator;
+import org.lenskit.util.reflect.ClassQueries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
  * Build an item-item CF model from rating data.
@@ -83,10 +96,7 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
 
         LongSortedSet allItems = buildContext.getItems();
 
-        Long2ObjectMap<Long2DoubleAccumulator> rows = makeAccumulators(allItems);
-
         final int nitems = allItems.size();
-        LongIterator outer = allItems.iterator();
 
         ProgressLogger progress = ProgressLogger.create(logger)
                                                 .setCount(nitems)
@@ -94,72 +104,74 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
                                                 .setWindow(50)
                                                 .start();
         int ndone = 0;
-        int npairs = 0;
-        OUTER: while (outer.hasNext()) {
-            ndone += 1;
-            final long itemId1 = outer.nextLong();
-            if (logger.isTraceEnabled()) {
-                logger.trace("computing similarities for item {} ({} of {})",
-                             itemId1, ndone, nitems);
-            }
-            Long2DoubleSortedMap vec1 = buildContext.itemVector(itemId1);
-            if (vec1.size() < minCommonUsers) {
-                // if it doesn't have enough users, it can't have enough common users
-                if (logger.isTraceEnabled()) {
-                    logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
-                }
-                progress.advance();
-                continue OUTER;
-            }
-
-            LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
-                                                                      itemSimilarity.isSymmetric());
-
-            Long2DoubleAccumulator row = rows.get(itemId1);
-            INNER: while (itemIter.hasNext()) {
-                long itemId2 = itemIter.nextLong();
-                if (itemId1 != itemId2) {
-                    Long2DoubleSortedMap vec2 = buildContext.itemVector(itemId2);
-                    if (!LongUtils.hasNCommonItems(vec1.keySet(), vec2.keySet(), minCommonUsers)) {
-                        // items have insufficient users in common, skip them
-                        continue INNER;
-                    }
-
-                    double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
-                    if (threshold.retain(sim)) {
-                        row.put(itemId2, sim);
-                        npairs += 1;
-                        if (itemSimilarity.isSymmetric()) {
-                            rows.get(itemId2).put(itemId1, sim);
-                            npairs += 1;
-                        }
-                    }
-                }
-            }
-
-            progress.advance();
+        Stream<Long> idStream;
+        if (ClassQueries.isThreadSafe(itemSimilarity)) {
+            idStream = allItems.parallelStream();
+        } else {
+            logger.warn("similarity {} is not thread-safe, disabling parallel build", itemSimilarity);
+            idStream = allItems.stream();
         }
-        progress.finish();
-        logger.info("built model of {} similarities for {} items in {}",
-                    npairs, ndone, progress.elapsedTime());
+        Stream<IdBox<Long2DoubleMap>> rowStream =
+                idStream.map(i -> IdBox.create(i, buildContext.itemVector(i)))
+                        .peek(iv -> {
+                            if (logger.isTraceEnabled()) {
+                                logger.trace("computing similarities for item {}", iv.getId());
+                            }
+                        })
+                        .filter(iv -> iv.getValue().size() >= minCommonUsers)
+                        .map(this::makeSimilarityRow)
+                        .peek(iv -> progress.advance());
+        Long2ObjectMap<Long2DoubleMap> sims;
+        if (itemSimilarity.isSymmetric()) {
+            logger.info("using symmetric similarity collector");
+            sims = rowStream.collect(new SymmetricCollector());
+        } else {
+            logger.info("using asymmteric similarity collector");
+            sims = rowStream.collect(new BasicCollector());
+        }
 
-        return new SimilarityMatrixModel(finishRows(rows));
+        progress.finish();
+        logger.info("built model for {} items in {}",
+                    ndone, progress.elapsedTime());
+
+        return new SimilarityMatrixModel(sims);
     }
 
-    private Long2ObjectMap<Long2DoubleAccumulator> makeAccumulators(LongSet items) {
-        Long2ObjectMap<Long2DoubleAccumulator> rows = new Long2ObjectOpenHashMap<>(items.size());
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            long item = iter.nextLong();
-            Long2DoubleAccumulator accum;
-            if (modelSize == 0) {
-                accum = new UnlimitedLong2DoubleAccumulator();
-            } else {
-                accum = new TopNLong2DoubleAccumulator(modelSize);
+    private IdBox<Long2DoubleMap> makeSimilarityRow(IdBox<Long2DoubleSortedMap> item) {
+        long itemId1 = item.getId();
+        LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
+                                                                  itemSimilarity.isSymmetric());
+        Long2DoubleSortedMap vec1 = item.getValue();
+        Long2DoubleMap row = new Long2DoubleOpenHashMap();
+
+        while (itemIter.hasNext()) {
+            long itemId2 = itemIter.nextLong();
+            if (itemId1 != itemId2) {
+                Long2DoubleSortedMap vec2 = buildContext.itemVector(itemId2);
+                if (!LongUtils.hasNCommonItems(vec1.keySet(), vec2.keySet(), minCommonUsers)) {
+                    // items have insufficient users in common, skip them
+                    continue;
+                }
+
+                double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
+                if (threshold.retain(sim)) {
+                    row.put(itemId2, sim);
+                }
             }
-            rows.put(item, accum);
         }
-        return rows;
+
+        return IdBox.create(itemId1, row);
+    }
+
+    @Nonnull
+    private Long2DoubleAccumulator newAccumulator() {
+        Long2DoubleAccumulator accum;
+        if (modelSize <= 0) {
+            accum = new UnlimitedLong2DoubleAccumulator();
+        } else {
+            accum = new TopNLong2DoubleAccumulator(modelSize);
+        }
+        return accum;
     }
 
     private Long2ObjectMap<Long2DoubleMap> finishRows(Long2ObjectMap<Long2DoubleAccumulator> rows) {
@@ -168,5 +180,100 @@ public class ItemItemModelProvider implements Provider<ItemItemModel> {
             results.put(e.getLongKey(), e.getValue().finishMap());
         }
         return results;
+    }
+
+    private class BasicCollector implements Collector<IdBox<Long2DoubleMap>, Map<Long,Long2DoubleMap>, Long2ObjectMap<Long2DoubleMap>> {
+        @Override
+        public Supplier<Map<Long, Long2DoubleMap>> supplier() {
+            return ConcurrentHashMap::new;
+        }
+
+        @Override
+        public Function<Map<Long, Long2DoubleMap>, Long2ObjectMap<Long2DoubleMap>> finisher() {
+            return Long2ObjectArrayMap::new;
+        }
+
+        @Override
+        public BiConsumer<Map<Long, Long2DoubleMap>, IdBox<Long2DoubleMap>> accumulator() {
+            return (acc, row) -> {
+                Long2DoubleMap r2;
+                if (modelSize <= 0) {
+                    r2 = LongUtils.frozenMap(row.getValue());
+                } else {
+                    Long2DoubleAccumulator racc = new TopNLong2DoubleAccumulator(modelSize);
+                    racc.putAll(row.getValue());
+                    r2 = racc.finishMap();
+                }
+                Long2DoubleMap res = acc.putIfAbsent(row.getId(), r2);
+                assert res == null;
+            };
+        }
+
+        @Override
+        public BinaryOperator<Map<Long, Long2DoubleMap>> combiner() {
+            return (acc1, acc2) -> {
+                for (Map.Entry<Long, Long2DoubleMap> e: acc2.entrySet()) {
+                    Long2DoubleMap old = acc1.putIfAbsent(e.getKey(), e.getValue());
+                    assert old == null;
+                }
+                return acc1;
+            };
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return ImmutableSet.of(Characteristics.UNORDERED, Characteristics.CONCURRENT);
+        }
+    }
+
+    private class SymmetricCollector implements Collector<IdBox<Long2DoubleMap>, Long2ObjectMap<Long2DoubleAccumulator>, Long2ObjectMap<Long2DoubleMap>> {
+        @Override
+        public Supplier<Long2ObjectMap<Long2DoubleAccumulator>> supplier() {
+            return Long2ObjectArrayMap::new;
+        }
+
+        @Override
+        public BiConsumer<Long2ObjectMap<Long2DoubleAccumulator>, IdBox<Long2DoubleMap>> accumulator() {
+            return (acc, row) -> {
+                long i1 = row.getId();
+                for (Long2DoubleMap.Entry e: Long2DoubleMaps.fastIterable(row.getValue())) {
+                    long i2 = e.getLongKey();
+                    double sim = e.getDoubleValue();
+                    acc.computeIfAbsent(i1, i -> newAccumulator())
+                       .put(i2, sim);
+                    acc.computeIfAbsent(i2, i -> newAccumulator())
+                       .put(i1, sim);
+                }
+            };
+        }
+
+        @Override
+        public BinaryOperator<Long2ObjectMap<Long2DoubleAccumulator>> combiner() {
+            return (am1, am2) -> {
+                for (Long2ObjectMap.Entry<Long2DoubleAccumulator> e: Long2ObjectMaps.fastIterable(am2)) {
+                    long item = e.getLongKey();
+                    Long2DoubleAccumulator a2 = e.getValue();
+                    Long2DoubleAccumulator a1 = am1.get(item);
+                    if (a1 == null) {
+                        am1.put(item, a2);
+                    } else {
+                        for (Long2DoubleMap.Entry ae: Long2DoubleMaps.fastIterable(a2.finishMap())) {
+                            a1.put(ae.getLongKey(), ae.getDoubleValue());
+                        }
+                    }
+                }
+                return am1;
+            };
+        }
+
+        @Override
+        public Function<Long2ObjectMap<Long2DoubleAccumulator>, Long2ObjectMap<Long2DoubleMap>> finisher() {
+            return ItemItemModelProvider.this::finishRows;
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return ImmutableSet.of(Characteristics.UNORDERED);
+        }
     }
 }
