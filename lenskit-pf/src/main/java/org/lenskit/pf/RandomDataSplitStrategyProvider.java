@@ -27,6 +27,8 @@ import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.KeyIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -40,6 +42,8 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrategy> {
+    private static Logger logger = LoggerFactory.getLogger(RandomDataSplitStrategyProvider.class);
+
     private final RatingMatrix snapshot;
     private final Random random;
     private final double proportion;
@@ -65,10 +69,14 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
 
     @Override
     public RandomDataSplitStrategy get() {
+        final int userNum = snapshot.userIndex().size();
+        final int itemNum = snapshot.itemIndex().size();
+        logger.info("Rating matrix size: {} users and {} items", userNum, itemNum);
         final List<RatingMatrixEntry> allRatings = ImmutableList.copyOf(snapshot.getRatings());
         final int size = allRatings.size();
         final int validationSize = Math.toIntExact(Math.round(size*proportion));
         System.out.println(proportion);
+        logger.info("validation set size: {} ratings", validationSize);
         IntSet randomIndices = new IntOpenHashSet();
         while (randomIndices.size() < validationSize) {
             randomIndices.add(random.nextInt(size));
