@@ -97,6 +97,8 @@ public class HPFRecommenderBuildTest {
                 .to(0.000001);
         config.set(FeatureCount.class)
                 .to(5);
+        config.set(SplitProportion.class)
+                .to(0.01);
 
         return LenskitRecommenderEngine.build(config, dao);
     }

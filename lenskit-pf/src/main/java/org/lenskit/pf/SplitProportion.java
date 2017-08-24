@@ -30,7 +30,7 @@ import java.lang.annotation.*;
  * The proportion of validations. The default value is based on the original paper.
  */
 @Documented
-@DefaultDouble(0.1)
+@DefaultDouble(0.01)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})

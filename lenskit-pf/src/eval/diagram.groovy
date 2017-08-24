@@ -27,7 +27,7 @@ import org.lenskit.mf.funksvd.FeatureCount
 import org.lenskit.mf.svd.*
 
 dumpGraph {
-    output "${config.analysisDir}/funksvd.dot"
+    output "${config.analysisDir}/pf.dot"
     algorithm {
         bind ItemScorer to HPFItemScorer
         set IterationCount to 100
