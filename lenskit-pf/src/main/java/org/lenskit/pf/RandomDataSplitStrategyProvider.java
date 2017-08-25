@@ -126,6 +126,9 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
             userItemsIter.remove();
         }
 
+        final int exampleItemNum = trainingRatings.keySet().iterator().nextInt();
+        logger.info("Training Rating examples: item {} ratings {} ", exampleItemNum, trainingRatings.get(exampleItemNum));
+        logger.info("validation ratings {}", validationRatings);
         return new RandomDataSplitStrategy(trainingRatings, ImmutableList.copyOf(validationRatings), userItems, userIndex, itemIndex);
     }
 }
