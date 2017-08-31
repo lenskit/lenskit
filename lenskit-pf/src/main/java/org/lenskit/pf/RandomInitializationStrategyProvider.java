@@ -90,8 +90,8 @@ public class RandomInitializationStrategyProvider implements Provider<Initializa
                 double valueRte = bPrime + maxOffsetRte*random.nextDouble(); //not sure
                 gammaShp.setEntry(u, k, valueShp);
                 gammaRte.setEntry(u, k, valueRte);
-                valueRte = gammaRte.getEntry(0, k);// make rate parameter have
-                gammaRte.setEntry(u, k, valueRte); // same initials cross user delete these two line
+//                valueRte = gammaRte.getEntry(0, k);// make rate parameter have
+//                gammaRte.setEntry(u, k, valueRte); // same initials cross user delete these two line
             }
 
             double value = bPrime + maxOffsetRte*random.nextDouble();
@@ -105,8 +105,8 @@ public class RandomInitializationStrategyProvider implements Provider<Initializa
                 double valueRte = dPrime + maxOffsetRte*random.nextDouble(); //not sure
                 lambdaShp.setEntry(i, k, valueShp);
                 lambdaRte.setEntry(i, k, valueRte);
-                valueRte = lambdaRte.getEntry(0, k); // make rate parameter have
-                lambdaRte.setEntry(i, k, valueRte); // same initials cross user delete these two line
+//                valueRte = lambdaRte.getEntry(0, k); // make rate parameter have
+//                lambdaRte.setEntry(i, k, valueRte); // same initials cross user delete these two line
             }
             double value = dPrime + maxOffsetRte*random.nextDouble();
             tauRte.setEntry(i, value);

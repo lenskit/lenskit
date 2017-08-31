@@ -140,12 +140,12 @@ public class HPFRecommenderBuildTest {
         try (Recommender rec = engine.createRecommender(dao)) {
             Map<Long,Double> results = rec.getItemScorer().score(1L,items);
             assertThat(results, notNullValue());
-//            System.out.println(results);
-//            System.out.println(rec.getItemScorer().score(2L,items));
-//            System.out.println(rec.getItemScorer().score(3L,items));
-//            System.out.println(rec.getItemScorer().score(4L,items));
-//            System.out.println(rec.getItemScorer().score(5L,items));
-//            System.out.println(rec.getItemScorer().score(6L,items));
+            System.out.println(results);
+            System.out.println(rec.getItemScorer().score(2L,items));
+            System.out.println(rec.getItemScorer().score(3L,items));
+            System.out.println(rec.getItemScorer().score(4L,items));
+            System.out.println(rec.getItemScorer().score(5L,items));
+            System.out.println(rec.getItemScorer().score(6L,items));
         }
     }
 
