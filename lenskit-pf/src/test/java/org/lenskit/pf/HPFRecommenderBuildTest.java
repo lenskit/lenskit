@@ -92,7 +92,7 @@ public class HPFRecommenderBuildTest {
         config.set(IterationFrequency.class)
                 .to(10);
         config.set(MinimumIterations.class)
-                .to(1000);
+                .to(100);
         config.set(StoppingThreshold.class)
                 .to(0.000001);
         config.set(FeatureCount.class)

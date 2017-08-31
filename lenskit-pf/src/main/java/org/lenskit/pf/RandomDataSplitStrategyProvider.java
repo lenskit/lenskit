@@ -75,7 +75,6 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
         final List<RatingMatrixEntry> allRatings = ImmutableList.copyOf(snapshot.getRatings());
         final int size = allRatings.size();
         final int validationSize = Math.toIntExact(Math.round(size*proportion));
-        System.out.println(proportion);
         logger.info("validation set size: {} ratings", validationSize);
         IntSet randomIndices = new IntOpenHashSet();
         while (randomIndices.size() < validationSize) {
