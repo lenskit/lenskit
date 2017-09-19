@@ -90,15 +90,17 @@ public class HPFRecommenderBuildTest {
         config.bind(StoppingCondition.class)
                 .to(ErrorThresholdStoppingCondition.class); // this stopping condition may have bug
         config.set(IterationFrequency.class)
-                .to(10);
+                .to(2);
         config.set(MinimumIterations.class)
-                .to(100);
+                .to(20);
         config.set(StoppingThreshold.class)
                 .to(0.000001);
         config.set(FeatureCount.class)
                 .to(5);
         config.set(SplitProportion.class)
                 .to(0.1);
+        config.set(RandomSeed.class)
+                .to(System.currentTimeMillis());
 
         return LenskitRecommenderEngine.build(config, dao);
     }

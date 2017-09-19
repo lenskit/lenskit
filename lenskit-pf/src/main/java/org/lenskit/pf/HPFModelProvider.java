@@ -56,43 +56,41 @@ import java.util.*;
 public class HPFModelProvider implements Provider<HPFModel> {
     private static Logger logger = LoggerFactory.getLogger(HPFModelProvider.class);
 
-    private final InitializationStrategy randomInitials;
     private final DataSplitStrategy ratings;
     private final StoppingCondition stoppingCondition;
     private final PFHyperParameters hyperParameters;
     private final int iterationFrequency;
-
-    @Nullable
-    private PreferenceDomain domain;
+    private final double maxOffsetShp;
+    private final double maxOffsetRte;
+    private final long rndSeed;
+    private final boolean isProbPredition;
 
 
     @Inject
-    public HPFModelProvider(@Transient InitializationStrategy rndInitls,
-                            @Transient DataSplitStrategy rndRatings,
+    public HPFModelProvider(@Transient DataSplitStrategy rndRatings,
                             StoppingCondition stop,
-                            @Nullable PreferenceDomain dom,
                             PFHyperParameters hyperParams,
-                            @IterationFrequency int iterFreq) {
-        randomInitials = rndInitls;
+                            @IterationFrequency int iterFreq,
+                            @RandomSeed int seed,
+                            @MaxRandomOffsetForShape double maxOffS,
+                            @MaxRandomOffsetForRate double maxOffR,
+                            @IsProbabilityPrediciton boolean probPred) {
+
         ratings = rndRatings;
         stoppingCondition = stop;
-        domain = dom;
         hyperParameters = hyperParams;
         iterationFrequency = iterFreq;
+        rndSeed = seed;
+        maxOffsetShp = maxOffS;
+        maxOffsetRte = maxOffR;
+        isProbPredition = probPred;
     }
 
     @Override
     public HPFModel get() {
-        RealMatrix gammaShp = randomInitials.getGammaShp().copy();
-        RealMatrix gammaRte = randomInitials.getGammaRte().copy();
-        RealVector kappaShp = randomInitials.getKappaShp().copy();
-        RealVector kappaRte = randomInitials.getKappaRte().copy();
-        RealMatrix lambdaShp = randomInitials.getLambdaShp().copy();
-        RealMatrix lambdaRte = randomInitials.getLambdaRte().copy();
-        RealVector tauShp = randomInitials.getTauShp().copy();
-        RealVector tauRte = randomInitials.getTauRte().copy();
-        final int userNum = gammaRte.getRowDimension();
-        final int itemNum = lambdaRte.getRowDimension();
+
+        final int userNum = ratings.getUserIndex().size();
+        final int itemNum = ratings.getItemIndex().size();
         final int featureCount = hyperParameters.getFeatureCount();
         final Int2ObjectMap<ImmutableSet<Integer>> userItems = ratings.getUserItemIndices();
         final double a = hyperParameters.getA();
@@ -101,6 +99,50 @@ public class HPFModelProvider implements Provider<HPFModel> {
         final double c = hyperParameters.getC();
         final double cPrime = hyperParameters.getCPrime();
         final double dPrime = hyperParameters.getDPrime();
+
+        RealMatrix gammaShp = MatrixUtils.createRealMatrix(userNum, featureCount);
+        RealMatrix gammaRte = MatrixUtils.createRealMatrix(userNum, featureCount);
+        RealVector kappaShp = MatrixUtils.createRealVector(new double[userNum]);
+        RealVector kappaRte = MatrixUtils.createRealVector(new double[userNum]);
+        RealMatrix lambdaShp = MatrixUtils.createRealMatrix(itemNum, featureCount);
+        RealMatrix lambdaRte = MatrixUtils.createRealMatrix(itemNum, featureCount);
+        RealVector tauShp = MatrixUtils.createRealVector(new double[itemNum]);
+        RealVector tauRte = MatrixUtils.createRealVector(new double[itemNum]);
+
+        // Initialization
+        final Random random = new Random(rndSeed);
+        double kShp = aPrime + featureCount * a;
+        double tShp = cPrime + featureCount * c;
+
+        for (int u = 0; u < userNum; u++ ) {
+            for (int k = 0; k < featureCount; k++) {
+                double valueShp = a + maxOffsetShp*random.nextDouble();
+                double valueRte = bPrime + maxOffsetRte*random.nextDouble(); //not sure
+                gammaShp.setEntry(u, k, valueShp);
+                gammaRte.setEntry(u, k, valueRte);
+//                valueRte = gammaRte.getEntry(0, k);// make rate parameter have
+//                gammaRte.setEntry(u, k, valueRte); // same initials cross user delete these two line
+            }
+
+            double value = bPrime + maxOffsetRte*random.nextDouble();
+            kappaRte.setEntry(u, value);
+            kappaShp.setEntry(u, kShp);
+        }
+
+        for (int i = 0; i < itemNum; i++ ) {
+            for (int k = 0; k < featureCount; k++) {
+                double valueShp = c + maxOffsetShp*random.nextDouble();
+                double valueRte = dPrime + maxOffsetRte*random.nextDouble(); //not sure
+                lambdaShp.setEntry(i, k, valueShp);
+                lambdaRte.setEntry(i, k, valueRte);
+//                valueRte = lambdaRte.getEntry(0, k); // make rate parameter have
+//                lambdaRte.setEntry(i, k, valueRte); // same initials cross user delete these two line
+            }
+            double value = dPrime + maxOffsetRte*random.nextDouble();
+            tauRte.setEntry(i, value);
+            tauShp.setEntry(i, tShp);
+        }
+
         final Int2ObjectMap<Int2DoubleMap> train = ratings.getTrainingMatrix();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
         TrainingLoopController controller = stoppingCondition.newLoop();
@@ -142,9 +184,10 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
 
             // update user parameters
-            for (int user=0; user < userNum; user++) {
+            USER_OUTER:for (int user=0; user < userNum; user++) {
                 Set<Integer> items = userItems.get(user);
-                if (items == null) items = Collections.emptySet();
+//                if (items == null) items = Collections.emptySet();
+                if (items == null) continue USER_OUTER;
                 double kappaRteU = 0.0;
 
                 for (int k = 0; k < featureCount; k++) {
@@ -170,10 +213,11 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
 
             // update item parameters
-            for (int item = 0; item < itemNum; item++) {
+            ITEM_OUTER:for (int item = 0; item < itemNum; item++) {
 
                 Int2DoubleMap itemRatings = train.get(item);
-                if (itemRatings == null) itemRatings = Int2DoubleMaps.EMPTY_MAP;
+//                if (itemRatings == null) itemRatings = Int2DoubleMaps.EMPTY_MAP;
+                if (itemRatings == null) continue ITEM_OUTER;
                 double tauRteI = 0.0;
 
                 for (int k = 0; k < featureCount; k++) {
@@ -218,7 +262,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                         eThetaBeta += eThetaUK * eBetaIK;
                     }
                     double pLL = 0.0;
-                    if (domain == null) {
+                    if (isProbPredition) {
                         pLL = (rating == 0) ? (-eThetaBeta) : Math.log(1 - Math.exp(-eThetaBeta));
                     } else {
                         pLL = rating * Math.log(eThetaBeta) - eThetaBeta - Gamma.logGamma(rating + 1);
@@ -229,7 +273,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 diffPLL = Math.abs((avgPLLCurr - avgPLLPre) / avgPLLPre);
                 avgPLLPre = avgPLLCurr;
                 logger.info("iteration {} with current average predictive log likelihood {} and the change is {}", iterCount, avgPLLCurr, diffPLL);
-//                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
+                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
             }
 //            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
         }
@@ -242,6 +286,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
             RealVector gammaRteU = gammaRte.getRowVector(user);
             RealVector eThetaU = gammaShpU.ebeDivide(gammaRteU);
             eTheta.setRowVector(user, eThetaU);
+            logger.info("Training user {} features finished",user);
         }
 
         for (int item = 0; item < itemNum; item++) {
@@ -249,6 +294,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
             RealVector lambdaRteI = lambdaRte.getRowVector(item);
             RealVector eBetaI = lambdaShpI.ebeDivide(lambdaRteI);
             eBeta.setRowVector(item, eBetaI);
+            logger.info("Training item {} features finished", item);
         }
 
         KeyIndex uidx = ratings.getUserIndex();
