@@ -142,6 +142,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
             tauRte.setEntry(i, value);
             tauShp.setEntry(i, tShp);
         }
+        logger.info("initialization finished");
 
         final Int2ObjectMap<Int2DoubleMap> train = ratings.getTrainingMatrix();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
@@ -151,7 +152,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
         double diffPLL = 1.0;
 
         while (controller.keepTraining(diffPLL)) {
-            Int2ObjectMap<Int2ObjectMap<RealVector>> phi = new Int2ObjectOpenHashMap<>(userNum);
+            Int2ObjectMap<Int2ObjectMap<RealVector>> phi = new Int2ObjectOpenHashMap<>();
 
             // update phi
             Iterator<Map.Entry<Integer,Int2DoubleMap>> itemIter = train.entrySet().iterator();
@@ -163,7 +164,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 while (userIter.hasNext()) {
                     int user = userIter.nextInt();
                     Int2ObjectMap<RealVector> phiUIsVec = phi.get(user);
-                    if (phiUIsVec == null) phiUIsVec = new Int2ObjectOpenHashMap<>(itemNum);
+                    if (phiUIsVec == null) phiUIsVec = new Int2ObjectOpenHashMap<>();
                     RealVector phiUI = phiUIsVec.get(item);
                     if (phiUI == null) phiUI = MatrixUtils.createRealVector(new double[featureCount]);
 
@@ -273,7 +274,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 diffPLL = Math.abs((avgPLLCurr - avgPLLPre) / avgPLLPre);
                 avgPLLPre = avgPLLCurr;
                 logger.info("iteration {} with current average predictive log likelihood {} and the change is {}", iterCount, avgPLLCurr, diffPLL);
-                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
+//                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
             }
 //            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
         }
