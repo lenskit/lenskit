@@ -18,7 +18,7 @@ apply plugin: 'lenskit'
 
 task check {
     doLast {
-        assertThat(lenskit.maxMemory, equalTo('16g'))
-        assertThat(lenskit.threadCount, equalTo(5))
+        assertThat(lenskit.maxMemory.getOrNull(), equalTo('16g'))
+        assertThat(lenskit.threadCount.getOrNull(), equalTo(5))
     }
 }

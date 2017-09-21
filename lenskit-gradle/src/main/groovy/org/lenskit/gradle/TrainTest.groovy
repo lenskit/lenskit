@@ -26,6 +26,7 @@ package org.lenskit.gradle
 
 import com.google.common.io.Files
 import groovy.json.JsonOutput
+import org.gradle.api.provider.PropertyState
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.util.ConfigureUtil
@@ -44,7 +45,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The output file for recommendation output.
      */
-    def outputFile
+    final PropertyState<Object> outputFile = project.property(Object)
 
     /**
      * The user output file for recommendation output.
@@ -59,12 +60,12 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The thread count for the evaluator.
      */
-    def int threadCount
+    final PropertyState<Integer> threadCount = project.property(Integer)
 
     /**
      * Then number of parallel tasks to allow.
      */
-    def int parallelTasks = 0
+    final PropertyState<Integer> parallelTasks = project.property(Integer)
 
     /**
      * Configure whether the evaluator should share model components between algorithms.
@@ -83,21 +84,19 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The file name for writing out the experiment description. Do not change unless absolutely necessary.
      */
-    def File specFile
+    final PropertyState<File> specFile = project.property(File)
 
     public TrainTest() {
-        conventionMapping.threadCount = {
-            project.lenskit.threadCount
-        }
-        conventionMapping.parallelTasks = {
+        threadCount.set(project.extensions.getByType(LenskitExtension).threadCount)
+        parallelTasks.set project.provider({
             (project.findProperty('lenskit.parallelTasks') ?: '0') as Integer
-        }
-        conventionMapping.outputFile = {
+        })
+        outputFile.set project.provider({
             "$project.buildDir/${name}.csv"
-        }
-        conventionMapping.specFile = {
+        })
+        specFile.set project.provider({
             project.file("$project.buildDir/${name}-spec.json")
-        }
+        })
     }
 
     /**
@@ -225,11 +224,11 @@ class TrainTest extends LenskitTask implements GradleUtils {
 
     @Input
     def getJson() {
-        def json = [output_file           : makeUrl(getOutputFile(), getSpecFile()),
-                    user_output_file      : makeUrl(getUserOutputFile(), getSpecFile()),
-                    cache_directory       : makeUrl(getCacheDirectory(), getSpecFile()),
-                    thread_count          : getThreadCount(),
-                    parallel_tasks        : getParallelTasks(),
+        def json = [output_file           : makeUrl(outputFile.get(), specFile.get()),
+                    user_output_file      : makeUrl(getUserOutputFile(), specFile.get()),
+                    cache_directory       : makeUrl(getCacheDirectory(), specFile.get()),
+                    thread_count          : threadCount.get(),
+                    parallel_tasks        : parallelTasks.get(),
                     share_model_components: getShareModelComponents(),
                     continue_after_error  : getContinueAfterError()]
         json.datasets = dataSets.collect {it.call()}
@@ -257,7 +256,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
 
     @Override
     void doPrepare() {
-        def file = getSpecFile()
+        def file = specFile.get()
         project.mkdir file.parentFile
         logger.info 'preparing spec file {}', file
         file.text = JsonOutput.prettyPrint(JsonOutput.toJson(json))

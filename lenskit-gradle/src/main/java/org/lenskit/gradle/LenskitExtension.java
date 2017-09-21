@@ -22,9 +22,17 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.lenskit.gradle
+package org.lenskit.gradle;
 
-import org.gradle.api.file.FileCollection
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.gradle.api.Project;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.provider.PropertyState;
+import org.gradle.process.JavaForkOptions;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Extension for configuring LensKit.  This is registered as `lenskit` by the LensKit plugin, so you can globally
@@ -32,8 +40,8 @@ import org.gradle.api.file.FileCollection
  *
  * ```groovy
  * lenskit {
- *     maxMemory '10g'
- *     threadCount 16
+ * maxMemory '10g'
+ * threadCount 16
  * }
  * ```
  *
@@ -48,45 +56,81 @@ import org.gradle.api.file.FileCollection
  * @see http://mooc.lenskit.org/documentation/evaluator/gradle/
  */
 public class LenskitExtension {
+    @SuppressWarnings("unchecked")
+    public LenskitExtension(Project project) {
+        threadCount = project.property(Integer.class);
+        threadCount.set(0);
+        maxMemory = project.property(String.class);
+        classpath = project.files();
+        logLevel = project.property(String.class);
+        logLevel.set("INFO");
+        logFileLevel = project.property(String.class);
+        jvmArgs = project.property((Class) List.class);
+    }
+
+    /**
+     * Add JVM arguments for LensKit tasks.
+     *
+     * @param val JVM arguments to add. They are appended to the current list of arguments.
+     */
+    public void jvmArgs(String... val) {
+        List<String> list = jvmArgs.getOrNull();
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        jvmArgs.set(DefaultGroovyMethods.plus(list, Arrays.asList(val)));
+    }
+
+    public final PropertyState<Integer> getThreadCount() {
+        return threadCount;
+    }
+
+    public final PropertyState<String> getMaxMemory() {
+        return maxMemory;
+    }
+
+    public final ConfigurableFileCollection getClasspath() {
+        return classpath;
+    }
+
+    public final PropertyState<String> getLogLevel() {
+        return logLevel;
+    }
+
+    public final PropertyState<String> getLogFileLevel() {
+        return logFileLevel;
+    }
+
+    public final PropertyState<List<String>> getJvmArgs() {
+        return jvmArgs;
+    }
+
     /**
      * The maximum number of threads LensKit should use.  Defaults to 0, which instructs LensKit to use all available
      * threads.
      */
-    def int threadCount = 0
-
+    private final PropertyState<Integer> threadCount;
     /**
      * The maximum heap size for the LensKit JVM.  Defaults to `null` (no specfied heap size).
      *
-     * @see org.gradle.process.JavaForkOptions#setMaxHeapSize(java.lang.String)
+     * @see JavaForkOptions#setMaxHeapSize(String)
      */
-    def String maxMemory
-
+    private final PropertyState<String> maxMemory;
     /**
      * The classpath to use for LensKit.  Defaults to the runtime classpath of the `main` source set.
      */
-    def FileCollection classpath
-
+    private final ConfigurableFileCollection classpath;
     /**
      * The log level to use.  Defaults to 'INFO'.
      */
-    def String logLevel = 'INFO'
-
+    private final PropertyState<String> logLevel;
     /**
      * The log level to use for log files.  Default is unset, resulting in the same level being applied to the console
      * and the log file.
      */
-    def String logFileLevel
-
+    private final PropertyState<String> logFileLevel;
     /**
      * List of JVM arguments to use for LensKit actions.
      */
-    def List<String> jvmArgs = []
-
-    /**
-     * Add JVM arguments for LensKit tasks.
-     * @param val JVM arguments to add. They are appended to the current list of arguments.
-     */
-    def jvmArgs(String... val){
-        jvmArgs.addAll(val)
-    }
+    private final PropertyState<List<String>> jvmArgs;
 }

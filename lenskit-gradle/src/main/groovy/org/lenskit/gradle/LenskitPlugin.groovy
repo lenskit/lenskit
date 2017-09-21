@@ -24,13 +24,17 @@
  */
 package org.lenskit.gradle
 
+import org.apache.commons.lang3.reflect.TypeUtils
 import org.apache.commons.lang3.text.StrMatcher
 import org.apache.commons.lang3.text.StrTokenizer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.PropertyState
 import org.joda.convert.StringConvert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.lang.reflect.ParameterizedType
 
 /**
  * Plugin for LensKit evaluations.  This sets up the basic infrastructure required for LensKit tasks to work.
@@ -48,22 +52,32 @@ public class LenskitPlugin implements Plugin<Project> {
     private static final Logger logger = LoggerFactory.getLogger(LenskitPlugin.class);
 
     public void apply(Project project) {
-        def lenskit = project.extensions.create("lenskit", LenskitExtension)
+        def lenskit = project.extensions.create("lenskit", LenskitExtension, project)
 
         for (prop in lenskit.metaClass.properties) {
             def prjProp = "lenskit.$prop.name"
             if (project.hasProperty(prjProp)) {
                 def val = project.getProperty(prjProp)
                 logger.info 'setting property {} to {}', prjProp, val
+                def type = prop.type
+                def set = { v -> prop.setProperty(lenskit, v) }
+                if (type == PropertyState) {
+                    def m = lenskit.class.getMethod("get${prop.name.capitalize()}")
+                    def t = m.getGenericReturnType()
+                    def args = TypeUtils.getTypeArguments(t, PropertyState)
+                    def rt = args.get(PropertyState.getTypeParameters()[0])
+                    type = TypeUtils.getRawType(rt, Object)
+                    set = { v -> (prop.getProperty(lenskit) as PropertyState).set(v) }
+                }
                 if (prop.type == List) { // if the type is list update the val using strtokenizer
                     StrTokenizer tok = new StrTokenizer(val as String,
-                                                        StrMatcher.splitMatcher(),
-                                                        StrMatcher.quoteMatcher());
+                            StrMatcher.splitMatcher(),
+                            StrMatcher.quoteMatcher());
                     val = tok.toList()
                 } else if (prop.type != String) {
-                    val = StringConvert.INSTANCE.convertFromString(prop.type, val)
+                    val = StringConvert.INSTANCE.convertFromString(type, val)
                 }
-                prop.setProperty(lenskit, val)
+                set.call(val)
             }
         }
     }
