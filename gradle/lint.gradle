@@ -80,8 +80,8 @@ task jacocoMergedReport(type: JacocoReport) {
     reports {
         csv.enabled = false
         xml.enabled = true
-        xml.destination "${buildDir}/reports/jacoco/report.xml"
-        html.destination = "$reporting.baseDir/jacoco"
+        xml.destination = project.file("${buildDir}/reports/jacoco/report.xml")
+        html.destination = project.file("$reporting.baseDir/jacoco")
     }
 }
 report.dependsOn jacocoMergedReport
