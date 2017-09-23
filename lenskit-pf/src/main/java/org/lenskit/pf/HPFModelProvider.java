@@ -22,6 +22,7 @@ package org.lenskit.pf;
 
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
@@ -32,6 +33,7 @@ import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.KeyIndex;
+import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,41 +110,14 @@ public class HPFModelProvider implements Provider<HPFModel> {
         RealMatrix lambdaRte = MatrixUtils.createRealMatrix(itemNum, featureCount);
         RealVector tauShp = MatrixUtils.createRealVector(new double[itemNum]);
         RealVector tauRte = MatrixUtils.createRealVector(new double[itemNum]);
+        RealMatrix gammaShpNext = MatrixUtils.createRealMatrix(userNum, featureCount);
+        RealMatrix lambdaShpNext = MatrixUtils.createRealMatrix(itemNum, featureCount);
+        gammaShpNext = gammaShpNext.scalarAdd(a);
+        lambdaShpNext = lambdaShpNext.scalarAdd(c);
+        RealVector phiUI = MatrixUtils.createRealVector(new double[featureCount]);
 
-        // Initialization
-        final Random random = new Random(rndSeed);
-        double kShp = aPrime + featureCount * a;
-        double tShp = cPrime + featureCount * c;
-
-        for (int u = 0; u < userNum; u++ ) {
-            for (int k = 0; k < featureCount; k++) {
-                double valueShp = a + maxOffsetShp*random.nextDouble();
-                double valueRte = bPrime + maxOffsetRte*random.nextDouble(); //not sure
-                gammaShp.setEntry(u, k, valueShp);
-                gammaRte.setEntry(u, k, valueRte);
-//                valueRte = gammaRte.getEntry(0, k);// make rate parameter have
-//                gammaRte.setEntry(u, k, valueRte); // same initials cross user delete these two line
-            }
-
-            double value = bPrime + maxOffsetRte*random.nextDouble();
-            kappaRte.setEntry(u, value);
-            kappaShp.setEntry(u, kShp);
-        }
-
-        for (int i = 0; i < itemNum; i++ ) {
-            for (int k = 0; k < featureCount; k++) {
-                double valueShp = c + maxOffsetShp*random.nextDouble();
-                double valueRte = dPrime + maxOffsetRte*random.nextDouble(); //not sure
-                lambdaShp.setEntry(i, k, valueShp);
-                lambdaRte.setEntry(i, k, valueRte);
-//                valueRte = lambdaRte.getEntry(0, k); // make rate parameter have
-//                lambdaRte.setEntry(i, k, valueRte); // same initials cross user delete these two line
-            }
-            double value = dPrime + maxOffsetRte*random.nextDouble();
-            tauRte.setEntry(i, value);
-            tauShp.setEntry(i, tShp);
-        }
-        logger.info("initialization finished");
+        initialize(gammaShp, gammaRte, kappaRte, kappaShp,
+                lambdaShp, lambdaRte, tauRte, tauShp);
 
         final Int2ObjectMap<Int2DoubleMap> train = ratings.getTrainingMatrix();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
@@ -152,61 +127,61 @@ public class HPFModelProvider implements Provider<HPFModel> {
         double diffPLL = 1.0;
 
         while (controller.keepTraining(diffPLL)) {
-            Int2ObjectMap<Int2ObjectMap<RealVector>> phi = new Int2ObjectOpenHashMap<>();
 
             // update phi
-            Iterator<Map.Entry<Integer,Int2DoubleMap>> itemIter = train.entrySet().iterator();
+            ObjectIterator<Int2ObjectMap.Entry<Int2DoubleMap>> itemIter = train.int2ObjectEntrySet().iterator();
             while (itemIter.hasNext()) {
-                Map.Entry<Integer,Int2DoubleMap> itemEntry = itemIter.next();
-                int item = itemEntry.getKey();
+                Int2ObjectMap.Entry<Int2DoubleMap> itemEntry = itemIter.next();
+                int item = itemEntry.getIntKey();
                 Int2DoubleMap itemRaings = itemEntry.getValue();
-                IntIterator userIter = itemRaings.keySet().iterator();
+                ObjectIterator<Int2DoubleMap.Entry> userIter = itemRaings.int2DoubleEntrySet().iterator();
                 while (userIter.hasNext()) {
-                    int user = userIter.nextInt();
-                    Int2ObjectMap<RealVector> phiUIsVec = phi.get(user);
-                    if (phiUIsVec == null) phiUIsVec = new Int2ObjectOpenHashMap<>();
-                    RealVector phiUI = phiUIsVec.get(item);
-                    if (phiUI == null) phiUI = MatrixUtils.createRealVector(new double[featureCount]);
+                    Int2DoubleMap.Entry userEntry = userIter.next();
+                    int user = userEntry.getIntKey();
+                    double ratingUI = userEntry.getDoubleValue();
 
                     for (int k = 0; k < featureCount; k++) {
                         double gammaShpUK = gammaShp.getEntry(user, k);
                         double gammaRteUK = gammaRte.getEntry(user, k);
                         double lambdaShpIK = lambdaShp.getEntry(item, k);
                         double lambdaRteIK = lambdaRte.getEntry(item, k);
-                        double power = Gamma.digamma(gammaShpUK) - Math.log(gammaRteUK) + Gamma.digamma(lambdaShpIK) - Math.log(lambdaRteIK);
-                        double phiUIK = Math.exp(power);
+                        double phiUIK = Gamma.digamma(gammaShpUK) - Math.log(gammaRteUK) + Gamma.digamma(lambdaShpIK) - Math.log(lambdaRteIK);
                         phiUI.setEntry(k, phiUIK);
                     }
-                    double sumOfElements = phiUI.getL1Norm();
-                    phiUI.mapDivideToSelf(sumOfElements);
-                    phiUIsVec.put(item,phiUI);
-                    phi.put(user, phiUIsVec);
+                    logNormalize(phiUI);
+                    double sumOfPhi = phiUI.getL1Norm();
+                    logger.info("Sum of phi vector is {}", sumOfPhi);
+
+
+                    if (ratingUI > 1) {
+                        phiUI.mapMultiplyToSelf(ratingUI);
+                    }
+
+                    for (int k = 0; k < featureCount; k++) {
+                        double value = phiUI.getEntry(k);
+                        gammaShpNext.addToEntry(user, k, value);
+                        lambdaShpNext.addToEntry(item, k, value);
+                    }
+
                 }
             }
 
             // update user parameters
-            USER_OUTER:for (int user=0; user < userNum; user++) {
-                Set<Integer> items = userItems.get(user);
-//                if (items == null) items = Collections.emptySet();
-                if (items == null) continue USER_OUTER;
+            for (int user = 0; user < userNum; user++) {
+
+                double gammaRteUKFirstTerm = kappaShp.getEntry(user) / kappaRte.getEntry(user);
                 double kappaRteU = 0.0;
 
                 for (int k = 0; k < featureCount; k++) {
-                    double gammaShpUK = 0.0;
+                    double gammaShpUK = gammaShpNext.getEntry(user, k);
+                    gammaShp.setEntry(user, k, gammaShpUK);
+                    gammaShpNext.setEntry(user, k, a);
                     double gammaRteUK = 0.0;
-                    for (int item : items) {
-                        double yUI = train.get(item).get(user);
-                        double phiUIK = phi.get(user).get(item).getEntry(k);
-                        //plus second term
-                        gammaShpUK += yUI * phiUIK;
+                    for (int item = 0; item < itemNum; item++) {
                         gammaRteUK += lambdaShp.getEntry(item, k) / lambdaRte.getEntry(item, k);
                     }
-                    // plus first term
-                    gammaShpUK += a;
-                    gammaRteUK += kappaShp.getEntry(user) / kappaRte.getEntry(user);
-                    gammaShp.setEntry(user, k, gammaShpUK);
+                    gammaRteUK += gammaRteUKFirstTerm;
                     gammaRte.setEntry(user, k, gammaRteUK);
-                    // update kappaRteU second term
                     kappaRteU += gammaShpUK / gammaRteUK;
                 }
                 kappaRteU += aPrime / bPrime;
@@ -214,30 +189,22 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
 
             // update item parameters
-            ITEM_OUTER:for (int item = 0; item < itemNum; item++) {
+            for (int item = 0; item < itemNum; item++) {
 
-                Int2DoubleMap itemRatings = train.get(item);
-//                if (itemRatings == null) itemRatings = Int2DoubleMaps.EMPTY_MAP;
-                if (itemRatings == null) continue ITEM_OUTER;
+                double lambdaRteFirstTerm = tauShp.getEntry(item) / tauRte.getEntry(item);
                 double tauRteI = 0.0;
 
                 for (int k = 0; k < featureCount; k++) {
-                    double lambdaShpIK = 0.0;
+                    double lambdaShpIK = lambdaShpNext.getEntry(item, k);
+                    lambdaShp.setEntry(item, k, lambdaShpIK);
+                    lambdaShpNext.setEntry(item, k, c);
                     double lambdaRteIK = 0.0;
-                    Iterator<Map.Entry<Integer,Double>> itemRatingsIter = itemRatings.entrySet().iterator();
-                    while (itemRatingsIter.hasNext()) {
-                        Map.Entry<Integer,Double> itemRatingEntry = itemRatingsIter.next();
-                        int user = itemRatingEntry.getKey();
-                        double yUI = itemRatingEntry.getValue();
-                        double phiUIK = phi.get(user).get(item).getEntry(k);
-                        //plus second term
-                        lambdaShpIK += yUI * phiUIK;
+
+                    for (int user = 0; user < userNum; user++) {
                         lambdaRteIK += gammaShp.getEntry(user, k) / gammaRte.getEntry(user, k);
                     }
                     // plus first term
-                    lambdaShpIK += c;
-                    lambdaRteIK += tauShp.getEntry(item) / tauRte.getEntry(item);
-                    lambdaShp.setEntry(item, k, lambdaShpIK);
+                    lambdaRteIK += lambdaRteFirstTerm;
                     lambdaRte.setEntry(item, k, lambdaRteIK);
                     // update tauRteI second term
                     tauRteI += lambdaShpIK / lambdaRteIK;
@@ -302,5 +269,89 @@ public class HPFModelProvider implements Provider<HPFModel> {
         KeyIndex iidx = ratings.getItemIndex();
 
         return new HPFModel(eTheta, eBeta, uidx, iidx);
+    }
+
+    /**
+     * Initialization of parameter matrices
+     * @param gammaShp
+     * @param gammaRte
+     * @param kappaRte
+     * @param kappaShp
+     * @param lambdaShp
+     * @param lambdaRte
+     * @param tauRte
+     * @param tauShp
+     */
+    public void initialize(RealMatrix gammaShp, RealMatrix gammaRte, RealVector kappaRte, RealVector kappaShp,
+                           RealMatrix lambdaShp, RealMatrix lambdaRte, RealVector tauRte, RealVector tauShp) {
+        final int userNum = ratings.getUserIndex().size();
+        final int itemNum = ratings.getItemIndex().size();
+        final int featureCount = hyperParameters.getFeatureCount();
+        final double a = hyperParameters.getA();
+        final double aPrime = hyperParameters.getAPrime();
+        final double bPrime = hyperParameters.getBPrime();
+        final double c = hyperParameters.getC();
+        final double cPrime = hyperParameters.getCPrime();
+        final double dPrime = hyperParameters.getDPrime();
+        // Initialization
+        Random random = new Random(rndSeed);
+        final double kRte = aPrime + featureCount;
+        final double tRte = cPrime + featureCount;
+
+        for (int u = 0; u < userNum; u++ ) {
+            for (int k = 0; k < featureCount; k++) {
+                double valueShp = a + maxOffsetShp*random.nextDouble();
+                double valueRte = aPrime + maxOffsetRte*random.nextDouble();
+                gammaShp.setEntry(u, k, valueShp);
+                gammaRte.setEntry(u, k, valueRte);
+//                valueRte = gammaRte.getEntry(0, k);// make rate parameter have
+//                gammaRte.setEntry(u, k, valueRte); // same initials cross user delete these two line
+            }
+
+            double kShp = aPrime + maxOffsetShp*random.nextDouble();
+            kappaRte.setEntry(u, kRte);
+            kappaShp.setEntry(u, kShp);
+        }
+
+        for (int i = 0; i < itemNum; i++ ) {
+            for (int k = 0; k < featureCount; k++) {
+                double valueShp = c + maxOffsetShp*random.nextDouble();
+                double valueRte = cPrime + maxOffsetRte*random.nextDouble();
+                lambdaShp.setEntry(i, k, valueShp);
+                lambdaRte.setEntry(i, k, valueRte);
+//                valueRte = lambdaRte.getEntry(0, k); // make rate parameter have
+//                lambdaRte.setEntry(i, k, valueRte); // same initials cross user delete these two line
+            }
+            double tShp = cPrime + maxOffsetShp*random.nextDouble();
+            tauRte.setEntry(i, tRte);
+            tauShp.setEntry(i, tShp);
+        }
+        logger.info("initialization finished");
+    }
+
+    public void logNormalize (RealVector phi) {
+        final int size = phi.getDimension();
+        if (size == 1) {
+            phi.setEntry(0, 1.0);
+        }
+
+        if (size > 1) {
+            double logsum = phi.getEntry(0);
+            for (int i = 1; i < size; i++) {
+                double phiK = phi.getEntry(i);
+                if (phiK < logsum) {
+                    logsum = logsum + Math.log(1 + Math.exp(phiK - logsum));
+                } else {
+                    logsum = phiK + Math.log(1 + Math.exp(logsum - phiK));
+                }
+            }
+
+            for (int k = 0; k < size; k++) {
+                double phiK = phi.getEntry(k);
+                double normalized = Math.exp(phiK - logsum);
+                phi.setEntry(k, normalized);
+            }
+        }
+
     }
 }
