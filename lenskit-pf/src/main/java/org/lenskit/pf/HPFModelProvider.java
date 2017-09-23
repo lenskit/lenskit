@@ -94,13 +94,14 @@ public class HPFModelProvider implements Provider<HPFModel> {
         final int userNum = ratings.getUserIndex().size();
         final int itemNum = ratings.getItemIndex().size();
         final int featureCount = hyperParameters.getFeatureCount();
-        final Int2ObjectMap<ImmutableSet<Integer>> userItems = ratings.getUserItemIndices();
         final double a = hyperParameters.getA();
         final double aPrime = hyperParameters.getAPrime();
         final double bPrime = hyperParameters.getBPrime();
         final double c = hyperParameters.getC();
         final double cPrime = hyperParameters.getCPrime();
         final double dPrime = hyperParameters.getDPrime();
+        final double kappaShpU = aPrime + featureCount * a;
+        final double tauShpI = cPrime + featureCount * c;
 
         RealMatrix gammaShp = MatrixUtils.createRealMatrix(userNum, featureCount);
         RealMatrix gammaRte = MatrixUtils.createRealMatrix(userNum, featureCount);
@@ -150,7 +151,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     }
                     logNormalize(phiUI);
                     double sumOfPhi = phiUI.getL1Norm();
-                    logger.info("Sum of phi vector is {}", sumOfPhi);
+//                    logger.info("Sum of phi vector is {}", sumOfPhi);
 
 
                     if (ratingUI > 1) {
@@ -213,10 +214,21 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 tauRte.setEntry(item, tauRteI);
             }
 
+
             // compute average predictive log likelihood of validation data per {@code iterationfrequency} iterations
             int iterCount = controller.getIterationCount();
+            if (iterCount == 1) {
+                for (int user = 0; user < userNum; user++) {
+                    kappaShp.setEntry(user, kappaShpU);
+                }
+                for (int item = 0; item < itemNum; item++) {
+                    tauShp.setEntry(item, tauShpI);
+                }
+            }
+
             if ((iterCount % iterationFrequency) == 0) {
                 Iterator<RatingMatrixEntry> valIter = validation.iterator();
+                avgPLLCurr = 0.0;
 
                 while (valIter.hasNext()) {
                     RatingMatrixEntry ratingEntry = valIter.next();
@@ -244,6 +256,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
 //                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
             }
 //            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
+
         }
 
         // construct feature matrix used by HPFModel
