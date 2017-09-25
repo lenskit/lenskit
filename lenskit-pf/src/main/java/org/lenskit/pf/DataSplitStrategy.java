@@ -51,12 +51,6 @@ public interface DataSplitStrategy {
      */
     List<RatingMatrixEntry> getValidationRatings();
 
-    /**
-     * Get the mapping from user indices to sets of user consumed items
-     *
-     * @return The map of user indices to user consumed items indices
-     */
-    Int2ObjectMap<ImmutableSet<Integer>> getUserItemIndices();
 
     KeyIndex getUserIndex();
 

@@ -44,18 +44,15 @@ public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable 
 
     private final Int2ObjectMap<Int2DoubleMap> training;
     private final List<RatingMatrixEntry> validation;
-    private final Int2ObjectMap<ImmutableSet<Integer>> userItemIndices;
     private final KeyIndex userIndex;
     private final KeyIndex itemIndex;
 
     public RandomDataSplitStrategy(Int2ObjectMap<Int2DoubleMap> train,
                                    List<RatingMatrixEntry> val,
-                                   Int2ObjectMap<ImmutableSet<Integer>> userItems,
                                    KeyIndex userInd,
                                    KeyIndex itemInd) {
         training = train;
         validation = val;
-        userItemIndices = userItems;
         userIndex = userInd;
         itemIndex = itemInd;
     }
@@ -70,11 +67,6 @@ public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable 
     @Nonnull
     public List<RatingMatrixEntry> getValidationRatings() {
         return validation;
-    }
-
-    @Override
-    public Int2ObjectMap<ImmutableSet<Integer>> getUserItemIndices() {
-        return userItemIndices;
     }
 
     @Override

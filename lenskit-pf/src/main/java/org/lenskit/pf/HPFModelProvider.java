@@ -119,6 +119,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
         initialize(gammaShp, gammaRte, kappaRte, kappaShp,
                 lambdaShp, lambdaRte, tauRte, tauShp);
+        logger.info("initialization finished");
 
         final Int2ObjectMap<Int2DoubleMap> train = ratings.getTrainingMatrix();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
@@ -129,6 +130,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
         while (controller.keepTraining(diffPLL)) {
 
+            int iterCount = controller.getIterationCount();
             // update phi
             ObjectIterator<Int2ObjectMap.Entry<Int2DoubleMap>> itemIter = train.int2ObjectEntrySet().iterator();
             while (itemIter.hasNext()) {
@@ -151,7 +153,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     }
                     logNormalize(phiUI);
                     double sumOfPhi = phiUI.getL1Norm();
-//                    logger.info("Sum of phi vector is {}", sumOfPhi);
+                    logger.debug("Sum of phi vector is {}", sumOfPhi);
 
 
                     if (ratingUI > 1) {
@@ -166,6 +168,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
                 }
             }
+            logger.info("iteration {} first phrase update finished", iterCount);
 
             // update user parameters
             for (int user = 0; user < userNum; user++) {
@@ -189,6 +192,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 kappaRte.setEntry(user, kappaRteU);
             }
 
+            logger.info("iteration {} second phrase update finished", iterCount);
             // update item parameters
             for (int item = 0; item < itemNum; item++) {
 
@@ -214,9 +218,10 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 tauRte.setEntry(item, tauRteI);
             }
 
+            logger.info("iteration {} third phrase update finished", iterCount);
 
             // compute average predictive log likelihood of validation data per {@code iterationfrequency} iterations
-            int iterCount = controller.getIterationCount();
+
             if (iterCount == 1) {
                 for (int user = 0; user < userNum; user++) {
                     kappaShp.setEntry(user, kappaShpU);
@@ -339,7 +344,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
             tauRte.setEntry(i, tRte);
             tauShp.setEntry(i, tShp);
         }
-        logger.info("initialization finished");
+
     }
 
     public void logNormalize (RealVector phi) {
