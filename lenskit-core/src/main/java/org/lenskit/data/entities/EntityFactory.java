@@ -51,4 +51,13 @@ public class EntityFactory {
                      .setTimestamp(timestamp)
                      .build();
     }
+
+    public Entity likeBatch(long uid, long iid, int count) {
+        return Entities.newBuilder(EntityType.forName("like-batch"))
+                       .setId(++entityId)
+                       .setLongAttribute(CommonAttributes.USER_ID, uid)
+                       .setLongAttribute(CommonAttributes.ITEM_ID, iid)
+                       .setAttribute(CommonAttributes.COUNT, count)
+                       .build();
+    }
 }
