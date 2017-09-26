@@ -29,7 +29,6 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.util.io.CompressionMode;
 import org.lenskit.api.*;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
@@ -39,6 +38,7 @@ import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.util.keys.LongSortedArraySet;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
@@ -587,11 +587,14 @@ public class RecommendEvalTask implements EvalTask {
                                                                            candidates, excludes));
                 }
 
-                // Measure the user results
+                // Measure the user results for this item
                 TableLayout il = itemWriter != null ? itemWriter.getLayout() : null;
-                List<Object> row = new ArrayList<>();
+                ArrayList<Object> row = new ArrayList<>();
                 row.add(tu2.getUserId());
                 row.add(te.getLong(CommonAttributes.ITEM_ID));
+                while (il != null && row.size() < il.getColumnCount()) {
+                    row.add(null);
+                }
                 for (MetricContext<?> mc: predictMetricContexts) {
                     MetricResult res;
                     if (useDetails) {
@@ -602,9 +605,6 @@ public class RecommendEvalTask implements EvalTask {
                     if (il != null) {
                         for (Map.Entry<String, Object> rv : res.getValues().entrySet()) {
                             int idx = il.columnIndex(rv.getKey());
-                            while (row.size() <= idx) {
-                                row.add(null);
-                            }
                             row.set(idx, rv.getValue());
                         }
                     }
