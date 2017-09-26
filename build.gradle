@@ -33,6 +33,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import org.grouplens.lenskit.build.GitExtension
+import org.apache.commons.lang3.BooleanUtils
 
 plugins {
     id 'com.gradle.build-scan' version '1.8'
@@ -93,6 +94,14 @@ allprojects { project ->
         task.onlyIf {
             !project.getConfigProperty('javadoc.skip', 'false').toBoolean()
         }
+    }
+
+    tasks.withType(JavaCompile).each { task ->
+        task.options.fork = BooleanUtils.toBoolean(project.findProperty('forkCompilers') ?: 'yes')
+    }
+    tasks.withType(GroovyCompile).each { task ->
+        task.options.fork = BooleanUtils.toBoolean(project.findProperty('forkCompilers') ?: 'yes')
+        task.groovyOptions.fork = BooleanUtils.toBoolean(project.findProperty('forkCompilers') ?: 'yes')
     }
 
     extensions.create('git', GitExtension)

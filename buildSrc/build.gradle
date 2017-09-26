@@ -51,4 +51,12 @@ dependencies {
     compile 'org.apache.httpcomponents:httpmime:4.2.1'
     compile 'org.apache.maven:maven-model:3.0.4'
     compile 'com.google.guava:guava:19.0'
+    runtime 'org.apache.commons:commons-lang3:3.6'
+}
+tasks.withType(JavaCompile).each { task ->
+    task.options.fork = false
+}
+tasks.withType(GroovyCompile).each { task ->
+    task.options.fork = false
+    task.groovyOptions.fork = false
 }
