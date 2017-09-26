@@ -506,21 +506,26 @@ public class RecommendEvalTask implements EvalTask {
                               .getValues());
             }
 
-            // Write all attempted predictions
-            if (writer != null) {
-                assert results != null; // we use details when writer is nonnull
-                int rank = 0;
-                for (Result rec : results) {
-                    try {
-                        rank += 1;
-                        writer.writeRow(testUser.getUserId(), rank, rec.getId(), rec.getScore());
-                    } catch (IOException ex) {
-                        throw new EvaluationException("error writing prediction row", ex);
-                    }
-                }
-            }
+            writeRecommendations(testUser, results);
 
             return row;
+        }
+
+        private void writeRecommendations(TestUser testUser, ResultList results) {
+            assert writer == null || results != null;
+            if (writer == null) {
+                return;
+            }
+
+            int rank = 0;
+            for (Result rec : results) {
+                try {
+                    rank += 1;
+                    writer.writeRow(testUser.getUserId(), rank, rec.getId(), rec.getScore());
+                } catch (IOException ex) {
+                    throw new EvaluationException("error writing prediction row", ex);
+                }
+            }
         }
 
         @Nonnull
@@ -618,23 +623,26 @@ public class RecommendEvalTask implements EvalTask {
                     }
                 }
 
-                // Write all attempted predictions
-                if (writer != null) {
-                    assert results != null; // we use details when writer is nonnull
-                    int rank = 0;
-                    for (Result rec : results) {
-                        try {
-                            rank += 1;
-                            writer.writeRow(tu2.getUserId(), te.getLong(CommonAttributes.ITEM_ID),
-                                            rank, rec.getId(), rec.getScore());
-                        } catch (IOException ex) {
-                            throw new EvaluationException("error writing prediction row", ex);
-                        }
-                    }
-                }
-
+                writeRecommendations(tu2, te.getLong(CommonAttributes.ITEM_ID), results);
             }
             return Collections.emptyMap();
+        }
+
+        private void writeRecommendations(TestUser user, long item, ResultList results) {
+            assert writer == null || results != null;
+            if (writer == null) {
+                return;
+            }
+            int rank = 0;
+            for (Result rec : results) {
+                try {
+                    rank += 1;
+                    writer.writeRow(user.getUserId(), item,
+                                    rank, rec.getId(), rec.getScore());
+                } catch (IOException ex) {
+                    throw new EvaluationException("error writing prediction row", ex);
+                }
+            }
         }
 
         @Nonnull
