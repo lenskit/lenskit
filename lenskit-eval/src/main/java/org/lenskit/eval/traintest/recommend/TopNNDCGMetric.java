@@ -26,6 +26,8 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
+import org.lenskit.data.entities.CommonAttributes;
+import org.lenskit.data.entities.Entity;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
@@ -52,6 +54,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     public static final String DEFAULT_COLUMN = "nDCG";
     private final String columnName;
     private final Discount discount;
+    private final String gainAttribute;
 
     /**
      * Create an nDCG metric with log-2 discounting.
@@ -74,7 +77,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
      */
     @JsonCreator
     public TopNNDCGMetric(Spec spec) {
-        this(spec.getParsedDiscount(), spec.getColumnName());
+        this(spec.getParsedDiscount(), spec.getColumnName(), spec.getGainAttribute());
     }
 
     /**
@@ -83,10 +86,20 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
      * @param name The column name to use.
      */
     public TopNNDCGMetric(Discount disc, String name) {
+        this(disc, name, CommonAttributes.RATING.getName());
+    }
+
+    /**
+     * Construct a new nDCG Top-N metric.
+     * @param disc The discount to apply.
+     * @param name The column name to use.
+     */
+    public TopNNDCGMetric(Discount disc, String name, String attr) {
         super(Collections.singletonList(StringUtils.defaultString(name, DEFAULT_COLUMN)),
               Collections.singletonList(StringUtils.defaultString(name, DEFAULT_COLUMN)));
         columnName = StringUtils.defaultString(name, DEFAULT_COLUMN);
         discount = disc;
+        gainAttribute = attr;
     }
 
     @Nullable
@@ -108,7 +121,16 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
             return MetricResult.empty();
         }
 
-        Long2DoubleMap ratings = user.getTestRatings();
+        Long2DoubleMap ratings = new Long2DoubleOpenHashMap();
+        for (Entity e: user.getTestHistory()) {
+            long item = e.getLong(CommonAttributes.ITEM_ID);
+            Object av = e.get(gainAttribute);
+            if (av instanceof Number) {
+                ratings.put(item, ((Number) av).doubleValue());
+            } else {
+                throw new IllegalArgumentException("value " + av + " for attribute " + gainAttribute + " is not numeric");
+            }
+        }
         long[] ideal = ratings.keySet().toLongArray();
         LongArrays.quickSort(ideal, LongComparators.oppositeComparator(LongUtils.keyValueComparator(ratings)));
         if (targetLength >= 0 && ideal.length > targetLength) {
@@ -150,6 +172,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
     public static class Spec {
         private String name;
         private String discount;
+        private String attribute;
 
         public String getColumnName() {
             return name;
@@ -165,6 +188,18 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
         public void setDiscount(String discount) {
             this.discount = discount;
+        }
+
+        public String getGainAttribute() {
+            if (attribute == null) {
+                return CommonAttributes.RATING.getName();
+            } else {
+                return attribute;
+            }
+        }
+
+        public void setGainAttribute(String attr) {
+            attribute = attr;
         }
 
         public Discount getParsedDiscount() {

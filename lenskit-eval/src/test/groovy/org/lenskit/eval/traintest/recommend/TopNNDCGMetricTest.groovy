@@ -23,6 +23,7 @@ package org.lenskit.eval.traintest.recommend
 import groovy.json.JsonBuilder
 import org.grouplens.grapht.util.ClassLoaders
 import org.junit.Test
+import org.lenskit.data.entities.EntityFactory
 import org.lenskit.eval.traintest.TestUser
 import org.lenskit.eval.traintest.metrics.Discounts
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper
@@ -103,8 +104,7 @@ class TopNNDCGMetricTest {
                            .addTestRating(1, 5.0)
                            .addTestRating(2, 2.5)
                            .build()
-        // the order is right, but the recommendation values are out of order
-        // this is fine, nDCG should only consider order.
+        // the recommendations are out of order
         def recs = Results.newResultList(Results.create(2, 3.0),
                                          Results.create(1, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
@@ -174,5 +174,39 @@ class TopNNDCGMetricTest {
         assertThat(result.values.keySet(), contains('nDCG'))
         assertThat(result.values['nDCG'],
                    closeTo((1 + 5/6.25d) * 0.5, 1.0e-6d))
+    }
+
+    @Test
+    void testUseEntity() {
+        def jsb = new JsonBuilder()
+        jsb {
+            type 'ndcg'
+            discount 'exp(2)'
+            gainAttribute 'count'
+        }
+        def mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(), 'topn-metrics')
+        def metric = mlh.createMetric(TopNMetric, jsb.toString())
+        // use half-life discounting, because log 2 doesn't change for 2 items
+        def context = metric.createContext(null, null, null)
+        def fac = new EntityFactory()
+        def user = TestUser.newBuilder()
+                           .setUserId(42)
+                           .addTestEntity(fac.likeBatch(42, 1, 5),
+                                          fac.likeBatch(42, 2, 3))
+                           .build()
+        // The recommendations are out of order - so we should discount
+        def recs = Results.newResultList(Results.create(2, 3.0),
+                                         Results.create(1, 2.5))
+        def result = metric.measureUser(null, user, -1, recs, context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
+                   closeTo(5.5d / 6.5d, 1.0e-6d))
+
+        result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
+                   closeTo(5.5d / 6.5d, 1.0e-6d))
     }
 }
