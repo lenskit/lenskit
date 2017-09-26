@@ -42,7 +42,7 @@ public interface DataSplitStrategy {
      *
      * @return The training map
      */
-    Int2ObjectMap<Int2DoubleMap> getTrainingMatrix();
+    List<RatingMatrixEntry> getTrainingMatrix();
 
     /**
      * Get a list of validation ratings

@@ -93,28 +93,28 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
         final List<RatingMatrixEntry> validationRatings = ImmutableList.copyOf(subList);
         subList.clear();
         logger.info("validation rating size: {}", validationRatings.size());
-        Int2ObjectMap<Int2DoubleMap> trainingRatings = new Int2ObjectOpenHashMap<>();
+//        Int2ObjectMap<Int2DoubleMap> trainingRatings = new Int2ObjectOpenHashMap<>();
 //        Int2ObjectMap<IntSet> userItemIndices = new Int2ObjectOpenHashMap<>();
-        Iterator<RatingMatrixEntry> ratingIter = allRatings.iterator();
-        while (ratingIter.hasNext()) {
-            RatingMatrixEntry e = ratingIter.next();
-            int userIndex = e.getUserIndex();
-            int itemIndex = e.getItemIndex();
-            double rating = e.getValue();
-
-            if (rating > 0) {
-                Int2DoubleMap itemRatings = trainingRatings.get(itemIndex);
-                if (itemRatings == null) itemRatings = new Int2DoubleOpenHashMap();
-                itemRatings.put(userIndex, rating);
-                trainingRatings.put(itemIndex, itemRatings);
+//        Iterator<RatingMatrixEntry> ratingIter = allRatings.iterator();
+//        while (ratingIter.hasNext()) {
+//            RatingMatrixEntry e = ratingIter.next();
+//            int userIndex = e.getUserIndex();
+//            int itemIndex = e.getItemIndex();
+//            double rating = e.getValue();
+//
+//            if (rating > 0) {
+//                Int2DoubleMap itemRatings = trainingRatings.get(itemIndex);
+//                if (itemRatings == null) itemRatings = new Int2DoubleOpenHashMap();
+//                itemRatings.put(userIndex, rating);
+//                trainingRatings.put(itemIndex, itemRatings);
 
 //                IntSet userItems = userItemIndices.get(userIndex);
 //                if (userItems == null) userItems = new IntOpenHashSet();
 //                userItems.add(itemIndex);
 //                userItemIndices.put(userIndex, userItems);
-            }
-
-        }
+//            }
+//
+//        }
 //        for (int i = 0; i < size; i++) {
 //            RatingMatrixEntry e = allRatings.get(i);
 //            if (!randomIndices.contains(i)) {
@@ -136,8 +136,8 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
 //            }
 //        }
 
-        final KeyIndex userIndex = snapshot.userIndex().frozenCopy();
-        final KeyIndex itemIndex = snapshot.itemIndex().frozenCopy();
+        final KeyIndex userIndex = snapshot.userIndex();
+        final KeyIndex itemIndex = snapshot.itemIndex();
 //        Int2ObjectMap<ImmutableSet<Integer>> userItems = new Int2ObjectOpenHashMap<>();
 //
 //        Iterator<Map.Entry<Integer,IntSet>> userItemsIter = userItemIndices.entrySet().iterator();
@@ -154,6 +154,6 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
 //        logger.info("Training Rating examples: item {} ratings {} ", exampleItemNum, trainingRatings.get(exampleItemNum));
 //        logger.info("validation ratings {}", validationRatings);
 
-        return new RandomDataSplitStrategy(trainingRatings, validationRatings, userIndex, itemIndex);
+        return new RandomDataSplitStrategy(allRatings, validationRatings, userIndex, itemIndex);
     }
 }

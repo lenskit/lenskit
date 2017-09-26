@@ -20,8 +20,6 @@
  */
 package org.lenskit.pf;
 
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -81,13 +79,10 @@ public class RandomDataSplitStrategyProviderTest {
         RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
         DataSplitStrategy splitStrategy = splitData.get();
         List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        Int2ObjectMap<Int2DoubleMap> trainingRaings = splitStrategy.getTrainingMatrix();
+        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainingMatrix();
         assertThat(validations.size(), equalTo(3));
-        int trainingSize = 0;
-        for (int item : trainingRaings.keySet()) {
-            trainingSize += trainingRaings.get(item).size();
-        }
-        assertThat(trainingSize, equalTo(26));
+        int trainingSize = trainingRaings.size();
+        assertThat(trainingSize, equalTo(27));
     }
 
     @Test
@@ -97,16 +92,17 @@ public class RandomDataSplitStrategyProviderTest {
         KeyIndex userIndex = splitStrategy.getUserIndex();
         KeyIndex itemIndex = splitStrategy.getItemIndex();
         List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        Int2ObjectMap<Int2DoubleMap> trainingRatings = splitStrategy.getTrainingMatrix();
+        List<RatingMatrixEntry> trainingRatings = splitStrategy.getTrainingMatrix();
 
-        for (int item : trainingRatings.keySet()) {
-            for (int user : trainingRatings.get(item).keySet()) {
-                long userId = userIndex.getKey(user);
-                long itemId = itemIndex.getKey(item);
-                double rating = trainingRatings.get(item).get(user);
-                assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
-                assertThat(rating, equalTo(data.get(itemId).get(userId)));
-            }
+        for (RatingMatrixEntry re : trainingRatings) {
+            int user = re.getUserIndex();
+            int item = re.getItemIndex();
+            long userId = userIndex.getKey(user);
+            long itemId = itemIndex.getKey(item);
+            double rating = re.getValue();
+            assertThat(rating, equalTo(snapshot.getUserRatingVector(userId).get(itemId)));
+            assertThat(rating, equalTo(data.get(itemId).get(userId)));
+
         }
 
         for (RatingMatrixEntry re : validations) {
@@ -127,7 +123,7 @@ public class RandomDataSplitStrategyProviderTest {
         KeyIndex userIndex = splitStrategy.getUserIndex();
         KeyIndex itemIndex = splitStrategy.getItemIndex();
         List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        Int2ObjectMap<Int2DoubleMap> trainingRatings = splitStrategy.getTrainingMatrix();
+        List<RatingMatrixEntry> trainingRatings = splitStrategy.getTrainingMatrix();
 
         for (RatingMatrixEntry re : validations) {
             int user = re.getUserIndex();
@@ -141,13 +137,14 @@ public class RandomDataSplitStrategyProviderTest {
 
         KeyIndex snapshotUserIndex = snapshot.userIndex();
         KeyIndex snapshotItemIndex = snapshot.itemIndex();
-        for (int item : trainingRatings.keySet()) {
-            for (int user : trainingRatings.get(item).keySet()) {
-                long userId = userIndex.getKey(user);
-                long itemId = itemIndex.getKey(item);
-                assertThat(user, equalTo(snapshotUserIndex.tryGetIndex(userId)));
-                assertThat(item, equalTo(snapshotItemIndex.tryGetIndex(itemId)));
-            }
+        for (RatingMatrixEntry re : trainingRatings) {
+            int user = re.getUserIndex();
+            int item = re.getItemIndex();
+            long userId = userIndex.getKey(user);
+            long itemId = itemIndex.getKey(item);
+            assertThat(user, equalTo(snapshotUserIndex.tryGetIndex(userId)));
+            assertThat(item, equalTo(snapshotItemIndex.tryGetIndex(itemId)));
+
         }
 
 

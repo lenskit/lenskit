@@ -20,6 +20,7 @@
  */
 package org.lenskit.pf;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -42,24 +43,24 @@ import java.util.List;
 public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable {
     private static final long serialVersionUID = 2L;
 
-    private final Int2ObjectMap<Int2DoubleMap> training;
+    private final List<RatingMatrixEntry> training;
     private final List<RatingMatrixEntry> validation;
     private final KeyIndex userIndex;
     private final KeyIndex itemIndex;
 
-    public RandomDataSplitStrategy(Int2ObjectMap<Int2DoubleMap> train,
+    public RandomDataSplitStrategy(List<RatingMatrixEntry> train,
                                    List<RatingMatrixEntry> val,
                                    KeyIndex userInd,
                                    KeyIndex itemInd) {
-        training = train;
-        validation = val;
-        userIndex = userInd;
-        itemIndex = itemInd;
+        training = ImmutableList.copyOf(train);
+        validation = ImmutableList.copyOf(val);
+        userIndex = userInd.frozenCopy();
+        itemIndex = itemInd.frozenCopy();
     }
 
     @Override
     @Nonnull
-    public Int2ObjectMap<Int2DoubleMap> getTrainingMatrix() {
+    public List<RatingMatrixEntry> getTrainingMatrix() {
         return training;
     }
 
