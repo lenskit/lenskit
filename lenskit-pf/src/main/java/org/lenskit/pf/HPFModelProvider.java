@@ -20,24 +20,20 @@
  */
 package org.lenskit.pf;
 
-import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.special.Gamma;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.lenskit.data.ratings.PreferenceDomain;
+
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.KeyIndex;
-import org.lenskit.util.math.Vectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.*;
@@ -50,8 +46,6 @@ import java.util.*;
  * using a mean-field variational inference algorithm.
  * These are documented in
  * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.
- * This implementation is based in part on
- * <a href="https://github.com/premgopalan/hgaprec">The authors' github repository</a>.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -119,8 +113,9 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
         initialize(gammaShp, gammaRte, kappaRte, kappaShp,
                 lambdaShp, lambdaRte, tauRte, tauShp);
+        logger.info("initialization finished");
 
-        final Int2ObjectMap<Int2DoubleMap> train = ratings.getTrainingMatrix();
+        final List<RatingMatrixEntry> train = ratings.getTrainingMatrix();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
         TrainingLoopController controller = stoppingCondition.newLoop();
         double avgPLLPre = Double.MAX_VALUE;
@@ -129,43 +124,44 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
         while (controller.keepTraining(diffPLL)) {
 
+            int iterCount = controller.getIterationCount();
             // update phi
-            ObjectIterator<Int2ObjectMap.Entry<Int2DoubleMap>> itemIter = train.int2ObjectEntrySet().iterator();
-            while (itemIter.hasNext()) {
-                Int2ObjectMap.Entry<Int2DoubleMap> itemEntry = itemIter.next();
-                int item = itemEntry.getIntKey();
-                Int2DoubleMap itemRaings = itemEntry.getValue();
-                ObjectIterator<Int2DoubleMap.Entry> userIter = itemRaings.int2DoubleEntrySet().iterator();
-                while (userIter.hasNext()) {
-                    Int2DoubleMap.Entry userEntry = userIter.next();
-                    int user = userEntry.getIntKey();
-                    double ratingUI = userEntry.getDoubleValue();
-
-                    for (int k = 0; k < featureCount; k++) {
-                        double gammaShpUK = gammaShp.getEntry(user, k);
-                        double gammaRteUK = gammaRte.getEntry(user, k);
-                        double lambdaShpIK = lambdaShp.getEntry(item, k);
-                        double lambdaRteIK = lambdaRte.getEntry(item, k);
-                        double phiUIK = Gamma.digamma(gammaShpUK) - Math.log(gammaRteUK) + Gamma.digamma(lambdaShpIK) - Math.log(lambdaRteIK);
-                        phiUI.setEntry(k, phiUIK);
-                    }
-                    logNormalize(phiUI);
-                    double sumOfPhi = phiUI.getL1Norm();
-//                    logger.info("Sum of phi vector is {}", sumOfPhi);
-
-
-                    if (ratingUI > 1) {
-                        phiUI.mapMultiplyToSelf(ratingUI);
-                    }
-
-                    for (int k = 0; k < featureCount; k++) {
-                        double value = phiUI.getEntry(k);
-                        gammaShpNext.addToEntry(user, k, value);
-                        lambdaShpNext.addToEntry(item, k, value);
-                    }
-
+            Iterator<RatingMatrixEntry> allUIPairs = train.iterator();
+            while (allUIPairs.hasNext()) {
+                RatingMatrixEntry entry = allUIPairs.next();
+                int item = entry.getItemIndex();
+                int user = entry.getUserIndex();
+                double ratingUI = entry.getValue();
+                if (ratingUI <= 0) {
+                    continue;
                 }
+
+                for (int k = 0; k < featureCount; k++) {
+                    double gammaShpUK = gammaShp.getEntry(user, k);
+                    double gammaRteUK = gammaRte.getEntry(user, k);
+                    double lambdaShpIK = lambdaShp.getEntry(item, k);
+                    double lambdaRteIK = lambdaRte.getEntry(item, k);
+                    double phiUIK = Gamma.digamma(gammaShpUK) - Math.log(gammaRteUK) + Gamma.digamma(lambdaShpIK) - Math.log(lambdaRteIK);
+                    phiUI.setEntry(k, phiUIK);
+                }
+                logNormalize(phiUI);
+//                double sumOfPhi = phiUI.getL1Norm();
+//                logger.debug("Sum of phi vector is {}", sumOfPhi);
+
+
+                if (ratingUI > 1) {
+                    phiUI.mapMultiplyToSelf(ratingUI);
+                }
+
+                for (int k = 0; k < featureCount; k++) {
+                    double value = phiUI.getEntry(k);
+                    gammaShpNext.addToEntry(user, k, value);
+                    lambdaShpNext.addToEntry(item, k, value);
+                }
+
+
             }
+            logger.info("iteration {} first phrase update finished", iterCount);
 
             // update user parameters
             for (int user = 0; user < userNum; user++) {
@@ -189,6 +185,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 kappaRte.setEntry(user, kappaRteU);
             }
 
+            logger.info("iteration {} second phrase update finished", iterCount);
             // update item parameters
             for (int item = 0; item < itemNum; item++) {
 
@@ -214,9 +211,10 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 tauRte.setEntry(item, tauRteI);
             }
 
+            logger.info("iteration {} third phrase update finished", iterCount);
 
             // compute average predictive log likelihood of validation data per {@code iterationfrequency} iterations
-            int iterCount = controller.getIterationCount();
+
             if (iterCount == 1) {
                 for (int user = 0; user < userNum; user++) {
                     kappaShp.setEntry(user, kappaShpU);
@@ -339,7 +337,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
             tauRte.setEntry(i, tRte);
             tauShp.setEntry(i, tShp);
         }
-        logger.info("initialization finished");
+
     }
 
     public void logNormalize (RealVector phi) {
