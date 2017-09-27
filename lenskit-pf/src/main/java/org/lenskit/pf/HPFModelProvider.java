@@ -20,24 +20,20 @@
  */
 package org.lenskit.pf;
 
-import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.special.Gamma;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.lenskit.data.ratings.PreferenceDomain;
+
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.KeyIndex;
-import org.lenskit.util.math.Vectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.*;
@@ -50,8 +46,6 @@ import java.util.*;
  * using a mean-field variational inference algorithm.
  * These are documented in
  * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.
- * This implementation is based in part on
- * <a href="https://github.com/premgopalan/hgaprec">The authors' github repository</a>.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -151,8 +145,8 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     phiUI.setEntry(k, phiUIK);
                 }
                 logNormalize(phiUI);
-                double sumOfPhi = phiUI.getL1Norm();
-                logger.debug("Sum of phi vector is {}", sumOfPhi);
+//                double sumOfPhi = phiUI.getL1Norm();
+//                logger.debug("Sum of phi vector is {}", sumOfPhi);
 
 
                 if (ratingUI > 1) {
