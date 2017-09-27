@@ -163,7 +163,18 @@ public class HPFModelProvider implements Provider<HPFModel> {
             }
             logger.info("iteration {} first phrase update finished", iterCount);
 
+
+            RealVector gammaRteSecondTerm = MatrixUtils.createRealVector(new double[featureCount]);
+            for (int k = 0; k < featureCount; k++) {
+                double gammaRteUK = 0.0;
+                for (int item = 0; item < itemNum; item++) {
+                    gammaRteUK += lambdaShp.getEntry(item, k) / lambdaRte.getEntry(item, k);
+                }
+                gammaRteSecondTerm.setEntry(k, gammaRteUK);
+            }
+
             // update user parameters
+            double kappaRteFirstTerm = aPrime / bPrime;
             for (int user = 0; user < userNum; user++) {
 
                 double gammaRteUKFirstTerm = kappaShp.getEntry(user) / kappaRte.getEntry(user);
@@ -173,20 +184,29 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     double gammaShpUK = gammaShpNext.getEntry(user, k);
                     gammaShp.setEntry(user, k, gammaShpUK);
                     gammaShpNext.setEntry(user, k, a);
-                    double gammaRteUK = 0.0;
-                    for (int item = 0; item < itemNum; item++) {
-                        gammaRteUK += lambdaShp.getEntry(item, k) / lambdaRte.getEntry(item, k);
-                    }
+                    double gammaRteUK = gammaRteSecondTerm.getEntry(k);
                     gammaRteUK += gammaRteUKFirstTerm;
                     gammaRte.setEntry(user, k, gammaRteUK);
                     kappaRteU += gammaShpUK / gammaRteUK;
                 }
-                kappaRteU += aPrime / bPrime;
+                kappaRteU += kappaRteFirstTerm;
                 kappaRte.setEntry(user, kappaRteU);
             }
 
             logger.info("iteration {} second phrase update finished", iterCount);
+
+
+            RealVector lambdaRteSecondTerm = MatrixUtils.createRealVector(new double[featureCount]);
+            for (int k = 0; k < featureCount; k++) {
+                double lambdaRteIK = 0.0;
+                for (int user = 0; user < userNum; user++) {
+                    lambdaRteIK += gammaShp.getEntry(user, k) / gammaRte.getEntry(user, k);
+                }
+                lambdaRteSecondTerm.setEntry(k, lambdaRteIK);
+            }
+
             // update item parameters
+            double tauRteFirstTerm = cPrime / dPrime;
             for (int item = 0; item < itemNum; item++) {
 
                 double lambdaRteFirstTerm = tauShp.getEntry(item) / tauRte.getEntry(item);
@@ -196,18 +216,15 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     double lambdaShpIK = lambdaShpNext.getEntry(item, k);
                     lambdaShp.setEntry(item, k, lambdaShpIK);
                     lambdaShpNext.setEntry(item, k, c);
-                    double lambdaRteIK = 0.0;
+                    double lambdaRteIK = lambdaRteSecondTerm.getEntry(k);
 
-                    for (int user = 0; user < userNum; user++) {
-                        lambdaRteIK += gammaShp.getEntry(user, k) / gammaRte.getEntry(user, k);
-                    }
                     // plus first term
                     lambdaRteIK += lambdaRteFirstTerm;
                     lambdaRte.setEntry(item, k, lambdaRteIK);
                     // update tauRteI second term
                     tauRteI += lambdaShpIK / lambdaRteIK;
                 }
-                tauRteI += cPrime / dPrime;
+                tauRteI += tauRteFirstTerm;
                 tauRte.setEntry(item, tauRteI);
             }
 
