@@ -34,8 +34,10 @@ import org.lenskit.util.keys.KeyIndex;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
+import static java.util.stream.Collectors.groupingBy;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -159,5 +161,19 @@ public class RandomDataSplitStrategyProviderTest {
         }
     }
 
+    @Test
+    public void testStreamGroupby() {
+        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
+        DataSplitStrategy splitStrategy = splitData.get();
+        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
+        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainingMatrix();
+        Map<Integer, List<RatingMatrixEntry>> groupRatings = trainingRaings.parallelStream().collect(groupingBy(RatingMatrixEntry::getItemIndex));
+        System.out.println(groupRatings);
+        PMFModel.ModelEntry entry1 = new PMFModel().new ModelEntry(1, 2);
+        PMFModel.ModelEntry entry2 = new PMFModel().new ModelEntry(2, 2);
+        PMFModel model = groupRatings.values().parallelStream().map(e -> new PMFModel().computeItemUpdate(e)).collect(new PMFModelCollector());
+
+        System.out.println(groupRatings);
+    }
 
 }
