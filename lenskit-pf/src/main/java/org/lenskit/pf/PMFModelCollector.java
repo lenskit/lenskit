@@ -20,19 +20,38 @@
  */
 package org.lenskit.pf;
 
-import org.apache.commons.math3.linear.RealMatrix;
-import org.grouplens.grapht.annotation.DefaultProvider;
-import org.lenskit.inject.Shareable;
-import org.lenskit.mf.svd.MFModel;
-import org.lenskit.util.keys.KeyIndex;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
-@DefaultProvider(HPFModelParallelProvider.class)
-@Shareable
-public final class HPFModel extends MFModel {
-    private static final long serialVersionUID = 4L;
 
-    public HPFModel(RealMatrix umat, RealMatrix imat,
-                    KeyIndex uidx, KeyIndex iidx) {
-        super(umat, imat, uidx, iidx);
+public class PMFModelCollector implements Collector<PMFModel.ModelEntry, PMFModel, PMFModel> {
+    @Override
+    public Supplier<PMFModel> supplier() {
+        return PMFModel::new;
+    }
+
+    @Override
+    public BiConsumer<PMFModel, PMFModel.ModelEntry> accumulator() {
+        return (PMFModel::addEntry);
+    }
+
+    @Override
+    public BinaryOperator<PMFModel> combiner() {
+        return (PMFModel::addAll);
+    }
+
+    @Override
+    public Function<PMFModel, PMFModel> finisher() {
+        return Function.identity();
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+        return EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH);
     }
 }
