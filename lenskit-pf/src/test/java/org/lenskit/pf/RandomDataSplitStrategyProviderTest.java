@@ -20,22 +20,25 @@
  */
 package org.lenskit.pf;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.Stopwatch;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.EntityFactory;
 import org.lenskit.data.ratings.*;
 import org.lenskit.util.keys.KeyIndex;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 import static org.hamcrest.Matchers.equalTo;
@@ -163,17 +166,117 @@ public class RandomDataSplitStrategyProviderTest {
 
     @Test
     public void testStreamGroupby() {
-        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
-        DataSplitStrategy splitStrategy = splitData.get();
-        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainingMatrix();
-        Map<Integer, List<RatingMatrixEntry>> groupRatings = trainingRaings.parallelStream().collect(groupingBy(RatingMatrixEntry::getItemIndex));
-        System.out.println(groupRatings);
-        PMFModel.ModelEntry entry1 = new PMFModel().new ModelEntry(1, 2);
-        PMFModel.ModelEntry entry2 = new PMFModel().new ModelEntry(2, 2);
-        PMFModel model = groupRatings.values().parallelStream().map(e -> new PMFModel().computeItemUpdate(e)).collect(new PMFModelCollector());
+//        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
+//        DataSplitStrategy splitStrategy = splitData.get();
+//        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
+//        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainingMatrix();
+//        Map<Integer, List<RatingMatrixEntry>> groupRatings = trainingRaings.parallelStream().collect(groupingBy(RatingMatrixEntry::getUserIndex));
+//        System.out.println(groupRatings);
 
-        System.out.println(groupRatings);
+        PMFModel preUserModel = new PMFModel();
+        PMFModel preItemModel = new PMFModel();
+        final double a = 0.3;
+        final double aPrime = 0.3;
+        final double bPrime = 1;
+        final int userNum = 100000;
+        final int itemNum = 500000;
+        final int featureCount = 100;
+        final double maxOffsetShp = 0.01;
+        final double maxOffsetRte = 0.1;
+        final long seed = 0L;
+
+        StopWatch timer = new StopWatch();
+        Random random = new Random(seed);
+        timer.start();
+        preUserModel.initialize(a, aPrime, bPrime, userNum, featureCount, maxOffsetShp, maxOffsetRte, random);
+        preItemModel.initialize(a, aPrime, bPrime, itemNum, featureCount, maxOffsetShp, maxOffsetRte, random);
+        timer.stop();
+        System.out.println("time for parallel is " + timer.getTime());
+
+        RealMatrix gammaShp = MatrixUtils.createRealMatrix(userNum, featureCount);
+        RealMatrix gammaRte = MatrixUtils.createRealMatrix(userNum, featureCount);
+        RealVector kappaShp = MatrixUtils.createRealVector(new double[userNum]);
+        RealVector kappaRte = MatrixUtils.createRealVector(new double[userNum]);
+        RealMatrix lambdaShp = MatrixUtils.createRealMatrix(itemNum, featureCount);
+        RealMatrix lambdaRte = MatrixUtils.createRealMatrix(itemNum, featureCount);
+        RealVector tauShp = MatrixUtils.createRealVector(new double[itemNum]);
+        RealVector tauRte = MatrixUtils.createRealVector(new double[itemNum]);
+
+
+        final double kRte = aPrime + featureCount;
+        final double tRte = aPrime + featureCount;
+
+
+        timer.reset();
+        timer.start();
+        Random random1 = new Random(seed);
+        for (int u = 0; u < userNum; u++ ) {
+            for (int k = 0; k < featureCount; k++) {
+                double valueShp = a + maxOffsetShp*random1.nextDouble();
+                double valueRte = aPrime + maxOffsetRte*random1.nextDouble();
+                gammaShp.setEntry(u, k, valueShp);
+                gammaRte.setEntry(u, k, valueRte);
+            }
+
+            double kShp = aPrime + maxOffsetShp*random1.nextDouble();
+            kappaRte.setEntry(u, kRte);
+            kappaShp.setEntry(u, kShp);
+        }
+
+        for (int i = 0; i < itemNum; i++ ) {
+            for (int k = 0; k < featureCount; k++) {
+                double valueShp = a + maxOffsetShp*random1.nextDouble();
+                double valueRte = aPrime + maxOffsetRte*random1.nextDouble();
+                lambdaShp.setEntry(i, k, valueShp);
+                lambdaRte.setEntry(i, k, valueRte);
+            }
+            double tShp = aPrime + maxOffsetShp*random1.nextDouble();
+            tauRte.setEntry(i, tRte);
+            tauShp.setEntry(i, tShp);
+        }
+        timer.stop();
+        System.out.println("time for sequential is " + timer.getTime());
+
+//        Int2ObjectMap userModel = preUserModel.getRows();
+//        Iterator<Int2ObjectMap.Entry<PMFModel.ModelEntry>> iter = userModel.int2ObjectEntrySet().iterator();
+//        while (iter.hasNext()) {
+//            Int2ObjectMap.Entry<PMFModel.ModelEntry> entry = iter.next();
+//            int user = entry.getIntKey();
+//            PMFModel.ModelEntry modelEntry = entry.getValue();
+//            int featureNum = modelEntry.getGammaOrLambdaShp().length;
+//            for (int k = 0; k < featureNum; k++) {
+//                assertThat(user, equalTo(modelEntry.getRowNumber()));
+//                assertThat(gammaShp.getEntry(user, k), equalTo(modelEntry.getGammaOrLambdaShpEntry(k)));
+//                assertThat(gammaRte.getEntry(user, k), equalTo(modelEntry.getGammaOrLambdaRteEntry(k)));
+//                assertThat(kappaShp.getEntry(user), equalTo(modelEntry.getKappaOrTauShpEntry()));
+//                assertThat(kappaRte.getEntry(user), equalTo(modelEntry.getKappaOrTauRteEntry()));
+//
+//            }
+//        }
+//
+//        Int2ObjectMap itemModel = preItemModel.getRows();
+//        Iterator<Int2ObjectMap.Entry<PMFModel.ModelEntry>> iterItem = itemModel.int2ObjectEntrySet().iterator();
+//        while (iterItem.hasNext()) {
+//            Int2ObjectMap.Entry<PMFModel.ModelEntry> entry = iterItem.next();
+//            int item = entry.getIntKey();
+//            PMFModel.ModelEntry modelEntry = entry.getValue();
+//            int featureNum = modelEntry.getGammaOrLambdaShp().length;
+//            for (int k = 0; k < featureNum; k++) {
+//                assertThat(item, equalTo(modelEntry.getRowNumber()));
+//                assertThat(gammaShp.getEntry(item, k), equalTo(modelEntry.getGammaOrLambdaShpEntry(k)));
+//                assertThat(gammaRte.getEntry(item, k), equalTo(modelEntry.getGammaOrLambdaRteEntry(k)));
+//                assertThat(kappaShp.getEntry(item), equalTo(modelEntry.getKappaOrTauShpEntry()));
+//                assertThat(kappaRte.getEntry(item), equalTo(modelEntry.getKappaOrTauRteEntry()));
+//
+//            }
+//        }
+
+
+//
+//        PFHyperParameters hyperParameters = new PFHyperParameters(0.3, 0.3, 1, 0.3, 0.3, 1, 5);
+//        PMFModel model = groupRatings.values().parallelStream().map(e -> PMFModel.computeUserUpdate(e, preUserModel, preItemModel, hyperParameters)).collect(new PMFModelCollector());
+//
+//        System.out.println(groupRatings);
     }
 
 }

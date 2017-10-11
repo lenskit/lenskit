@@ -26,7 +26,7 @@ import org.lenskit.inject.Shareable;
 import org.lenskit.mf.svd.MFModel;
 import org.lenskit.util.keys.KeyIndex;
 
-@DefaultProvider(HPFModelProvider.class)
+@DefaultProvider(HPFModelParallelProvider.class)
 @Shareable
 public final class HPFModel extends MFModel {
     private static final long serialVersionUID = 4L;
