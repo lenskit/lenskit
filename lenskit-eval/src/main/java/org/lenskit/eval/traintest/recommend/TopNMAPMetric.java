@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.util.math.MeanAccumulator;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -153,14 +153,14 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
         public final double map;
 
         public AggregateResult(Context accum) {
-            this.map = accum.allMean.getMean();
+            this.map = accum.allMean.getResult();
         }
     }
 
     public static class Context {
         private final LongSet universe;
         private final RecommenderEngine recommenderEngine;
-        private final MeanAccumulator allMean = new MeanAccumulator();
+        private final Mean allMean = new Mean();
 
         Context(LongSet universe, RecommenderEngine engine) {
             this.universe = universe;
@@ -168,7 +168,7 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
         }
 
         synchronized void addUser(UserResult ur) {
-            allMean.add(ur.avgPrecision);
+            allMean.increment(ur.avgPrecision);
         }
     }
 }

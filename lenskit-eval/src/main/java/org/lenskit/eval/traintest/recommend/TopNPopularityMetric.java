@@ -22,7 +22,7 @@ package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.lenskit.util.math.MeanAccumulator;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
@@ -85,7 +85,7 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(Context context) {
-        return new PopResult(context.mean.getMean());
+        return new PopResult(context.mean.getResult());
     }
 
     public static class PopResult extends TypedMetricResult {
@@ -98,13 +98,13 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
     }
     
     public class Context {
-        final MeanAccumulator mean = new MeanAccumulator();
+        final Mean mean = new Mean();
 
         public Context() {
         }
 
         private synchronized void addUser(double pop) {
-            mean.add(pop);
+            mean.increment(pop);
         }
     }
 }

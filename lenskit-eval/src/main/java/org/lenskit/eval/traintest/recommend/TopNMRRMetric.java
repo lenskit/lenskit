@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.util.math.MeanAccumulator;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -145,20 +145,20 @@ public class TopNMRRMetric extends ListOnlyTopNMetric<TopNMRRMetric.Context> {
         public final double mrr;
 
         public AggregateResult(Context accum) {
-            this.mrr = accum.allMean.getMean();
+            this.mrr = accum.allMean.getResult();
         }
     }
 
     public static class Context {
         private final LongSet universe;
-        private final MeanAccumulator allMean = new MeanAccumulator();
+        private final Mean allMean = new Mean();
 
         Context(LongSet universe) {
             this.universe = universe;
         }
 
         synchronized void addUser(UserResult ur) {
-            allMean.add(ur.getRecipRank());
+            allMean.increment(ur.getRecipRank());
         }
     }
 }

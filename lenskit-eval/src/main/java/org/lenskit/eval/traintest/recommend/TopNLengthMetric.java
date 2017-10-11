@@ -21,7 +21,7 @@
 package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.lenskit.util.math.MeanAccumulator;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
  *
  * This metric is registered with the type name `length`.
  */
-public class TopNLengthMetric extends ListOnlyTopNMetric<MeanAccumulator> {
+public class TopNLengthMetric extends ListOnlyTopNMetric<Mean> {
     /**
      * Construct a new length metric.
      */
@@ -49,24 +49,24 @@ public class TopNLengthMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Mean context) {
         int n = recommendations.size();
         synchronized (context) {
-            context.add(n);
+            context.increment(n);
         }
         return new LengthResult(n);
     }
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
-        return new MeanAccumulator();
+    public Mean createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Mean();
     }
 
     @Nonnull
     @Override
-    public MetricResult getAggregateMeasurements(MeanAccumulator context) {
-        return new LengthResult(context.getMean());
+    public MetricResult getAggregateMeasurements(Mean context) {
+        return new LengthResult(context.getResult());
     }
 
     public static class LengthResult extends TypedMetricResult {

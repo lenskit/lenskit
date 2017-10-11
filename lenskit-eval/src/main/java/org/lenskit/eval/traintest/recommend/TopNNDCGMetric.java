@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.data.entities.CommonAttributes;
@@ -35,7 +36,6 @@ import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.math.MeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ import java.util.Collections;
  *
  * This metric is registered with the type name `ndcg`.
  */
-public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
+public class TopNNDCGMetric extends ListOnlyTopNMetric<Mean> {
     private static final Logger logger = LoggerFactory.getLogger(TopNNDCGMetric.class);
     public static final String DEFAULT_COLUMN = "nDCG";
     private final String columnName;
@@ -104,19 +104,19 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
-        return new MeanAccumulator();
+    public Mean createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Mean();
     }
 
     @Nonnull
     @Override
-    public MetricResult getAggregateMeasurements(MeanAccumulator context) {
-        return MetricResult.singleton(columnName, context.getMean());
+    public MetricResult getAggregateMeasurements(Mean context) {
+        return MetricResult.singleton(columnName, context.getResult());
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Mean context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -144,7 +144,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<MeanAccumulator> {
         double score = gain / idealGain;
 
         synchronized (context) {
-            context.add(score);
+            context.increment(score);
         }
         return MetricResult.singleton(columnName, score);
     }

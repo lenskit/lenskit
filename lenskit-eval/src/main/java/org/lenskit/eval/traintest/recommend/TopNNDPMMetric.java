@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.StringUtils;
-import org.lenskit.util.math.MeanAccumulator;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -44,7 +44,7 @@ import java.util.Collections;
  * This metric is registered with the type name `ndpm`.
  * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf.
  */
-public class TopNNDPMMetric extends ListOnlyTopNMetric<MeanAccumulator> {
+public class TopNNDPMMetric extends ListOnlyTopNMetric<Mean> {
     public static final String DEFAULT_COLUMN = "TopN.nDPM";
 
     /**
@@ -65,19 +65,19 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
-        return new MeanAccumulator();
+    public Mean createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Mean();
     }
 
     @Nonnull
     @Override
-    public MetricResult getAggregateMeasurements(MeanAccumulator context) {
-        return MetricResult.singleton(DEFAULT_COLUMN, context.getMean());
+    public MetricResult getAggregateMeasurements(Mean context) {
+        return MetricResult.singleton(DEFAULT_COLUMN, context.getResult());
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Mean context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -93,7 +93,7 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<MeanAccumulator> {
         double nDPM = dpm / normalizingFactor; // Normalized nDPM
 
         synchronized (context) {
-            context.add(nDPM);
+            context.increment(nDPM);
         }
 
         return MetricResult.singleton(DEFAULT_COLUMN, nDPM);
