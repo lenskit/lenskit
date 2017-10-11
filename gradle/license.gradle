@@ -34,15 +34,16 @@ allprojects {
         mapping('java': 'SLASHSTAR_STYLE', 'groovy': 'SLASHSTAR_STYLE', 'gradle': 'SLASHSTAR_STYLE')
     }
 
-    check.dependsOn 'licenseMain', 'licenseTest'
     // make license failures fail the build early
     project.tasks.withType(JavaCompile) { task ->
         switch (task.name) {
             case 'compile':
                 task.mustRunAfter 'licenseMain'
+                check.dependsOn 'licenseMain'
                 break
             case 'compileTest':
                 task.mustRunAfter 'licenseTest'
+                check.dependsOn 'licenseTest'
                 break
         }
     }
