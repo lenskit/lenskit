@@ -74,11 +74,10 @@ class TrainTestExperimentTest {
         file.append('5,1,3,881250949\n')
         file.append('5,5,3,881250949\n')
 
-        file = folder.newFile("multi-test.csv")
-        file.append('1,4,3.0\n')
-        file.append('3,3,4.5\n')
-        file.append('1,2,4.5\n')
-
+        def mtFile = folder.newFile("multi-test.csv")
+        mtFile.append('1,4,3.0\n')
+        mtFile.append('3,3,4.5\n')
+        mtFile.append('1,2,4.5\n')
 
         experiment = new TrainTestExperiment()
     }
