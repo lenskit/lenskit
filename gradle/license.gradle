@@ -36,7 +36,7 @@
 apply plugin: 'com.github.hierynomus.license'
 license {
     encoding 'UTF-8'
-    header rootProject.file('etc/header.txt')
+    header rootProject.file('LICENSE.md')
     useDefaultMappings false
     mapping('java': 'SLASHSTAR_STYLE', 'groovy': 'SLASHSTAR_STYLE')
 }
