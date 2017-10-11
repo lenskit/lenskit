@@ -124,8 +124,10 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
             PMFModel finalPreItemModel = preItemModel;
 
             PMFModel currUserModel = groupRatingsByUser.values().parallelStream().map(e -> PMFModel.computeUserUpdate(e, finalPreUserModel, finalPreItemModel, hyperParameters)).collect(new PMFModelCollector());
+            logger.info("iteration {} user update finished", iterCount);
 
             PMFModel currItemModel = groupRatingsByItem.values().parallelStream().map(e -> PMFModel.computeItemUpdate(e, finalPreUserModel, finalPreItemModel, currUserModel, hyperParameters)).collect(new PMFModelCollector());
+            logger.info("iteration {} item update finished", iterCount);
 
             preUserModel = currUserModel;
             preItemModel = currItemModel;
