@@ -45,7 +45,7 @@ repositories {
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1"
+    compile "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0"
     compile 'org.eclipse.jgit:org.eclipse.jgit:3.4.1.201406201815-r'
     compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     compile 'org.apache.httpcomponents:httpmime:4.2.1'

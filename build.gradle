@@ -177,7 +177,6 @@ subprojects {
     }
 
     apply from: "$rootDir/gradle/class-list.gradle"
-    apply from: "$rootDir/gradle/license.gradle"
 
     configurations.compile.dependencies.all { dep ->
         if (!(dep instanceof ProjectDependency)) {
@@ -191,6 +190,7 @@ subprojects {
     }
 }
 
+apply from: "$rootDir/gradle/license.gradle"
 apply from: "$rootDir/gradle/javadoc.gradle"
 apply from: "$rootDir/gradle/dist.gradle"
 
