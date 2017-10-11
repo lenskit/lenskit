@@ -42,6 +42,10 @@ import org.lenskit.eval.crossfold.SortOrder
 import org.lenskit.eval.traintest.predict.PredictEvalTask
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
 import org.lenskit.eval.traintest.recommend.TopNMRRMetric
+import org.lenskit.knn.item.ItemItemScorer
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 
 import javax.inject.Provider
 import java.nio.file.Files
@@ -79,6 +83,10 @@ class TrainTestExperimentTest {
         mtFile.append('3,3,4.5\n')
         mtFile.append('1,2,4.5\n')
 
+        def djfile = folder.newFile("disjoint-test.csv")
+        djfile.append("6,3,4.5\n")
+        djfile.append("6,4,3.2\n")
+
         experiment = new TrainTestExperiment()
     }
 
@@ -101,6 +109,29 @@ class TrainTestExperimentTest {
         assertThat(result, notNullValue())
         assertThat(result, hasSize(2))
         assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
+    }
+
+    /**
+     * This test attempts to reproduce <a href="https://github.com/lenskit/lenskit/issues/838">#838</a>.
+     */
+    @Test
+    void testDisjointTestSet() {
+        DataSet set = DataSet.newBuilder("test")
+                .setTrain(StaticDataSource.csvRatingFile(folder.root.toPath().resolve("ratings.csv")))
+                .setTest(StaticDataSource.csvRatingFile(folder.root.toPath().resolve("disjoint-test.csv")))
+                .build()
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to ItemItemScorer
+            within (UserVectorNormalizer) {
+                bind VectorNormalizer to MeanCenteringVectorNormalizer
+            }
+        }
+        experiment.addDataSet(set)
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
+        def result = experiment.execute()
+        assertThat(result, notNullValue())
+        assertThat(result.column("RMSE.ByUser"), contains(nullValue()))
     }
 
     private List<DataSet> crossfoldRatings() {
