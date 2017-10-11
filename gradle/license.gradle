@@ -46,10 +46,10 @@ check.dependsOn 'licenseMain', 'licenseTest'
 project.tasks.withType(JavaCompile) { task ->
     switch (task.name) {
         case 'compile':
-            task.mustRunAfter 'licenseMain';
-            break;
+            task.mustRunAfter 'licenseMain'
+            break
         case 'compileTest':
-            task.mustRunAfter 'licenseTest';
-            break;
+            task.mustRunAfter 'licenseTest'
+            break
     }
 }
