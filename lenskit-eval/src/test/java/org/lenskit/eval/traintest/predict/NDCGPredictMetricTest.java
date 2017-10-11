@@ -22,15 +22,16 @@ package org.lenskit.eval.traintest.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.lenskit.util.math.MeanAccumulator;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.results.Results;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class NDCGPredictMetricTest {
     NDCGPredictMetric metric;
@@ -42,7 +43,7 @@ public class NDCGPredictMetricTest {
 
     @Test
     public void testEmpty() {
-        MeanAccumulator acc = metric.createContext(null, null, null);
+        Mean acc = metric.createContext(null, null, null);
         MetricResult result = metric.measureUser(TestUser.newBuilder().setUserId(42).build(),
                                                  Results.newResultMap(),
                                                  acc);
@@ -52,7 +53,7 @@ public class NDCGPredictMetricTest {
 
     @Test
     public void testSingleton() {
-        MeanAccumulator acc = metric.createContext(null, null, null);
+        Mean acc = metric.createContext(null, null, null);
         MetricResult result = metric.measureUser(TestUser.newBuilder()
                                                          .setUserId(42)
                                                          .addTestRating(10, 3.5)
@@ -65,7 +66,7 @@ public class NDCGPredictMetricTest {
 
     @Test
     public void testInOrder() {
-        MeanAccumulator acc = metric.createContext(null, null, null);
+        Mean acc = metric.createContext(null, null, null);
         MetricResult result = metric.measureUser(TestUser.newBuilder()
                                                          .setUserId(42)
                                                          .addTestRating(1, 3.5)
@@ -87,7 +88,7 @@ public class NDCGPredictMetricTest {
 
     @Test
     public void testNotInOrder() {
-        MeanAccumulator acc = metric.createContext(null, null, null);
+        Mean acc = metric.createContext(null, null, null);
         Long2DoubleMap ratings = new Long2DoubleOpenHashMap();
         ratings.put(1, 3.5);
         ratings.put(2, 3.0);

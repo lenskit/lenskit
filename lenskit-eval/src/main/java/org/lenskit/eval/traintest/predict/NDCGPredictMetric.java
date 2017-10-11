@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -38,7 +39,6 @@ import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.math.MeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ import javax.annotation.Nullable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
+public class NDCGPredictMetric extends PredictMetric<Mean> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     public static final String DEFAULT_COLUMN = "Predict.nDCG";
     private final String columnName;
@@ -104,20 +104,20 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
-        return new MeanAccumulator();
+    public Mean createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Mean();
     }
 
     @Nonnull
     @Override
-    public MetricResult getAggregateMeasurements(MeanAccumulator context) {
+    public MetricResult getAggregateMeasurements(Mean context) {
         logger.warn("Predict nDCG is deprecated, use nDCG in a rank context");
-        return MetricResult.singleton(columnName, context.getMean());
+        return MetricResult.singleton(columnName, context.getResult());
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultMap predictions, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, ResultMap predictions, Mean context) {
         if (predictions == null || predictions.isEmpty()) {
             return MetricResult.empty();
         }
@@ -133,7 +133,7 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
         logger.debug("user {} has gain of {} (ideal {})", user.getUserId(), gain, idealGain);
         double score = gain / idealGain;
         synchronized (context) {
-            context.add(score);
+            context.increment(score);
         }
         ImmutableMap.Builder<String,Double> results = ImmutableMap.builder();
         return MetricResult.fromMap(results.put(columnName, score)
