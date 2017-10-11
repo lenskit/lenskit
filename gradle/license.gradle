@@ -53,6 +53,9 @@ task licenseFormatGradle(type: LicenseFormat) {
         include "*.gradle"
         include "gradle/*.gradle"
         include "buildSrc/*.gradle"
+        include "lenskit-*/*.gradle"
+        include "buildSrc/src/**/*.groovy"
+        include "buildSrc/src/**/*.java"
     }
 }
 licenseFormat.dependsOn licenseFormatGradle
