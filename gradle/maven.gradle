@@ -163,8 +163,8 @@ afterEvaluate {
 
         licenses {
             license {
-                name 'GNU Lesser General Public License version 2.1 or later'
-                url 'https://www.gnu.org/licenses/lgpl-2.1.txt'
+                name 'MIT License'
+                url 'https://opensource.org/licenses/MIT'
             }
         }
 
