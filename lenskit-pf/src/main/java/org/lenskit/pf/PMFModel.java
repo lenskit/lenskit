@@ -28,6 +28,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.special.Gamma;
 import org.lenskit.data.ratings.RatingMatrixEntry;
+import org.lenskit.util.math.Vectors;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -36,7 +37,8 @@ import java.util.stream.IntStream;
 public class PMFModel {
 
     private Int2ObjectMap<ModelEntry> rows;
-    private Int2DoubleMap gammaOrLambdaRteSecondTerm;
+    //TODO change to openhashmap
+    private Int2DoubleOpenHashMap gammaOrLambdaRteSecondTerm;
 
     public PMFModel() {
         rows = new Int2ObjectOpenHashMap<>();
@@ -48,8 +50,8 @@ public class PMFModel {
         rows.put(row, entry);
         int featureCount = entry.getFeatureCount();
         for (int k = 0; k < featureCount; k++) {
-            double value = gammaOrLambdaRteSecondTerm.getOrDefault(k, 0) + entry.getGammaOrLambdaShpEntry(k) / entry.getGammaOrLambdaRteEntry(k);
-            gammaOrLambdaRteSecondTerm.put(k, value);
+            double value = entry.getGammaOrLambdaShpEntry(k) / entry.getGammaOrLambdaRteEntry(k);
+            gammaOrLambdaRteSecondTerm.addTo(k, value);
         }
         return this;
     }
@@ -57,8 +59,8 @@ public class PMFModel {
     public PMFModel addAll(PMFModel other) {
         rows.putAll(other.getRows());
         for (int k = 0; k < other.getGammaOrLambdaRteSecondTerm().size(); k++) {
-            double value = gammaOrLambdaRteSecondTerm.get(k) + other.getGammaOrLambdaRteSecondTerm().get(k);
-            gammaOrLambdaRteSecondTerm.put(k, value);
+            double value = other.getGammaOrLambdaRteSecondTerm().get(k);
+            gammaOrLambdaRteSecondTerm.addTo(k, value);
         }
         return this;
     }
@@ -90,9 +92,6 @@ public class PMFModel {
         return gammaOrLambdaRteSecondTerm;
     }
 
-    public void setGammaOrLambdaRteSecondTerm(Int2DoubleMap gammaOrLambdaRteSecondTerm) {
-        this.gammaOrLambdaRteSecondTerm = gammaOrLambdaRteSecondTerm;
-    }
 
     public double getGammaOrLambdaShpEntry(int row, int col) {
         ModelEntry entry = rows.get(row);
@@ -173,6 +172,8 @@ public class PMFModel {
         return currEntry;
     }
 
+
+
     public static ModelEntry computeItemUpdate(List<RatingMatrixEntry> ratings, PMFModel preUserModel, PMFModel preItemModel, PMFModel currUserModel, PFHyperParameters hyperParameters) {
 
         final int featureCount = hyperParameters.getFeatureCount();
@@ -182,6 +183,8 @@ public class PMFModel {
         final double cPrime = hyperParameters.getCPrime();
         final double dPrime = hyperParameters.getDPrime();
 
+        //TODO FIX IT IF there is no user or item ratings in training list but in validation
+        //TODO ex. validation set has max all the user or item with max user number. so this will not create modelentry in model
         ModelEntry currEntry = new ModelEntry(item, featureCount, c, cPrime, dPrime);
 
         Iterator<RatingMatrixEntry> itemRatings = ratings.iterator();

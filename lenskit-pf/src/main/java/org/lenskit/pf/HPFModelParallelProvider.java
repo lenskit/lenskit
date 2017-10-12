@@ -109,6 +109,7 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
 
         final Map<Integer, List<RatingMatrixEntry>> groupRatingsByUser = ratings.getTrainingMatrix().parallelStream().collect(groupingBy(RatingMatrixEntry::getUserIndex));
         final Map<Integer, List<RatingMatrixEntry>> groupRatingsByItem = ratings.getTrainingMatrix().parallelStream().collect(groupingBy(RatingMatrixEntry::getItemIndex));
+        System.out.println("item number expected: " + itemNum + " but actual is:" + groupRatingsByItem.keySet().size());
 
 
         TrainingLoopController controller = stoppingCondition.newLoop();
@@ -144,7 +145,13 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
                     double eThetaBeta = 0.0;
                     for (int k = 0; k < featureCount; k++) {
                         double eThetaUK = currUserModel.getGammaOrLambdaShpEntry(user, k) / currUserModel.getGammaOrLambdaRteEntry(user, k);
+                        if (currUserModel.getGammaOrLambdaRteEntry(user, k) == 0) {
+                            System.out.println("error user model");
+                        }
                         double eBetaIK = currItemModel.getGammaOrLambdaShpEntry(item, k) / currItemModel.getGammaOrLambdaRteEntry(item, k);
+                        if (currItemModel.getGammaOrLambdaRteEntry(item, k) == 0) {
+                            System.out.println("error item model");
+                        }
                         eThetaBeta += eThetaUK * eBetaIK;
                     }
                     double pLL = 0.0;
