@@ -101,6 +101,8 @@ public class HPFRecommenderBuildTest {
                 .to(0.1);
         config.set(RandomSeed.class)
                 .to(System.currentTimeMillis());
+        config.set(IsProbabilityPrediciton.class)
+                .to(false);
 
         return LenskitRecommenderEngine.build(config, dao);
     }
