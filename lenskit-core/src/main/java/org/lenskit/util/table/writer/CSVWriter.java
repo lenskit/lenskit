@@ -99,7 +99,9 @@ public class CSVWriter extends AbstractTableWriter {
                 writer.write(',');
             }
             first = false;
-            if (val != null) {
+            if (val instanceof Number) {
+                writer.write(val.toString());
+            } else if (val != null) {
                 writer.write(escapeCsv(val.toString()));
             }
         }
