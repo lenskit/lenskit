@@ -88,11 +88,11 @@ public class HPFRecommenderBuildTest {
 //        config.set(IterationCount.class)
 //                .to(10);
         config.bind(StoppingCondition.class)
-                .to(ErrorThresholdStoppingCondition.class); // this stopping condition may have bug
+                .to(AbsErrorStoppingCondition.class); // this stopping condition may have bug
         config.set(IterationFrequency.class)
                 .to(2);
-        config.set(MinimumIterations.class)
-                .to(100);
+//        config.set(MinimumIterations.class)
+//                .to(100);
         config.set(StoppingThreshold.class)
                 .to(0.000001);
         config.set(FeatureCount.class)
@@ -101,8 +101,8 @@ public class HPFRecommenderBuildTest {
                 .to(0.1);
         config.set(RandomSeed.class)
                 .to(System.currentTimeMillis());
-        config.set(IsProbabilityPrediciton.class)
-                .to(false);
+//        config.set(IsProbabilityPrediciton.class)
+//                .to(false);
 
         return LenskitRecommenderEngine.build(config, dao);
     }

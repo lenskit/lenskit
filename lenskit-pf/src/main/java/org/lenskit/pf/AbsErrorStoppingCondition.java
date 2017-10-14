@@ -10,12 +10,12 @@ import javax.inject.Inject;
 
 @Immutable
 @Shareable
-public class RelativeChangeStoppingCondition implements StoppingCondition {
+public class AbsErrorStoppingCondition implements StoppingCondition {
 
     private final double threshold;
 
     @Inject
-    public RelativeChangeStoppingCondition(@StoppingThreshold double thresh) {
+    public AbsErrorStoppingCondition(@StoppingThreshold double thresh) {
         threshold = thresh;
     }
 
@@ -27,17 +27,13 @@ public class RelativeChangeStoppingCondition implements StoppingCondition {
 
     private class Controller implements TrainingLoopController {
         private int iterations = 0;
-        private double oldError = Double.MAX_VALUE;
-        private double relativeDelta = 0;
 
         @Override
         public boolean keepTraining(double error) {
-            relativeDelta = Math.abs(error - oldError) / oldError;
-            if (relativeDelta < threshold) {
+            if (error < threshold) {
                 return false;
             } else {
                 ++iterations;
-                oldError = error;
                 return true;
             }
         }
@@ -47,10 +43,5 @@ public class RelativeChangeStoppingCondition implements StoppingCondition {
             return iterations;
         }
 
-
-        @Override
-        public String toString() {
-            return String.format("Stop(threshold=%f, current change is %f)", threshold, relativeDelta);
-        }
     }
 }
