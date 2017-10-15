@@ -214,8 +214,8 @@ public class PMFModel {
             phi.setEntry(k, phiUIK);
         }
         logNormalize(phi);
-        double sumOfPhi = phi.getL1Norm();
-        System.out.println("Sum of phi vector is " + sumOfPhi);
+//        double sumOfPhi = phi.getL1Norm();
+//        System.out.println("Sum of phi vector is " + sumOfPhi);
 //      logger.debug("Sum of phi vector is {}", sumOfPhi);
 
         if (rating > 1) {

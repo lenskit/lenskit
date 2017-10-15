@@ -83,16 +83,12 @@ public class HPFRecommenderBuildTest {
                 .to(PackedRatingMatrix.class);
         config.bind(ItemScorer.class)
                 .to(HPFItemScorer.class);
-//        config.bind(StoppingCondition.class)
-//                .to(IterationCountStoppingCondition.class);
-//        config.set(IterationCount.class)
-//                .to(10);
         config.bind(StoppingCondition.class)
-                .to(AbsErrorStoppingCondition.class); // this stopping condition may have bug
+                .to(AbsErrorStoppingCondition.class);
+//        config.bind(HPFModel.class)
+//                .toProvider(HPFModelProvider.class);
         config.set(ConvergenceCheckFrequency.class)
                 .to(2);
-//        config.set(MinimumIterations.class)
-//                .to(100);
         config.set(StoppingThreshold.class)
                 .to(0.000001);
         config.set(FeatureCount.class)
