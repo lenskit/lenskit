@@ -27,10 +27,10 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 @Documented
-@DefaultDouble(0.3)
+@DefaultDouble(1.0)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HyperParameterAPrime {
+public @interface ItemActivityPriorMean {
 }

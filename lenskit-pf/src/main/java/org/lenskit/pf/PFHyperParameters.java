@@ -36,55 +36,55 @@ import java.io.Serializable;
 public final class PFHyperParameters implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final double a;
-    private final double aPrime;
-    private final double bPrime;
-    private final double c;
-    private final double cPrime;
-    private final double dPrime;
+    private final double userWeightShpPrior;
+    private final double userActivityShpPrior;
+    private final double userActivityPriorMean;
+    private final double itemWeightShpPrior;
+    private final double itemActivityShpPrior;
+    private final double itemActivityPriorMean;
     private final int featureCount;
 
 
     @Inject
-    public PFHyperParameters(@HyperParameterA double a,
-                             @HyperParameterAPrime double aP,
-                             @HyperParameterBPrime double bP,
-                             @HyperParameterC double c,
-                             @HyperParameterCPrime double cP,
-                             @HyperParameterDPrime double dP,
+    public PFHyperParameters(@UserWeightShpPrior double a,
+                             @UserActivityShpPrior double aP,
+                             @UserActivityPriorMean double bP,
+                             @ItemWeightShpPrior double c,
+                             @ItemActivityShpPrior double cP,
+                             @ItemActivityPriorMean double dP,
                              @FeatureCount int k) {
-        this.a = a;
-        aPrime = aP;
-        bPrime = bP;
-        this.c = c;
-        cPrime = cP;
-        dPrime = dP;
+        userWeightShpPrior = a;
+        userActivityShpPrior = aP;
+        userActivityPriorMean = bP;
+        itemWeightShpPrior = c;
+        itemActivityShpPrior = cP;
+        itemActivityPriorMean = dP;
         featureCount = k;
     }
 
-    public double getA() {
-        return a;
+    public double getUserWeightShpPrior() {
+        return userWeightShpPrior;
     }
 
-    public double getAPrime() {
-        return aPrime;
+    public double getUserActivityShpPrior() {
+        return userActivityShpPrior;
     }
 
 
-    public double getBPrime() {
-        return bPrime;
+    public double getUserActivityPriorMean() {
+        return userActivityPriorMean;
     }
 
-    public double getC() {
-        return c;
+    public double getItemWeightShpPrior() {
+        return itemWeightShpPrior;
     }
 
-    public double getCPrime() {
-        return cPrime;
+    public double getItemActivityShpPrior() {
+        return itemActivityShpPrior;
     }
 
-    public double getDPrime() {
-        return dPrime;
+    public double getItemActivityPriorMean() {
+        return itemActivityPriorMean;
     }
 
     public int getFeatureCount() {

@@ -34,10 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static java.util.stream.Collectors.groupingBy;
 
@@ -69,7 +66,7 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
     public HPFModelParallelProvider(@Transient DataSplitStrategy rndRatings,
                                     StoppingCondition stop,
                                     PFHyperParameters hyperParams,
-                                    @IterationFrequency int iterFreq,
+                                    @ConvergenceCheckFrequency int iterFreq,
                                     @RandomSeed int seed,
                                     @MaxRandomOffsetForShape double maxOffS,
                                     @MaxRandomOffsetForRate double maxOffR,
@@ -91,25 +88,51 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
         final int userNum = ratings.getUserIndex().size();
         final int itemNum = ratings.getItemIndex().size();
         final int featureCount = hyperParameters.getFeatureCount();
-        final double a = hyperParameters.getA();
-        final double aPrime = hyperParameters.getAPrime();
-        final double bPrime = hyperParameters.getBPrime();
-        final double c = hyperParameters.getC();
-        final double cPrime = hyperParameters.getCPrime();
-        final double dPrime = hyperParameters.getDPrime();
+        final double userWeightShpPrior = hyperParameters.getUserWeightShpPrior();
+        final double userActivityShpPrior = hyperParameters.getUserActivityShpPrior();
+        final double userActivityPriorMean = hyperParameters.getUserActivityPriorMean();
+        final double itemWeightShpPrior = hyperParameters.getItemWeightShpPrior();
+        final double itemActivityShpPrior = hyperParameters.getItemActivityShpPrior();
+        final double itemActivityPriorMean = hyperParameters.getItemActivityPriorMean();
 
         PMFModel preUserModel = new PMFModel();
         PMFModel preItemModel = new PMFModel();
         Random random = new Random(rndSeed);
-        preUserModel.initialize(a, aPrime, bPrime, userNum, featureCount, maxOffsetShp, maxOffsetRte, random);
-        preItemModel.initialize(c, cPrime, dPrime, itemNum, featureCount, maxOffsetShp, maxOffsetRte, random);
+        preUserModel.initialize(userWeightShpPrior, userActivityShpPrior, userActivityPriorMean, userNum, featureCount, maxOffsetShp, maxOffsetRte, random);
+        preItemModel.initialize(itemWeightShpPrior, itemActivityShpPrior, itemActivityPriorMean, itemNum, featureCount, maxOffsetShp, maxOffsetRte, random);
         logger.info("initialization finished");
 
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
 
-        final Map<Integer, List<RatingMatrixEntry>> groupRatingsByUser = ratings.getTrainingMatrix().parallelStream().collect(groupingBy(RatingMatrixEntry::getUserIndex));
-        final Map<Integer, List<RatingMatrixEntry>> groupRatingsByItem = ratings.getTrainingMatrix().parallelStream().collect(groupingBy(RatingMatrixEntry::getItemIndex));
+        Map<Integer, List<RatingMatrixEntry>> groupRatingsByUser = ratings.getTrainRatings()
+                .parallelStream()
+                .collect(groupingBy(RatingMatrixEntry::getUserIndex));
+        Map<Integer, List<RatingMatrixEntry>> groupRatingsByItem = ratings.getTrainRatings()
+                .parallelStream()
+                .collect(groupingBy(RatingMatrixEntry::getItemIndex));
 
+        //fill out dummy entry in order to allow parallel update to cover all indices
+        for (int u = 0; u < userNum; u++) {
+            if (!groupRatingsByUser.containsKey(u)) {
+                List<RatingMatrixEntry> ratings = new ArrayList<>();
+
+                RatingMatrixEntry entry = new DummyEntry(u);
+                ratings.add(entry);
+                groupRatingsByUser.put(u, ratings);
+            }
+        }
+
+        for (int i = 0; i < itemNum; i++) {
+            if (!groupRatingsByItem.containsKey(i)) {
+                List<RatingMatrixEntry> ratings = new ArrayList<>();
+
+                RatingMatrixEntry entry = new DummyEntry(i);
+                ratings.add(entry);
+                groupRatingsByItem.put(i, ratings);
+            }
+        }
+//        System.out.println("item number expected: " + itemNum + " but actual is:" + groupRatingsByItem.keySet().size());
+//        System.out.println("item number expected: " + userNum + " but actual is:" + groupRatingsByUser.keySet().size());
 
         TrainingLoopController controller = stoppingCondition.newLoop();
         double avgPLLPre = Double.MAX_VALUE;
@@ -120,13 +143,19 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
 
             int iterCount = controller.getIterationCount();
 
-            PMFModel finalPreUserModel = preUserModel;
-            PMFModel finalPreItemModel = preItemModel;
+            final PMFModel finalPreUserModel = preUserModel;
+            final PMFModel finalPreItemModel = preItemModel;
 
-            PMFModel currUserModel = groupRatingsByUser.values().parallelStream().map(e -> PMFModel.computeUserUpdate(e, finalPreUserModel, finalPreItemModel, hyperParameters)).collect(new PMFModelCollector());
+            PMFModel currUserModel = groupRatingsByUser.values()
+                    .parallelStream()
+                    .map(e -> PMFModel.computeUserUpdate(e, finalPreUserModel, finalPreItemModel, hyperParameters))
+                    .collect(new PMFModelCollector());
             logger.info("iteration {} user update finished", iterCount);
 
-            PMFModel currItemModel = groupRatingsByItem.values().parallelStream().map(e -> PMFModel.computeItemUpdate(e, finalPreUserModel, finalPreItemModel, currUserModel, hyperParameters)).collect(new PMFModelCollector());
+            PMFModel currItemModel = groupRatingsByItem.values()
+                    .parallelStream()
+                    .map(e -> PMFModel.computeItemUpdate(e, finalPreUserModel, finalPreItemModel, currUserModel, hyperParameters))
+                    .collect(new PMFModelCollector());
             logger.info("iteration {} item update finished", iterCount);
 
             preUserModel = currUserModel;
@@ -143,8 +172,14 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
                     double rating = ratingEntry.getValue();
                     double eThetaBeta = 0.0;
                     for (int k = 0; k < featureCount; k++) {
-                        double eThetaUK = currUserModel.getGammaOrLambdaShpEntry(user, k) / currUserModel.getGammaOrLambdaRteEntry(user, k);
-                        double eBetaIK = currItemModel.getGammaOrLambdaShpEntry(item, k) / currItemModel.getGammaOrLambdaRteEntry(item, k);
+                        double eThetaUK = currUserModel.getWeightShpEntry(user, k) / currUserModel.getWeightRteEntry(user, k);
+//                        if (currUserModel.getWeightRteEntry(user, k) == 0) {
+//                            System.out.println("error user model");
+//                        }
+                        double eBetaIK = currItemModel.getWeightShpEntry(item, k) / currItemModel.getWeightRteEntry(item, k);
+//                        if (currItemModel.getWeightRteEntry(item, k) == 0) {
+//                            System.out.println("error item model");
+//                        }
                         eThetaBeta += eThetaUK * eBetaIK;
                     }
                     double pLL = 0.0;
@@ -171,8 +206,8 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
         for (int user = 0; user < userNum; user++) {
             RealVector eThetaU = MatrixUtils.createRealVector(new double[featureCount]);
             for (int k = 0; k < featureCount; k++) {
-                double gammaShpUK = preUserModel.getGammaOrLambdaShpEntry(user, k);
-                double gammaRteUK = preUserModel.getGammaOrLambdaRteEntry(user, k);
+                double gammaShpUK = preUserModel.getWeightShpEntry(user, k);
+                double gammaRteUK = preUserModel.getWeightRteEntry(user, k);
                 double value = gammaShpUK / gammaRteUK;
                 eThetaU.setEntry(k, value);
             }
@@ -184,8 +219,8 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
         for (int item = 0; item < itemNum; item++) {
             RealVector eBetaI = MatrixUtils.createRealVector(new double[featureCount]);
             for (int k = 0; k < featureCount; k++) {
-                double lambdaShpIK = preItemModel.getGammaOrLambdaShpEntry(item, k);
-                double lambdaRteIK = preItemModel.getGammaOrLambdaRteEntry(item, k);
+                double lambdaShpIK = preItemModel.getWeightShpEntry(item, k);
+                double lambdaRteIK = preItemModel.getWeightRteEntry(item, k);
                 double value = lambdaShpIK / lambdaRteIK;
                 eBetaI.setEntry(k, value);
             }
@@ -197,6 +232,43 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
         KeyIndex iidx = ratings.getItemIndex();
 
         return new HPFModel(eTheta, eBeta, uidx, iidx);
+    }
+
+    private class DummyEntry extends RatingMatrixEntry {
+        final int index;
+        public DummyEntry(int i) {
+            index = i;
+        }
+
+        @Override
+        public long getUserId() {
+            return 0;
+        }
+
+        @Override
+        public int getUserIndex() {
+            return index;
+        }
+
+        @Override
+        public long getItemId() {
+            return 0;
+        }
+
+        @Override
+        public int getItemIndex() {
+            return index;
+        }
+
+        @Override
+        public int getIndex() {
+            return 0;
+        }
+
+        @Override
+        public double getValue() {
+            return 0;
+        }
     }
 
 }

@@ -35,87 +35,87 @@ import java.util.stream.IntStream;
 
 public class PMFModel {
 
-    private Int2ObjectMap<ModelEntry> rows;
-    private Int2DoubleMap gammaOrLambdaRteSecondTerm;
+    private Int2ObjectMap<ModelEntry> model;
+    private Int2DoubleOpenHashMap sumOfMeanWeight;
 
     public PMFModel() {
-        rows = new Int2ObjectOpenHashMap<>();
-        gammaOrLambdaRteSecondTerm = new Int2DoubleOpenHashMap();
+        model = new Int2ObjectOpenHashMap<>();
+        sumOfMeanWeight = new Int2DoubleOpenHashMap();
     }
 
     public PMFModel addEntry(ModelEntry entry) {
-        int row = entry.getRowNumber();
-        rows.put(row, entry);
+        int index = entry.getIndex();
+        model.put(index, entry);
         int featureCount = entry.getFeatureCount();
         for (int k = 0; k < featureCount; k++) {
-            double value = gammaOrLambdaRteSecondTerm.getOrDefault(k, 0) + entry.getGammaOrLambdaShpEntry(k) / entry.getGammaOrLambdaRteEntry(k);
-            gammaOrLambdaRteSecondTerm.put(k, value);
+            double value = entry.getWeightShpEntry(k) / entry.getWeightRteEntry(k);
+            sumOfMeanWeight.addTo(k, value);
         }
         return this;
     }
 
     public PMFModel addAll(PMFModel other) {
-        rows.putAll(other.getRows());
-        for (int k = 0; k < other.getGammaOrLambdaRteSecondTerm().size(); k++) {
-            double value = gammaOrLambdaRteSecondTerm.get(k) + other.getGammaOrLambdaRteSecondTerm().get(k);
-            gammaOrLambdaRteSecondTerm.put(k, value);
+        model.putAll(other.getModel());
+        for (int k = 0; k < other.getSumOfMeanWeight().size(); k++) {
+            double value = other.getSumOfMeanWeight().get(k);
+            sumOfMeanWeight.addTo(k, value);
         }
         return this;
     }
 
-    public void initialize(double a, double aPrime, double bPrime, int userOrItemNum, int featureCount, double maxOffsetShp, double maxOffsetRte, Random random) {
-        final double kRte = aPrime + featureCount;
-        PMFModel model = IntStream.range(0, userOrItemNum).parallel().mapToObj(e -> {
-
-            ModelEntry entry = new ModelEntry(e, featureCount, a, aPrime, bPrime);
-            for (int k = 0; k < featureCount; k++) {
-                double valueShp = a + maxOffsetShp*random.nextDouble();
-                double valueRte = aPrime + maxOffsetRte*random.nextDouble();
-                entry.setEntryGammaOrLambdaShp(k, valueShp);
-                entry.setEntryGammaOrLambdaRte(k, valueRte);
-            }
-
-            double kShp = aPrime + maxOffsetShp*random.nextDouble();
-            entry.setEntryKappaOrTauRte(kRte);
-            entry.setEntryKappaOrTauShp(kShp);
-            return entry;}).collect(new PMFModelCollector());
-            addAll(model);
+    public void initialize(double weightShpPrior, double activityShpPrior, double meanActivityPrior, int userOrItemNum,
+                           int featureCount, double maxOffsetShp, double maxOffsetRte, Random random) {
+        final double activityRte = activityShpPrior + featureCount;
+        PMFModel model = IntStream.range(0, userOrItemNum)
+                .parallel()
+                .mapToObj(e -> {
+                    ModelEntry entry = new ModelEntry(e, featureCount, weightShpPrior, activityShpPrior, meanActivityPrior);
+                    for (int k = 0; k < featureCount; k++) {
+                        double valueShp = weightShpPrior + maxOffsetShp*random.nextDouble();
+                        double valueRte = activityShpPrior + maxOffsetRte*random.nextDouble();
+                        entry.setWeightShpEntry(k, valueShp);
+                        entry.setWeightRteEntry(k, valueRte);
+                    }
+                    double activityShp = activityShpPrior + maxOffsetShp*random.nextDouble();
+                    entry.setActivityRte(activityRte);
+                    entry.setActivityShp(activityShp);
+                    return entry;
+                })
+                .collect(new PMFModelCollector());
+        addAll(model);
     }
 
-    public Int2ObjectMap<ModelEntry> getRows() {
-        return rows;
+    public Int2ObjectMap<ModelEntry> getModel() {
+        return model;
     }
 
-    public Int2DoubleMap getGammaOrLambdaRteSecondTerm() {
-        return gammaOrLambdaRteSecondTerm;
+    public Int2DoubleMap getSumOfMeanWeight() {
+        return sumOfMeanWeight;
     }
 
-    public void setGammaOrLambdaRteSecondTerm(Int2DoubleMap gammaOrLambdaRteSecondTerm) {
-        this.gammaOrLambdaRteSecondTerm = gammaOrLambdaRteSecondTerm;
-    }
 
-    public double getGammaOrLambdaShpEntry(int row, int col) {
-        ModelEntry entry = rows.get(row);
+    public double getWeightShpEntry(int index, int featureIndex) {
+        ModelEntry entry = model.get(index);
         if (entry == null) return 0;
-        return entry.getGammaOrLambdaShpEntry(col);
+        return entry.getWeightShpEntry(featureIndex);
     }
 
-    public double getGammaOrLambdaRteEntry(int row, int col) {
-        ModelEntry entry = rows.get(row);
+    public double getWeightRteEntry(int index, int featureIndex) {
+        ModelEntry entry = model.get(index);
         if (entry == null) return 0;
-        return entry.getGammaOrLambdaRteEntry(col);
+        return entry.getWeightRteEntry(featureIndex);
     }
 
-    public double getKappaOrTauShpEntry(int row) {
-        ModelEntry entry = rows.get(row);
+    public double getActivityShp(int index) {
+        ModelEntry entry = model.get(index);
         if (entry == null) return 0;
-        return entry.getKappaOrTauShpEntry();
+        return entry.getActivityShp();
     }
 
-    public double getKappaOrTauRteEntry(int row) {
-        ModelEntry entry = rows.get(row);
+    public double getActivityRte(int index) {
+        ModelEntry entry = model.get(index);
         if (entry == null) return 0;
-        return entry.getKappaOrTauRteEntry();
+        return entry.getActivityRte();
     }
 
 
@@ -123,113 +123,108 @@ public class PMFModel {
 
         final int featureCount = hyperParameters.getFeatureCount();
         RealVector phiUI = MatrixUtils.createRealVector(new double[featureCount]);
-        final int user = ratings.iterator().next().getUserIndex();
-        final double a = hyperParameters.getA();
-        final double aPrime = hyperParameters.getAPrime();
-        final double bPrime = hyperParameters.getBPrime();
+        final int user = ratings.get(0).getUserIndex();
+        final double userWeightShpPrior = hyperParameters.getUserWeightShpPrior();
+        final double userActivityShpPrior = hyperParameters.getUserActivityShpPrior();
+        final double userActivityPriorMean = hyperParameters.getUserActivityPriorMean();
 
-        ModelEntry currEntry = new ModelEntry(user, featureCount, a, aPrime, bPrime);
+        ModelEntry modelEntry = new ModelEntry(user, featureCount, userWeightShpPrior, userActivityShpPrior, userActivityPriorMean);
 
         Iterator<RatingMatrixEntry> userRatings = ratings.iterator();
         while (userRatings.hasNext()) {
             RatingMatrixEntry entry = userRatings.next();
             int item = entry.getItemIndex();
-            double ratingUI = entry.getValue();
-            if (ratingUI <= 0) {
+            double rating = entry.getValue();
+            if (rating <= 0) {
                 continue;
             }
 
-            for (int k = 0; k < featureCount; k++) {
-                double gammaShpUK = preUserModel.getGammaOrLambdaShpEntry(user, k);
-                double gammaRteUK = preUserModel.getGammaOrLambdaRteEntry(user, k);
-                double lambdaShpIK = preItemModel.getGammaOrLambdaShpEntry(item, k);
-                double lambdaRteIK = preItemModel.getGammaOrLambdaRteEntry(item, k);
-                double phiUIK = Gamma.digamma(gammaShpUK) - Math.log(gammaRteUK) + Gamma.digamma(lambdaShpIK) - Math.log(lambdaRteIK);
-                phiUI.setEntry(k, phiUIK);
-            }
-            logNormalize(phiUI);
-//                double sumOfPhi = phiUI.getL1Norm();
-//                logger.debug("Sum of phi vector is {}", sumOfPhi);
-
-            if (ratingUI > 1) {
-                phiUI.mapMultiplyToSelf(ratingUI);
-            }
+            updatePhi(phiUI, user, item, rating, featureCount, preUserModel, preItemModel);
 
             for (int k = 0; k < featureCount; k++) {
-                double value = phiUI.getEntry(k) + currEntry.getGammaOrLambdaShpEntry(k);
-                currEntry.setEntryGammaOrLambdaShp(k, value);
+                double value = phiUI.getEntry(k) + modelEntry.getWeightShpEntry(k);
+                modelEntry.setWeightShpEntry(k, value);
             }
 
         }
 
-        double gammaOrLambdaRteFirstTerm =  preUserModel.getKappaOrTauShpEntry(user) / preUserModel.getKappaOrTauRteEntry(user);
+        // update user weight rate and user activity rate
+        double meanUserActivity =  preUserModel.getActivityShp(user) / preUserModel.getActivityRte(user);
         for (int k = 0; k < featureCount; k++) {
-            double currentGammaOrLamdaRte =  gammaOrLambdaRteFirstTerm + preItemModel.getGammaOrLambdaRteSecondTerm().get(k);
-            currEntry.setEntryGammaOrLambdaRte(k, currentGammaOrLamdaRte);
-            double currentKappaOrTauRte = currEntry.getKappaOrTauRteEntry() + currEntry.getGammaOrLambdaShpEntry(k) / currentGammaOrLamdaRte;
-            currEntry.setEntryKappaOrTauRte(currentKappaOrTauRte);
+            double userWeightRteK =  meanUserActivity + preItemModel.getSumOfMeanWeight().get(k);
+            modelEntry.setWeightRteEntry(k, userWeightRteK);
+            double userActivityRte = modelEntry.getActivityRte() + modelEntry.getWeightShpEntry(k) / userWeightRteK;
+            modelEntry.setActivityRte(userActivityRte);
         }
 
-        return currEntry;
+        return modelEntry;
     }
+
+
 
     public static ModelEntry computeItemUpdate(List<RatingMatrixEntry> ratings, PMFModel preUserModel, PMFModel preItemModel, PMFModel currUserModel, PFHyperParameters hyperParameters) {
 
         final int featureCount = hyperParameters.getFeatureCount();
         RealVector phiUI = MatrixUtils.createRealVector(new double[featureCount]);
-        final int item = ratings.iterator().next().getItemIndex();
-        final double c = hyperParameters.getC();
-        final double cPrime = hyperParameters.getCPrime();
-        final double dPrime = hyperParameters.getDPrime();
+        final int item = ratings.get(0).getItemIndex();
+        final double itemWeightShpPrior = hyperParameters.getItemWeightShpPrior();
+        final double itemActivityShpPrior = hyperParameters.getItemActivityShpPrior();
+        final double itemActivityPriorMean = hyperParameters.getItemActivityPriorMean();
 
-        ModelEntry currEntry = new ModelEntry(item, featureCount, c, cPrime, dPrime);
+        ModelEntry modelEntry = new ModelEntry(item, featureCount, itemWeightShpPrior, itemActivityShpPrior, itemActivityPriorMean);
 
         Iterator<RatingMatrixEntry> itemRatings = ratings.iterator();
         while (itemRatings.hasNext()) {
             RatingMatrixEntry entry = itemRatings.next();
             int user = entry.getUserIndex();
-            double ratingUI = entry.getValue();
-            if (ratingUI <= 0) {
+            double rating = entry.getValue();
+            if (rating <= 0) {
                 continue;
             }
 
-            for (int k = 0; k < featureCount; k++) {
-                double gammaShpUK = preUserModel.getGammaOrLambdaShpEntry(user, k);
-                double gammaRteUK = preUserModel.getGammaOrLambdaRteEntry(user, k);
-                double lambdaShpIK = preItemModel.getGammaOrLambdaShpEntry(item, k);
-                double lambdaRteIK = preItemModel.getGammaOrLambdaRteEntry(item, k);
-                double phiUIK = Gamma.digamma(gammaShpUK) - Math.log(gammaRteUK) + Gamma.digamma(lambdaShpIK) - Math.log(lambdaRteIK);
-                phiUI.setEntry(k, phiUIK);
-            }
-            logNormalize(phiUI);
-//                double sumOfPhi = phiUI.getL1Norm();
-//                logger.debug("Sum of phi vector is {}", sumOfPhi);
-
-            if (ratingUI > 1) {
-                phiUI.mapMultiplyToSelf(ratingUI);
-            }
+            updatePhi(phiUI, user, item, rating, featureCount, preUserModel, preItemModel);
 
             for (int k = 0; k < featureCount; k++) {
-                double value = phiUI.getEntry(k) + currEntry.getGammaOrLambdaShpEntry(k);
-                currEntry.setEntryGammaOrLambdaShp(k, value);
+                double value = phiUI.getEntry(k) + modelEntry.getWeightShpEntry(k);
+                modelEntry.setWeightShpEntry(k, value);
             }
 
         }
 
-        double gammaOrLambdaRteFirstTerm =  preItemModel.getKappaOrTauShpEntry(item) / preItemModel.getKappaOrTauRteEntry(item);
+        // update item weight rate and item activity rate
+        double meanItemActivity =  preItemModel.getActivityShp(item) / preItemModel.getActivityRte(item);
         for (int k = 0; k < featureCount; k++) {
-            double currentGammaOrLamdaRte =  gammaOrLambdaRteFirstTerm + currUserModel.getGammaOrLambdaRteSecondTerm().get(k);
-            currEntry.setEntryGammaOrLambdaRte(k, currentGammaOrLamdaRte);
-            double currentKappaOrTauRte = currEntry.getKappaOrTauRteEntry() + currEntry.getGammaOrLambdaShpEntry(k) / currentGammaOrLamdaRte;
-            currEntry.setEntryKappaOrTauRte(currentKappaOrTauRte);
+            double itemWeightRteK =  meanItemActivity + currUserModel.getSumOfMeanWeight().get(k);
+            modelEntry.setWeightRteEntry(k, itemWeightRteK);
+            double itemActivityRte = modelEntry.getActivityRte() + modelEntry.getWeightShpEntry(k) / itemWeightRteK;
+            modelEntry.setActivityRte(itemActivityRte);
         }
 
-        return currEntry;
+        return modelEntry;
+    }
+
+    private static void updatePhi(RealVector phi, int user, int item, double rating,
+                                  int featureCount, PMFModel userModel, PMFModel itemModel) {
+        for (int k = 0; k < featureCount; k++) {
+            double userWeightShp = userModel.getWeightShpEntry(user, k);
+            double userWeightRte = userModel.getWeightRteEntry(user, k);
+            double itemWeightShp = itemModel.getWeightShpEntry(item, k);
+            double itemWeightRte = itemModel.getWeightRteEntry(item, k);
+            double phiUIK = Gamma.digamma(userWeightShp) - Math.log(userWeightRte) + Gamma.digamma(itemWeightShp) - Math.log(itemWeightRte);
+            phi.setEntry(k, phiUIK);
+        }
+        logNormalize(phi);
+//        double sumOfPhi = phi.getL1Norm();
+//        System.out.println("Sum of phi vector is " + sumOfPhi);
+//      logger.debug("Sum of phi vector is {}", sumOfPhi);
+
+        if (rating > 1) {
+            phi.mapMultiplyToSelf(rating);
+        }
     }
 
 
-
-    public static void logNormalize (RealVector phi) {
+    private static void logNormalize (RealVector phi) {
         final int size = phi.getDimension();
         if (size == 1) {
             phi.setEntry(0, 1.0);
@@ -237,8 +232,8 @@ public class PMFModel {
 
         if (size > 1) {
             double logsum = phi.getEntry(0);
-            for (int i = 1; i < size; i++) {
-                double phiK = phi.getEntry(i);
+            for (int k = 1; k < size; k++) {
+                double phiK = phi.getEntry(k);
                 if (phiK < logsum) {
                     logsum = logsum + Math.log(1 + Math.exp(phiK - logsum));
                 } else {
@@ -257,69 +252,69 @@ public class PMFModel {
 
 
     public static class ModelEntry {
-        private double[] gammaOrLambdaShp;
-        private double[] gammaOrLambdaRte;
-        private double kappaOrTauShp;
-        private double kappaOrTauRte;
-        private final int rowNumber;
+        private double[] weightShp;
+        private double[] weightRte;
+        private double activityShp;
+        private double activityRte;
+        private final int index;
 
-        public ModelEntry(int rowNum, int k, double a, double aPrime, double bPrime) {
-            gammaOrLambdaShp = new double[k];
-            gammaOrLambdaRte = new double[k];
-            kappaOrTauShp = aPrime + k * a;
-            kappaOrTauRte = aPrime/bPrime;
-            Arrays.fill(gammaOrLambdaShp, a);
-            rowNumber = rowNum;
+        public ModelEntry(int userOrItemIndex, int featureCount, double weightShpPrior, double activityShpPrior, double activityPriorMean) {
+            weightShp = new double[featureCount];
+            weightRte = new double[featureCount];
+            activityShp = activityShpPrior + featureCount * weightShpPrior;
+            activityRte = activityShpPrior/activityPriorMean;
+            Arrays.fill(weightShp, weightShpPrior);
+            index = userOrItemIndex;
         }
 
-        public void setEntryGammaOrLambdaShp(int index, double value) {
-            assert index < gammaOrLambdaShp.length && index >= 0;
-            gammaOrLambdaShp[index] = value;
+        public void setWeightShpEntry(int index, double value) {
+            assert index < weightShp.length && index >= 0;
+            weightShp[index] = value;
         }
 
-        public void setEntryGammaOrLambdaRte(int index, double value) {
-            assert index < gammaOrLambdaRte.length && index >= 0;
-            gammaOrLambdaRte[index] = value;
+        public void setWeightRteEntry(int index, double value) {
+            assert index < weightRte.length && index >= 0;
+            weightRte[index] = value;
         }
 
-        public void setEntryKappaOrTauShp(double value) {
-            kappaOrTauShp = value;
+        public void setActivityShp(double value) {
+            activityShp = value;
         }
 
-        public void setEntryKappaOrTauRte(double value) {
-            kappaOrTauRte = value;
+        public void setActivityRte(double value) {
+            activityRte = value;
         }
 
-        public int getRowNumber() {
-            return rowNumber;
+        public int getIndex() {
+            return index;
         }
 
         public int getFeatureCount() {
-            return gammaOrLambdaRte.length;
+            return weightRte.length;
         }
 
-        public double getGammaOrLambdaShpEntry(int col) {
-            return gammaOrLambdaShp[col];
+        public double getWeightShpEntry(int col) {
+            return weightShp[col];
         }
 
-        public double getGammaOrLambdaRteEntry(int col) {
-            return gammaOrLambdaRte[col];
+        public double getWeightRteEntry(int col) {
+            return weightRte[col];
         }
 
-        public double[] getGammaOrLambdaShp() {
-            return gammaOrLambdaShp;
+        public double[] getWeightShp() {
+            return weightShp;
         }
 
-        public double[] getGammaOrLambdaRte() {
-            return gammaOrLambdaRte;
+        public double[] getWeightRte() {
+            return weightRte;
         }
 
-        public double getKappaOrTauShpEntry() {
-            return kappaOrTauShp;
+        public double getActivityShp() {
+            return activityShp;
         }
 
-        public double getKappaOrTauRteEntry() {
-            return kappaOrTauRte;
+        public double getActivityRte() {
+            return activityRte;
         }
 
     }

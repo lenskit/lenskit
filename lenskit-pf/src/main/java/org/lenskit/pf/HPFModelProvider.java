@@ -66,7 +66,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
     public HPFModelProvider(@Transient DataSplitStrategy rndRatings,
                             StoppingCondition stop,
                             PFHyperParameters hyperParams,
-                            @IterationFrequency int iterFreq,
+                            @ConvergenceCheckFrequency int iterFreq,
                             @RandomSeed int seed,
                             @MaxRandomOffsetForShape double maxOffS,
                             @MaxRandomOffsetForRate double maxOffR,
@@ -88,12 +88,12 @@ public class HPFModelProvider implements Provider<HPFModel> {
         final int userNum = ratings.getUserIndex().size();
         final int itemNum = ratings.getItemIndex().size();
         final int featureCount = hyperParameters.getFeatureCount();
-        final double a = hyperParameters.getA();
-        final double aPrime = hyperParameters.getAPrime();
-        final double bPrime = hyperParameters.getBPrime();
-        final double c = hyperParameters.getC();
-        final double cPrime = hyperParameters.getCPrime();
-        final double dPrime = hyperParameters.getDPrime();
+        final double a = hyperParameters.getUserWeightShpPrior();
+        final double aPrime = hyperParameters.getUserActivityShpPrior();
+        final double bPrime = hyperParameters.getUserActivityPriorMean();
+        final double c = hyperParameters.getItemWeightShpPrior();
+        final double cPrime = hyperParameters.getItemActivityShpPrior();
+        final double dPrime = hyperParameters.getItemActivityPriorMean();
         final double kappaShpU = aPrime + featureCount * a;
         final double tauShpI = cPrime + featureCount * c;
 
@@ -115,7 +115,7 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 lambdaShp, lambdaRte, tauRte, tauShp);
         logger.info("initialization finished");
 
-        final List<RatingMatrixEntry> train = ratings.getTrainingMatrix();
+        final List<RatingMatrixEntry> train = ratings.getTrainRatings();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
         TrainingLoopController controller = stoppingCondition.newLoop();
         double avgPLLPre = Double.MAX_VALUE;
@@ -315,12 +315,12 @@ public class HPFModelProvider implements Provider<HPFModel> {
         final int userNum = ratings.getUserIndex().size();
         final int itemNum = ratings.getItemIndex().size();
         final int featureCount = hyperParameters.getFeatureCount();
-        final double a = hyperParameters.getA();
-        final double aPrime = hyperParameters.getAPrime();
-        final double bPrime = hyperParameters.getBPrime();
-        final double c = hyperParameters.getC();
-        final double cPrime = hyperParameters.getCPrime();
-        final double dPrime = hyperParameters.getDPrime();
+        final double a = hyperParameters.getUserWeightShpPrior();
+        final double aPrime = hyperParameters.getUserActivityShpPrior();
+        final double bPrime = hyperParameters.getUserActivityPriorMean();
+        final double c = hyperParameters.getItemWeightShpPrior();
+        final double cPrime = hyperParameters.getItemActivityShpPrior();
+        final double dPrime = hyperParameters.getItemActivityPriorMean();
         // Initialization
         Random random = new Random(rndSeed);
         final double kRte = aPrime + featureCount;

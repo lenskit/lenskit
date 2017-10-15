@@ -27,7 +27,7 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * Seed of random generator used by {@link RandomInitializationStrategyProvider} and {@link RandomDataSplitStrategyProvider}
+ * Seed of random generator used by {@link RandomDataSplitStrategyProvider}
  */
 @Documented
 @DefaultInteger(0)
