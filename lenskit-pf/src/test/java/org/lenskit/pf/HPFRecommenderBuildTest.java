@@ -89,7 +89,7 @@ public class HPFRecommenderBuildTest {
 //                .to(10);
         config.bind(StoppingCondition.class)
                 .to(AbsErrorStoppingCondition.class); // this stopping condition may have bug
-        config.set(IterationFrequency.class)
+        config.set(ConvergenceCheckFrequency.class)
                 .to(2);
 //        config.set(MinimumIterations.class)
 //                .to(100);

@@ -20,7 +20,6 @@
  */
 package org.lenskit.pf;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -31,7 +30,6 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.Stopwatch;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.entities.EntityFactory;
@@ -84,7 +82,7 @@ public class RandomDataSplitStrategyProviderTest {
         RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
         DataSplitStrategy splitStrategy = splitData.get();
         List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainingMatrix();
+        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainRatings();
         assertThat(validations.size(), equalTo(3));
         int trainingSize = trainingRaings.size();
         assertThat(trainingSize, equalTo(27));
@@ -97,7 +95,7 @@ public class RandomDataSplitStrategyProviderTest {
         KeyIndex userIndex = splitStrategy.getUserIndex();
         KeyIndex itemIndex = splitStrategy.getItemIndex();
         List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        List<RatingMatrixEntry> trainingRatings = splitStrategy.getTrainingMatrix();
+        List<RatingMatrixEntry> trainingRatings = splitStrategy.getTrainRatings();
 
         for (RatingMatrixEntry re : trainingRatings) {
             int user = re.getUserIndex();
@@ -128,7 +126,7 @@ public class RandomDataSplitStrategyProviderTest {
         KeyIndex userIndex = splitStrategy.getUserIndex();
         KeyIndex itemIndex = splitStrategy.getItemIndex();
         List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-        List<RatingMatrixEntry> trainingRatings = splitStrategy.getTrainingMatrix();
+        List<RatingMatrixEntry> trainingRatings = splitStrategy.getTrainRatings();
 
         for (RatingMatrixEntry re : validations) {
             int user = re.getUserIndex();
@@ -169,7 +167,7 @@ public class RandomDataSplitStrategyProviderTest {
 //        RandomDataSplitStrategyProvider splitData = new RandomDataSplitStrategyProvider(snapshot, new Random(), 0, 0.1);
 //        DataSplitStrategy splitStrategy = splitData.get();
 //        List<RatingMatrixEntry> validations = splitStrategy.getValidationRatings();
-//        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainingMatrix();
+//        List<RatingMatrixEntry> trainingRaings = splitStrategy.getTrainRatings();
 //        Map<Integer, List<RatingMatrixEntry>> groupRatings = trainingRaings.parallelStream().collect(groupingBy(RatingMatrixEntry::getUserIndex));
 //        System.out.println(groupRatings);
 
@@ -237,36 +235,36 @@ public class RandomDataSplitStrategyProviderTest {
         timer.stop();
         System.out.println("time for sequential is " + timer.getTime());
 
-//        Int2ObjectMap userModel = preUserModel.getRows();
+//        Int2ObjectMap userModel = preUserModel.getModel();
 //        Iterator<Int2ObjectMap.Entry<PMFModel.ModelEntry>> iter = userModel.int2ObjectEntrySet().iterator();
 //        while (iter.hasNext()) {
 //            Int2ObjectMap.Entry<PMFModel.ModelEntry> entry = iter.next();
 //            int user = entry.getIntKey();
 //            PMFModel.ModelEntry modelEntry = entry.getValue();
-//            int featureNum = modelEntry.getGammaOrLambdaShp().length;
+//            int featureNum = modelEntry.getWeightShp().length;
 //            for (int k = 0; k < featureNum; k++) {
-//                assertThat(user, equalTo(modelEntry.getRowNumber()));
-//                assertThat(gammaShp.getEntry(user, k), equalTo(modelEntry.getGammaOrLambdaShpEntry(k)));
-//                assertThat(gammaRte.getEntry(user, k), equalTo(modelEntry.getGammaOrLambdaRteEntry(k)));
-//                assertThat(kappaShp.getEntry(user), equalTo(modelEntry.getKappaOrTauShpEntry()));
-//                assertThat(kappaRte.getEntry(user), equalTo(modelEntry.getKappaOrTauRteEntry()));
+//                assertThat(user, equalTo(modelEntry.getIndex()));
+//                assertThat(gammaShp.getEntry(user, k), equalTo(modelEntry.getWeightShpEntry(k)));
+//                assertThat(gammaRte.getEntry(user, k), equalTo(modelEntry.getWeightRteEntry(k)));
+//                assertThat(kappaShp.getEntry(user), equalTo(modelEntry.getActivityShp()));
+//                assertThat(kappaRte.getEntry(user), equalTo(modelEntry.getActivityRte()));
 //
 //            }
 //        }
 //
-//        Int2ObjectMap itemModel = preItemModel.getRows();
+//        Int2ObjectMap itemModel = preItemModel.getModel();
 //        Iterator<Int2ObjectMap.Entry<PMFModel.ModelEntry>> iterItem = itemModel.int2ObjectEntrySet().iterator();
 //        while (iterItem.hasNext()) {
 //            Int2ObjectMap.Entry<PMFModel.ModelEntry> entry = iterItem.next();
 //            int item = entry.getIntKey();
 //            PMFModel.ModelEntry modelEntry = entry.getValue();
-//            int featureNum = modelEntry.getGammaOrLambdaShp().length;
+//            int featureNum = modelEntry.getWeightShp().length;
 //            for (int k = 0; k < featureNum; k++) {
-//                assertThat(item, equalTo(modelEntry.getRowNumber()));
-//                assertThat(gammaShp.getEntry(item, k), equalTo(modelEntry.getGammaOrLambdaShpEntry(k)));
-//                assertThat(gammaRte.getEntry(item, k), equalTo(modelEntry.getGammaOrLambdaRteEntry(k)));
-//                assertThat(kappaShp.getEntry(item), equalTo(modelEntry.getKappaOrTauShpEntry()));
-//                assertThat(kappaRte.getEntry(item), equalTo(modelEntry.getKappaOrTauRteEntry()));
+//                assertThat(item, equalTo(modelEntry.getIndex()));
+//                assertThat(gammaShp.getEntry(item, k), equalTo(modelEntry.getWeightShpEntry(k)));
+//                assertThat(gammaRte.getEntry(item, k), equalTo(modelEntry.getWeightRteEntry(k)));
+//                assertThat(kappaShp.getEntry(item), equalTo(modelEntry.getActivityShp()));
+//                assertThat(kappaRte.getEntry(item), equalTo(modelEntry.getActivityRte()));
 //
 //            }
 //        }

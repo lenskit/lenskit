@@ -20,9 +20,6 @@
  */
 package org.lenskit.pf;
 
-import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.util.keys.KeyIndex;
@@ -38,11 +35,11 @@ import java.util.List;
 public interface DataSplitStrategy {
 
     /**
-     * Get the training mapping from item indices to maps of item ratings (user indices to user ratings)
+     * Get a list of item ratings
      *
-     * @return The training map
+     * @return The training list of RatingMatrixEntry
      */
-    List<RatingMatrixEntry> getTrainingMatrix();
+    List<RatingMatrixEntry> getTrainRatings();
 
     /**
      * Get a list of validation ratings

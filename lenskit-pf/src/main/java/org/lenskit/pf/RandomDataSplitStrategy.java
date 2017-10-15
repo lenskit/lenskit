@@ -21,9 +21,6 @@
 package org.lenskit.pf;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Shareable;
@@ -60,7 +57,7 @@ public class RandomDataSplitStrategy implements DataSplitStrategy, Serializable 
 
     @Override
     @Nonnull
-    public List<RatingMatrixEntry> getTrainingMatrix() {
+    public List<RatingMatrixEntry> getTrainRatings() {
         return training;
     }
 

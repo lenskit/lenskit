@@ -30,10 +30,10 @@ import java.lang.annotation.*;
  * The number of frequency used to compute the convergence condition (average predictive log likelihood of validation ratings)
  */
 @Documented
-@DefaultInteger(100)
+@DefaultInteger(10)
 @Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IterationFrequency {
+public @interface ConvergenceCheckFrequency {
 }
