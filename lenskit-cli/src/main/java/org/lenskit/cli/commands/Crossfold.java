@@ -115,6 +115,9 @@ public class Crossfold implements Command {
                 logger.warn("--partition-ratings is deprecated, use --partition-entities");
             }
             cf.setMethod(CrossfoldMethods.partitionEntities());
+        } else if (method.equals("sample-entities")) {
+            Integer n = options.get("sample_size");
+            cf.setMethod(CrossfoldMethods.sampleEntities(n));
         } else {
             String order = options.get("order");
             SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.RANDOM;
@@ -211,6 +214,11 @@ public class Crossfold implements Command {
             .action(Arguments.storeConst())
             .setConst("partition-ratings")
             .help("Partition ratings into K partitions");
+        mode.addArgument("--sample-entities")
+            .dest("crossfold_mode")
+            .action(Arguments.storeConst())
+            .setConst("sample-entities")
+            .help("Create K samples of entities");
         mode.addArgument("--sample-users")
             .dest("crossfold_mode")
             .action(Arguments.storeConst())

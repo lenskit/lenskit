@@ -267,6 +267,7 @@ class CrossfolderTest {
             // train data should have all the other events
             def tes = ds.trainingData.get().query(Rating.class).get()
             assertThat(tes.size() + events.size(), equalTo(ratings.size()))
+            assertThat(tes, everyItem(not(isIn(events))))
         }
         assertThat(allEvents, hasSize(ratings.size()))
 
@@ -346,5 +347,38 @@ class CrossfolderTest {
             }
         }
         assertThat(allUsers, hasSize(100))
+    }
+
+    @Test
+    public void testSampleRatings() {
+        cf.method = CrossfoldMethods.sampleEntities(100)
+        cf.execute()
+        def dss = cf.dataSets
+        assertThat(dss, hasSize(5))
+        def allEvents = new HashSet<Rating>()
+
+        for (ds in dss) {
+            // test the users
+            def events = ds.testData.get().query(Rating.class).get()
+            allEvents += events
+
+            assertThat(events, hasSize(100))
+
+            // train data should have all the other events
+            def tes = ds.trainingData.get().query(Rating.class).get()
+            assertThat(tes.size() + events.size(), equalTo(ratings.size()))
+            assertThat(tes, everyItem(not(isIn(events))))
+        }
+        assertThat(allEvents, hasSize(500))
+
+        def dataSets = DataSet.load(tmp.root.toPath().resolve("datasets.yaml"))
+        assertThat(dataSets, hasSize(5))
+
+        for (int i = 1; i <= 5; i++) {
+            def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
+            assertThat(Files.exists(train), equalTo(true))
+            def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
+            assertThat(Files.exists(test), equalTo(true))
+        }
     }
 }
