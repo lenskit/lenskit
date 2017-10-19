@@ -69,7 +69,7 @@ class EntitySampleCrossfoldMethod implements CrossfoldMethod {
             RatingWriter trainWriter = output.getTrainWriter(i);
             RatingWriter testWriter = output.getTestWriter(i);
             for (int j = 0; j < n; j++) {
-                Rating r = ratings.get(i);
+                Rating r = ratings.get(j);
                 if (j < start) {
                     trainWriter.writeRating(r);
                 } else if (j < stop) {
