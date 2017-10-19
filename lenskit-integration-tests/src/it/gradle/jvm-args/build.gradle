@@ -26,11 +26,13 @@ apply plugin: 'lenskit'
 apply from: 'common.gradle'
 
 task checkScript(type: LenskitExec) {
+    logger.lifecycle "jvm args: $lenskit.jvmArgs"
     logFile "$buildDir/run-script.log"
     command 'run-script'
     args file('verify.groovy')
     doFirst {
         mkdir buildDir
+        logger.lifecycle "my jvm args: ${checkScript.jvmArgs}"
     }
 }
 

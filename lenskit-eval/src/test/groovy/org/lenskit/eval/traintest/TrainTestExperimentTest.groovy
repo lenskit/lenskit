@@ -1,22 +1,26 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.eval.traintest
 
@@ -42,6 +46,10 @@ import org.lenskit.eval.crossfold.SortOrder
 import org.lenskit.eval.traintest.predict.PredictEvalTask
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
 import org.lenskit.eval.traintest.recommend.TopNMRRMetric
+import org.lenskit.knn.item.ItemItemScorer
+import org.lenskit.transform.normalize.MeanCenteringVectorNormalizer
+import org.lenskit.transform.normalize.UserVectorNormalizer
+import org.lenskit.transform.normalize.VectorNormalizer
 
 import javax.inject.Provider
 import java.nio.file.Files
@@ -74,11 +82,14 @@ class TrainTestExperimentTest {
         file.append('5,1,3,881250949\n')
         file.append('5,5,3,881250949\n')
 
-        file = folder.newFile("multi-test.csv")
-        file.append('1,4,3.0\n')
-        file.append('3,3,4.5\n')
-        file.append('1,2,4.5\n')
+        def mtFile = folder.newFile("multi-test.csv")
+        mtFile.append('1,4,3.0\n')
+        mtFile.append('3,3,4.5\n')
+        mtFile.append('1,2,4.5\n')
 
+        def djfile = folder.newFile("disjoint-test.csv")
+        djfile.append("6,3,4.5\n")
+        djfile.append("6,4,3.2\n")
 
         experiment = new TrainTestExperiment()
     }
@@ -102,6 +113,29 @@ class TrainTestExperimentTest {
         assertThat(result, notNullValue())
         assertThat(result, hasSize(2))
         assertThat(result.column("Succeeded"), everyItem(equalTo('Y')))
+    }
+
+    /**
+     * This test attempts to reproduce <a href="https://github.com/lenskit/lenskit/issues/838">#838</a>.
+     */
+    @Test
+    void testDisjointTestSet() {
+        DataSet set = DataSet.newBuilder("test")
+                .setTrain(StaticDataSource.csvRatingFile(folder.root.toPath().resolve("ratings.csv")))
+                .setTest(StaticDataSource.csvRatingFile(folder.root.toPath().resolve("disjoint-test.csv")))
+                .build()
+        experiment.addAlgorithm("Baseline") {
+            bind ItemScorer to ItemItemScorer
+            within (UserVectorNormalizer) {
+                bind VectorNormalizer to MeanCenteringVectorNormalizer
+            }
+        }
+        experiment.addDataSet(set)
+        def predT = new PredictEvalTask()
+        experiment.addTask(predT)
+        def result = experiment.execute()
+        assertThat(result, notNullValue())
+        assertThat(result.column("RMSE.ByUser"), contains(nullValue()))
     }
 
     private List<DataSet> crossfoldRatings() {

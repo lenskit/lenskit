@@ -14,9 +14,9 @@ install:
 - copy etc\gradle-ci.properties gradle.properties
 - gradlew.bat ciPrep
 build_script:
-- gradlew.bat ciBuild --parallel
+- gradlew.bat ciBuild --parallel --scan
 test_script:
-- gradlew.bat check -Pjavadoc.skip=true
+- gradlew.bat check -Pjavadoc.skip=true --scan
 deploy: off
 notifications:
   - provider: Webhook
