@@ -9,7 +9,8 @@ repositories {
 dependencies {
     analyze localGroovy()
     analyze group: 'org.lenskit', name: 'lenskit-test', version: project.lenskitVersion
-    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2124'
+    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.8.2348'
+    analyze group: 'org.renjin.cran', name: 'assertthat', version: '0.1-b308'
 }
 
 task runVerifyScript(type: JavaExec) {
