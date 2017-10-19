@@ -13,5 +13,4 @@ If you would like to contribute to LensKit, please submit a pull request.
 
 By submitting a pull request via GitHub, you warrant that you
 either own the code or have appropriate authority to submit it, and 
-agree license your changes under LensKit's copyright license (LGPLv2.1+ 
-for the main code, 3-clause BSD for the build scripts).
+agree license your changes under the MIT license used by LensKit (see LICENSE.md).

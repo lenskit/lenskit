@@ -1,28 +1,29 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.inject;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.CachePolicy;
@@ -31,7 +32,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.*;
-import org.grouplens.grapht.reflect.internal.*;
+import org.grouplens.grapht.reflect.internal.SimpleInjectionPoint;
 import org.lenskit.RecommenderConfigurationException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
@@ -41,11 +42,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Helper utilities for Grapht integration.
@@ -93,16 +95,10 @@ public final class GraphtUtils {
      * @return The set of nodes that have placeholder satisfactions.
      */
     public static Set<DAGNode<Component, Dependency>> getPlaceholderNodes(DAGNode<Component,Dependency> graph) {
-        Predicate<Component> isPlaceholder = new Predicate<Component>() {
-            @Override
-            public boolean apply(@Nullable Component input) {
-                return input != null && input.getSatisfaction() instanceof PlaceholderSatisfaction;
-            }
-        };
-        Predicate<DAGNode<Component, ?>> nodePredicate = DAGNode.labelMatches(isPlaceholder);
-        return FluentIterable.from(graph.getReachableNodes())
-                             .filter(nodePredicate)
-                             .toSet();
+        return graph.getReachableNodes()
+                    .stream()
+                    .filter(n -> n.getLabel().getSatisfaction() instanceof PlaceholderSatisfaction)
+                    .collect(Collectors.toSet());
     }
 
     /**
@@ -186,53 +182,29 @@ public final class GraphtUtils {
         return desireIsTransient(desire);
     }
 
-    public static Predicate<DAGEdge<?, Dependency>> edgeIsTransient() {
-        return new Predicate<DAGEdge<?, Dependency>>() {
-            @Override
-            public boolean apply(@Nullable DAGEdge<?, Dependency> input) {
-                Desire desire = input == null ? null : input.getLabel().getInitialDesire();
-                return desire != null && !desireIsTransient(desire);
-            }
-        };
-    }
-
-    private static Function<DAGEdge<Component,Dependency>,List<String>> ORDER_KEY = new Function<DAGEdge<Component, Dependency>, List<String>>() {
-        @Nullable
-        @Override
-        public List<String> apply(@Nullable DAGEdge<Component,Dependency> input) {
-            if (input == null) {
-                throw new NullPointerException("cannot order null edge");
-            }
-            Desire desire = input.getLabel().getInitialDesire();
-            InjectionPoint ip = desire.getInjectionPoint();
-            List<String> key = new ArrayList<>(4);
-            if (ip instanceof ConstructorParameterInjectionPoint) {
-                ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
-                key.add("0: constructor");
-                key.add(Integer.toString(cpi.getParameterIndex()));
-            } else if (ip instanceof SetterInjectionPoint) {
-                SetterInjectionPoint spi = (SetterInjectionPoint) ip;
-                key.add("1: setter");
-                key.add(spi.getMember().getName());
-                key.add(Integer.toString(spi.getParameterIndex()));
-            } else if (ip instanceof FieldInjectionPoint) {
-                FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
-                key.add("2: field");
-                key.add(fpi.getMember().getName());
-            } else if (ip instanceof NoArgumentInjectionPoint) {
-                /* this shouldn't really happen */
-                NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
-                key.add("8: no-arg");
-                key.add(fpi.getMember().getName());
-            } else if (ip instanceof SimpleInjectionPoint) {
-                key.add("5: simple");
-            } else {
-                key.add("9: unknown");
-                key.add(ip.getClass().getName());
-            }
-            return key;
+    private static List<String> extractOrderKey(DAGEdge<Component,Dependency> node) {
+        Desire desire = node.getLabel().getInitialDesire();
+        InjectionPoint ip = desire.getInjectionPoint();
+        List<String> key = new ArrayList<>(4);
+        Member member = ip.getMember();
+        if (member instanceof Constructor) {
+            key.add("0: constructor");
+            key.add(Integer.toString(ip.getParameterIndex()));
+        } else if (member instanceof Method) {
+            key.add("1: setter");
+            key.add(member.getName());
+            key.add(Integer.toString(ip.getParameterIndex()));
+        } else if (member instanceof Field) {
+            key.add("2: field");
+            key.add(member.getName());
+        } else if (ip instanceof SimpleInjectionPoint) {
+            key.add("5: simple");
+        } else {
+            key.add("9: unknown");
+            key.add(ip.getClass().getName());
         }
-    };
+        return key;
+    }
 
     /**
      * An ordering over dependency edges.
@@ -240,7 +212,7 @@ public final class GraphtUtils {
     public static final Ordering<DAGEdge<Component, Dependency>> DEP_EDGE_ORDER =
             Ordering.<String>natural()
                     .lexicographical()
-                    .onResultOf(ORDER_KEY);
+                    .onResultOf(GraphtUtils::extractOrderKey);
 
     /**
      * Find the set of shareable nodes (objects that will be replaced with instance satisfactions in
@@ -253,28 +225,26 @@ public final class GraphtUtils {
     public static LinkedHashSet<DAGNode<Component, Dependency>> getShareableNodes(DAGNode<Component, Dependency> graph) {
         LinkedHashSet<DAGNode<Component, Dependency>> shared = Sets.newLinkedHashSet();
 
-        List<DAGNode<Component, Dependency>> nodes = graph.getSortedNodes();
-        for (DAGNode<Component, Dependency> node : nodes) {
-            if (!isShareable(node)) {
-                continue;
-            }
-
-            // see if we depend on any non-shared nodes
-            // since nodes are sorted, all shared nodes will have been seen
-            boolean isShared = true;
-            for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
-                if (!edgeIsTransient(edge)) {
-                    boolean es = shared.contains(edge.getTail());
-                    isShared &= es;
-                    if (!es) {
-                        logger.trace("node {} not shared due to non-transient dependency on {}", node, edge.getTail());
-                    }
-                }
-            }
-            if (isShared) {
-                shared.add(node);
-            }
-        }
+        graph.getSortedNodes()
+             .stream()
+             .filter(GraphtUtils::isShareable)
+             .forEach(node -> {
+                 // see if we depend on any non-shared nodes
+                 // since nodes are sorted, all shared nodes will have been seen
+                 boolean isShared = true;
+                 for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
+                     if (!edgeIsTransient(edge)) {
+                         boolean es = shared.contains(edge.getTail());
+                         isShared &= es;
+                         if (!es) {
+                             logger.debug("node {} not shared due to non-transient dependency on {}", node, edge.getTail());
+                         }
+                     }
+                 }
+                 if (isShared) {
+                     shared.add(node);
+                 }
+             });
 
         return shared;
     }
@@ -290,25 +260,19 @@ public final class GraphtUtils {
     public static DAGNode<Component,Dependency> findSatisfyingNode(DAGNode<Component,Dependency> graph,
                                                                    final QualifierMatcher qmatch,
                                                                    final Class<?> type) {
-        Predicate<DAGEdge<Component,Dependency>> pred = new Predicate<DAGEdge<Component, Dependency>>() {
-            @Override
-            public boolean apply(@Nullable DAGEdge<Component, Dependency> input) {
-                return input != null
-                       && type.isAssignableFrom(input.getTail()
-                                                     .getLabel()
-                                                     .getSatisfaction()
-                                                     .getErasedType())
-                       && qmatch.apply(input.getLabel()
-                                            .getInitialDesire()
-                                            .getInjectionPoint()
-                                            .getQualifier());
-            }
-        };
-        DAGEdge<Component, Dependency> edge = graph.findEdgeBFS(pred);
-        if (edge != null) {
-            return edge.getTail();
-        } else {
-            return null;
-        }
+        Optional<DAGEdge<Component, Dependency>> edge =
+                graph.breadthFirstEdges()
+                     .filter(e -> type.isAssignableFrom(e.getTail()
+                                                         .getLabel()
+                                                         .getSatisfaction()
+                                                         .getErasedType()))
+                     .filter(e -> qmatch.apply(e.getLabel()
+                                                .getInitialDesire()
+                                                .getInjectionPoint()
+                                                .getQualifier()))
+                .findFirst();
+
+        return edge.map(DAGEdge::getTail)
+                   .orElse(null);
     }
 }

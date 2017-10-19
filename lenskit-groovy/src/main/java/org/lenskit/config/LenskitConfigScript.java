@@ -1,26 +1,29 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.config;
 
-import com.google.common.base.Joiner;
 import groovy.lang.Binding;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
@@ -31,8 +34,6 @@ import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,7 +46,6 @@ import java.util.Set;
 public abstract class LenskitConfigScript extends Script {
     protected final Logger logger = LoggerFactory.getLogger(LenskitConfigScript.class);
     private LenskitConfigDSL delegate;
-    private Map<String,Set<String>> badProperties = new LinkedHashMap<>();
 
     protected LenskitConfigScript() {
         this(new Binding());
@@ -99,11 +99,20 @@ public abstract class LenskitConfigScript extends Script {
      */
     public Object propertyMissing(String name) {
         if (Character.isUpperCase(name.charAt(0))) {
-            logger.error("unresolved class or property {}", name);
+            logger.error("unresolved class or property {}, missing import?", name);
             Set<String> packages = delegate.getConfigLoader().getDirectory().getPackages(name);
             logger.debug("found {} packages with classes named {}", packages.size(), name);
-            badProperties.put(name, packages);
-            return null;
+            if (packages.isEmpty()) {
+                throw new MissingPropertyException(name, getClass());
+            }
+
+            String message = "Unresolved property in evaluation script: " + name;
+            RecommenderConfigurationException ex = new RecommenderConfigurationException(message);
+            for (String pkg: packages) {
+                logger.info("consider importing {}.{}", pkg, name);
+                ex.addHint("consider importing %s.%s", pkg, name);
+            }
+            throw ex;
         } else {
             logger.error("unresolved property {} in configuration script", name);
             throw new MissingPropertyException(name, getClass());
@@ -115,26 +124,12 @@ public abstract class LenskitConfigScript extends Script {
      * @throws RecommenderConfigurationException if there is an error with the configuration.
      */
     private void runScript() throws RecommenderConfigurationException {
-        badProperties.clear();
         try {
             run();
         } catch (RecommenderConfigurationException rce) {
             throw rce;
         } catch (Exception ex) {
             throw new RecommenderConfigurationException("error configuring recommender", ex);
-        }
-        if (!badProperties.isEmpty()) {
-            String message = "Unresolved properties in evaluation script: ";
-            message += Joiner.on(", ").join(badProperties.keySet());
-            RecommenderConfigurationException ex = new RecommenderConfigurationException(message);
-            for (Map.Entry<String,Set<String>> bpe: badProperties.entrySet()) {
-                logger.error("Script references unknown class or property {}", bpe.getKey());
-                for (String pkg: bpe.getValue()) {
-                    logger.info("consider importing {}.{}", pkg, bpe.getKey());
-                    ex.addHint("consider importing %s.%s", pkg, bpe.getKey());
-                }
-            }
-            throw ex;
         }
     }
 

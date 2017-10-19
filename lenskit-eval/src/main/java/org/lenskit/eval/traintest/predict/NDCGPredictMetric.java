@@ -1,22 +1,26 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.eval.traintest.predict;
 
@@ -29,6 +33,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -38,7 +43,6 @@ import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.math.MeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +64,7 @@ import javax.annotation.Nullable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
+public class NDCGPredictMetric extends PredictMetric<Mean> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     public static final String DEFAULT_COLUMN = "Predict.nDCG";
     private final String columnName;
@@ -104,20 +108,20 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
-        return new MeanAccumulator();
+    public Mean createContext(AlgorithmInstance algorithm, DataSet dataSet, RecommenderEngine engine) {
+        return new Mean();
     }
 
     @Nonnull
     @Override
-    public MetricResult getAggregateMeasurements(MeanAccumulator context) {
+    public MetricResult getAggregateMeasurements(Mean context) {
         logger.warn("Predict nDCG is deprecated, use nDCG in a rank context");
-        return MetricResult.singleton(columnName, context.getMean());
+        return MetricResult.singleton(columnName, context.getResult());
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultMap predictions, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, ResultMap predictions, Mean context) {
         if (predictions == null || predictions.isEmpty()) {
             return MetricResult.empty();
         }
@@ -133,7 +137,7 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
         logger.debug("user {} has gain of {} (ideal {})", user.getUserId(), gain, idealGain);
         double score = gain / idealGain;
         synchronized (context) {
-            context.add(score);
+            context.increment(score);
         }
         ImmutableMap.Builder<String,Double> results = ImmutableMap.builder();
         return MetricResult.fromMap(results.put(columnName, score)
