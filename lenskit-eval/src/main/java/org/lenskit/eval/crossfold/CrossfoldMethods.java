@@ -64,6 +64,14 @@ public final class CrossfoldMethods {
     }
 
     /**
+     * Create a crossfold method that creates disjoint samples of entities into disjoint partitions.
+     * @return The crossfold method.
+     */
+    public static CrossfoldMethod sampleEntities(int size) {
+        return new EntitySampleCrossfoldMethod(size);
+    }
+
+    /**
      * Create a crossfold method that splits items into disjoint partitions.
      * @param part the partition algorithm for item ratings.
      * @return The crossfold method.

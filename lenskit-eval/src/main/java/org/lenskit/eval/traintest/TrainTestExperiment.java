@@ -495,7 +495,8 @@ public class TrainTestExperiment {
     private TableLayout makeUserResultLayout(ExperimentOutputLayout eol) {
         TableLayoutBuilder tlb = TableLayoutBuilder.copy(eol.getConditionLayout());
         tlb.addColumn("User")
-           .addColumn("TestTime");
+           .addColumn("TestTime")
+           .addColumn("TestItems");
         for (EvalTask task: tasks) {
             tlb.addColumns(task.getUserColumns());
         }
