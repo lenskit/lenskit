@@ -25,8 +25,7 @@
 package org.lenskit.util.math;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -36,6 +35,7 @@ import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -337,6 +337,93 @@ public final class Vectors {
             throw new OutOfRangeException(row, 0, mat.getRowDimension());
         }
         return new RowView(mat, row);
+    }
+
+    /**
+     * Transpose of a matrix
+     * Convert a row view of rating matrix to a column view and vice versa
+     * After conversion, the key of empty row/column in the input matrix will be eliminated in the transpose matrix.
+     * So calling transposeMap(transposeMap(X)).keySet() may not equal to X.keySet() unless X has no mapping of key to empty Long2Double map.
+     *
+     * @param matrix The matrix
+     * @return The transpose of the matrix
+     */
+    public static Long2ObjectMap<Long2DoubleMap> transposeMap(Long2ObjectMap<Long2DoubleMap> matrix) {
+        Long2ObjectMap<Long2DoubleMap> mapT = new Long2ObjectOpenHashMap<>();
+        for (Long2ObjectMap.Entry<Long2DoubleMap> rowEntry : matrix.long2ObjectEntrySet()) {
+            long rowNum = rowEntry.getLongKey();
+            Long2DoubleMap rowValue = rowEntry.getValue();
+            for (Long2DoubleMap.Entry entry : rowValue.long2DoubleEntrySet()) {
+                long colNum = entry.getLongKey();
+                double Value = entry.getDoubleValue();
+                Long2DoubleMap rowOfMapT = mapT.get(colNum);
+                if (rowOfMapT == null) rowOfMapT = new Long2DoubleOpenHashMap();
+                rowOfMapT.put(rowNum, Value);
+                mapT.put(colNum, rowOfMapT);
+            }
+        }
+        return mapT;
+    }
+
+    /**
+     * Compute the addition of two vectors
+     * @param a The first vector
+     * @param b The second vector
+     * @return A new vector of the addition of two vectors {@code a} + {@code b}
+     */
+    public static Long2DoubleMap add(Long2DoubleMap a, Long2DoubleMap b) {
+        Long2DoubleMap sumOfTwoVectors = new Long2DoubleOpenHashMap(a);
+        for (Long2DoubleMap.Entry e : b.long2DoubleEntrySet()) {
+            long key = e.getLongKey();
+            double value = e.getDoubleValue();
+            double sum = sumOfTwoVectors.get(key) + value;
+            sumOfTwoVectors.put(key, sum);
+        }
+        return sumOfTwoVectors;
+
+    }
+
+    /**
+     * Compute the element-wise multiplication of two vectors.
+     * @param a The first vector
+     * @param b The second vector
+     * @return A new vector of the element-wise multiplication of two vectors
+     */
+    public static Long2DoubleMap ebeMultiply(Long2DoubleMap a, Long2DoubleMap b) {
+        if (a.size() > b.size()) {
+            return ebeMultiply(b, a);
+        }
+        Long2DoubleMap productOfTwoVectors = new Long2DoubleOpenHashMap();
+        final LongIterator iter = a.keySet().iterator();
+        while (iter.hasNext()) {
+            long key = iter.nextLong();
+            double valueOfA = a.getOrDefault(key, 0.0);
+            double valueOfB = b.getOrDefault(key, 0.0);
+            if ( valueOfA != 0.0 &  valueOfB != 0.0) {
+                double prod = valueOfA*valueOfB;
+                productOfTwoVectors.put(key, prod);
+            }
+        }
+        return productOfTwoVectors;
+    }
+
+    /**
+     * Return a new vector with all values in input vector {@code a} but not close to the given value with precision {@code epsilon}
+     * @param a The input vector
+     * @param value The value needs to be filtered out
+     * @param epsilon The tolerance
+     * @return A new map with the values in {@code a} whose absolute value of differences from {@code value} is greater than {@code epsilon}.
+     */
+    public static Long2DoubleMap filterValues(Long2DoubleMap a, double value, double epsilon) {
+        Long2DoubleMap result = new Long2DoubleOpenHashMap();
+        for (Long2DoubleMap.Entry e : a.long2DoubleEntrySet()) {
+            long key = e.getLongKey();
+            double v = e.getDoubleValue();
+            if (Math.abs(v - value) > epsilon) {
+                result.put(key, v);
+            }
+        }
+        return result;
     }
 
     private static class DftAdaptingL2DFunction implements Long2DoubleFunction {

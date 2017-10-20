@@ -33,3 +33,5 @@ include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict'
 include 'lenskit-all'
 include 'lenskit-cli'
 include 'lenskit-integration-tests'
+include 'lenskit-slim'
+
