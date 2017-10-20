@@ -387,6 +387,7 @@ class ExperimentJob extends RecursiveAction {
                 }
 
                 TestUser testUser = new TestUser(user, userTrainHistory, userTestHistory);
+                userRow.add("TestItems", testUser.getTestItems().size());
 
                 Stopwatch userTimer = Stopwatch.createStarted();
 
