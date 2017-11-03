@@ -25,6 +25,7 @@
 package org.lenskit.pf;
 
 import net.jcip.annotations.Immutable;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.StoppingThreshold;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
@@ -39,10 +40,13 @@ public class AbsErrorStoppingCondition implements StoppingCondition, Serializabl
     private static final long serialVersionUID = 5L;
 
     private final double threshold;
+    private final int maxIterCount;
 
     @Inject
-    public AbsErrorStoppingCondition(@StoppingThreshold double thresh) {
+    public AbsErrorStoppingCondition(@StoppingThreshold double thresh,
+                                     @IterationCount int maxIter) {
         threshold = thresh;
+        maxIterCount = maxIter;
     }
 
     @Override
@@ -56,7 +60,7 @@ public class AbsErrorStoppingCondition implements StoppingCondition, Serializabl
 
         @Override
         public boolean keepTraining(double error) {
-            if (error < threshold) {
+            if (error < threshold || iterations >= maxIterCount) {
                 return false;
             } else {
                 ++iterations;
