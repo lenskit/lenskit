@@ -69,7 +69,7 @@ public class HPFItemScorer extends AbstractItemScorer {
             RealVector ivec = model.getItemVector(item);
             if (ivec != null) {
                 double score = uvec.dotProduct(ivec);
-                logger.info("Predicted score is {}", score);
+//                logger.info("Predicted score is {}", score);
                 if (isProbPredition) {
                     score = 1 - Math.exp(-score);
                 }

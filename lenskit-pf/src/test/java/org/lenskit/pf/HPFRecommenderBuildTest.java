@@ -56,13 +56,20 @@ public class HPFRecommenderBuildTest {
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<>();
-        double[][] ratings = {
+        double[][] ratingsImplicit = {
                 {0, 1, 1, 1, 1},
                 {1, 0, 1, 0, 0},
                 {1, 1, 1, 1, 0},
                 {1, 1, 0, 0, 1},
                 {1, 1, 1, 1, 1},
                 {0, 0, 0, 1, 0}};
+        double[][] ratings = {
+                {0, 5, 2, 10, 1},
+                {1, 0, 10, 0, 0},
+                {1, 1, 8, 10, 0},
+                {1, 8, 0, 0, 1},
+                {1, 2, 2, 5, 3},
+                {0, 0, 0, 6, 0}};
         EntityFactory ef = new EntityFactory();
         data = new Long2ObjectOpenHashMap<>();
         for (int user = 1; user <= ratings.length; user++) {
