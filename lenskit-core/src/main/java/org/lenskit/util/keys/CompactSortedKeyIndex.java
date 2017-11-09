@@ -25,8 +25,6 @@
 package org.lenskit.util.keys;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
