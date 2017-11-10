@@ -267,7 +267,8 @@ public class LongSortedArraySetTest {
                                                           LongUtils.packedSet(3L));
             assertThat(sample, hasSize(5));
             assertThat(sample, everyItem(allOf(greaterThan(0L), lessThan(11L))));
-            assertThat(sample, not(anyOf(hasItem(1L), hasItem(3L))));
+            assertThat(sample, not(hasItem(1L)));
+            assertThat(sample, not(hasItem(3L)));
         }
     }
 

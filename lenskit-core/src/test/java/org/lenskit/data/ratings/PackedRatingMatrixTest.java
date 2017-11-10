@@ -28,6 +28,8 @@ import com.google.common.base.Equivalence;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.data.dao.DataAccessObject;
@@ -155,8 +157,8 @@ public class PackedRatingMatrixTest {
             RatingMatrixEntry entry = ratings.get(i);
             assertThat(entry.getIndex(), equalTo(i));
             assertThat(ratingList,
-                       anyOf(hasItem(rating(entry.getUserId(), entry.getItemId(), entry.getValue(), 1)),
-                             hasItem(rating(entry.getUserId(), entry.getItemId(), entry.getValue(), 2))));
+                       Matchers.<List<Rating>>anyOf(hasItem(rating(entry.getUserId(), entry.getItemId(), entry.getValue(), 1)),
+                                                    hasItem(rating(entry.getUserId(), entry.getItemId(), entry.getValue(), 2))));
         }
     }
 
