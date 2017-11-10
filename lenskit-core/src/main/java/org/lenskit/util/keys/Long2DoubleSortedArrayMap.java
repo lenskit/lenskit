@@ -121,7 +121,14 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         IdComparator comparator = new IdComparator(keys);
         ParallelSwapper swapper = new ParallelSwapper(keys, values);
         quickSort(0, keys.length, comparator, swapper);
-        // FIXME Verify that the keys have no duplicates
+
+        int n = keys.length;
+        for (int i = 1; i < n; i++) {
+            if (keys[i-1] == keys[i]) {
+                throw new IllegalArgumentException("duplicate keys");
+            }
+        }
+
         SortedKeyIndex index = SortedKeyIndex.wrap(keys, keys.length);
 
         return wrap(index, values);
