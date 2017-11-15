@@ -30,11 +30,16 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * The shape parameter of the prior distribution of the item popularity.
+ *
+ * Poisson Factorization models the prior distribution of the item popularity as a Gamma distribution.
+ */
 @Documented
 @DefaultDouble(0.3)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ItemActivityShpPrior {
+public @interface ItemActivityPriorShp {
 }

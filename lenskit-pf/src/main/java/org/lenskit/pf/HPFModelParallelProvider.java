@@ -28,7 +28,9 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.special.Gamma;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.StoppingThreshold;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
@@ -43,13 +45,11 @@ import java.util.*;
 import static java.util.stream.Collectors.groupingBy;
 
 /**
- * HPF recommender builder based on the paper "Scalable Recommendation with Poisson Factorization".
+ * Parallel Implementation of HPF recommender builder.
  *
- * <p>
- * This recommender builder constructs an hierarchical Poisson matrix factorization recommender(HPF)
- * using a mean-field variational inference algorithm.
- * These are documented in
- * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.
+ * <p>This recommender builder constructs an hierarchical Poisson matrix factorization recommender(HPF)
+ * using a mean-field variational inference algorithm. These are documented in
+ * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -57,33 +57,36 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
     private static Logger logger = LoggerFactory.getLogger(HPFModelParallelProvider.class);
 
     private final DataSplitStrategy ratings;
-    private final StoppingCondition stoppingCondition;
     private final PFHyperParameters hyperParameters;
     private final int iterationFrequency;
     private final double maxOffsetShp;
     private final double maxOffsetRte;
     private final long rndSeed;
-    private final boolean isProbPredition;
+    private final boolean isProbPrediction;
+    private final double threshold;
+    private final int maxIterCount;
 
 
     @Inject
     public HPFModelParallelProvider(@Transient DataSplitStrategy rndRatings,
-                                    StoppingCondition stop,
                                     PFHyperParameters hyperParams,
                                     @ConvergenceCheckFrequency int iterFreq,
                                     @RandomSeed int seed,
                                     @MaxRandomOffsetForShape double maxOffS,
                                     @MaxRandomOffsetForRate double maxOffR,
-                                    @IsProbabilityPrediciton boolean probPred) {
+                                    @IsProbabilityPrediction boolean probPred,
+                                    @StoppingThreshold double threshld,
+                                    @IterationCount int maxIter) {
 
         ratings = rndRatings;
-        stoppingCondition = stop;
         hyperParameters = hyperParams;
         iterationFrequency = iterFreq;
         rndSeed = seed;
         maxOffsetShp = maxOffS;
         maxOffsetRte = maxOffR;
-        isProbPredition = probPred;
+        isProbPrediction = probPred;
+        threshold = threshld;
+        maxIterCount = maxIter;
     }
 
     @Override
@@ -135,17 +138,13 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
                 groupRatingsByItem.put(i, ratings);
             }
         }
-//        System.out.println("item number expected: " + itemNum + " but actual is:" + groupRatingsByItem.keySet().size());
-//        System.out.println("item number expected: " + userNum + " but actual is:" + groupRatingsByUser.keySet().size());
 
-        TrainingLoopController controller = stoppingCondition.newLoop();
         double avgPLLPre = Double.MAX_VALUE;
         double avgPLLCurr = 0.0;
         double diffPLL = 1.0;
+        int iterCount = 1;
 
-        while (controller.keepTraining(diffPLL)) {
-
-            int iterCount = controller.getIterationCount();
+        while (iterCount < maxIterCount && diffPLL > threshold) {
 
             final PMFModel finalPreUserModel = preUserModel;
             final PMFModel finalPreItemModel = preItemModel;
@@ -177,17 +176,11 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
                     double eThetaBeta = 0.0;
                     for (int k = 0; k < featureCount; k++) {
                         double eThetaUK = currUserModel.getWeightShpEntry(user, k) / currUserModel.getWeightRteEntry(user, k);
-//                        if (currUserModel.getWeightRteEntry(user, k) == 0) {
-//                            System.out.println("error user model");
-//                        }
                         double eBetaIK = currItemModel.getWeightShpEntry(item, k) / currItemModel.getWeightRteEntry(item, k);
-//                        if (currItemModel.getWeightRteEntry(item, k) == 0) {
-//                            System.out.println("error item model");
-//                        }
                         eThetaBeta += eThetaUK * eBetaIK;
                     }
                     double pLL = 0.0;
-                    if (isProbPredition) {
+                    if (isProbPrediction) {
                         pLL = (rating == 0) ? (-eThetaBeta) : Math.log(1 - Math.exp(-eThetaBeta));
                     } else {
                         pLL = rating * Math.log(eThetaBeta) - eThetaBeta - Gamma.logGamma(rating + 1);
@@ -198,10 +191,8 @@ public class HPFModelParallelProvider implements Provider<HPFModel> {
                 diffPLL = Math.abs((avgPLLCurr - avgPLLPre) / avgPLLPre);
                 avgPLLPre = avgPLLCurr;
                 logger.info("iteration {} with current average predictive log likelihood {} and the change is {}", iterCount, avgPLLCurr, diffPLL);
-//                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
             }
-//            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
-
+            iterCount++;
         }
 
         // construct feature matrix used by HPFModel

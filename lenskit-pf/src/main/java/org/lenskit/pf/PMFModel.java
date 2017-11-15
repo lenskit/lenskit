@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 
-public class PMFModel {
+class PMFModel {
 
     private Int2ObjectMap<ModelEntry> model;
     private Int2DoubleOpenHashMap sumOfMeanWeight;
@@ -218,9 +218,6 @@ public class PMFModel {
             phi.setEntry(k, phiUIK);
         }
         logNormalize(phi);
-//        double sumOfPhi = phi.getL1Norm();
-//        System.out.println("Sum of phi vector is " + sumOfPhi);
-//      logger.debug("Sum of phi vector is {}", sumOfPhi);
 
         if (rating > 1) {
             phi.mapMultiplyToSelf(rating);

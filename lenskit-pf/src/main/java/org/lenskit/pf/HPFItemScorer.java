@@ -45,13 +45,13 @@ public class HPFItemScorer extends AbstractItemScorer {
     private static Logger logger = LoggerFactory.getLogger(HPFItemScorer.class);
 
     private final HPFModel model;
-    private final boolean isProbPredition;
+    private final boolean isProbPrediction;
 
     @Inject
     public HPFItemScorer(HPFModel mod,
-                         @IsProbabilityPrediciton boolean probPred) {
+                         @IsProbabilityPrediction boolean probPred) {
         model = mod;
-        isProbPredition = probPred;
+        isProbPrediction = probPred;
     }
 
     @Nonnull
@@ -69,8 +69,7 @@ public class HPFItemScorer extends AbstractItemScorer {
             RealVector ivec = model.getItemVector(item);
             if (ivec != null) {
                 double score = uvec.dotProduct(ivec);
-//                logger.info("Predicted score is {}", score);
-                if (isProbPredition) {
+                if (isProbPrediction) {
                     score = 1 - Math.exp(-score);
                 }
                 results.add(Results.create(item, score));

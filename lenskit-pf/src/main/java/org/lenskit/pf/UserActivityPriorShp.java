@@ -30,11 +30,16 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * The shape parameter of the prior distribution of the user activity.
+ *
+ * Poisson Factorization models the prior distribution of the user activity as a Gamma distribution.
+ */
 @Documented
 @DefaultDouble(0.3)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UserActivityShpPrior {
+public @interface UserActivityPriorShp {
 }

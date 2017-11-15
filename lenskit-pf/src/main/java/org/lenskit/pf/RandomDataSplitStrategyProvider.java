@@ -82,81 +82,13 @@ public class RandomDataSplitStrategyProvider implements Provider<DataSplitStrate
         logger.info("validation set size: {} ratings", validationSize);
         Collections.shuffle(allRatings, random);
         List<RatingMatrixEntry> subList = allRatings.subList(0, validationSize);
-//        IntSet randomIndices = new IntOpenHashSet();
-//        while (randomIndices.size() < validationSize) {
-//            randomIndices.add(random.nextInt(size));
-//        }
-//
-//        List<RatingMatrixEntry> validationRatings = new ArrayList<>();
-//        Iterator<Integer> iter = randomIndices.iterator();
-//        while (iter.hasNext()) {
-//            int index = iter.next();
-//            validationRatings.add(allRatings.get(index));
-//        }
 
         final List<RatingMatrixEntry> validationRatings = ImmutableList.copyOf(subList);
         subList.clear();
         logger.info("validation rating size: {}", validationRatings.size());
-//        Int2ObjectMap<Int2DoubleMap> trainingRatings = new Int2ObjectOpenHashMap<>();
-//        Int2ObjectMap<IntSet> userItemIndices = new Int2ObjectOpenHashMap<>();
-//        Iterator<RatingMatrixEntry> ratingIter = allRatings.iterator();
-//        while (ratingIter.hasNext()) {
-//            RatingMatrixEntry e = ratingIter.next();
-//            int userIndex = e.getUserIndex();
-//            int itemIndex = e.getItemIndex();
-//            double rating = e.getValue();
-//
-//            if (rating > 0) {
-//                Int2DoubleMap itemRatings = trainingRatings.get(itemIndex);
-//                if (itemRatings == null) itemRatings = new Int2DoubleOpenHashMap();
-//                itemRatings.put(userIndex, rating);
-//                trainingRatings.put(itemIndex, itemRatings);
-
-//                IntSet userItems = userItemIndices.get(userIndex);
-//                if (userItems == null) userItems = new IntOpenHashSet();
-//                userItems.add(itemIndex);
-//                userItemIndices.put(userIndex, userItems);
-//            }
-//
-//        }
-//        for (int i = 0; i < size; i++) {
-//            RatingMatrixEntry e = allRatings.get(i);
-//            if (!randomIndices.contains(i)) {
-//                int userIndex = e.getUserIndex();
-//                int itemIndex = e.getItemIndex();
-//                double rating = e.getValue();
-//
-//                if (rating > 0) {
-//                    Int2DoubleMap itemRatings = trainingRatings.get(itemIndex);
-//                    if (itemRatings == null) itemRatings = new Int2DoubleOpenHashMap();
-//                    itemRatings.put(userIndex, rating);
-//                    trainingRatings.put(itemIndex, itemRatings);
-//
-//                    IntSet userItems = userItemIndices.get(userIndex);
-//                    if (userItems == null) userItems = new IntOpenHashSet();
-//                    userItems.add(itemIndex);
-//                    userItemIndices.put(userIndex, userItems);
-//                }
-//            }
-//        }
 
         final KeyIndex userIndex = snapshot.userIndex();
         final KeyIndex itemIndex = snapshot.itemIndex();
-//        Int2ObjectMap<ImmutableSet<Integer>> userItems = new Int2ObjectOpenHashMap<>();
-//
-//        Iterator<Map.Entry<Integer,IntSet>> userItemsIter = userItemIndices.entrySet().iterator();
-//        while (userItemsIter.hasNext()) {
-//            Map.Entry<Integer,IntSet> entry = userItemsIter.next();
-//            int user = entry.getKey();
-//            IntSet itemInds = entry.getValue();
-//            ImmutableSet<Integer> items = ImmutableSet.copyOf(itemInds);
-//            userItems.put(user, items);
-//            userItemsIter.remove();
-//        }
-
-//        final int exampleItemNum = trainingRatings.keySet().iterator().nextInt();
-//        logger.info("Training Rating examples: item {} ratings {} ", exampleItemNum, trainingRatings.get(exampleItemNum));
-//        logger.info("validation ratings {}", validationRatings);
 
         return new RandomDataSplitStrategy(allRatings, validationRatings, userIndex, itemIndex);
     }

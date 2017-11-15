@@ -30,6 +30,11 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * The prior mean of item popularity.
+ *
+ * Poisson Factorization models the prior distribution of the item popularity as a Gamma distribution.
+ */
 @Documented
 @DefaultDouble(1.0)
 @Parameter(Double.class)

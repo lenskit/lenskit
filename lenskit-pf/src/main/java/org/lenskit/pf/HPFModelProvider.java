@@ -28,7 +28,9 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.special.Gamma;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.StoppingThreshold;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 
 import org.lenskit.data.ratings.RatingMatrixEntry;
@@ -43,13 +45,12 @@ import javax.inject.Provider;
 import java.util.*;
 
 /**
- * HPF recommender builder based on the paper "Scalable Recommendation with Poisson Factorization".
+ * Sequential Implementation of HPF recommender builder.
  *
  * <p>
  * This recommender builder constructs an hierarchical Poisson matrix factorization recommender(HPF)
- * using a mean-field variational inference algorithm.
- * These are documented in
- * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.
+ * using a mean-field variational inference algorithm. These are documented in
+ * <a href="https://arxiv.org/abs/1311.1704">Original paper: Scalable Recommendation with Poisson Factorization</a>.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -57,33 +58,36 @@ public class HPFModelProvider implements Provider<HPFModel> {
     private static Logger logger = LoggerFactory.getLogger(HPFModelProvider.class);
 
     private final DataSplitStrategy ratings;
-    private final StoppingCondition stoppingCondition;
     private final PFHyperParameters hyperParameters;
     private final int iterationFrequency;
     private final double maxOffsetShp;
     private final double maxOffsetRte;
     private final long rndSeed;
     private final boolean isProbPredition;
+    private final double threshold;
+    private final int maxIterCount;
 
 
     @Inject
     public HPFModelProvider(@Transient DataSplitStrategy rndRatings,
-                            StoppingCondition stop,
                             PFHyperParameters hyperParams,
                             @ConvergenceCheckFrequency int iterFreq,
                             @RandomSeed int seed,
                             @MaxRandomOffsetForShape double maxOffS,
                             @MaxRandomOffsetForRate double maxOffR,
-                            @IsProbabilityPrediciton boolean probPred) {
+                            @IsProbabilityPrediction boolean probPred,
+                            @StoppingThreshold double threshld,
+                            @IterationCount int maxIter) {
 
         ratings = rndRatings;
-        stoppingCondition = stop;
         hyperParameters = hyperParams;
         iterationFrequency = iterFreq;
         rndSeed = seed;
         maxOffsetShp = maxOffS;
         maxOffsetRte = maxOffR;
         isProbPredition = probPred;
+        threshold = threshld;
+        maxIterCount = maxIter;
     }
 
     @Override
@@ -121,14 +125,13 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
         final List<RatingMatrixEntry> train = ratings.getTrainRatings();
         final List<RatingMatrixEntry> validation = ratings.getValidationRatings();
-        TrainingLoopController controller = stoppingCondition.newLoop();
         double avgPLLPre = Double.MAX_VALUE;
         double avgPLLCurr = 0.0;
         double diffPLL = 1.0;
+        int iterCount = 1;
 
-        while (controller.keepTraining(diffPLL)) {
+        while (iterCount < maxIterCount && diffPLL > threshold) {
 
-            int iterCount = controller.getIterationCount();
             // update phi
             Iterator<RatingMatrixEntry> allUIPairs = train.iterator();
             while (allUIPairs.hasNext()) {
@@ -149,9 +152,6 @@ public class HPFModelProvider implements Provider<HPFModel> {
                     phiUI.setEntry(k, phiUIK);
                 }
                 logNormalize(phiUI);
-//                double sumOfPhi = phiUI.getL1Norm();
-//                logger.debug("Sum of phi vector is {}", sumOfPhi);
-
 
                 if (ratingUI > 1) {
                     phiUI.mapMultiplyToSelf(ratingUI);
@@ -166,7 +166,6 @@ public class HPFModelProvider implements Provider<HPFModel> {
 
             }
             logger.info("iteration {} first phrase update finished", iterCount);
-
 
             RealVector gammaRteSecondTerm = MatrixUtils.createRealVector(new double[featureCount]);
             for (int k = 0; k < featureCount; k++) {
@@ -272,10 +271,8 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 diffPLL = Math.abs((avgPLLCurr - avgPLLPre) / avgPLLPre);
                 avgPLLPre = avgPLLCurr;
                 logger.info("iteration {} with current average predictive log likelihood {} and the change is {}", iterCount, avgPLLCurr, diffPLL);
-//                System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "} and the change is {" + diffPLL + "}");
             }
-//            System.out.println("iteration {" + iterCount + "} with average predictive log likelihood {" + avgPLLCurr + "}");
-
+            iterCount++;
         }
 
         // construct feature matrix used by HPFModel
@@ -336,8 +333,6 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 double valueRte = aPrime + maxOffsetRte*random.nextDouble();
                 gammaShp.setEntry(u, k, valueShp);
                 gammaRte.setEntry(u, k, valueRte);
-//                valueRte = gammaRte.getEntry(0, k);// make rate parameter have
-//                gammaRte.setEntry(u, k, valueRte); // same initials cross user delete these two line
             }
 
             double kShp = aPrime + maxOffsetShp*random.nextDouble();
@@ -351,8 +346,6 @@ public class HPFModelProvider implements Provider<HPFModel> {
                 double valueRte = cPrime + maxOffsetRte*random.nextDouble();
                 lambdaShp.setEntry(i, k, valueShp);
                 lambdaRte.setEntry(i, k, valueRte);
-//                valueRte = lambdaRte.getEntry(0, k); // make rate parameter have
-//                lambdaRte.setEntry(i, k, valueRte); // same initials cross user delete these two line
             }
             double tShp = cPrime + maxOffsetShp*random.nextDouble();
             tauRte.setEntry(i, tRte);

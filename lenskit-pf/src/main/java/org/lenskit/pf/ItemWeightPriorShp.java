@@ -31,14 +31,10 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * The shape parameter of the prior distribution of item attributes.
+ * The shape parameter of the prior distribution (Gamma distribution) of each item attribute.
  *
- * Poisson Factorization models each item as a vector of K latent attributes,
- * and each user as a vector of K latent preferences.  
- *
- * Each rating is modeled as a Poisson distribution,
- * and the rate of the Poisson distribution is the inner product of the item latent vector and
- * the user latent vector.
+ * Poisson Factorization models each item as a vector of K latent attributes.
+ * The prior distribution of each element of the latent vector is modeled as a Gamma distribution.
  */
 @Documented
 @DefaultDouble(0.3)
@@ -46,5 +42,5 @@ import java.lang.annotation.*;
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ItemWeightShpPrior {
+public @interface ItemWeightPriorShp {
 }

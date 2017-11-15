@@ -30,6 +30,11 @@ import org.lenskit.inject.Parameter;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * The prior mean of user activity.
+ *
+ * Poisson Factorization models the prior distribution of the user activity as a Gamma distribution.
+ */
 @Documented
 @DefaultDouble(1.0)
 @Parameter(Double.class)

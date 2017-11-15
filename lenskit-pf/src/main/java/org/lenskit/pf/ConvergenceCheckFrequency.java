@@ -31,7 +31,7 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * The number of frequency used to compute the convergence condition (average predictive log likelihood of validation ratings)
+ * How frequently to test for convergence
  */
 @Documented
 @DefaultInteger(10)

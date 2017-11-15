@@ -94,10 +94,8 @@ public class HPFRecommenderBuildTest {
                 .to(PackedRatingMatrix.class);
         config.bind(ItemScorer.class)
                 .to(HPFItemScorer.class);
-        config.bind(StoppingCondition.class)
-                .to(AbsErrorStoppingCondition.class);
-//        config.bind(HPFModel.class)
-//                .toProvider(HPFModelProvider.class);
+        config.bind(HPFModel.class)
+                .toProvider(HPFModelProvider.class);
         config.set(ConvergenceCheckFrequency.class)
                 .to(2);
         config.set(StoppingThreshold.class)
@@ -106,12 +104,12 @@ public class HPFRecommenderBuildTest {
                 .to(5);
         config.set(SplitProportion.class)
                 .to(0.1);
-        config.set(RandomSeed.class)
-                .to(System.currentTimeMillis());
+//        config.set(RandomSeed.class)
+//                .to(System.currentTimeMillis());
         config.set(IterationCount.class)
-                .to(10);
-//        config.set(IsProbabilityPrediciton.class)
-//                .to(false);
+                .to(1000);
+        config.set(IsProbabilityPrediction.class)
+                .to(false);
 
         return LenskitRecommenderEngine.build(config, dao);
     }

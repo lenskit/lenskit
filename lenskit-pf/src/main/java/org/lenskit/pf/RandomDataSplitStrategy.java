@@ -35,7 +35,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * A implementation of DataSplitStrategy using randomly split rating data into training data and validation
+ * An implementation of DataSplitStrategy using randomly split rating data into training data and validation
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

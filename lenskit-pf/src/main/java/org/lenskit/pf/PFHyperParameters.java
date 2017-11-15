@@ -50,11 +50,11 @@ public final class PFHyperParameters implements Serializable {
 
 
     @Inject
-    public PFHyperParameters(@UserWeightShpPrior double a,
-                             @UserActivityShpPrior double aP,
+    public PFHyperParameters(@UserWeightPriorShp double a,
+                             @UserActivityPriorShp double aP,
                              @UserActivityPriorMean double bP,
-                             @ItemWeightShpPrior double c,
-                             @ItemActivityShpPrior double cP,
+                             @ItemWeightPriorShp double c,
+                             @ItemActivityPriorShp double cP,
                              @ItemActivityPriorMean double dP,
                              @FeatureCount int k) {
         userWeightShpPrior = a;

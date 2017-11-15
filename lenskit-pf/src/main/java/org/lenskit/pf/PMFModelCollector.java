@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 
-public class PMFModelCollector implements Collector<PMFModel.ModelEntry, PMFModel, PMFModel> {
+class PMFModelCollector implements Collector<PMFModel.ModelEntry, PMFModel, PMFModel> {
     @Override
     public Supplier<PMFModel> supplier() {
         return PMFModel::new;
