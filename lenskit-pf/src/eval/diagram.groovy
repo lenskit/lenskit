@@ -22,14 +22,19 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-rootProject.name = 'lenskit'
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict', 'lenskit-pf'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+
+import org.grouplens.lenskit.iterative.IterationCount
+import org.lenskit.api.ItemScorer
+import org.lenskit.pf.HPFItemScorer
+import org.lenskit.mf.funksvd.FeatureCount
+import org.lenskit.mf.svd.*
+
+dumpGraph {
+    output "${config.analysisDir}/pf.dot"
+    algorithm {
+        bind ItemScorer to HPFItemScorer
+        set IterationCount to 100
+        set FeatureCount to 100
+    }
+}

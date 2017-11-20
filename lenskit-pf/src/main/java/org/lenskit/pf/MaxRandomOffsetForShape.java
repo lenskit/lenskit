@@ -22,14 +22,22 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-rootProject.name = 'lenskit'
+package org.lenskit.pf;
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict', 'lenskit-pf'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+import org.grouplens.grapht.annotation.DefaultDouble;
+import org.lenskit.inject.Parameter;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
+/**
+ * Max value of the random offset when initializing the shape parameters
+ */
+@Documented
+@DefaultDouble(0.01)
+@Parameter(Double.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MaxRandomOffsetForShape {
+}

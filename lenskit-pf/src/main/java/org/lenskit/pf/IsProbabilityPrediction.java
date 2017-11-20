@@ -22,14 +22,22 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-rootProject.name = 'lenskit'
+package org.lenskit.pf;
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict', 'lenskit-pf'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+import org.grouplens.grapht.annotation.DefaultBoolean;
+import org.lenskit.inject.Parameter;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
+/**
+ * Select either using poisson probability as prediction or using rate of poisson distribution as prediction
+ */
+@Documented
+@DefaultBoolean(true)
+@Parameter(Boolean.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface IsProbabilityPrediction {
+}

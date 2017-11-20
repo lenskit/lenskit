@@ -22,14 +22,40 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-rootProject.name = 'lenskit'
+package org.lenskit.pf;
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict', 'lenskit-pf'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+
+
+class PMFModelCollector implements Collector<PMFModel.ModelEntry, PMFModel, PMFModel> {
+    @Override
+    public Supplier<PMFModel> supplier() {
+        return PMFModel::new;
+    }
+
+    @Override
+    public BiConsumer<PMFModel, PMFModel.ModelEntry> accumulator() {
+        return (PMFModel::addEntry);
+    }
+
+    @Override
+    public BinaryOperator<PMFModel> combiner() {
+        return (PMFModel::addAll);
+    }
+
+    @Override
+    public Function<PMFModel, PMFModel> finisher() {
+        return Function.identity();
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+        return EnumSet.of(Characteristics.UNORDERED, Characteristics.IDENTITY_FINISH);
+    }
+}

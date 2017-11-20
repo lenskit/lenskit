@@ -22,14 +22,38 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-rootProject.name = 'lenskit'
+package org.lenskit.pf;
 
-include 'lenskit-test'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict', 'lenskit-pf'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.lenskit.data.ratings.RatingMatrixEntry;
+import org.lenskit.util.keys.KeyIndex;
+
+import java.util.List;
+
+/**
+ * Strategy of splitting ratings data into training data and validation data.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@DefaultImplementation(RandomDataSplitStrategy.class)
+public interface DataSplitStrategy {
+
+    /**
+     * Get a list of item ratings
+     *
+     * @return The training list of RatingMatrixEntry
+     */
+    List<RatingMatrixEntry> getTrainRatings();
+
+    /**
+     * Get a list of validation ratings
+     *
+     * @return The validation list of RatingMatrixEntry
+     */
+    List<RatingMatrixEntry> getValidationRatings();
+
+
+    KeyIndex getUserIndex();
+
+    KeyIndex getItemIndex();
+}
