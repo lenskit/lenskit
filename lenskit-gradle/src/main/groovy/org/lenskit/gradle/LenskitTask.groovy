@@ -24,7 +24,7 @@
  */
 package org.lenskit.gradle
 
-import org.gradle.api.provider.PropertyState
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.StopExecutionException
 import org.gradle.internal.nativeintegration.console.ConsoleDetector
@@ -45,22 +45,22 @@ abstract class LenskitTask extends JavaExec {
     /**
      * The maximum memory the LensKit task should use.  Defaults to {@link LenskitExtension#getMaxMemory()}.
      */
-    final PropertyState<String> maxMemory = project.property(String)
+    final Property<String> maxMemory = project.objects.property(String)
 
     /**
      * The log file.  Defaults to no log file.
      */
-    final PropertyState<String> logFile = project.property(String)
+    final Property<File> logFile = project.objects.property(File)
 
     /**
      * The output logging level.
      */
-    final PropertyState<String> logLevel = project.property(String)
+    final Property<String> logLevel = project.objects.property(String)
 
     /**
      * The log file output level..
      */
-    final PropertyState<String> logFileLevel = project.property(String)
+    final Property<String> logFileLevel = project.objects.property(String)
 
     /**
      * A Logback configuration file.  If specified, its content overrides all other logging-related options.
@@ -159,7 +159,7 @@ abstract class LenskitTask extends JavaExec {
     List<String> getArgs() {
         def args = []
         if (logFile.isPresent()) {
-            args << '--log-file' << project.file(logFile.get())
+            args << '--log-file' << logFile.get()
         }
         if (logFileLevel.isPresent()) {
             args << '--log-file-level' << logFileLevel.get()
@@ -167,5 +167,25 @@ abstract class LenskitTask extends JavaExec {
         args.add getCommand()
         args.addAll getCommandArgs()
         return args
+    }
+
+    void logLevel(String mm) {
+        logger.warn('setting property logLevel of {} without assignment operator is deprecated', getClass())
+        this.logLevel.set(mm)
+    }
+
+    void logFileLevel(String mm) {
+        logger.warn('setting property logFileLevel of {} without assignment operator is deprecated', getClass())
+        this.logFileLevel.set(mm)
+    }
+
+    void logFile(Object lf) {
+        logger.warn('setting property logFile of {} without assignment operator is deprecated', getClass())
+        this.logFile.set(project.file(lf))
+    }
+
+    void maxMemory(String mm) {
+        logger.warn('setting property maxMemory of {} without assignment operator is deprecated', getClass())
+        this.maxMemory.set(mm)
     }
 }

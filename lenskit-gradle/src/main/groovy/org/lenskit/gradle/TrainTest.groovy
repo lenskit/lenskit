@@ -26,7 +26,7 @@ package org.lenskit.gradle
 
 import com.google.common.io.Files
 import groovy.json.JsonOutput
-import org.gradle.api.provider.PropertyState
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.util.ConfigureUtil
@@ -45,37 +45,37 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The output file for recommendation output.
      */
-    final PropertyState<Object> outputFile = project.property(Object)
+    final Property<Object> outputFile = project.objects.property(Object)
 
     /**
      * The user output file for recommendation output.
      */
-    def userOutputFile
+    final Property<Object> userOutputFile = project.objects.property(Object)
 
     /**
      * The cache directory for the recommender.
      */
-    def cacheDirectory
+    final Property<Object> cacheDirectory = project.objects.property(Object)
 
     /**
      * The thread count for the evaluator.
      */
-    final PropertyState<Integer> threadCount = project.property(Integer)
+    final Property<Integer> threadCount = project.objects.property(Integer)
 
     /**
      * Then number of parallel tasks to allow.
      */
-    final PropertyState<Integer> parallelTasks = project.property(Integer)
+    final Property<Integer> parallelTasks = project.objects.property(Integer)
 
     /**
      * Configure whether the evaluator should share model components between algorithms.
      */
-    def boolean shareModelComponents = true
+    final Property<Boolean> shareModelComponents = project.objects.property(Boolean)
 
     /**
      * Configure whether the evaluation will continue after errors.
      */
-    def boolean continueAfterError = false
+    final Property<Boolean> continueAfterError = project.objects.property(Boolean)
 
     private Map<String,Object> algorithms = new HashMap<>()
     private List<Callable> dataSets = []
@@ -84,10 +84,13 @@ class TrainTest extends LenskitTask implements GradleUtils {
     /**
      * The file name for writing out the experiment description. Do not change unless absolutely necessary.
      */
-    final PropertyState<File> specFile = project.property(File)
+    final Property<File> specFile = project.objects.property(File)
 
     public TrainTest() {
         threadCount.set(project.extensions.getByType(LenskitExtension).threadCount)
+        shareModelComponents.set(true)
+        continueAfterError.set(false)
+
         parallelTasks.set project.provider({
             (project.findProperty('lenskit.parallelTasks') ?: '0') as Integer
         })
@@ -113,7 +116,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
      */
     void dataSet(Object ds) {
         inputs.file ds
-        dataSets.add({makeUrl(ds, getSpecFile())})
+        dataSets.add({makeUrl(ds, specFile.get())})
     }
 
     /**
@@ -133,8 +136,8 @@ class TrainTest extends LenskitTask implements GradleUtils {
         def set = new DataSetConfig(project)
         ConfigureUtil.configure(block, set)
         dataSets.add({[name: set.name,
-                       test: makeUrl(set.testSource, getSpecFile()),
-                       train: makeUrl(set.trainSource, getSpecFile())]})
+                       test: makeUrl(set.testSource, specFile.get()),
+                       train: makeUrl(set.trainSource, specFile.get())]})
     }
 
     /**
@@ -164,7 +167,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
             }
         } else {
             dataSets.add {
-                makeUrl(cf.dataSetFile, getSpecFile())
+                makeUrl(cf.dataSetFile, specFile.get())
             }
         }
     }
@@ -225,15 +228,15 @@ class TrainTest extends LenskitTask implements GradleUtils {
     @Input
     def getJson() {
         def json = [output_file           : makeUrl(outputFile.get(), specFile.get()),
-                    user_output_file      : makeUrl(getUserOutputFile(), specFile.get()),
-                    cache_directory       : makeUrl(getCacheDirectory(), specFile.get()),
+                    user_output_file      : makeUrl(userOutputFile.getOrNull(), specFile.get()),
+                    cache_directory       : makeUrl(cacheDirectory.getOrNull(), specFile.get()),
                     thread_count          : threadCount.get(),
                     parallel_tasks        : parallelTasks.get(),
-                    share_model_components: getShareModelComponents(),
-                    continue_after_error  : getContinueAfterError()]
+                    share_model_components: shareModelComponents.get(),
+                    continue_after_error  : continueAfterError.get()]
         json.datasets = dataSets.collect {it.call()}
         json.algorithms = algorithms.collectEntries {k, v ->
-            [k, makeUrl(v, getSpecFile())]
+            [k, makeUrl(v, specFile.get())]
         }
         json.tasks = evalTasks.collect({it.json})
 
@@ -247,7 +250,7 @@ class TrainTest extends LenskitTask implements GradleUtils {
 
     @OutputFiles
     public Set<File> getOutputFiles() {
-        Set files = [outputFile, userOutputFile].findAll().collect { project.file(it) }
+        Set files = [outputFile.getOrNull(), userOutputFile.getOrNull()].findAll().collect { project.file(it) }
         files.addAll(evalTasks.collect({it.outputFile}).findAll().collect {
             project.file(it)
         })
@@ -265,6 +268,48 @@ class TrainTest extends LenskitTask implements GradleUtils {
     @Override
     List getCommandArgs() {
         def args = []
-        args << getSpecFile()
+        args << specFile.get()
+    }
+
+    @Deprecated
+    void threadCount(int x) {
+        logger.warn("Setting TrainTest threadCount without assignment is deprecated")
+        threadCount.set(x)
+    }
+
+    @Deprecated
+    void parallelTasks(int x) {
+        logger.warn("Setting TrainTest parallelTasks without assignment is deprecated")
+        parallelTasks.set(x)
+    }
+
+    @Deprecated
+    void outputFile(obj) {
+        logger.warn("Setting TrainTest outputFile without assignment is deprecated")
+        outputFile.set(obj)
+    }
+
+    @Deprecated
+    void userOutputFile(obj) {
+        logger.warn("Setting TrainTest userOutputFile without assignment is deprecated")
+        userOutputFile.set(obj)
+    }
+
+    @Deprecated
+    void cacheDirectory(obj) {
+        logger.warn("Setting TrainTest cacheDirectory without assignment is deprecated")
+        cacheDirectory.set(obj)
+    }
+
+    @Deprecated
+    void shareModelComponents(boolean v) {
+        logger.warn("Setting TrainTest shareModelComponents without assignment is deprecated")
+        shareModelComponents.set(v)
+    }
+
+    @Deprecated
+    void continueAfterError(boolean v) {
+        logger.warn("Setting TrainTest continueAfterError without assignment is deprecated")
+        continueAfterError.set(v)
     }
 }

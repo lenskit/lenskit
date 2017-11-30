@@ -29,6 +29,7 @@ import org.apache.commons.lang3.text.StrMatcher
 import org.apache.commons.lang3.text.StrTokenizer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.PropertyState
 import org.joda.convert.StringConvert
 import org.slf4j.Logger
@@ -61,13 +62,13 @@ public class LenskitPlugin implements Plugin<Project> {
                 logger.info 'setting property {} to {}', prjProp, val
                 def type = prop.type
                 def set = { v -> prop.setProperty(lenskit, v) }
-                if (type == PropertyState) {
+                if (type == Property) {
                     def m = lenskit.class.getMethod("get${prop.name.capitalize()}")
                     def t = m.getGenericReturnType()
-                    def args = TypeUtils.getTypeArguments(t, PropertyState)
-                    def rt = args.get(PropertyState.getTypeParameters()[0])
+                    def args = TypeUtils.getTypeArguments(t, Property)
+                    def rt = args.get(Property.getTypeParameters()[0])
                     type = TypeUtils.getRawType(rt, Object)
-                    set = { v -> (prop.getProperty(lenskit) as PropertyState).set(v) }
+                    set = { v -> (prop.getProperty(lenskit) as Property).set(v) }
                 }
                 if (prop.type == List) { // if the type is list update the val using strtokenizer
                     StrTokenizer tok = new StrTokenizer(val as String,

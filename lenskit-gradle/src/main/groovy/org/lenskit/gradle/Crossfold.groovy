@@ -25,7 +25,7 @@
 package org.lenskit.gradle
 
 import groovy.json.JsonOutput
-import org.gradle.api.provider.PropertyState
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -42,7 +42,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
-    final PropertyState<String> outputDir = project.property(String)
+    final Property<Object> outputDir = project.objects.property(Object)
     private Object source
     private Object srcFile
     private List<String> userPartitionArgs = []
@@ -50,7 +50,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     def Integer sampleSize
     def Integer partitionCount
     def String outputFormat
-    final PropertyState<String> dataSetName = project.property(String)
+    final Property<String> dataSetName = project.objects.property(String)
     @Deprecated
     def boolean includeTimestamps = true
 
@@ -73,6 +73,18 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     void input(Map spec) {
         source = spec
+    }
+
+    @Deprecated
+    void outputDir(Object dir) {
+        logger.warn("Setting Crossfold property outputDir without assignment operator is deprecated")
+        outputDir.set(dir)
+    }
+
+    @Deprecated
+    void dataSetName(String name) {
+        logger.warn("Setting Crossfold property dataSetName without assignment operator is deprecated")
+        dataSetName.set(name)
     }
 
     /**

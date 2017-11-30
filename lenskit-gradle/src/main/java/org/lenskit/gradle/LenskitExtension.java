@@ -27,8 +27,11 @@ package org.lenskit.gradle;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.provider.PropertyState;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.Property;
 import org.gradle.process.JavaForkOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,16 +59,25 @@ import java.util.List;
  * @see http://mooc.lenskit.org/documentation/evaluator/gradle/
  */
 public class LenskitExtension {
+    private static final Logger logger = LoggerFactory.getLogger(LenskitExtension.class);
+    private final Property<Integer> threadCount;
+    private final Property<String> maxMemory;
+    private final ConfigurableFileCollection classpath;
+    private final Property<String> logLevel;
+    private final Property<String> logFileLevel;
+    private final Property<List<String>> jvmArgs;
+
     @SuppressWarnings("unchecked")
     public LenskitExtension(Project project) {
-        threadCount = project.property(Integer.class);
+        ObjectFactory objF = project.getObjects();
+        threadCount = objF.property(Integer.class);
         threadCount.set(0);
-        maxMemory = project.property(String.class);
+        maxMemory = objF.property(String.class);
         classpath = project.files();
-        logLevel = project.property(String.class);
+        logLevel = objF.property(String.class);
         logLevel.set("INFO");
-        logFileLevel = project.property(String.class);
-        jvmArgs = project.property((Class) List.class);
+        logFileLevel = objF.property(String.class);
+        jvmArgs = objF.property((Class) List.class);
     }
 
     /**
@@ -81,56 +93,77 @@ public class LenskitExtension {
         jvmArgs.set(DefaultGroovyMethods.plus(list, Arrays.asList(val)));
     }
 
-    public final PropertyState<Integer> getThreadCount() {
-        return threadCount;
-    }
-
-    public final PropertyState<String> getMaxMemory() {
-        return maxMemory;
-    }
-
-    public final ConfigurableFileCollection getClasspath() {
-        return classpath;
-    }
-
-    public final PropertyState<String> getLogLevel() {
-        return logLevel;
-    }
-
-    public final PropertyState<String> getLogFileLevel() {
-        return logFileLevel;
-    }
-
-    public final PropertyState<List<String>> getJvmArgs() {
-        return jvmArgs;
-    }
-
     /**
      * The maximum number of threads LensKit should use.  Defaults to 0, which instructs LensKit to use all available
      * threads.
      */
-    private final PropertyState<Integer> threadCount;
+    public final Property<Integer> getThreadCount() {
+        return threadCount;
+    }
+
+    @Deprecated
+    public void threadCount(Integer tc) {
+        logger.warn("DEPRECATION: LensKit property threadCount should be set with the assignment operator (=)");
+        threadCount.set(tc);
+    }
+
     /**
      * The maximum heap size for the LensKit JVM.  Defaults to `null` (no specfied heap size).
      *
      * @see JavaForkOptions#setMaxHeapSize(String)
      */
-    private final PropertyState<String> maxMemory;
+    public final Property<String> getMaxMemory() {
+        return maxMemory;
+    }
+
+    @Deprecated
+    public void maxMemory(String mem) {
+        logger.warn("DEPRECATION: LensKit property maxMemory should be set with the assignment operator (=)");
+        maxMemory.set(mem);
+    }
+
     /**
      * The classpath to use for LensKit.  Defaults to the runtime classpath of the `main` source set.
      */
-    private final ConfigurableFileCollection classpath;
+    public final ConfigurableFileCollection getClasspath() {
+        return classpath;
+    }
+
+    public void classpath(Object... args) {
+        classpath.setFrom(args);
+    }
+
     /**
      * The log level to use.  Defaults to 'INFO'.
      */
-    private final PropertyState<String> logLevel;
+    public final Property<String> getLogLevel() {
+        return logLevel;
+    }
+
+    @Deprecated
+    public void logLevel(String tc) {
+        logger.warn("DEPRECATION: LensKit property logLevel should be set with the assignment operator (=)");
+        logLevel.set(tc);
+    }
+
     /**
      * The log level to use for log files.  Default is unset, resulting in the same level being applied to the console
      * and the log file.
      */
-    private final PropertyState<String> logFileLevel;
+    public final Property<String> getLogFileLevel() {
+        return logFileLevel;
+    }
+
+    @Deprecated
+    public void logFileLevel(String tc) {
+        logger.warn("DEPRECATION: LensKit property logFileLevel should be set with the assignment operator (=)");
+        logFileLevel.set(tc);
+    }
+
     /**
      * List of JVM arguments to use for LensKit actions.
      */
-    private final PropertyState<List<String>> jvmArgs;
+    public final Property<List<String>> getJvmArgs() {
+        return jvmArgs;
+    }
 }
