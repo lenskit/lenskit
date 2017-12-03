@@ -26,10 +26,10 @@ apply from: "$rootDir/gradle/maven.gradle"
 apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
-    compile project(':lenskit-core')
+    compile project(':lenskit-mf')
 }
 
 meta {
-    name 'LensKit SVD CF'
-    description 'Matrix factorization collaborative filtering for LensKit'
+    name 'LensKit SVD CF (old name)'
+    description 'Compatibility shim for lenskit-mf'
 }
