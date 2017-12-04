@@ -25,12 +25,12 @@
 package org.lenskit.mf.funksvd;
 
 import com.google.common.collect.ImmutableList;
-import org.lenskit.mf.svd.MFModel;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
+import org.lenskit.mf.MFModel;
 import org.lenskit.util.keys.KeyIndex;
 
 import java.util.List;

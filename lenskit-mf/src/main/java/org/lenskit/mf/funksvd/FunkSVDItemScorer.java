@@ -27,7 +27,7 @@ package org.lenskit.mf.funksvd;
 import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.mf.svd.BiasedMFItemScorer;
+import org.lenskit.mf.BiasedMFItemScorer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

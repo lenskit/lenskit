@@ -27,7 +27,7 @@ package org.lenskit.pf;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.lenskit.mf.svd.MFModel;
+import org.lenskit.mf.MFModel;
 import org.lenskit.util.keys.KeyIndex;
 
 /**
