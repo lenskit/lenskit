@@ -34,8 +34,9 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
- * Do recommendations and predictions based on SVD matrix factorization.  This is simply a convenience class to make
- * it easy to get a FunkSVD scorer; it specializes the biased MF scorer to require a FunkSVD model.
+ * Do recommendations and predictions based on SVD matrix factorization.  This extends the {@link BiasedMFItemScorer}
+ * to default to using a FunkSVD model, and to clamp predicted ratings to the range of valid ratings (if a preference
+ * domain is configured).
  */
 public class FunkSVDItemScorer extends BiasedMFItemScorer {
     private final PreferenceDomain domain;
@@ -50,7 +51,8 @@ public class FunkSVDItemScorer extends BiasedMFItemScorer {
      * @param dom      The preference domain.
      */
     @Inject
-    public FunkSVDItemScorer(FunkSVDModel model, BiasModel baseline,
+    public FunkSVDItemScorer(FunkSVDModel model,
+                             BiasModel baseline,
                              @Nullable PreferenceDomain dom) {
         super(model, baseline);
         domain = dom;
