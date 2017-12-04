@@ -103,7 +103,7 @@ public final class FunkSVDUpdateRule implements Serializable {
         return stoppingCondition.newLoop();
     }
 
-    public FunkSVDUpdater createUpdater() {
-        return new FunkSVDUpdater(this);
+    public FunkSVDTrainingUpdater createUpdater() {
+        return new FunkSVDTrainingUpdater(this);
     }
 }

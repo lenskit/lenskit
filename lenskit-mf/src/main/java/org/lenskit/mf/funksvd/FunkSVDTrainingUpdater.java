@@ -44,7 +44,7 @@ import org.lenskit.data.ratings.PreferenceDomain;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class FunkSVDUpdater {
+public final class FunkSVDTrainingUpdater {
     private final FunkSVDUpdateRule updateRule;
 
     private double error;
@@ -53,7 +53,7 @@ public final class FunkSVDUpdater {
     private double sse;
     private int n;
 
-    FunkSVDUpdater(FunkSVDUpdateRule rule) {
+    FunkSVDTrainingUpdater(FunkSVDUpdateRule rule) {
         updateRule = rule;
     }
 

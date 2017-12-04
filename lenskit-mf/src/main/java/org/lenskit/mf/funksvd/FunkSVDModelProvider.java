@@ -188,7 +188,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
                                         double trail) {
         // We'll create a fresh updater for each feature iteration
         // Not much overhead, and prevents needing another parameter
-        FunkSVDUpdater updater = rule.createUpdater();
+        FunkSVDTrainingUpdater updater = rule.createUpdater();
 
         for (RatingMatrixEntry r : ratings) {
             final int uidx = r.getUserIndex();
