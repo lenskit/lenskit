@@ -24,12 +24,12 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.lenskit.mf.svd.BiasedMFItemScorer;
-import org.lenskit.mf.svd.DomainClampingKernel;
-import org.lenskit.mf.svd.DotProductKernel;
+import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.mf.svd.BiasedMFItemScorer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -38,6 +38,8 @@ import javax.inject.Inject;
  * it easy to get a FunkSVD scorer; it specializes the biased MF scorer to require a FunkSVD model.
  */
 public class FunkSVDItemScorer extends BiasedMFItemScorer {
+    private final PreferenceDomain domain;
+
     /**
      * Construct the item scorer.
      *
@@ -50,9 +52,22 @@ public class FunkSVDItemScorer extends BiasedMFItemScorer {
     @Inject
     public FunkSVDItemScorer(FunkSVDModel model, BiasModel baseline,
                              @Nullable PreferenceDomain dom) {
-        super(model,
-              dom == null ? new DotProductKernel() : new DomainClampingKernel(dom),
-              baseline);
+        super(model, baseline);
+        domain = dom;
+    }
+
+    @Override
+    protected double computeScore(double bias, @Nonnull RealVector user, @Nonnull RealVector item) {
+        if (domain == null) {
+            return super.computeScore(bias, user, item);
+        } else {
+            double result = bias;
+            int n = user.getDimension();
+            for (int i = 0; i < n; i++) {
+                result = domain.clampValue(result + user.getEntry(i) * item.getEntry(i));
+            }
+            return result;
+        }
     }
 
     @Override

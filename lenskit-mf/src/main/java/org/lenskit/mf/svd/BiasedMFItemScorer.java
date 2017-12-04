@@ -51,20 +51,16 @@ import java.util.List;
  */
 public class BiasedMFItemScorer extends AbstractItemScorer {
     private final MFModel model;
-    private final BiasedMFKernel kernel;
     private final BiasModel biasModel;
 
     /**
      * Create a new biased MF item scorer.
      * @param mod The model (factorized matrix)
-     * @param kern The kernel function to compute scores.
      * @param bias The bias model to use.
      */
     @Inject
-    public BiasedMFItemScorer(MFModel mod, BiasedMFKernel kern,
-                              BiasModel bias) {
+    public BiasedMFItemScorer(MFModel mod, BiasModel bias) {
         model = mod;
-        kernel = kern;
         biasModel = bias;
     }
 
@@ -79,6 +75,19 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
     @Nullable
     protected RealVector getUserPreferenceVector(long user) {
         return model.getUserVector(user);
+    }
+
+    /**
+     * Compute the score a user and item using their vectors.
+     *
+     * @param bias The combined user-item bias term (the baseline score, usually).
+     * @param user The user-factor vector.
+     * @param item The item-factor vector.
+     * @return The kernel function value (combined score).
+     * @throws IllegalArgumentException if the user and item vectors have different lengths.
+     */
+    protected double computeScore(double bias, @Nonnull RealVector user, @Nonnull RealVector item) {
+        return bias + user.dotProduct(item);
     }
 
     public MFModel getModel() {
@@ -102,7 +111,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
             long item = iter.nextLong();
             RealVector ivec = model.getItemVector(item);
             if (ivec != null) {
-                double score = kernel.apply(baselines.get(item), uvec, ivec);
+                double score = computeScore(baselines.get(item), uvec, ivec);
                 results.add(Results.create(item, score));
             }
         }

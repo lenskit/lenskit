@@ -74,7 +74,7 @@ public class BiasedMFItemScorerTest {
 
         model = new MFModel(umat, imat, uidx, iidx);
 
-        // scorer = new BiasedMFItemScorer(model, new DotProductKernel(), baseline);
+        // scorer = new BiasedMFItemScorer(model, baseline);
     }
 
     @Test
