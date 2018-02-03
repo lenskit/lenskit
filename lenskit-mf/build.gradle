@@ -23,16 +23,13 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
-    compile project(':lenskit-eval')
-    for (algo in ['knn', 'mf', 'predict', 'slopeone']) {
-        compile project(":lenskit-$algo")
-    }
 }
 
 meta {
-    name 'LensKit Metapackage'
-    description 'Metapackage to pull in all LensKit components.'
+    name 'LensKit Matrix Factorization'
+    description 'Matrix factorization algorithms for LensKit'
 }

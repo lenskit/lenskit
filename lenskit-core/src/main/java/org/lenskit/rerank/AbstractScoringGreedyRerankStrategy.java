@@ -35,7 +35,7 @@ import java.util.List;
  * Implements a method of selecting the maximum scoring item that satisfies a constraint
  * Has abstract methods for the method of choosing how many items to consider before returning the best candidate.
  * note - While this class does have code for hard constraints, it is not a good option for implementing only a hard
- * constraint, in those cases an {@link AbstractFilteringGreedyRerankStrategy should be used.
+ * constraint, in those cases an {@link AbstractFilteringGreedyRerankStrategy} should be used.
  *
  * @author Daniel Kluver
  */

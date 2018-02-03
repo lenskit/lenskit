@@ -22,17 +22,43 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-apply from: "$rootDir/gradle/maven.gradle"
+package org.lenskit.mf.svd;
 
-dependencies {
-    compile project(':lenskit-core')
-    compile project(':lenskit-eval')
-    for (algo in ['knn', 'mf', 'predict', 'slopeone']) {
-        compile project(":lenskit-$algo")
+import net.jcip.annotations.Immutable;
+import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.inject.Shareable;
+
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+
+/**
+ * Kernel function that uses the dot product of the user and item vectors.
+ *
+ * @since 2.1
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@Shareable
+@Immutable
+public class DotProductKernel implements BiasedMFKernel, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public double apply(double bias, @Nonnull RealVector user, @Nonnull RealVector item) {
+        return bias + user.dotProduct(item);
     }
-}
 
-meta {
-    name 'LensKit Metapackage'
-    description 'Metapackage to pull in all LensKit components.'
+    @Override
+    public int hashCode() {
+        return DotProductKernel.class.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o.getClass().equals(getClass());
+    }
+
+    @Override
+    public String toString() {
+        return "DotProductKernel()";
+    }
 }

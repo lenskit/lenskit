@@ -278,6 +278,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
                         }
 
                         @Override
+                        @SuppressWarnings({"rawtypes", "unchecked"})
                         public Attribute<?> next() {
                             if (hasNext()) {
                                 Object val = attrStores[i].get(position);
