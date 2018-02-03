@@ -27,7 +27,7 @@ import org.grouplens.lenskit.build.ListClasses
 /* Code to generate class lists. */
 task listClasses(type: ListClasses, group: 'build') {
     output "$sourceSets.main.output.resourcesDir/META-INF/classes.lst"
-    source sourceSets.main.output.classesDir
+    source compileJava
 }
 classes.dependsOn listClasses
 

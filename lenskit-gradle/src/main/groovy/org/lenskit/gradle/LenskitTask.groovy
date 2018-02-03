@@ -24,6 +24,7 @@
  */
 package org.lenskit.gradle
 
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.JavaExec
 import org.gradle.api.tasks.StopExecutionException
 import org.gradle.internal.nativeintegration.console.ConsoleDetector
@@ -44,22 +45,22 @@ abstract class LenskitTask extends JavaExec {
     /**
      * The maximum memory the LensKit task should use.  Defaults to {@link LenskitExtension#getMaxMemory()}.
      */
-    def String maxMemory
+    final Property<String> maxMemory = project.objects.property(String)
 
     /**
      * The log file.  Defaults to no log file.
      */
-    def logFile
+    final Property<File> logFile = project.objects.property(File)
 
     /**
      * The output logging level.
      */
-    def logLevel
+    final Property<String> logLevel = project.objects.property(String)
 
     /**
      * The log file output level..
      */
-    def logFileLevel
+    final Property<String> logFileLevel = project.objects.property(String)
 
     /**
      * A Logback configuration file.  If specified, its content overrides all other logging-related options.
@@ -84,18 +85,20 @@ abstract class LenskitTask extends JavaExec {
 
     LenskitTask() {
         def ext = project.extensions.getByType(LenskitExtension)
-        conventionMapping.jvmArgs = { ext.jvmArgs } // map jvmargs default to the jvmargs from the extension
-        conventionMapping.maxMemory = { ext.maxMemory }
-        conventionMapping.logLevel = { ext.logLevel }
-        conventionMapping.logFileLevel = { ext.logFileLevel }
-        conventionMapping.classpath = { ext.classpath ?: project.sourceSets.main.runtimeClasspath }
+        // map jvmargs default to the jvmargs from the extension with old logic
+        conventionMapping.jvmArgs = { ext.jvmArgs.getOrNull() ?: [] }
+        conventionMapping.classpath = { ext.classpath.isEmpty() ? project.sourceSets.main.runtimeClasspath : ext.classpath }
+        // use new logic for other things
+        maxMemory.set(ext.maxMemory)
+        logLevel.set(ext.logLevel)
+        logFileLevel.set(ext.logFileLevel)
     }
 
     /**
      * Apply the LensKit JVM settings to the invoker to prepare it for running.
      */
     protected void applyFinalSettings() {
-        def mem = getMaxMemory()
+        def mem = maxMemory.getOrNull()
         if (mem != null) {
             maxHeapSize = mem
         }
@@ -155,14 +158,34 @@ abstract class LenskitTask extends JavaExec {
     @Override
     List<String> getArgs() {
         def args = []
-        if (getLogFile() != null) {
-            args << '--log-file' << project.file(getLogFile())
+        if (logFile.isPresent()) {
+            args << '--log-file' << logFile.get()
         }
-        if (getLogFileLevel() != null) {
-            args << '--log-file-level' << getLogFileLevel()
+        if (logFileLevel.isPresent()) {
+            args << '--log-file-level' << logFileLevel.get()
         }
         args.add getCommand()
         args.addAll getCommandArgs()
         return args
+    }
+
+    void logLevel(String mm) {
+        logger.warn('setting property logLevel of {} without assignment operator is deprecated', getClass())
+        this.logLevel.set(mm)
+    }
+
+    void logFileLevel(String mm) {
+        logger.warn('setting property logFileLevel of {} without assignment operator is deprecated', getClass())
+        this.logFileLevel.set(mm)
+    }
+
+    void logFile(Object lf) {
+        logger.warn('setting property logFile of {} without assignment operator is deprecated', getClass())
+        this.logFile.set(project.file(lf))
+    }
+
+    void maxMemory(String mm) {
+        logger.warn('setting property maxMemory of {} without assignment operator is deprecated', getClass())
+        this.maxMemory.set(mm)
     }
 }

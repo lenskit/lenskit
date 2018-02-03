@@ -31,7 +31,7 @@ task crossfold(type: Crossfold) {
 task checkXF {
     dependsOn crossfold
     doLast {
-        assertThat(crossfold.maxMemory, nullValue())
+        assertThat(crossfold.maxMemory.getOrNull(), nullValue())
         assertThat("output directory exists",
                    file("$buildDir/crossfold.out").isDirectory())
         for (int i in 1..5) {

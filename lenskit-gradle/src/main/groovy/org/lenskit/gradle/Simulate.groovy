@@ -30,7 +30,6 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 
 class Simulate extends LenskitTask {
-    def File specFile
     private Object source
     private Object srcFile
     def output, extendedOutput
@@ -39,9 +38,6 @@ class Simulate extends LenskitTask {
     long rebuildPeriod = 60 * 60 * 24
 
     Simulate() {
-        conventionMapping.output = {
-            project.file("$project.buildDir/${name}-output.csv")
-        }
     }
 
     /**

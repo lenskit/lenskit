@@ -25,6 +25,7 @@
 package org.lenskit.gradle
 
 import groovy.json.JsonOutput
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -41,7 +42,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
-    def outputDir
+    final Property<Object> outputDir = project.objects.property(Object)
     private Object source
     private Object srcFile
     private List<String> userPartitionArgs = []
@@ -49,17 +50,17 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     def Integer sampleSize
     def Integer partitionCount
     def String outputFormat
-    def String dataSetName
+    final Property<String> dataSetName = project.objects.property(String)
     @Deprecated
     def boolean includeTimestamps = true
 
     public Crossfold() {
-        conventionMapping.outputDir = {
-            "$project.buildDir/${getDataSetName()}.out"
-        }
-        conventionMapping.dataSetName = {
+        outputDir.set project.provider({
+            "$project.buildDir/${dataSetName.get()}.out".toString()
+        })
+        dataSetName.set project.provider({
             getName()
-        }
+        })
     }
 
     /**
@@ -72,6 +73,18 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     void input(Map spec) {
         source = spec
+    }
+
+    @Deprecated
+    void outputDir(Object dir) {
+        logger.warn("Setting Crossfold property outputDir without assignment operator is deprecated")
+        outputDir.set(dir)
+    }
+
+    @Deprecated
+    void dataSetName(String name) {
+        logger.warn("Setting Crossfold property dataSetName without assignment operator is deprecated")
+        dataSetName.set(name)
     }
 
     /**
@@ -96,7 +109,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     @OutputDirectory
     File getOutputDirectory() {
-        return project.file(getOutputDir())
+        return project.file(outputDir.get())
     }
 
     @Override
@@ -112,7 +125,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Override
     @Input
     List getCommandArgs() {
-        def args = ["--output-dir", outputDirectory, "--name", getDataSetName()]
+        def args = ["--output-dir", outputDirectory, "--name", dataSetName.get()]
         if (srcFile != null) {
             args << "--data-source" << project.file(srcFile)
         } else {
