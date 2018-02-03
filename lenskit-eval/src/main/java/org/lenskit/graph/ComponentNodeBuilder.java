@@ -222,7 +222,7 @@ class ComponentNodeBuilder implements Builder<GVNode> {
             String fullClassName = words[words.length - 1];
             String[] path = fullClassName.split("\\.");
             int i = 0;
-            while (!Character.isUpperCase(path[i + 1].charAt(0))) {
+            while (i + 1 < path.length && !Character.isUpperCase(path[i + 1].charAt(0))) {
                 path[i] = path[i].substring(0, 1);
                 i++;
             }
