@@ -29,17 +29,16 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.lenskit.inject.Shareable;
-import org.lenskit.inject.Transient;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
-import org.grouplens.lenskit.iterative.StoppingCondition;
-import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;
+import org.lenskit.inject.Shareable;
+import org.lenskit.inject.Transient;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -103,8 +102,8 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
     public static class Builder implements Provider<LeastSquaresItemScorer> {
         private final double learningRate;
         private final double regularizationFactor;
+        private final int maxIterations;
         private RatingMatrix snapshot;
-        private StoppingCondition stoppingCondition;
 
         /**
          * Create a new builder.
@@ -112,16 +111,16 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
          * @param regFactor The regularization term
          * @param lrate     The learning rate
          * @param data      The preference data
-         * @param stop      The training loop condition.
+         * @param maxIters  The maximum iteration count
          */
         @Inject
         public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate,
                        @Transient RatingMatrix data,
-                       StoppingCondition stop) {
+                       @IterationCount int maxIters) {
             regularizationFactor = regFactor;
             learningRate = lrate;
             snapshot = data;
-            stoppingCondition = stop;
+            maxIterations = maxIters;
         }
 
         @Override
@@ -142,9 +141,8 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             double uoff[] = new double[snapshot.getUserIds().size()];
             double ioff[] = new double[snapshot.getItemIds().size()];
 
-            final TrainingLoopController trainingController = stoppingCondition.newLoop();
             double rmse = 0.0;
-            while (trainingController.keepTraining(rmse)) {
+            for (int i = 0; i < maxIterations; i++) {
                 double sse = 0;
                 for (RatingMatrixEntry r : ratings) {
                     final int uidx = r.getUserIndex();
@@ -157,10 +155,10 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
                 }
                 rmse = Math.sqrt(sse / ratings.size());
 
-                logger.debug("finished iteration {} (RMSE={})", trainingController.getIterationCount(), rmse);
+                logger.debug("finished iteration {} (RMSE={})", i, rmse);
             }
 
-            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), trainingController.getIterationCount(), rmse);
+            logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), maxIterations, rmse);
 
             // Convert the uoff array to a SparseVector
 
