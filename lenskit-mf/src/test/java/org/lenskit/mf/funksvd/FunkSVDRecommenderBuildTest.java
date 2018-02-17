@@ -25,8 +25,6 @@
 package org.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.iterative.IterationCount;
-import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
-import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
@@ -75,8 +73,6 @@ public class FunkSVDRecommenderBuildTest {
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
         config.bind(BiasModel.class).to(UserItemBiasModel.class);
-        config.bind(StoppingCondition.class)
-              .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)
               .to(10);
         config.set(FeatureCount.class)

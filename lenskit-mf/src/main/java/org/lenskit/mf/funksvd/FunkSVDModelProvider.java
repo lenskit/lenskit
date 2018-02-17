@@ -28,7 +28,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.inject.Transient;
@@ -159,14 +158,17 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
     protected void trainFeature(int feature, TrainingEstimator estimates,
                                 RealVector userFeatureVector, RealVector itemFeatureVector,
                                 FeatureInfo.Builder fib) {
-        double rmse = Double.MAX_VALUE;
+        double oldRMSE = Double.POSITIVE_INFINITY;
+        double rmse = Double.MAX_VALUE * 0.5;
         double trail = initialValue * initialValue * (featureCount - feature - 1);
-        TrainingLoopController controller = rule.getTrainingLoopController();
         List<RatingMatrixEntry> ratings = snapshot.getRatings();
-        while (controller.keepTraining(rmse)) {
+        int epoch = 0;
+        while (rule.keepGoing(epoch, rmse, oldRMSE)) {
+            epoch += 1;
+            oldRMSE = rmse;
             rmse = doFeatureIteration(estimates, ratings, userFeatureVector, itemFeatureVector, trail);
             fib.addTrainingRound(rmse);
-            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
+            logger.trace("iteration {} finished with RMSE {}", epoch, rmse);
         }
     }
 

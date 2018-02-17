@@ -24,10 +24,7 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.iterative.LearningRate;
-import org.grouplens.lenskit.iterative.RegularizationTerm;
-import org.grouplens.lenskit.iterative.StoppingCondition;
-import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.grouplens.lenskit.iterative.*;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrix;
@@ -49,28 +46,37 @@ public final class FunkSVDUpdateRule implements Serializable {
     private final double learningRate;
     private final double trainingRegularization;
     private final BiasModel biasModel;
-    private final StoppingCondition stoppingCondition;
+    private final int iterationCount;
+    private final double stoppingThreshold;
     @Nullable
     private final PreferenceDomain domain;
+    private final int minimumIterations;
 
     /**
      * Construct a new FunkSVD configuration.
      *
      * @param lrate The learning rate.
      * @param reg   The regularization term.
-     * @param stop  The stopping condition
+     * @param bias The bias model
+     * @param dom The domain
+     * @param iters The maximum interation count
+     * @param threshold The stopping threshold
      */
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
                              BiasModel bias,
                              @Nullable PreferenceDomain dom,
-                             StoppingCondition stop) {
+                             @IterationCount int iters,
+                             @StoppingThreshold double threshold,
+                             @MinimumIterations int minIters) {
         learningRate = lrate;
         trainingRegularization = reg;
         biasModel = bias;
         domain = dom;
-        stoppingCondition = stop;
+        iterationCount = iters;
+        stoppingThreshold = threshold;
+        minimumIterations = minIters;
     }
 
     /**
@@ -90,8 +96,8 @@ public final class FunkSVDUpdateRule implements Serializable {
         return trainingRegularization;
     }
 
-    public StoppingCondition getStoppingCondition() {
-        return stoppingCondition;
+    public double getStoppingThreshold() {
+        return stoppingThreshold;
     }
 
     @Nullable
@@ -99,11 +105,27 @@ public final class FunkSVDUpdateRule implements Serializable {
         return domain;
     }
 
-    public TrainingLoopController getTrainingLoopController() {
-        return stoppingCondition.newLoop();
+    public BiasModel getBiasModel() {
+        return biasModel;
     }
 
     public FunkSVDTrainingUpdater createUpdater() {
         return new FunkSVDTrainingUpdater(this);
+    }
+
+    public boolean keepGoing(int epochs, double rmse, double oldRmse) {
+        if (epochs < minimumIterations) {
+            return true;
+        }
+
+        if (epochs >= iterationCount) {
+            return false;
+        }
+
+        if (Math.abs(rmse - oldRmse) <= stoppingThreshold) {
+            return false;
+        }
+
+        return true;
     }
 }
