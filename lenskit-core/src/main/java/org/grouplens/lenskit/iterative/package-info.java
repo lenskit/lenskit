@@ -23,7 +23,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 /**
- * Common utilities for iterative methods.
+ * Common utilities and parameters for iterative methods.
  * @since 1.1
  */
 package org.grouplens.lenskit.iterative;

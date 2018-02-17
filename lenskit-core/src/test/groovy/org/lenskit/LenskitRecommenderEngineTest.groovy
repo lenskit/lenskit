@@ -29,9 +29,8 @@ import org.grouplens.grapht.Dependency
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
-import org.grouplens.lenskit.iterative.StoppingThreshold
-import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
-import org.lenskit.util.io.CompressionMode
+import org.grouplens.lenskit.transform.threshold.RealThreshold
+import org.grouplens.lenskit.transform.threshold.ThresholdValue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -47,6 +46,7 @@ import org.lenskit.data.ratings.RatingMatrix
 import org.lenskit.inject.Shareable
 import org.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.util.io.CompressionMode
 
 import javax.inject.Inject
 import javax.inject.Provider
@@ -214,14 +214,14 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testParameter() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.set(StoppingThreshold.class).to(0.042)
-        config.addRoot(ThresholdStoppingCondition.class)
+        config.set(ThresholdValue.class).to(0.042)
+        config.addRoot(RealThreshold.class)
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao)
         LenskitRecommender rec = engine.createRecommender(dao)
         try {
-            ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class)
-            assertThat(stop, notNullValue())
-            assertThat(stop.getThreshold(),
+            RealThreshold thresh = rec.get(RealThreshold.class)
+            assertThat(thresh, notNullValue())
+            assertThat(thresh.getValue(),
                        closeTo(0.042d, 1.0e-6d))
         } finally {
             rec.close()

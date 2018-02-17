@@ -32,7 +32,6 @@ import java.lang.annotation.*;
 
 /**
  * Stopping threshold.
- * @see org.grouplens.lenskit.iterative.ThresholdStoppingCondition
  * @since 1.1
  */
 @Documented
