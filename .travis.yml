@@ -1,13 +1,21 @@
 sudo: false
 dist: trusty
 language: java
-jdk:
-- oraclejdk8
-- oraclejdk9
-- openjdk8
-os:
-- linux
-- osx
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+      jdk: oraclejdk8
+    - os: linux
+      dist: trusty
+      sudo: false
+      jdk: oraclejdk9
+    - os: linux
+      dist: trusty
+      sudo: false
+      jdk: openjdk8
+    - os: osx
 branches:
   except:
   - www
