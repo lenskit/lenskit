@@ -25,9 +25,11 @@
 package org.lenskit.mf.funksvd;
 
 import org.apache.commons.math3.linear.RealVector;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.bias.BiasModel;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.mf.BiasedMFItemScorer;
+import org.lenskit.mf.MFModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,7 +53,7 @@ public class FunkSVDItemScorer extends BiasedMFItemScorer {
      * @param dom      The preference domain.
      */
     @Inject
-    public FunkSVDItemScorer(FunkSVDModel model,
+    public FunkSVDItemScorer(@DefaultImplementation(FunkSVDModel.class) MFModel model,
                              BiasModel baseline,
                              @Nullable PreferenceDomain dom) {
         super(model, baseline);
