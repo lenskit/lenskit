@@ -5,6 +5,9 @@ jdk:
 - oraclejdk8
 - oraclejdk9
 - openjdk8
+os:
+- linux
+- osx
 branches:
   except:
   - www
