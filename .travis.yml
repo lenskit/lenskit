@@ -15,10 +15,6 @@ matrix:
       dist: trusty
       sudo: false
       jdk: openjdk8
-    - os: linux
-      dist: trusty
-      sudo: false
-      jdk: oraclejdk10
     - os: osx
 branches:
   except:
