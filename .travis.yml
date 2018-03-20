@@ -15,6 +15,10 @@ matrix:
       dist: trusty
       sudo: false
       jdk: openjdk8
+    - os: linux
+      dist: trusty
+      sudo: false
+      jdk: oraclejdk10
     - os: osx
 branches:
   except:
@@ -42,8 +46,9 @@ deploy:
   skip_cleanup: true
   script: etc/deploy.sh
   on:
-    jdk: oraclejdk8
+    jdk: oraclejdk9
     repo: lenskit/lenskit
+    branch: master
 notifications:
   webhooks:
     urls:
