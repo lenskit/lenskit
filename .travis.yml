@@ -28,6 +28,8 @@ before_install:
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
 - cp etc/gradle-ci.properties .
+install:
+- "./gradlew ciPrep --stacktrace"
 script: "./gradlew ciTest --stacktrace --scan"
 after_failure:
 - jps -lvm
