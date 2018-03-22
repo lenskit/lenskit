@@ -37,14 +37,20 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 before_cache:
 - rm -f $HOME/.gradle/caches/*/*.lock
-deploy:
-  provider: script
-  skip_cleanup: true
-  script: etc/deploy.sh
-  on:
-    jdk: oraclejdk9
-    repo: lenskit/lenskit
-    branch: master
+stages:
+- name: deploy
+  if: branch = master AND repo = lenskit/lenskit
+jobs:
+  include:
+    - stage: deploy
+      script:
+      - git config --global user.email cibot@lenskit.org
+      - git config --global user.name "LensKit CI"
+      - "./gradlew ciPublish --stacktrace"
+      jdk: oraclejdk9
+      os: linux
+      sudo: false
+      dist: trusty
 notifications:
   webhooks:
     urls:
