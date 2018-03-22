@@ -31,7 +31,7 @@ task ciPrep(group: 'deploy') {
 }
 
 task ciBuild(group: 'deploy') {
-    description 'Perform the build and test actions for CI builds.'
+    description 'Perform the build actions for CI builds.'
 }
 
 task ciTest(group: 'deploy') {

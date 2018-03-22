@@ -1,4 +1,8 @@
 version: 3.0.{build}
+environment:
+  matrix:
+    - JDK: jdk1.8.0
+    - JDK: jdk9
 branches:
   only:
   - master
@@ -10,7 +14,7 @@ cache:
 init:
 - path C:\Miniconda-x64;C:\Miniconda-x64\Scripts;%PATH%
 install:
-- set JAVA_HOME=C:\Program Files\Java\jdk1.8.0
+- set JAVA_HOME=C:\Program Files\Java\%JDK%
 - copy etc\gradle-ci.properties gradle.properties
 - gradlew.bat ciPrep
 build_script:
