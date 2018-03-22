@@ -61,7 +61,7 @@ notifications:
 env:
   global:
   - TERM=dumb
-  - TZ=CST6CDT
+  - TZ=MST7MDT
   - MALLOC_ARENA_MAX=2
   - "_JAVA_OPTIONS='-Xmx512m'"
   # SONAR_TOKEN
