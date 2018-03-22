@@ -22,41 +22,50 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.grouplens.lenskit.build
+package org.lenskit.build;
 
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.SourceTask
-import org.gradle.api.tasks.TaskAction
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class ListClasses extends SourceTask {
-    def output = null
+public class SshLogger implements com.jcraft.jsch.Logger {
+    private Logger logger = LoggerFactory.getLogger("jsch");
 
-    @OutputFile
-    File getOutputFile() {
-        return output == null ? null : project.file(output)
+    public boolean isEnabled(int level) {
+        switch (level) {
+        case 0: // DEBUG
+            return logger.isDebugEnabled();
+        case 1: // INFO
+            return logger.isInfoEnabled();
+        case 2: // WARN
+            return logger.isWarnEnabled();
+        case 3: // ERROR
+        case 4: // FATAL
+            return logger.isErrorEnabled();
+        default:
+            return true;
+        }
     }
 
-    @TaskAction
-    public void listClasses() {
-        if (outputFile == null) {
-            throw new IllegalStateException("$name: no output file configured")
-        }
-        project.mkdir outputFile.parentFile
-        def classFiles = source.matching {
-            include '**/*.class'
-        }
-        outputFile.withPrintWriter { out ->
-            for (cf in classFiles) {
-                def path = cf.absolutePath.replace('\\', '/')
-                // extract org.grouplens... and sanitize
-                path = path.replaceAll(~/.*(org\/(?:grouplens\/)?lenskit\/.*)\.class/) { m ->
-                    // convert slashes and $ to dots
-                    m[1].replaceAll(~/[\/$]/, '.')
-                }
-                if (!(path =~ /\.\d+$/)) { // no anonymous classes
-                    out.println path
-                }
-            }
+    @Override
+    public void log(int level, String message) {
+        switch (level) {
+        case 0: // DEBUG
+            logger.debug("ssh: {}", message);
+            break;
+        case 1: // INFO
+            logger.info("ssh: {}", message);
+            break;
+        case 2: // WARN
+            logger.warn("ssh: {}", message);
+            break;
+        case 3: // ERROR
+            logger.error("ssh: {}", message);
+            break;
+        case 4: // FATAL
+            logger.error("FATAL SSH ERROR: {}", message);
+            break;
+        default:
+            logger.error("ssh: {}");
         }
     }
 }

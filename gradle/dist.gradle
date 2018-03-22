@@ -26,7 +26,7 @@
  * final distributions.
  */
 
-import org.grouplens.lenskit.build.MavenRepublish
+import org.lenskit.build.MavenRepublish
 
 import java.util.zip.ZipFile
 
@@ -78,7 +78,7 @@ task startScripts(type: CreateStartScripts) {
     applicationName = 'lenskit'
 }
 
-task copyMavenDeps(type: org.grouplens.lenskit.build.MavenRepublish)
+task copyMavenDeps(type: MavenRepublish)
 project(':lenskit-cli').afterEvaluate { prj ->
     copyMavenDeps.configurations << prj.configurations.runtime
 }

@@ -22,7 +22,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import org.grouplens.lenskit.build.ListClasses
+import org.lenskit.build.ListClasses
 
 /* Code to generate class lists. */
 task listClasses(type: ListClasses, group: 'build') {
