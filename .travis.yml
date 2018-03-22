@@ -30,7 +30,7 @@ before_install:
 - cp etc/gradle-ci.properties .
 install:
 - "./gradlew ciPrep --stacktrace"
-script: "./gradlew ciTest --stacktrace --scan"
+script: "./gradlew ciTest --parallel --stacktrace --scan"
 after_failure:
 - jps -lvm
 after_success:
