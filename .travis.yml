@@ -38,8 +38,9 @@ after_success:
 before_cache:
 - rm -f $HOME/.gradle/caches/*/*.lock
 stages:
+- test
 - name: deploy
-  if: branch = master AND repo = lenskit/lenskit
+  if: branch = master AND repo = lenskit/lenskit AND type != pull_request
 jobs:
   include:
     - stage: deploy
