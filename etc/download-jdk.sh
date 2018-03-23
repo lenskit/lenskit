@@ -22,3 +22,8 @@ if [ ! -d "$custom_jdk" ]; then
     echo "Unpacking $tarfile did not create $custom_jdk!" >&2
     exit 1
 fi
+echo "Importing system CA certificates"
+for keyfile in /etc/ssl/certs/*.pem; do
+    "$custom_jdk/bin/keytool" -keystore "$custom_jdk/lib/security/cacerts" -storepass changeit \
+        -importcert -file "$keyfile"
+done
