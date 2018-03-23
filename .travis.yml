@@ -37,21 +37,13 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 before_cache:
 - rm -f $HOME/.gradle/caches/*/*.lock
-stages:
-- name: test
-- name: deploy
-  if: branch = master AND repo = lenskit/lenskit AND type != pull_request
-jobs:
-  include:
-    - stage: deploy
-      script:
-      - git config --global user.email cibot@lenskit.org
-      - git config --global user.name "LensKit CI"
-      - "./gradlew ciPublish --stacktrace"
-      jdk: oraclejdk9
-      os: linux
-      sudo: false
-      dist: trusty
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: etc/deploy.sh
+  on:
+    jdk: oraclejdk9
+    repo: lenskit/lenskit
 notifications:
   webhooks:
     urls:
@@ -61,7 +53,7 @@ notifications:
 env:
   global:
   - TERM=dumb
-  - TZ=MST7MDT
+  - TZ=CST6CDT
   - MALLOC_ARENA_MAX=2
   - "_JAVA_OPTIONS='-Xmx512m'"
   # SONAR_TOKEN
