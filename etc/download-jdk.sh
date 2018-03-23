@@ -10,7 +10,7 @@ fi
 
 echo "Looking for JDK $JDK"
 jdk_url=
-cat etc/download-jdk.sh | while read key url; do
+cat etc/jdk-urls.txt | while read key url; do
     echo "found registered JDK $key"
     if [ "$key" = "$JDK" ]; then
         jdk_url="$url"
