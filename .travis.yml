@@ -6,10 +6,6 @@ matrix:
     - os: linux
       dist: trusty
       sudo: false
-      jdk: oraclejdk8
-    - os: linux
-      dist: trusty
-      sudo: false
       jdk: oraclejdk9
     - os: linux
       dist: trusty
@@ -21,14 +17,12 @@ matrix:
       language: generic
       env:
         custom_jdk: jdk-10
-        jdk_url: https://download.java.net/java/GA/jdk10/10/binaries/openjdk-10_linux-x64_bin.tar.gz
     - os: linux
       dist: trusty
       sudo: false
       language: generic
       env:
         custom_jdk: jdk-11
-        jdk_url: https://download.java.net/java/early_access/jdk11/5/GPL/openjdk-11-ea+5_linux-x64_bin.tar.gz
     - os: osx
 branches:
   except:
@@ -43,7 +37,7 @@ before_install:
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
 - cp etc/gradle-ci.properties .
-- test -z "$custom_jdk" || /bin/bash etc/download-jdk.sh
+- test -z "$custom_jdk" || /bin/bash etc/download-jdk.sh "$custom_jdk"
 - test -z "$custom_jdk" || export JAVA_HOME="$HOME/java/$custom_jdk"
 - "echo \"JAVA_HOME: $JAVA_HOME\""
 install:

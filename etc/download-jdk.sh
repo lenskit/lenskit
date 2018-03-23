@@ -2,9 +2,21 @@
 
 set -e
 
-if [ -z "$custom_jdk" ]; then
-    echo "No custom JDK requested" >&2
-    exit
+JDK="$1"
+if [ -z "$JDK" ]; then
+    echo "No JDK requested" >&2
+    exit 1
+fi
+
+jdk_url=
+cat etc/download-jdk.sh | while read key url; do
+    if [ "$key" = "$JDK" ]; then
+        jdk_url="$url"
+    fi
+done
+if [ -z "$jdk_url" ]; then
+    echo "No URL found for $JDK" >&2
+    exit 1
 fi
 
 tarfile=$(basename "$jdk_url")
@@ -18,13 +30,13 @@ if [ ! -f "$tarfile" ]; then
 fi
 
 tar xzf "dist/$tarfile"
-if [ ! -d "$custom_jdk" ]; then
-    echo "Unpacking $tarfile did not create $custom_jdk!" >&2
+if [ ! -d "$JDK" ]; then
+    echo "Unpacking $tarfile did not create $JDK!" >&2
     exit 1
 fi
 echo "Importing system CA certificates"
 for keyfile in /etc/ssl/certs/*.pem; do
     name=$(basename "$keyfile")
-    "$custom_jdk/bin/keytool" -keystore "$custom_jdk/lib/security/cacerts" -storepass changeit \
+    "$JDK/bin/keytool" -keystore "$JDK/lib/security/cacerts" -storepass changeit \
         -importcert -file "$keyfile" -alias "SYS:$name" -noprompt
 done
