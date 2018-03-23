@@ -10,12 +10,12 @@ fi
 
 echo "Looking for JDK $JDK"
 jdk_url=
-cat etc/jdk-urls.txt | while read key url; do
+while read key url; do
     echo "found registered JDK $key at $url"
     if [ "$key" = "$JDK" ]; then
         jdk_url="$url"
     fi
-done
+done <etc/jdk-urls.txt
 if [ -z "$jdk_url" ]; then
     echo "No URL found for $JDK" >&2
     exit 1
