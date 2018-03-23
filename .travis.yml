@@ -17,12 +17,6 @@ matrix:
       language: generic
       env:
         custom_jdk: jdk-10
-    - os: linux
-      dist: trusty
-      sudo: false
-      language: generic
-      env:
-        custom_jdk: jdk-11
     - os: osx
 branches:
   except:
