@@ -22,14 +22,17 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.grouplens.lenskit.build
+package org.lenskit.build
 
 import com.google.common.collect.HashMultimap
 import com.google.common.collect.Multimap
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader
+import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
-import org.gradle.api.internal.ConventionTask
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.TaskAction
@@ -42,15 +45,21 @@ import org.gradle.maven.MavenPomArtifact
 /**
  * Republish dependencies of a configuration to a Maven repository.
  */
-public class MavenRepublish extends ConventionTask {
+public class MavenRepublish extends DefaultTask {
+    public static final Logger LOGGER = Logging.getLogger(MavenRepublish)
     public def Set<Configuration> configurations = []
-    def repoRoot
+    final def Property<String> repoRoot
     private def depFileCache = null
 
     public MavenRepublish() {
-        conventionMapping.repoRoot = {
-            "$project.buildDir/offline-repo"
+        repoRoot = project.objects.property(String)
+        repoRoot.set project.providers.provider {
+            "$project.buildDir/offline-repo".toString()
         }
+    }
+
+    Logger getLogger() {
+        return LOGGER
     }
 
     Multimap<ModuleComponentIdentifier,File> resolveDepFiles(cache = true) {
@@ -86,21 +95,27 @@ public class MavenRepublish extends ConventionTask {
         // get Maven module artifacts
         def resolved = new HashSet()
         while (ids.any {!resolved.contains(it)}) {
+            def toFetch = ids - resolved
+            logger.debug("looking for {} more modules", toFetch.size())
             def mres = project.dependencies.createArtifactResolutionQuery()
-                              .forComponents(ids - resolved)
+                              .forComponents(toFetch)
                               .withArtifacts(MavenModule, MavenPomArtifact)
                               .execute()
             mres.resolvedComponents.each { rcr ->
                 def arts = rcr.getArtifacts(MavenPomArtifact)
                 logger.debug("handling Maven module for {} ({} artifacts)", rcr.id, arts.size())
-                resolved.add(rcr.id)
+                def id = rcr.id
+                if (id.hasProperty('snapshotComponent')) {
+                    id = id.snapshotComponent
+                }
+                resolved.add(id)
                 if (arts.isEmpty()) {
                     logger.warn("could not find Maven POM for {}", rcr.id)
                     return
                 }
                 def file = arts*.file.first()
                 def parser = new MavenXpp3Reader()
-                depFiles.put(rcr.id, file)
+                depFiles.put(id, file)
                 def model = file.withReader {
                     parser.read(it)
                 }
@@ -109,6 +124,7 @@ public class MavenRepublish extends ConventionTask {
                                                                    model.parent.artifactId,
                                                                    model.parent.version)
                     if (!resolved.contains(pid)) {
+                        logger.debug("adding parent {} to queue", pid);
                         ids.add(pid)
                     }
                 }
@@ -135,7 +151,7 @@ public class MavenRepublish extends ConventionTask {
 
     @OutputFiles
     Collection<File> getOutputFiles() {
-        def root = getRepoRoot()
+        def root = repoRoot.get()
         resolveDepFiles().entries().collect { e ->
             def path = getComponentPath(e.key, e.value)
             project.file("$root/$path")
@@ -144,7 +160,7 @@ public class MavenRepublish extends ConventionTask {
 
     @TaskAction
     void republish() {
-        def root = getRepoRoot()
+        def root = repoRoot.get()
         for (e in resolveDepFiles(false).asMap().entrySet()) {
             logger.info("copying {} artifacts for {}", e.value.size(), e.key)
             def path = getComponentPath(e.key)

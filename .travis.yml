@@ -6,15 +6,17 @@ matrix:
     - os: linux
       dist: trusty
       sudo: false
-      jdk: oraclejdk8
-    - os: linux
-      dist: trusty
-      sudo: false
       jdk: oraclejdk9
     - os: linux
       dist: trusty
       sudo: false
       jdk: openjdk8
+    - os: linux
+      dist: trusty
+      sudo: false
+      language: generic
+      env:
+        custom_jdk: jdk-10
     - os: osx
 branches:
   except:
@@ -24,13 +26,17 @@ cache:
   - "$HOME/.gradle/caches/modules-2"
   - "$HOME/.gradle/caches/jars-1"
   - "$HOME/.gradle/wrapper"
+  - "$HOME/java/dist"
 before_install:
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
 - cp etc/gradle-ci.properties .
+- test -z "$custom_jdk" || /bin/bash etc/download-jdk.sh "$custom_jdk"
+- test -z "$custom_jdk" || export JAVA_HOME="$HOME/java/$custom_jdk"
+- "echo \"JAVA_HOME: $JAVA_HOME\""
 install:
 - "./gradlew ciPrep --stacktrace"
-script: "./gradlew ciTest --stacktrace --scan"
+script: "./gradlew ciTest --parallel --stacktrace --scan"
 after_failure:
 - jps -lvm
 after_success:
@@ -42,7 +48,7 @@ deploy:
   skip_cleanup: true
   script: etc/deploy.sh
   on:
-    jdk: oraclejdk8
+    jdk: oraclejdk9
     repo: lenskit/lenskit
 notifications:
   webhooks:

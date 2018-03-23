@@ -22,41 +22,56 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.grouplens.lenskit.build
+package org.lenskit.build
 
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.SourceTask
-import org.gradle.api.tasks.TaskAction
+import org.gradle.util.ConfigureUtil
 
-class ListClasses extends SourceTask {
-    def output = null
+import java.util.regex.Pattern
 
-    @OutputFile
-    File getOutputFile() {
-        return output == null ? null : project.file(output)
+/**
+ * Extension object providing Travis environment utilities.
+ */
+class TravisExtension {
+    boolean isActive() {
+        return System.getenv('CI') == 'true'
     }
 
-    @TaskAction
-    public void listClasses() {
-        if (outputFile == null) {
-            throw new IllegalStateException("$name: no output file configured")
+    String getRepo() {
+        return System.getenv('TRAVIS_REPO_SLUG')
+    }
+
+    String getBranch() {
+        return System.getenv('TRAVIS_BRANCH')
+    }
+
+    String getPullRequest() {
+        def pr = System.getenv('TRAVIS_PULL_REQUEST')
+        return pr == 'false' ? null : pr
+    }
+
+    String getActiveJdk() {
+        return System.getenv('TRAVIS_JDK_VERSION')
+    }
+
+    Integer getBuildNumber() {
+        return System.getenv('TRAVIS_BUILD_NUMBER')?.toInteger()
+    }
+
+    boolean isReleaseBuild() {
+        if (!isActive()) {
+            return false
         }
-        project.mkdir outputFile.parentFile
-        def classFiles = source.matching {
-            include '**/*.class'
+        if (pullRequest != null) {
+            return false
         }
-        outputFile.withPrintWriter { out ->
-            for (cf in classFiles) {
-                def path = cf.absolutePath.replace('\\', '/')
-                // extract org.grouplens... and sanitize
-                path = path.replaceAll(~/.*(org\/(?:grouplens\/)?lenskit\/.*)\.class/) { m ->
-                    // convert slashes and $ to dots
-                    m[1].replaceAll(~/[\/$]/, '.')
-                }
-                if (!(path =~ /\.\d+$/)) { // no anonymous classes
-                    out.println path
-                }
-            }
-        }
+        return branch =~ /^(master|release\/[0-9.]+(?:-[A-Z0-9.+]?))$/
+    }
+
+    boolean isMasterBuild() {
+        return isReleaseBuild() && branch == 'master' && repo == 'lenskit/lenskit'
+    }
+
+    void call(Closure block) {
+        ConfigureUtil.configure(block, this)
     }
 }

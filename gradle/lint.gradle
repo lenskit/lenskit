@@ -43,7 +43,7 @@ switch (getConfigProperty('lint', 'false').toLowerCase()) {
 allprojects {
     apply plugin: 'jacoco'
     jacoco {
-        toolVersion = '0.8.0'
+        toolVersion = '0.8.1'
     }
 }
 

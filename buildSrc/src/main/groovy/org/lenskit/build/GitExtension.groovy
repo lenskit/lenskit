@@ -22,7 +22,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.grouplens.lenskit.build
+package org.lenskit.build
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Constants

@@ -22,7 +22,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import org.grouplens.lenskit.build.*
+import org.lenskit.build.*
 
 extensions.create('travis', TravisExtension)
 
@@ -31,7 +31,7 @@ task ciPrep(group: 'deploy') {
 }
 
 task ciBuild(group: 'deploy') {
-    description 'Perform the build and test actions for CI builds.'
+    description 'Perform the build actions for CI builds.'
 }
 
 task ciTest(group: 'deploy') {
