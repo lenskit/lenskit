@@ -18,6 +18,7 @@ matrix:
     - os: linux
       dist: trusty
       sudo: false
+      language: generic
       env:
         custom_jdk: jdk-10
         jdk_url: https://download.java.net/java/GA/jdk10/10/binaries/openjdk-10_linux-x64_bin.tar.gz
@@ -30,6 +31,7 @@ cache:
   - "$HOME/.gradle/caches/modules-2"
   - "$HOME/.gradle/caches/jars-1"
   - "$HOME/.gradle/wrapper"
+  - "$HOME/java/dist"
 before_install:
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
