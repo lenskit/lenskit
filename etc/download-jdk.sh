@@ -11,7 +11,7 @@ fi
 echo "Looking for JDK $JDK"
 jdk_url=
 cat etc/jdk-urls.txt | while read key url; do
-    echo "found registered JDK $key"
+    echo "found registered JDK $key at $url"
     if [ "$key" = "$JDK" ]; then
         jdk_url="$url"
     fi
