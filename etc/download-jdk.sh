@@ -23,7 +23,7 @@ if [ ! -d "$custom_jdk" ]; then
     exit 1
 fi
 echo "Importing system CA certificates"
-for keyfile in /etc/ssl/certs/*.pem; do
+for keyfile in /etc/ssl/certs/Go*.pem; do
     "$custom_jdk/bin/keytool" -keystore "$custom_jdk/lib/security/cacerts" -storepass changeit \
         -importcert -file "$keyfile" -noprompt
 done
