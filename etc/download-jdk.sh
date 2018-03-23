@@ -8,8 +8,10 @@ if [ -z "$JDK" ]; then
     exit 1
 fi
 
+echo "Looking for JDK $JDK"
 jdk_url=
 cat etc/download-jdk.sh | while read key url; do
+    echo "found registered JDK $key"
     if [ "$key" = "$JDK" ]; then
         jdk_url="$url"
     fi
