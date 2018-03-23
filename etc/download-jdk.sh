@@ -25,5 +25,5 @@ fi
 echo "Importing system CA certificates"
 for keyfile in /etc/ssl/certs/*.pem; do
     "$custom_jdk/bin/keytool" -keystore "$custom_jdk/lib/security/cacerts" -storepass changeit \
-        -importcert -file "$keyfile"
+        -importcert -file "$keyfile" -noprompt
 done
