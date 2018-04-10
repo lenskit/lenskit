@@ -95,7 +95,7 @@ install {
 task installForTesting(type: Upload) {
     repositories {
         mavenDeployer {
-            repository(url: rootProject.uri('build/test-repo'))
+            repository(url: rootProject.uri('build/lenskit-current-repo'))
         }
     }
     configuration = configurations.archives

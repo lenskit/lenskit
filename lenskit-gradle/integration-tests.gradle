@@ -47,12 +47,12 @@ file('src/it/gradle').eachDir { testDir ->
         dependsOn "copy$tname"
         mustRunAfter test, ':lenskit-eval:test'
         inputs.dir testDir
-        inputs.dir rootProject.uri('build/test-repo')
+        inputs.dir rootProject.uri('build/lenskit-current-repo')
         outputs.dir workDir
 
         startParameter.searchUpwards = false
         startParameter.projectProperties = [
-                testRepoURI: rootProject.uri("build/test-repo"),
+                testRepoURI: rootProject.uri("build/lenskit-current-repo"),
                 lenskitVersion: project.version
         ]
         dir = workDir

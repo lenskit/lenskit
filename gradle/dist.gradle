@@ -91,7 +91,7 @@ task repoZip(type: Zip) {
     dependsOn ':lenskit-integration-tests:makeTestRepo'
 
     archiveName "lenskit-repo-${version}.zip"
-    from "$buildDir/test-repo"
+    from "$buildDir/lenskit-current-repo"
     from "$buildDir/offline-repo"
     into "lenskit-repo-$version"
 }
