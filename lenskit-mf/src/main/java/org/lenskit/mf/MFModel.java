@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.keys.KeyIndex;
 import org.lenskit.util.math.Vectors;
 
@@ -40,6 +41,7 @@ import java.io.*;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Shareable
 public class MFModel implements Serializable {
     private static final long serialVersionUID = 2L;
 
