@@ -25,15 +25,14 @@ import org.apache.commons.math3.linear.DefaultRealMatrixChangingVisitor;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
-import org.grouplens.lenskit.iterative.StoppingCondition;
-import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonTypes;
 import org.lenskit.inject.Transient;
+import org.lenskit.mf.MFModel;
 import org.lenskit.mf.funksvd.FeatureCount;
-import org.lenskit.mf.svd.MFModel;
 import org.lenskit.util.keys.HashKeyIndex;
 import org.lenskit.util.math.RollingWindowMeanAccumulator;
 import org.slf4j.Logger;
@@ -57,8 +56,8 @@ public class BPRMFModelProvider implements Provider<MFModel> {
     private final double learningRate;
     private final double regularization;
     private final DataAccessObject dao;
-    private final StoppingCondition stoppingCondition;
     private final TrainingPairGenerator pairGenerator;
+    private final int batchCount;
     private final Random rand;
 
     private HashKeyIndex itemIndex;
@@ -69,15 +68,15 @@ public class BPRMFModelProvider implements Provider<MFModel> {
                               @Transient @Nonnull TrainingPairGenerator pairGenerator,
                               @FeatureCount int featureCount,
                               @LearningRate double learningRate,
-                              @RegularizationTerm double regularizaiton,
-                              @Transient StoppingCondition stoppingCondition,
+                              @RegularizationTerm double regularization,
+                              @IterationCount int batches,
                               @Transient Random rand) {
         this.dao = dao;
         this.pairGenerator = pairGenerator;
         this.featureCount = featureCount;
         this.learningRate = learningRate;
-        this.regularization = regularizaiton;
-        this.stoppingCondition = stoppingCondition;
+        this.regularization = regularization;
+        this.batchCount = batches;
         this.rand = rand;
 
         itemIndex = new HashKeyIndex();
@@ -113,14 +112,12 @@ public class BPRMFModelProvider implements Provider<MFModel> {
         logger.info("Building MPR-MF with {} features for {} users and {} items",
                 featureCount, userCount, itemCount);
 
-        TrainingLoopController controller = stoppingCondition.newLoop();
-
         //REVIEW: because of the nature of training samples (and the point that the BPR paper makes that training
         // by-item or by-user are not optimal) one "iteration" here will be one training update. This leads to _really_
         // big iteration counts, which can actually overflow ints!. one suggestion would be to allow the iteration count
         // controller to accept longs, but I don't know if this will introduce backwards compatibility issues (I imagine
         // this depends on the robustness of our type conversion in the configuration.
-        while(controller.keepTraining(-optAccum.getMean())) {
+        for (int batch = 1; batch <= batchCount; batch++) {
             for (TrainingItemPair pair : pairGenerator.nextBatch()) {
                 // Note: bad code style variable names are generally to match BPR paper and enable easier implementation
                 long iid = pair.g;

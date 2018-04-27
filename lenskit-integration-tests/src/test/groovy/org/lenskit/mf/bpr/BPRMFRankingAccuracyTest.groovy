@@ -29,9 +29,9 @@ import org.lenskit.bias.ZeroBiasModel
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.predict.NDCGPredictMetric
+import org.lenskit.mf.BiasedMFItemScorer
+import org.lenskit.mf.MFModel
 import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.svd.BiasedMFItemScorer
-import org.lenskit.mf.svd.MFModel
 import org.lenskit.util.table.Table
 
 import static org.hamcrest.Matchers.closeTo
