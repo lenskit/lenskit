@@ -18,10 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.BPR;
+package org.lenskit.mf.bpr;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;

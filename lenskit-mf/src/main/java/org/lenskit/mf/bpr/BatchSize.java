@@ -18,9 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.BPR;
+package org.lenskit.mf.bpr;
 
-import org.grouplens.grapht.annotation.DefaultInteger;
 import org.lenskit.inject.Parameter;
 
 import javax.inject.Qualifier;

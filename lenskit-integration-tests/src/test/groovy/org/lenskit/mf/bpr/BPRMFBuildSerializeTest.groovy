@@ -18,11 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.BPR
+package org.lenskit.mf.bpr
 
 import org.grouplens.lenskit.iterative.IterationCount
-import org.grouplens.lenskit.iterative.LearningRate
-import org.grouplens.lenskit.iterative.RegularizationTerm
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
 import org.lenskit.LenskitRecommender
@@ -30,17 +28,11 @@ import org.lenskit.LenskitRecommenderEngine
 import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
 import org.lenskit.api.RecommenderBuildException
-import org.lenskit.baseline.BaselineScorer
-import org.lenskit.baseline.MeanDamping
 import org.lenskit.bias.BiasModel
-import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.bias.ZeroBiasModel
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.funksvd.FunkSVDItemScorer
-import org.lenskit.mf.funksvd.FunkSVDModel
 import org.lenskit.mf.svd.BiasedMFItemScorer
-import org.lenskit.mf.svd.BiasedMFKernel
 import org.lenskit.mf.svd.MFModel
 
 import static org.hamcrest.Matchers.instanceOf

@@ -18,33 +18,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.BPR;
+package org.lenskit.mf.bpr;
 
 
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.linear.DefaultRealMatrixChangingVisitor;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.inject.Transient;
 import org.lenskit.mf.funksvd.FeatureCount;
 import org.lenskit.mf.svd.MFModel;
 import org.lenskit.util.keys.HashKeyIndex;
-import org.lenskit.util.keys.KeyIndex;
 import org.lenskit.util.math.RollingWindowMeanAccumulator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
-
 import java.util.Random;
 
 import static java.lang.Math.exp;

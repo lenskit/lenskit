@@ -18,20 +18,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.BPR;
+package org.lenskit.mf.bpr;
 
 /**
- * Class that operates over training events and generates batches of training
- * pairs (defined as a user and a pair of items where the user has expressed
- * a preference for one item over another.
- *
- * This interface makes no constraints over the properties of the training
- * batches.
+ * class to represent a training pair in pairwise learning to rank items.
+ * By convention the pair represents the knowledge that g>l (according to user u)
  */
-public interface TrainingPairGenerator {
+public class TrainingItemPair {
+    public final long u;
+    public final long g;
+    public final long l;
 
-    /**
-     * @return something that can be iterated over to get the next batch of training pairs.
-     */
-    Iterable<? extends TrainingItemPair> nextBatch();
+    public TrainingItemPair(long u, long g, long l) {
+        this.u = u;
+        this.g = g;
+        this.l = l;
+    }
 }

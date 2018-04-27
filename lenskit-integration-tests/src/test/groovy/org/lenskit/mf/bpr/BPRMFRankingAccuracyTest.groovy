@@ -18,24 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.mf.BPR
+package org.lenskit.mf.bpr
 
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
-import org.lenskit.bias.BiasDamping
 import org.lenskit.bias.BiasModel
-import org.lenskit.bias.UserItemBiasModel
 import org.lenskit.bias.ZeroBiasModel
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.predict.NDCGPredictMetric
-import org.lenskit.eval.traintest.recommend.ItemSelector
-import org.lenskit.eval.traintest.recommend.RecommendEvalTask
-import org.lenskit.eval.traintest.recommend.TopNMRRMetric
 import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.funksvd.FunkSVDItemScorer
 import org.lenskit.mf.svd.BiasedMFItemScorer
 import org.lenskit.mf.svd.MFModel
 import org.lenskit.util.table.Table
