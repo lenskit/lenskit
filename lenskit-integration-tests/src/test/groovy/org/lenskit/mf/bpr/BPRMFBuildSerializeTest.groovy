@@ -31,9 +31,9 @@ import org.lenskit.api.RecommenderBuildException
 import org.lenskit.bias.BiasModel
 import org.lenskit.bias.ZeroBiasModel
 import org.lenskit.config.ConfigHelpers
+import org.lenskit.mf.BiasedMFItemScorer
+import org.lenskit.mf.MFModel
 import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.svd.BiasedMFItemScorer
-import org.lenskit.mf.svd.MFModel
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.hamcrest.Matchers.notNullValue
