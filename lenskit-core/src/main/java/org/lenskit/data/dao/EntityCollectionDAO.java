@@ -1,43 +1,45 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.data.dao;
 
 import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.Entities;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
+import org.lenskit.data.entities.*;
 import org.lenskit.data.store.EntityCollection;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
+import org.lenskit.util.io.AbstractObjectStream;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A DAO backed by one or more collections of entities.
@@ -161,20 +163,48 @@ public class EntityCollectionDAO extends AbstractDataAccessObject implements Des
         }
 
         // we must sort; need to make list ourselves since makeList lists are immutable
-        Ordering<Entity> ord = null;
-        for (SortKey k: sort) {
-            if (ord == null) {
-                ord = k.ordering();
-            } else {
-                ord = ord.compound(k.ordering());
-            }
-        }
+        Ordering<Entity> ord = query.getOrdering();
         assert ord != null;
         try {
             return ObjectStreams.wrap(ord.immutableSortedCopy(stream));
         } finally {
             stream.close();
         }
+    }
+
+    @Override
+    public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, TypedName<Long> grpCol) {
+        EntityCollection data = storage.get(query.getEntityType());
+        if (data == null) {
+            return ObjectStreams.empty();
+        }
+
+        Map<Long, List<Entity>> groups = data.grouped(grpCol);
+        return new AbstractObjectStream<IdBox<List<E>>>() {
+            Iterator<Map.Entry<Long, List<Entity>>> iter = groups.entrySet().iterator();
+
+            @Override
+            public IdBox<List<E>> readObject() {
+                while (iter.hasNext()) {
+                    Map.Entry<Long, List<Entity>> entry = iter.next();
+                    Stream<Entity> data = entry.getValue()
+                                               .stream()
+                                               .filter(query);
+                    Ordering<Entity> ord = query.getOrdering();
+                    if (ord != null) {
+                        data = data.sorted(ord);
+                    }
+                    List<E> list = data.map(Entities.projection(query.getViewType()))
+                                       .collect(Collectors.toList());
+                    if (!list.isEmpty()) {
+                        return IdBox.create(entry.getKey(), list);
+                    }
+                }
+
+                // we're done
+                return null;
+            }
+        };
     }
 
     @Override

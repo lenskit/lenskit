@@ -17,13 +17,13 @@ import static org.hamcrest.Matchers.*
 apply plugin: 'lenskit'
 
 lenskit {
-    maxMemory '16g'
-    threadCount 5
+    maxMemory = '16g'
+    threadCount = 5
 }
 
 task check {
     doLast {
-        assertThat(lenskit.maxMemory, equalTo('16g'))
-        assertThat(lenskit.threadCount, equalTo(5))
+        assertThat(lenskit.maxMemory.get(), equalTo('16g'))
+        assertThat(lenskit.threadCount.get(), equalTo(5))
     }
 }

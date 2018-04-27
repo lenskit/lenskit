@@ -1,26 +1,31 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.util.collections;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -30,6 +35,8 @@ import org.lenskit.util.keys.SortedKeyIndex;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
+import java.util.function.*;
+import java.util.stream.Collector;
 
 /**
  * Utilities for working with longs and collections of them from Fastutil.
@@ -108,6 +115,16 @@ public final class LongUtils {
                 return Doubles.compare(v1, v2);
             }
         };
+    }
+
+    /**
+     * Create a flyweight vector with a key set and value function.
+     * @param keys The key set.
+     * @param valueFunc Function to compute keys from values.
+     * @return The flyweight map.
+     */
+    public static Long2DoubleMap flyweightMap(LongSet keys, LongToDoubleFunction valueFunc) {
+        return new FlyweightLong2DoubleMap(keys, valueFunc);
     }
 
     /**
@@ -521,5 +538,63 @@ public final class LongUtils {
             }
         }
         return LongUtils.packedSet(selected);
+    }
+
+    public static <T, E> Collector<T,?,Long2ObjectMap<List<E>>> mapCollector(ToLongFunction<T> kf, Function<T, E> vf) {
+        return new MapCollector<>(kf, vf);
+    }
+
+    private static class MapCollector<T, E> implements Collector<T, Long2ObjectMap<List<E>>, Long2ObjectMap<List<E>>> {
+        private final ToLongFunction<T> keyFunction;
+        private final Function<T, E> valueFunction;
+
+        MapCollector(ToLongFunction<T> kf, Function<T, E> vf) {
+            keyFunction = kf;
+            valueFunction = vf;
+        }
+
+        @Override
+        public Supplier<Long2ObjectMap<List<E>>> supplier() {
+            return Long2ObjectOpenHashMap::new;
+        }
+
+        @Override
+        public BiConsumer<Long2ObjectMap<List<E>>, T> accumulator() {
+            return (m, v) -> {
+                long k = keyFunction.applyAsLong(v);
+                List<E> lst = m.get(k);
+                if (lst == null) {
+                    lst = new ArrayList<>();
+                    m.put(k, lst);
+                }
+                lst.add(valueFunction.apply(v));
+            };
+        }
+
+        @Override
+        public BinaryOperator<Long2ObjectMap<List<E>>> combiner() {
+            return (m1, m2) -> {
+                for (Long2ObjectMap.Entry<List<E>> e2: m2.long2ObjectEntrySet()) {
+                    List<E> l2 = e2.getValue();
+                    List<E> l1 = m1.get(e2.getLongKey());
+                    if (l1 == null) {
+                        m1.put(e2.getLongKey(), l2);
+                    } else {
+                        l1.addAll(l2);
+                    }
+                }
+                return m1;
+            };
+        }
+
+        @Override
+        public Function<Long2ObjectMap<List<E>>, Long2ObjectMap<List<E>>> finisher() {
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            return ImmutableSet.of(Characteristics.IDENTITY_FINISH);
+        }
     }
 }

@@ -1,30 +1,34 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.gradle
 
 import groovy.json.JsonOutput
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.ParallelizableTask
 import org.lenskit.gradle.traits.DataSources
 
 /**
@@ -34,12 +38,11 @@ import org.lenskit.gradle.traits.DataSources
  * @see DataSources
  * @see <http://mooc.lenskit.org/documentation/evaluator/data/>
  */
-@ParallelizableTask
 class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
-    def outputDir
+    final Property<Object> outputDir = project.objects.property(Object)
     private Object source
     private Object srcFile
     private List<String> userPartitionArgs = []
@@ -47,17 +50,17 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     def Integer sampleSize
     def Integer partitionCount
     def String outputFormat
-    def String dataSetName
+    final Property<String> dataSetName = project.objects.property(String)
     @Deprecated
     def boolean includeTimestamps = true
 
     public Crossfold() {
-        conventionMapping.outputDir = {
-            "$project.buildDir/${getDataSetName()}.out"
-        }
-        conventionMapping.dataSetName = {
+        outputDir.set project.provider({
+            "$project.buildDir/${dataSetName.get()}.out".toString()
+        })
+        dataSetName.set project.provider({
             getName()
-        }
+        })
     }
 
     /**
@@ -70,6 +73,18 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     void input(Map spec) {
         source = spec
+    }
+
+    @Deprecated
+    void outputDir(Object dir) {
+        logger.warn("Setting Crossfold property outputDir without assignment operator is deprecated")
+        outputDir.set(dir)
+    }
+
+    @Deprecated
+    void dataSetName(String name) {
+        logger.warn("Setting Crossfold property dataSetName without assignment operator is deprecated")
+        dataSetName.set(name)
     }
 
     /**
@@ -94,7 +109,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
 
     @OutputDirectory
     File getOutputDirectory() {
-        return project.file(getOutputDir())
+        return project.file(outputDir.get())
     }
 
     @Override
@@ -110,7 +125,7 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
     @Override
     @Input
     List getCommandArgs() {
-        def args = ["--output-dir", outputDirectory, "--name", getDataSetName()]
+        def args = ["--output-dir", outputDirectory, "--name", dataSetName.get()]
         if (srcFile != null) {
             args << "--data-source" << project.file(srcFile)
         } else {
@@ -185,12 +200,13 @@ class Crossfold extends LenskitTask implements DataSources, DataSetProvider {
      *     <li>partition-items</li>
      *     <li>sample-items</li>
      *     <li>partition-entities</li>
+     *     <li>sample-entities</li>
      * </ul>
      * @param m The method
      */
     public void method(String m) {
         // accept partition-ratings for backwards compatibility
-        if (!(m =~ /^(?i:partition[_-](users|ratings|entities|items)|sample[_-](users|items))$/)) {
+        if (!(m =~ /^(?i:partition[_-](users|ratings|entities|items)|sample[_-](users|items|entities))$/)) {
             throw new IllegalArgumentException("invalid partition method " + m)
         }
         method = m.replaceAll('_', '-').toLowerCase()

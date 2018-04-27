@@ -1,28 +1,33 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.eval.traintest.recommend
 
 import groovy.json.JsonBuilder
 import org.grouplens.grapht.util.ClassLoaders
 import org.junit.Test
+import org.lenskit.data.entities.EntityFactory
 import org.lenskit.eval.traintest.TestUser
 import org.lenskit.eval.traintest.metrics.Discounts
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper
@@ -58,14 +63,14 @@ class TopNNDCGMetricTest {
                                          Results.create(2, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
     }
 
@@ -83,14 +88,14 @@ class TopNNDCGMetricTest {
                                          Results.create(2, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1.0d, 1.0e-6d))
     }
 
@@ -103,20 +108,19 @@ class TopNNDCGMetricTest {
                            .addTestRating(1, 5.0)
                            .addTestRating(2, 2.5)
                            .build()
-        // the order is right, but the recommendation values are out of order
-        // this is fine, nDCG should only consider order.
+        // the recommendations are out of order
         def recs = Results.newResultList(Results.create(2, 3.0),
                                          Results.create(1, 2.5))
         def result = metric.measureUser(null, user, -1, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(5 / 6.25d, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(5 / 6.25d, 1.0e-6d))
     }
 
@@ -136,15 +140,15 @@ class TopNNDCGMetricTest {
                                          Results.create(3, 2.5))
         def result = metric.measureUser(null, user, 2, recs, context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values.keySet(), contains('nDCG'))
         // should be 1 because only the first 2 test ratings are considered
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values['nDCG'],
                    closeTo(1, 1.0e-6d))
 
         result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo(1, 1.0e-6d))
     }
 
@@ -171,8 +175,42 @@ class TopNNDCGMetricTest {
 
         def result = metric.getAggregateMeasurements(context)
         assertThat(result, notNullValue())
-        assertThat(result.values.keySet(), contains('TopN.nDCG'))
-        assertThat(result.values['TopN.nDCG'],
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
                    closeTo((1 + 5/6.25d) * 0.5, 1.0e-6d))
+    }
+
+    @Test
+    void testUseEntity() {
+        def jsb = new JsonBuilder()
+        jsb {
+            type 'ndcg'
+            discount 'exp(2)'
+            gainAttribute 'count'
+        }
+        def mlh = new MetricLoaderHelper(ClassLoaders.inferDefault(), 'topn-metrics')
+        def metric = mlh.createMetric(TopNMetric, jsb.toString())
+        // use half-life discounting, because log 2 doesn't change for 2 items
+        def context = metric.createContext(null, null, null)
+        def fac = new EntityFactory()
+        def user = TestUser.newBuilder()
+                           .setUserId(42)
+                           .addTestEntity(fac.likeBatch(42, 1, 5),
+                                          fac.likeBatch(42, 2, 3))
+                           .build()
+        // The recommendations are out of order - so we should discount
+        def recs = Results.newResultList(Results.create(2, 3.0),
+                                         Results.create(1, 2.5))
+        def result = metric.measureUser(null, user, -1, recs, context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
+                   closeTo(5.5d / 6.5d, 1.0e-6d))
+
+        result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('nDCG'))
+        assertThat(result.values['nDCG'],
+                   closeTo(5.5d / 6.5d, 1.0e-6d))
     }
 }

@@ -1,22 +1,26 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit
 
@@ -25,9 +29,8 @@ import org.grouplens.grapht.Dependency
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
-import org.grouplens.lenskit.iterative.StoppingThreshold
-import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
-import org.lenskit.util.io.CompressionMode
+import org.grouplens.lenskit.transform.threshold.RealThreshold
+import org.grouplens.lenskit.transform.threshold.ThresholdValue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -43,6 +46,7 @@ import org.lenskit.data.ratings.RatingMatrix
 import org.lenskit.inject.Shareable
 import org.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.util.io.CompressionMode
 
 import javax.inject.Inject
 import javax.inject.Provider
@@ -210,14 +214,14 @@ public class LenskitRecommenderEngineTest {
     @Test
     public void testParameter() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
-        config.set(StoppingThreshold.class).to(0.042)
-        config.addRoot(ThresholdStoppingCondition.class)
+        config.set(ThresholdValue.class).to(0.042)
+        config.addRoot(RealThreshold.class)
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, dao)
         LenskitRecommender rec = engine.createRecommender(dao)
         try {
-            ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class)
-            assertThat(stop, notNullValue())
-            assertThat(stop.getThreshold(),
+            RealThreshold thresh = rec.get(RealThreshold.class)
+            assertThat(thresh, notNullValue())
+            assertThat(thresh.getValue(),
                        closeTo(0.042d, 1.0e-6d))
         } finally {
             rec.close()

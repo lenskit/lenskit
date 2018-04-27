@@ -1,22 +1,26 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.data.store;
 
@@ -24,10 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.entities.Attribute;
-import org.lenskit.data.entities.Entity;
-import org.lenskit.data.entities.EntityType;
-import org.lenskit.data.entities.TypedName;
+import org.lenskit.data.entities.*;
 import org.lenskit.util.describe.Describable;
 import org.lenskit.util.describe.DescriptionWriter;
 import org.lenskit.util.keys.KeyedObjectMap;
@@ -38,6 +39,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 class MapEntityCollection extends EntityCollection implements Serializable, Describable {
     private static long serialVersionUID = 1L;
@@ -100,6 +102,24 @@ class MapEntityCollection extends EntityCollection implements Serializable, Desc
             }
         }
         return results.build();
+    }
+
+    @Override
+    public Map<Long,List<Entity>> grouped(TypedName<Long> attr) {
+        Preconditions.checkArgument(attr != CommonAttributes.ENTITY_ID,
+                                    "cannot group by entity ID");
+        EntityIndex idx = indexes.get(attr.getName());
+        if (idx == null) {
+            return store.values()
+                        .stream()
+                        .filter(e -> e.hasAttribute(attr))
+                        .collect(Collectors.groupingBy(e -> e.getLong(attr)));
+        } else {
+            return idx.getValues()
+                      .stream()
+                      .collect(Collectors.toMap(l -> (Long) l,
+                                                idx::getEntities));
+        }
     }
 
     @Nonnull

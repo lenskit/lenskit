@@ -1,29 +1,33 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.util.collections;
 
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
+import it.unimi.dsi.fastutil.ints.IntPriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
@@ -32,7 +36,7 @@ import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
  * scores.
  */
 public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator {
-    private final int count;
+    private final int targetCount;
     private DoubleArrayList scores;
     private CompactableLongArrayList items;
 
@@ -41,7 +45,7 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
     private int slot;
     // The current size of the accumulator.
     private int size;
-    private IntHeapPriorityQueue heap;
+    private IntPriorityQueue heap;
 
     /**
      * Create a new accumulator to accumulate the top <var>n</var> IDs.
@@ -49,15 +53,21 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
      * @param n The number of IDs to retain.
      */
     public TopNLong2DoubleAccumulator(int n) {
-        this.count = n;
+        this.targetCount = n;
 
         slot = 0;
         size = 0;
 
-        // heap must have n+1 slots to hold extra item before removing smallest
-        heap = new IntHeapPriorityQueue(n + 1, new SlotComparator());
+        int isz = findInitialSize(targetCount + 1);
+        scores = new DoubleArrayList(isz);
+        items = new CompactableLongArrayList(isz);
+        heap = new IntHeapPriorityQueue(this::comparePositions);
 
         // item lists are lazy-allocated
+    }
+
+    private int comparePositions(int i1, int i2) {
+        return Doubles.compare(scores.getDouble(i1), scores.getDouble(i2));
     }
 
     /**
@@ -97,32 +107,35 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
 
     @Override
     public void put(long item, double score) {
-        assert slot <= count;
+        assert slot <= targetCount;
         assert heap.size() == size;
 
         if (items == null) {
-            int isize = findInitialSize(count + 1);
-
-            scores = new DoubleArrayList(isize);
-            items = new CompactableLongArrayList(isize);
+            int isz = findInitialSize(targetCount + 1);
+            scores = new DoubleArrayList(isz);
+            items = new CompactableLongArrayList(isz);
+            heap = new IntHeapPriorityQueue(this::comparePositions);
         }
-
-        assert items.size() == scores.size();
 
         /*
          * Store the new item. The slot shows where the current item is, and
          * then we deal with it based on whether we're oversized.
          */
         if (slot == items.size()) {
+            // we are still adding items
             items.add(item);
             scores.add(score);
         } else {
+            // we are reusing slots
+            if (!heap.isEmpty() && score <= scores.getDouble(heap.firstInt())) {
+                return; // the item won't beat anything else
+            }
             items.set(slot, item);
             scores.set(slot, score);
         }
         heap.enqueue(slot);
 
-        if (size == count) {
+        if (size == targetCount) {
             // already at capacity, so remove and reuse smallest item
             slot = heap.dequeueInt();
         } else {
@@ -195,15 +208,5 @@ public final class TopNLong2DoubleAccumulator implements Long2DoubleAccumulator 
         slot = 0;
         items = null;
         scores = null;
-    }
-
-    /**
-     * Compare two positions by comparing their scores.
-     */
-    private class SlotComparator extends AbstractIntComparator {
-        @Override
-        public int compare(int i, int j) {
-            return Doubles.compare(scores.getDouble(i), scores.getDouble(j));
-        }
     }
 }

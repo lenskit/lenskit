@@ -1,25 +1,30 @@
 /*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2016 LensKit Contributors.  See CONTRIBUTORS.md.
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ * LensKit, an open-source toolkit for recommender systems.
+ * Copyright 2014-2017 LensKit contributors (see CONTRIBUTORS.md)
+ * Copyright 2010-2014 Regents of the University of Minnesota
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.junit.After;
@@ -32,11 +37,13 @@ import org.lenskit.api.*;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.StaticDataSource;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.similarity.VectorSimilarity;
 import org.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.lenskit.transform.normalize.UserVectorNormalizer;
 import org.lenskit.transform.normalize.VectorNormalizer;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +55,8 @@ import static org.junit.Assert.*;
 
 public class ItemItemRecommenderTest {
 
+    private DataAccessObject data;
+    private LenskitConfiguration config;
     private LenskitRecommender session;
     private ItemRecommender recommender;
 
@@ -69,17 +78,16 @@ public class ItemItemRecommenderTest {
         rs.add(Rating.create(6, 8, 2));
         rs.add(Rating.create(1, 9, 3));
         rs.add(Rating.create(3, 9, 4));
-        StaticDataSource source = StaticDataSource.fromList(rs);
-        LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(DataAccessObject.class).toProvider(source);
+        data = StaticDataSource.fromList(rs).get();
+        config = new LenskitConfiguration();
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        session = engine.createRecommender();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, data);
+        session = engine.createRecommender(data);
         recommender = session.getItemRecommender();
     }
 
@@ -104,6 +112,8 @@ public class ItemItemRecommenderTest {
         assertThat(scores.get(7L), not(notANumber()));
         assertThat(scores.containsKey(8L), equalTo(false));
     }
+
+
 
     /**
      * Check that we score items but do not provide scores for items
@@ -131,11 +141,40 @@ public class ItemItemRecommenderTest {
         assertThat(score.getNeighborhoodSize(), equalTo(3));
     }
 
-    /**
-     * Tests {@code recommend(long, SparseVector)}.
-     */
     @Test
     public void testItemItemRecommender1() {
+        List<Long> recs = recommender.recommend(1);
+        assertThat(recs, hasSize(0));
+
+        recs = recommender.recommend(2);
+        assertThat(recs,
+                   contains(9L));
+
+        recs = recommender.recommend(3);
+        assertThat(recs,
+                   contains(6L));
+
+        recs = recommender.recommend(4);
+        assertThat(recs,
+                   containsInAnyOrder(6L, 9L));
+        assertEquals(2, recs.size());
+
+        recs = recommender.recommend(5);
+        assertThat(recs,
+                   containsInAnyOrder(6L, 7L, 9L));
+
+        recs = recommender.recommend(6);
+        assertThat(recs,
+                   containsInAnyOrder(6L, 7L, 9L));
+    }
+
+    @Test
+    public void testItemItemRecommenderNonSymmetric() {
+        config.bind(ItemSimilarity.class)
+              .to(NonSymmetricSimilarity.class);
+        session = LenskitRecommender.build(config, data);
+        recommender = session.getItemRecommender();
+
         List<Long> recs = recommender.recommend(1);
         assertThat(recs, hasSize(0));
 
@@ -304,5 +343,50 @@ public class ItemItemRecommenderTest {
         exclude.add(6);
         recs = recommender.recommend(5, -1, candidates, exclude);
         assertThat(recs, hasSize(0));
+    }
+
+    @Test
+    public void testRecommendWithMinCommonUsers() {
+        config.set(MinCommonUsers.class).to(1);
+        session = LenskitRecommenderEngine.build(config, data).createRecommender(data);
+        recommender = session.getItemRecommender();
+        List<Long> recs = recommender.recommend(1);
+        assertThat(recs, hasSize(0));
+
+        recs = recommender.recommend(2);
+        assertThat(recs, contains(9L));
+    }
+
+    @Test
+    public void testRecommendWithMinCommonUsers3() {
+        config.set(MinCommonUsers.class).to(3);
+        session = LenskitRecommenderEngine.build(config, data).createRecommender(data);
+        recommender = session.getItemRecommender();
+        List<Long> recs = recommender.recommend(2);
+        assertThat(recs, hasSize(0));
+    }
+
+    public static class NonSymmetricSimilarity implements ItemSimilarity {
+        final VectorSimilarity delegate;
+
+        @Inject
+        public NonSymmetricSimilarity(VectorSimilarity dlg) {
+            delegate = dlg;
+        }
+
+        @Override
+        public double similarity(long i1, Long2DoubleMap v1, long i2, Long2DoubleMap v2) {
+            return delegate.similarity(v1, v2);
+        }
+
+        @Override
+        public boolean isSparse() {
+            return delegate.isSparse();
+        }
+
+        @Override
+        public boolean isSymmetric() {
+            return false;
+        }
     }
 }
