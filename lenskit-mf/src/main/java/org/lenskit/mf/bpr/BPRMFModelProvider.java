@@ -25,6 +25,7 @@
 package org.lenskit.mf.bpr;
 
 
+import com.google.common.base.Stopwatch;
 import org.apache.commons.math3.linear.DefaultRealMatrixChangingVisitor;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -116,6 +117,8 @@ public class BPRMFModelProvider implements Provider<MFModel> {
         logger.info("Building MPR-MF with {} features for {} users and {} items",
                 featureCount, userCount, itemCount);
 
+        Stopwatch timer = Stopwatch.createStarted();
+
         //REVIEW: because of the nature of training samples (and the point that the BPR paper makes that training
         // by-item or by-user are not optimal) one "iteration" here will be one training update. This leads to _really_
         // big iteration counts, which can actually overflow ints!. one suggestion would be to allow the iteration count
@@ -162,6 +165,7 @@ public class BPRMFModelProvider implements Provider<MFModel> {
                 // update the optimization function accumulator (note we are not including the regularization term)
                 optAccum.add(Math.log(1 / (1 + Math.exp(-xuij))));
             }
+            logger.debug("finished iteration {} at {}, log likelihood {}", batch, timer.elapsed(), optAccum.getMean());
         }
 
         return new MFModel(userFeatures, itemFeatures, userIndex, itemIndex);
