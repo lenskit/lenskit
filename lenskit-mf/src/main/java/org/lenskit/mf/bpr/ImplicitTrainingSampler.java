@@ -25,6 +25,7 @@
 package org.lenskit.mf.bpr;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import org.apache.commons.math3.random.RandomGenerator;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
@@ -38,14 +39,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Randomly samples training pairs by selecting a rated/purchased item, and sampling an unrated item for that user.
  */
 public class ImplicitTrainingSampler implements BPRTrainingSampler {
     private static final Logger logger = LoggerFactory.getLogger(ImplicitTrainingSampler.class);
-    private final Random rand;
+    private final RandomGenerator rand;
     private final int batchSize;
 
     private final KeyIndex userIndex;
@@ -57,7 +61,7 @@ public class ImplicitTrainingSampler implements BPRTrainingSampler {
 
     @Inject
     public ImplicitTrainingSampler(@Transient DataAccessObject dao, @InteractionEntityType EntityType type,
-                                   Random rand, @BatchSize int batchSize) {
+                                   RandomGenerator rand, @BatchSize int batchSize) {
         this.rand = rand;
         this.batchSize = batchSize;
 
