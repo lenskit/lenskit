@@ -61,7 +61,7 @@ public class BPRMFModelProvider implements Provider<MFModel> {
     private final double learningRate;
     private final double regularization;
     private final DataAccessObject dao;
-    private final TrainingPairGenerator pairGenerator;
+    private final BPRTrainingSampler pairGenerator;
     private final int batchCount;
     private final Random rand;
 
@@ -70,7 +70,7 @@ public class BPRMFModelProvider implements Provider<MFModel> {
 
     @Inject
     public BPRMFModelProvider(@Transient @Nonnull DataAccessObject dao,
-                              @Transient @Nonnull TrainingPairGenerator pairGenerator,
+                              @Transient @Nonnull BPRTrainingSampler pairGenerator,
                               @FeatureCount int featureCount,
                               @LearningRate double learningRate,
                               @RegularizationTerm double regularization,

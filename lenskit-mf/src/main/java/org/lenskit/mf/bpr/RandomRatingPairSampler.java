@@ -40,18 +40,18 @@ import java.util.Random;
  * If the two random rated items have different ratings, than those items are returned as a training pair.
  * Otherwise, the algorithm will loop until it finds a training pair.
  */
-public class RandomRatingPairGenerator implements TrainingPairGenerator {
+public class RandomRatingPairSampler implements BPRTrainingSampler {
     private final RatingMatrix snapshot;
     private final Random rand;
     private final int batchSize;
     private final LongList userIds;
 
-    public RandomRatingPairGenerator(RatingMatrix snapshot, Random rand) {
+    public RandomRatingPairSampler(RatingMatrix snapshot, Random rand) {
     this(snapshot, rand, snapshot.getRatings().size());
     }
 
     @Inject
-    public RandomRatingPairGenerator(RatingMatrix snapshot, Random rand, @BatchSize int batchSize) {
+    public RandomRatingPairSampler(RatingMatrix snapshot, Random rand, @BatchSize int batchSize) {
         this.snapshot = snapshot;
         this.userIds = new LongArrayList(snapshot.getUserIds());
         this.rand = rand;

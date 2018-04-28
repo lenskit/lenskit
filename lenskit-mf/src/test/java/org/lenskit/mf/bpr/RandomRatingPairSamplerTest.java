@@ -38,7 +38,7 @@ import java.util.Random;
 
 import static org.junit.Assert.*;
 
-public class RandomRatingPairGeneratorTest {
+public class RandomRatingPairSamplerTest {
     private DataAccessObject dao;
     private RatingMatrix snapshot;
 
@@ -77,7 +77,7 @@ public class RandomRatingPairGeneratorTest {
 
     @Test
     public void testLength() {
-        RandomRatingPairGenerator gen = new RandomRatingPairGenerator(snapshot, new Random(), 10);
+        RandomRatingPairSampler gen = new RandomRatingPairSampler(snapshot, new Random(), 10);
         for (int reps = 0; reps<10; reps++) {
             int i = 0;
             for (TrainingItemPair pair : gen.nextBatch()) {
@@ -88,7 +88,7 @@ public class RandomRatingPairGeneratorTest {
         }
 
 
-        gen = new RandomRatingPairGenerator(snapshot, new Random(), 1000);
+        gen = new RandomRatingPairSampler(snapshot, new Random(), 1000);
         for (int reps = 0; reps<10; reps++) {
             int i = 0;
             for (TrainingItemPair pair : gen.nextBatch()) {
@@ -101,7 +101,7 @@ public class RandomRatingPairGeneratorTest {
 
     @Test
     public void testAlwaysValidTrainingPairs() {
-        RandomRatingPairGenerator gen = new RandomRatingPairGenerator(snapshot, new Random(), 10000);
+        RandomRatingPairSampler gen = new RandomRatingPairSampler(snapshot, new Random(), 10000);
         for(TrainingItemPair pair : gen.nextBatch()) {
             long u = pair.u;
             long l = pair.l;

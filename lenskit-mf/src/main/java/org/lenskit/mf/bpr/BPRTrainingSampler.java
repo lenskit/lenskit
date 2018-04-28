@@ -32,7 +32,7 @@ package org.lenskit.mf.bpr;
  * This interface makes no constraints over the properties of the training
  * batches.
  */
-public interface TrainingPairGenerator {
+public interface BPRTrainingSampler {
 
     /**
      * @return something that can be iterated over to get the next batch of training pairs.

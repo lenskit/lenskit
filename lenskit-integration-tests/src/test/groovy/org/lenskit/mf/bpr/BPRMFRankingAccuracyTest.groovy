@@ -54,7 +54,7 @@ public class BPRMFRankingAccuracyTest extends CrossfoldTestSuite {
             bind ItemScorer to BiasedMFItemScorer
             bind BiasModel to ZeroBiasModel
             bind MFModel toProvider BPRMFModelProvider
-            bind TrainingPairGenerator to RandomRatingPairGenerator
+            bind BPRTrainingSampler to RandomRatingPairSampler
 
             set FeatureCount to 25
             set IterationCount to 125
