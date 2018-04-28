@@ -169,6 +169,12 @@ abstract class LenskitTask extends JavaExec {
         return args
     }
 
+    void setLogFile(String file) {
+        logFile.set(project.providers.provider({
+            project.file(file)
+        }))
+    }
+
     void logLevel(String mm) {
         logger.warn('setting property logLevel of {} without assignment operator is deprecated', getClass())
         this.logLevel.set(mm)
