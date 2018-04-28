@@ -30,6 +30,7 @@ import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.ratings.InteractionEntityType;
+import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.HashKeyIndex;
 import org.lenskit.util.keys.KeyIndex;
@@ -44,8 +45,6 @@ import java.util.*;
  */
 public class ImplicitTrainingSampler implements BPRTrainingSampler {
     private static final Logger logger = LoggerFactory.getLogger(ImplicitTrainingSampler.class);
-    private final DataAccessObject dao;
-    private final EntityType entityType;
     private final Random rand;
     private final int batchSize;
 
@@ -57,10 +56,8 @@ public class ImplicitTrainingSampler implements BPRTrainingSampler {
     private final int totalInteractionCount;
 
     @Inject
-    public ImplicitTrainingSampler(DataAccessObject dao, @InteractionEntityType EntityType type,
+    public ImplicitTrainingSampler(@Transient DataAccessObject dao, @InteractionEntityType EntityType type,
                                    Random rand, @BatchSize int batchSize) {
-        this.dao = dao;
-        this.entityType = type;
         this.rand = rand;
         this.batchSize = batchSize;
 
