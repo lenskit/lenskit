@@ -65,4 +65,36 @@ public final class Scalars {
     public static double log2(double x) {
         return Math.log(x) * LOG2_ADJ;
     }
+
+    /**
+     * Compute the digamma function of x.
+     *
+     * We would use the implementation from Commons Math, but it is slow because it is recursive.
+     * This implementation is adapted directly from that of Bernardo, the source used by Commons Math.
+     *
+     * @param x The function.
+     * @see <a href="https://www.uv.es/~bernardo/1976AppStatist.pdf">Bernardo's algorithm</a>
+     * @return An approximation of the digamma function of x.
+     */
+    public static double digamma(double x) {
+        if (x > 0 && x <= 1.0e-5) { // small value shortcut
+            return -0.5772156649 - 1.0 / x;
+        }
+
+        double result = 0;
+        double y = x;
+        while (y < 8.5) { // iterate for medium or very negative values
+            result -= 1.0 / y;
+            y += 1.0;
+        }
+
+        // and compute the final approximation for large values
+        double r = 1.0 / y;
+        // REVIEW What if y is zero?
+        result += Math.log(y) - 0.5 * r;
+        r = r * r;
+        result -= r * (8.3333333333e-2 - r * (8.3333333333e-3 - r * 3.968253968e-3));
+
+        return result;
+    }
 }
