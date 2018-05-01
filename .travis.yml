@@ -48,7 +48,7 @@ deploy:
   skip_cleanup: true
   script: etc/deploy.sh
   on:
-    jdk: oraclejdk9
+    jdk: oraclejdk8
     repo: lenskit/lenskit
 notifications:
   webhooks:
