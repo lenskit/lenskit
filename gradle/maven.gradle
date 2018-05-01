@@ -92,7 +92,7 @@ install {
     }
 }
 
-task installForTesting(type: Upload) {
+task installForTesting(type: Upload, group: 'Deploy') {
     repositories {
         mavenDeployer {
             repository(url: rootProject.uri('build/lenskit-current-repo'))
