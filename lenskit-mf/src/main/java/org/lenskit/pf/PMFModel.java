@@ -30,8 +30,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.special.Gamma;
 import org.lenskit.data.ratings.RatingMatrixEntry;
+import org.lenskit.util.math.Scalars;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -217,7 +217,7 @@ class PMFModel {
             double userWeightRte = userModel.getWeightRteEntry(user, k);
             double itemWeightShp = itemModel.getWeightShpEntry(item, k);
             double itemWeightRte = itemModel.getWeightRteEntry(item, k);
-            double phiUIK = Gamma.digamma(userWeightShp) - Math.log(userWeightRte) + Gamma.digamma(itemWeightShp) - Math.log(itemWeightRte);
+            double phiUIK = Scalars.digamma(userWeightShp) - Math.log(userWeightRte) + Scalars.digamma(itemWeightShp) - Math.log(itemWeightRte);
             phi.setEntry(k, phiUIK);
         }
         logNormalize(phi);
