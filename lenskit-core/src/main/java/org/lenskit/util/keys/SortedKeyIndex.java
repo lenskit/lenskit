@@ -26,9 +26,9 @@ package org.lenskit.util.keys;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
+import net.jcip.annotations.Immutable;
 import org.lenskit.util.MoreArrays;
 
-import net.jcip.annotations.Immutable;
 import java.io.Serializable;
 import java.util.*;
 
@@ -327,7 +327,7 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
     }
 
     //region Iterators and lists
-    private class KeyIter extends AbstractLongBidirectionalIterator {
+    private class KeyIter implements LongBidirectionalIterator {
         private int position;
 
         public KeyIter(int pos) {

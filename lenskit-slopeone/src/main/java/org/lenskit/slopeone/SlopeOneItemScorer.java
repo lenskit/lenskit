@@ -73,7 +73,7 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
                 double total = 0;
                 int nitems = 0;
                 for (Long2DoubleMap.Entry e: Vectors.fastEntries(ratings)) {
-                    long currentItem = e.getKey();
+                    long currentItem = e.getLongKey();
                     int nusers = model.getCoratings(predicteeItem, currentItem);
                     if (nusers != 0) {
                         double currentDev = model.getDeviation(predicteeItem, currentItem);

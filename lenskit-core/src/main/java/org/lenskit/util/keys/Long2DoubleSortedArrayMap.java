@@ -28,17 +28,17 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
+import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.AbstractObjectSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
+import net.jcip.annotations.Immutable;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Scalars;
 
-import net.jcip.annotations.Immutable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -519,6 +519,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public Long getKey() {
             return getLongKey();
         }
@@ -529,12 +530,13 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public Double setValue(Double value) {
             throw new UnsupportedOperationException();
         }
     }
 
-    private static class IdComparator extends AbstractIntComparator {
+    private static class IdComparator implements IntComparator {
         private long[] keys;
 
         @SuppressWarnings("PMD.ArrayIsStoredDirectly")

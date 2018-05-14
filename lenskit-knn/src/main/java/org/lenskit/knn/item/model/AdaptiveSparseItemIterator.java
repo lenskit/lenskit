@@ -24,7 +24,10 @@
  */
 package org.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +41,7 @@ import java.util.NoSuchElementException;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class AdaptiveSparseItemIterator extends AbstractLongIterator {
+class AdaptiveSparseItemIterator implements LongIterator {
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveSparseItemIterator.class);
     private final ItemItemBuildContext context;
     private final LongSet users;

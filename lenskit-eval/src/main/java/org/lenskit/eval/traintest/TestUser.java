@@ -107,7 +107,7 @@ public class TestUser {
             items = new LongOpenHashSet();
             for (Entity e : trainHistory) {
                 if(e.hasAttribute(CommonAttributes.ITEM_ID)) {
-                    items.add(e.get(CommonAttributes.ITEM_ID));
+                    items.add(e.getLong(CommonAttributes.ITEM_ID));
                 }
             }
             trainItems = items;

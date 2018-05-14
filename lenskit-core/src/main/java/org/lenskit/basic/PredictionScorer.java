@@ -24,7 +24,7 @@
  */
 package org.lenskit.basic;
 
-import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
+import org.grouplens.grapht.annotation.AllowDefaultMatch;
 import org.grouplens.grapht.annotation.DefaultProvider;
 
 import javax.inject.Qualifier;
@@ -37,7 +37,7 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 @Documented
 @Qualifier
-@AllowUnqualifiedMatch
+@AllowDefaultMatch
 @DefaultProvider(value = FallbackItemScorer.DynamicProvider.class, skipIfUnusable = true)
 public @interface PredictionScorer {
 }

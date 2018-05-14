@@ -69,7 +69,7 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
                     double currentDev = model.getDeviation(predicteeItem, currentItem);
                     if (!Double.isNaN(currentDev)) {
                         int weight = model.getCoratings(predicteeItem, currentItem);
-                        total += (currentDev + e.getValue()) * weight;
+                        total += (currentDev + e.getDoubleValue()) * weight;
                         nitems += weight;
                     }
                 }
