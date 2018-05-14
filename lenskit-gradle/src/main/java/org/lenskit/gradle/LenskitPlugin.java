@@ -27,8 +27,8 @@ package org.lenskit.gradle;
 import groovy.lang.MetaProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
-import org.apache.commons.lang3.text.StrMatcher;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
+import org.apache.commons.text.matcher.StringMatcherFactory;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -81,7 +81,9 @@ public class LenskitPlugin implements Plugin<Project> {
                 }
 
                 if (type.equals(List.class)) {// if the type is list update the val using strtokenizer
-                    StrTokenizer tok = new StrTokenizer(vstr, StrMatcher.splitMatcher(), StrMatcher.quoteMatcher());
+                    StringTokenizer tok = new StringTokenizer(vstr,
+                                                              StringMatcherFactory.INSTANCE.splitMatcher(),
+                                                              StringMatcherFactory.INSTANCE.quoteMatcher());
                     val = DefaultGroovyMethods.toList(tok);
                 } else if (type.equals(String.class)) {
                     val = vstr;
