@@ -77,7 +77,7 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
                     int nusers = model.getCoratings(predicteeItem, currentItem);
                     if (nusers != 0) {
                         double currentDev = model.getDeviation(predicteeItem, currentItem);
-                        total += currentDev + e.getValue();
+                        total += currentDev + e.getDoubleValue();
                         nitems++;
                     }
                 }

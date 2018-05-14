@@ -422,7 +422,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         }
     }
 
-    private class ValueIterator extends AbstractObjectBidirectionalIterator<T> {
+    private class ValueIterator implements ObjectBidirectionalIterator<T> {
         private final ListIterator<T> delegate;
 
         public ValueIterator(ListIterator<T> iter) {

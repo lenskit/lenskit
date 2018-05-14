@@ -163,7 +163,7 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
         for (int i = 0; i < n; i++) {
             long item = index.getKey(i);
             int origIndex = mapping.getIndex(item);
-            nvs[i] = values.get(origIndex);
+            nvs[i] = values.getDouble(origIndex);
         }
         return wrap(index, nvs);
     }

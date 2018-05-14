@@ -65,7 +65,7 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
                 double total = 0;
                 int nitems = 0;
                 for (Long2DoubleMap.Entry e: Vectors.fastEntries(ratings)) {
-                    long currentItem = e.getKey();
+                    long currentItem = e.getLongKey();
                     double currentDev = model.getDeviation(predicteeItem, currentItem);
                     if (!Double.isNaN(currentDev)) {
                         int weight = model.getCoratings(predicteeItem, currentItem);
