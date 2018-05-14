@@ -25,7 +25,7 @@
 package org.lenskit.util.describe;
 
 import com.google.common.io.BaseEncoding;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.Arrays;
 
