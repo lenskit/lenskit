@@ -74,7 +74,7 @@ public final class GraphtUtils {
             Component csat = node.getLabel();
             // special-case DAOs for non-checking
             if (DataAccessObject.class.isAssignableFrom(csat.getSatisfaction().getErasedType())) {
-                logger.debug("found DAO placeholder {}");
+                logger.debug("found DAO placeholder {}", csat.getSatisfaction());
             } else {
                 // all other placeholders are bad
                 if (sat == null) {

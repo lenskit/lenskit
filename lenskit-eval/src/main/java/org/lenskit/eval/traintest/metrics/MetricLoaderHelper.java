@@ -88,7 +88,7 @@ public class MetricLoaderHelper {
                 logger.debug("trying to look up metric {} as class", name);
                 return ClassUtils.getClass(loader, name);
             } catch (ClassNotFoundException e) {
-                logger.debug("no metric {} found");
+                logger.debug("no metric {} found", name);
                 return null;
             }
         }

@@ -39,6 +39,7 @@ import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -157,6 +158,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * @return The entity builder class.
      */
     @Override
+    @Nonnull
     public Class<? extends EntityBuilder> getEntityBuilder() {
         return entityBuilder;
     }
@@ -329,7 +331,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             canUseColumnMap = true;
         } else if (header.isNumber()) {
             format.setHeaderLines(header.asInt());
-            logger.debug("{}: skipping {} header lines", format.getHeaderLines());
+            logger.debug("{}: skipping {} header lines", name, format.getHeaderLines());
         }
         format.setBaseId(json.path("base_id").asLong(0));
 
@@ -371,7 +373,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         if (eb != null) {
             format.setEntityBuilder(eb);
         }
-        logger.debug("{}: using entity builder {}", format.getEntityBuilder());
+        logger.debug("{}: using entity builder {}", name, format.getEntityBuilder());
 
         return format;
     }
