@@ -28,9 +28,11 @@ cache:
   - "$HOME/.gradle/wrapper"
   - "$HOME/java/dist"
 before_install:
-- git fetch --depth=10000 origin
+- git fetch --unshallow origin
 - ./etc/decrypt-ssh-key.sh
 - cp etc/gradle-ci.properties .
+- git config --global user.email cibot@lenskit.org
+- git config --global user.name "LensKit CI"
 - test -z "$custom_jdk" || /bin/bash etc/download-jdk.sh "$custom_jdk"
 - test -z "$custom_jdk" || export JAVA_HOME="$HOME/java/$custom_jdk"
 - "echo \"JAVA_HOME: $JAVA_HOME\""
@@ -46,9 +48,9 @@ before_cache:
 deploy:
   provider: script
   skip_cleanup: true
-  script: etc/deploy.sh
+  script: ./gradlew ciPublish --stacktrace
   on:
-    jdk: oraclejdk8
+    jdk: openjdk8
     repo: lenskit/lenskit
 notifications:
   webhooks:
