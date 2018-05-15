@@ -87,7 +87,7 @@ abstract class GroupEntitySplitter {
 
         @Override
         public boolean equals(Object obj) {
-            return obj.getClass().equals(Partition.class);
+            return obj != null && obj.getClass().equals(Partition.class);
         }
 
         @Override
