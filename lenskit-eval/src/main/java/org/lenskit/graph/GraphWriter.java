@@ -83,7 +83,7 @@ class GraphWriter implements Closeable {
     }
 
     private String safeValue(Object obj) {
-        String str = obj.toString();
+        String str = obj != null ? obj.toString() : "(null)";
         if (obj instanceof HTMLLabel || SAFE_VALUE.matcher(str).matches()) {
             return str;
         } else {
