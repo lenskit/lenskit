@@ -6,17 +6,19 @@ matrix:
     - os: linux
       dist: trusty
       sudo: false
-      jdk: oraclejdk9
-    - os: linux
-      dist: trusty
-      sudo: false
       jdk: openjdk8
     - os: linux
       dist: trusty
       sudo: false
-      language: generic
-      env:
-        custom_jdk: jdk-10
+      jdk: oraclejdk9
+    - os: linux
+      dist: trusty
+      sudo: false
+      jdk: oraclejdk10
+    - os: linux
+      dist: trusty
+      sudo: false
+      jdk: oraclejdk11
     - os: osx
 branches:
   except:
