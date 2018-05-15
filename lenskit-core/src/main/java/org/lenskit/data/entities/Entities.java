@@ -224,6 +224,8 @@ public final class Entities {
     private static class IdOrder extends Ordering<Entity> {
         @Override
         public int compare(@Nullable Entity left, @Nullable Entity right) {
+            assert left != null;
+            assert right != null;
             return Longs.compare(left.getId(), right.getId());
         }
     }
