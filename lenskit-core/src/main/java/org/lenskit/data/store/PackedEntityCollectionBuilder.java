@@ -29,7 +29,6 @@ import com.google.common.primitives.Longs;
 import com.google.common.reflect.TypeToken;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
-import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.*;
@@ -184,7 +183,7 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
     @Override
     public EntityCollection build() {
         if (!isSorted) {
-            Arrays.quickSort(0, size, new IdComparator(), new SortSwap());
+            Arrays.quickSort(0, size, this::compareIds, new SortSwap());
         }
         AttrStore[] stores = new AttrStore[storeBuilders.length];
         PackIndex[] indexes = new PackIndex[needIndex.length];
@@ -210,11 +209,8 @@ class PackedEntityCollectionBuilder extends EntityCollectionBuilder {
         }
     }
 
-    private class IdComparator extends AbstractIntComparator {
-        @Override
-        public int compare(int k1, int k2) {
-            return Longs.compare(idStore.getLong(k1), idStore.getLong(k2));
-        }
+    private int compareIds(int k1, int k2) {
+        return Longs.compare(idStore.getLong(k1), idStore.getLong(k2));
     }
 
     private class SortSwap implements Swapper {

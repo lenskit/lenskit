@@ -24,8 +24,7 @@
  */
 package org.lenskit.basic;
 
-import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
-import org.lenskit.basic.FallbackItemScorer;
+import org.grouplens.grapht.annotation.AllowDefaultMatch;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
@@ -37,7 +36,7 @@ import java.lang.annotation.*;
  */
 @Documented
 @Qualifier
-@AllowUnqualifiedMatch
+@AllowDefaultMatch
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PrimaryScorer {

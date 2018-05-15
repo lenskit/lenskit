@@ -26,7 +26,6 @@ package org.lenskit.similarity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
-import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
@@ -62,12 +61,7 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
     static Long2DoubleMap rank(final Long2DoubleMap vec) {
         long[] ids = vec.keySet().toLongArray();
         // sort ID set by value (decreasing)
-        LongArrays.quickSort(ids, new AbstractLongComparator() {
-            @Override
-            public int compare(long k1, long k2) {
-                return Doubles.compare(vec.get(k2), vec.get(k1));
-            }
-        });
+        LongArrays.quickSort(ids, (k1, k2) -> Doubles.compare(vec.get(k2), vec.get(k1)));
 
         final int n = ids.length;
         final double[] values = new double[n];

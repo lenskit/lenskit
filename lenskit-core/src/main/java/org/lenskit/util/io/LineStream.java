@@ -27,7 +27,7 @@ package org.lenskit.util.io;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 import org.lenskit.data.dao.DataAccessException;
 
 import javax.annotation.Nonnull;
@@ -114,14 +114,14 @@ public class LineStream extends AbstractObjectStream<String> {
         }
     }
 
-    public ObjectStream<List<String>> tokenize(StrTokenizer tok) {
+    public ObjectStream<List<String>> tokenize(StringTokenizer tok) {
         return ObjectStreams.transform(this, new TokenizerFunction(tok));
     }
 
     private static class TokenizerFunction implements Function<String,List<String>> {
-        StrTokenizer tokenizer;
+        StringTokenizer tokenizer;
 
-        public TokenizerFunction(StrTokenizer tok) {
+        public TokenizerFunction(StringTokenizer tok) {
             tokenizer = tok;
         }
 

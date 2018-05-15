@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.TypeUtils;
@@ -383,7 +383,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         if (usesHeader() && labeledColumns != null) {
             assert header.size() == 1;
             List<TypedName<?>> cols = new ArrayList<>();
-            StrTokenizer tok = new StrTokenizer(header.get(0), delimiter);
+            StringTokenizer tok = new StringTokenizer(header.get(0), delimiter);
             tok.setQuoteChar('"');
             while (tok.hasNext()) {
                 String label = tok.next();
@@ -392,7 +392,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             return new OrderedParser(cols, tok);
         } else {
             Preconditions.checkState(columns != null, "no columns specified");
-            StrTokenizer tok = new StrTokenizer("", delimiter);
+            StringTokenizer tok = new StringTokenizer("", delimiter);
             tok.setQuoteChar('"');
             return new OrderedParser(columns, tok);
         }
@@ -400,10 +400,10 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
 
     private class OrderedParser extends LineEntityParser {
         int lineNo = 0;
-        StrTokenizer tokenizer;
+        StringTokenizer tokenizer;
         List<TypedName<?>> fileColumns;
 
-        public OrderedParser(List<TypedName<?>> columns, StrTokenizer tok) {
+        public OrderedParser(List<TypedName<?>> columns, StringTokenizer tok) {
             fileColumns = columns;
             tokenizer = tok;
         }

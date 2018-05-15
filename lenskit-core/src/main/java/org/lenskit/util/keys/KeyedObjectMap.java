@@ -28,11 +28,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
+import net.jcip.annotations.Immutable;
 import org.lenskit.util.BinarySearch;
 
-import net.jcip.annotations.Immutable;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 /**
  * A map that allows objects with long keys to be looked up by key.
@@ -348,7 +351,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
 
     }
 
-    private class KeyIterator extends AbstractLongBidirectionalIterator {
+    private class KeyIterator implements LongBidirectionalIterator {
         private final ListIterator<T> delegate;
 
         public KeyIterator(ListIterator<T> iter) {
@@ -376,7 +379,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         }
     }
 
-    private class EntryIterator extends AbstractObjectBidirectionalIterator<Entry<T>> {
+    private class EntryIterator implements ObjectBidirectionalIterator<Entry<T>> {
         private final ListIterator<T> iter;
 
         public EntryIterator(ListIterator<T> it) {
@@ -419,7 +422,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         }
     }
 
-    private class ValueIterator extends AbstractObjectBidirectionalIterator<T> {
+    private class ValueIterator implements ObjectBidirectionalIterator<T> {
         private final ListIterator<T> delegate;
 
         public ValueIterator(ListIterator<T> iter) {

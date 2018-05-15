@@ -30,9 +30,9 @@ import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.data.entities.TypedName;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.io.ObjectStreams;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Fluent interface for DAO queries.  This interface is immutable - new objects are always returned - so it is safe
@@ -97,12 +97,12 @@ class JavaQuery<E extends Entity> implements Query<E> {
 
     @Override
     public List<E> get() {
-        return ObjectStreams.makeList(stream());
+        return stream().collect(Collectors.toList());
     }
 
     @Override
     public int count() {
-        return ObjectStreams.count(stream());
+        return (int) stream().count();
     }
 
     @Override

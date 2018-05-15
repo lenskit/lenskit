@@ -31,7 +31,6 @@ import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -385,7 +384,7 @@ class PackedEntityCollection extends EntityCollection implements Describable {
         }
     }
 
-    private class IdIter extends AbstractLongIterator {
+    private class IdIter implements LongIterator {
         int pos = 0;
 
         @Override

@@ -90,7 +90,7 @@ ciTest.dependsOn report
 sonarqube {
     properties {
         property "sonar.projectKey", "lenskit"
-        property "sonar.host.url", "https://sonarqube.com"
+        property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.sourceEncoding", "UTF-8"
         if (System.getenv("SONAR_TOKEN")) {
             property "sonar.login", System.getenv("SONAR_TOKEN")
