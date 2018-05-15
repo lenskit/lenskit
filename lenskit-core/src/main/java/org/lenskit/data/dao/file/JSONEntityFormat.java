@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.*;
 
 /**
@@ -227,7 +228,7 @@ public class JSONEntityFormat implements EntityFormat {
             try {
                 node = mapper.readTree(line);
             } catch (IOException e) {
-                throw new RuntimeException("cannot parse line " + lineNo, e);
+                throw new UncheckedIOException("cannot parse line " + lineNo, e);
             }
 
             if (node.isObject()) {
