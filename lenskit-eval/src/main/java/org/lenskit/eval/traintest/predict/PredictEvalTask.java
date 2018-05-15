@@ -32,12 +32,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.util.ClassLoaders;
-import org.lenskit.util.io.CompressionMode;
 import org.lenskit.api.*;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -238,7 +238,6 @@ public class PredictEvalTask implements EvalTask {
             return metric.measureUser(user, predictions, context);
         }
 
-        @Nonnull
         public MetricResult getAggregateMeasurements() {
             return metric.getAggregateMeasurements(context);
         }
@@ -300,7 +299,6 @@ public class PredictEvalTask implements EvalTask {
             Map<String,Object> results = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
                 MetricResult measurements = mc.getAggregateMeasurements();
-                // if test and train tests are disjoint we can get "null"
                 if (measurements != null) {
                     results.putAll(measurements.getValues());
                 } else {
