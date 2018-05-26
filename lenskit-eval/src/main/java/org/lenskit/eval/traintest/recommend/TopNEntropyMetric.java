@@ -26,8 +26,6 @@ package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -39,6 +37,7 @@ import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Metric that measures the entropy of the top N recommendations across all users.
@@ -66,7 +65,7 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Context context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recommendations, Context context) {
         context.addUser(recommendations);
         return MetricResult.empty();
     }
@@ -95,10 +94,8 @@ public class TopNEntropyMetric extends ListOnlyTopNMetric<TopNEntropyMetric.Cont
         private Long2IntMap counts = new Long2IntOpenHashMap();
         private int recCount = 0;
 
-        private synchronized void addUser(LongList recs) {
-            LongIterator iter = recs.iterator();
-            while (iter.hasNext()) {
-                long item = iter.nextLong();
+        private synchronized void addUser(List<Long> recs) {
+            for (long item: recs) {
                 counts.put(item, counts.get(item) +1);
                 recCount +=1;
             }

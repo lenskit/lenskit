@@ -26,10 +26,10 @@ package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
@@ -38,10 +38,13 @@ import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.util.math.Scalars;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Measure the nDPM of the top-N recommendations, using rankings.
@@ -49,6 +52,7 @@ import java.util.Collections;
  * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf.
  */
 public class TopNNDPMMetric extends ListOnlyTopNMetric<Mean> {
+    private static final Logger logger = LoggerFactory.getLogger(TopNNDPMMetric.class);
     public static final String DEFAULT_COLUMN = "TopN.nDPM";
 
     /**
@@ -76,23 +80,32 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<Mean> {
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(Mean context) {
+        logger.warn("The NDPM metric is not well-understood and is currently broken.");
         return MetricResult.singleton(DEFAULT_COLUMN, context.getResult());
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Mean context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recommendations, Mean context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
 
         Long2DoubleMap ratings = user.getTestRatings();
 
-        long[] actual = recommendations.toLongArray();
+        RealVector scores = new ArrayRealVector(recommendations.size());
+        int i = 0;
+        for (long item: recommendations) {
+            if (ratings.containsKey(item)) {
+                scores.setEntry(i, ratings.get(item));
+                i += 1;
+            }
+        }
+        scores = scores.getSubVector(0, i);
 
-        double dpm = computeDPM(actual, ratings);
+        double dpm = computeDPM(scores);
 
-        double normalizingFactor = computeNormalizingFactor(actual, ratings);
+        double normalizingFactor = computeNormalizingFactor(scores);
 
         double nDPM = dpm / normalizingFactor; // Normalized nDPM
 
@@ -104,31 +117,26 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<Mean> {
     }
 
     /**
-     * Compute dpm of list of items, with respect to user's ratings.
+     * Compute dpm of list of item preference scores.
      */
-
-    double computeDPM(long [] actual_item, Long2DoubleFunction value) {
+    static double computeDPM(RealVector scores) {
+        int n = scores.getDimension();
         int nCompatible = 0;
         int nDisagree = 0;
 
-        for(int i = 0; i < actual_item.length; i++){
-            for(int j = i+1; j < actual_item.length; j++){
-                double valueOne;
-                double valueTwo;
+        for(int i = 0; i < n; i++){
+            double v1 = scores.getEntry(i);
+            if (Double.isNaN(v1)) continue;
 
-                if (value.containsKey(actual_item[i])) {
-                    valueOne = value.get(actual_item[i]);
+            for(int j = i+1; j < n; j++){
+                double v2 = scores.getEntry(j);
 
-                    if (value.containsKey(actual_item[j])) {
-                        valueTwo = value.get(actual_item[j]);
+                if (Double.isNaN(v2)) continue;
 
-                        if (Scalars.isZero(valueOne - valueTwo)) {
-                            nCompatible++;
-                        }
-                        if(valueOne < valueTwo){
-                            nDisagree++;
-                        }
-                    }
+                if (Scalars.isZero(v1 - v2)) {
+                    nCompatible++;
+                } else if (v1 < v2) {
+                    nDisagree++;
                 }
             }
         }
@@ -138,23 +146,18 @@ public class TopNNDPMMetric extends ListOnlyTopNMetric<Mean> {
         return dpm;
     }
 
-    double computeNormalizingFactor(long [] actual_item, Long2DoubleFunction value) {
+    static double computeNormalizingFactor(RealVector scores) {
         int npairs = 0;
+        int n = scores.getDimension();
 
-        for(int i = 0; i < actual_item.length; i++) {
-            for(int j = i+1; j < actual_item.length; j++) {
-                double valueOne;
-                double valueTwo;
+        for(int i = 0; i < n; i++) {
+            double v1 = scores.getEntry(i);
 
-                if (value.containsKey(actual_item[i])) {
-                    valueOne = value.get(actual_item[i]);
+            for(int j = i+1; j < n; j++) {
+                double v2 = scores.getEntry(j);
 
-                    if (value.containsKey(actual_item[j])) {
-                        valueTwo = value.get(actual_item[j]);
-                        if(valueOne < valueTwo || valueOne > valueTwo) {
-                            npairs++;
-                        }
-                    }
+                if (!Scalars.isZero(v1 - v2)) {
+                    npairs++;
                 }
             }
         }
