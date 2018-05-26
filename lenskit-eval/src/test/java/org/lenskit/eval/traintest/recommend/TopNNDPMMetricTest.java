@@ -36,7 +36,6 @@ import static net.java.quickcheck.generator.PrimitiveGenerators.doubles;
 import static net.java.quickcheck.generator.PrimitiveGenerators.integers;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.lenskit.eval.traintest.recommend.TopNMRRMetricTest.closeTo;
 
 public class TopNNDPMMetricTest {
     @Test
@@ -81,7 +80,7 @@ public class TopNNDPMMetricTest {
         double[] scores = {3, 1, 3, 1, 2};
         RealVector v = new ArrayRealVector(scores);
         double dpm = TopNNDPMMetric.computeDPM(v);
-        assertThat(dpm, closeTo(8.0));
+        assertThat(dpm, closeTo(8.0, 1.0e-6));
     }
 
     @Test
@@ -93,6 +92,6 @@ public class TopNNDPMMetricTest {
         double[] scores = {3, 3, 2, 1, 1};
         RealVector v = new ArrayRealVector(scores);
         double dpm = TopNNDPMMetric.computeDPM(v);
-        assertThat(dpm, closeTo(0.0));
+        assertThat(dpm, closeTo(0.0, 1.0e-6));
     }
 }
