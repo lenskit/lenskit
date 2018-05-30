@@ -1,40 +1,25 @@
 sudo: false
 dist: trusty
 language: java
+jdk:
+- openjdk8
+- oraclejdk9
+- oraclejdk10
+- oraclejdk11
 matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: false
-      jdk: oraclejdk9
-    - os: linux
-      dist: trusty
-      sudo: false
-      jdk: openjdk8
-    - os: linux
-      dist: trusty
-      sudo: false
-      language: generic
-      env:
-        custom_jdk: jdk-10
-    - os: osx
-branches:
-  except:
-  - www
+  allow_failures:
+    - jdk: oraclejdk11
 cache:
   directories:
   - "$HOME/.gradle/caches/modules-2"
   - "$HOME/.gradle/caches/jars-1"
   - "$HOME/.gradle/wrapper"
-  - "$HOME/java/dist"
 before_install:
 - git fetch --unshallow origin
 - ./etc/decrypt-ssh-key.sh
 - cp etc/gradle-ci.properties .
 - git config --global user.email cibot@lenskit.org
 - git config --global user.name "LensKit CI"
-- test -z "$custom_jdk" || /bin/bash etc/download-jdk.sh "$custom_jdk"
-- test -z "$custom_jdk" || export JAVA_HOME="$HOME/java/$custom_jdk"
 - "echo \"JAVA_HOME: $JAVA_HOME\""
 install:
 - "./gradlew ciPrep --stacktrace"
@@ -45,13 +30,21 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 before_cache:
 - rm -f $HOME/.gradle/caches/*/*.lock
-deploy:
-  provider: script
-  skip_cleanup: true
-  script: ./gradlew ciPublish --stacktrace
-  on:
-    jdk: openjdk8
-    repo: lenskit/lenskit
+stages:
+- compile
+- test
+- deploy
+jobs:
+  include:
+    - stage: compile
+      script: ./gradlew test -Ptests.slow.skip=true
+    - stage: deploy
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: ./gradlew test ciPublish --stacktrace -Ptests.slow.skip=true
+      if: repo = lenskit/lenskit
 notifications:
   webhooks:
     urls:
@@ -61,9 +54,7 @@ notifications:
 env:
   global:
   - TERM=dumb
-  - TZ=CST6CDT
-  - MALLOC_ARENA_MAX=2
-  - "_JAVA_OPTIONS='-Xmx512m'"
+  - TZ=UTC
   # SONAR_TOKEN
   - secure: "JSzx8Y50B4uPM5jYyED1d4LdlhxqG0pmGLnNfdHlxfwx3HWn7Trzlip2eNeVXor1OMbQxyDfzOLXjepfXY/lLB3FrmOdkEROy+WnZUBjMM55g+sOKskOzI3FbnKl09uf1hvprzij8UMImfZHgoQIbDgf2GpAmp1vskCVe7BDqsE="
   # SONATYPE_USER
