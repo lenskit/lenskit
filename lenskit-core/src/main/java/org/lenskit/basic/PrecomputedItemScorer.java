@@ -28,7 +28,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.inject.Shareable;
@@ -144,7 +144,7 @@ public class PrecomputedItemScorer extends AbstractItemScorer implements Seriali
      * @return The item scorer.
      */
     public static PrecomputedItemScorer fromCSV(@WillClose BufferedReader buf) {
-        StrTokenizer tok = new StrTokenizer((String) null, ",");
+        StringTokenizer tok = new StringTokenizer((String) null, ",");
         Builder bld = new Builder();
         try (ObjectStream<List<String>> rows = new LineStream(buf).tokenize(tok)) {
             for (List<String> row : rows) {

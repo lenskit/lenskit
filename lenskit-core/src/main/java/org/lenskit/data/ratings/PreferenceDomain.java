@@ -146,7 +146,7 @@ public final class PreferenceDomain implements Serializable {
 
     public Long2DoubleSortedMap clampVector(Map<Long,Double> scores) {
         SortedKeyIndex keys = SortedKeyIndex.fromCollection(scores.keySet());
-        Long2DoubleFunction baseVals = LongUtils.asLong2DoubleFunction(scores);
+        Long2DoubleFunction baseVals = LongUtils.asLong2DoubleMap(scores);
         double[] values = new double[keys.size()];
         for (int i = 0; i < values.length; i++) {
             long item = keys.getKey(i);

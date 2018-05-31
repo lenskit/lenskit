@@ -24,8 +24,8 @@
  */
 package org.grouplens.lenskit.test;
 
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
-import org.junit.internal.AssumptionViolatedException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;

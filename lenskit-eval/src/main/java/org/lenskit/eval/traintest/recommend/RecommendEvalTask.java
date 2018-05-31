@@ -441,7 +441,7 @@ public class RecommendEvalTask implements EvalTask {
 
         @Nonnull
         public MetricResult measureUser(Recommender rec, TestUser user, int n, LongList recommendations) {
-            return ((ListOnlyTopNMetric<X>) metric).measureUser(rec, user, n, recommendations, context);
+            return ((ListOnlyTopNMetric<X>) metric).measureUserRecList(rec, user, n, recommendations, context);
         }
 
         @Nonnull

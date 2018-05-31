@@ -26,7 +26,9 @@ package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
@@ -45,8 +47,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Measure the nDCG of the top-N recommendations, using ratings as scores.
@@ -120,7 +123,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<Mean> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Mean context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recommendations, Mean context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -135,15 +138,16 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<Mean> {
                 throw new IllegalArgumentException("value " + av + " for attribute " + gainAttribute + " is not numeric");
             }
         }
-        long[] ideal = ratings.keySet().toLongArray();
-        LongArrays.quickSort(ideal, LongComparators.oppositeComparator(LongUtils.keyValueComparator(ratings)));
-        if (targetLength >= 0 && ideal.length > targetLength) {
-            ideal = Arrays.copyOf(ideal, targetLength);
-        }
+
+        List<Long> ideal =
+                ratings.keySet()
+                       .stream()
+                       .sorted(LongUtils.keyValueComparator(ratings).reversed())
+                       .limit(targetLength >= 0 ? targetLength : ratings.size())
+                       .collect(Collectors.toList());
         double idealGain = computeDCG(ideal, ratings);
 
-        long[] actual = recommendations.toLongArray();
-        double gain = computeDCG(actual, ratings);
+        double gain = computeDCG(recommendations, ratings);
 
         double score = gain / idealGain;
 
@@ -156,7 +160,7 @@ public class TopNNDCGMetric extends ListOnlyTopNMetric<Mean> {
     /**
      * Compute the DCG of a list of items with respect to a value vector.
      */
-    double computeDCG(long[] items, Long2DoubleFunction values) {
+    double computeDCG(List<Long> items, Long2DoubleFunction values) {
         double gain = 0;
         int rank = 0;
 

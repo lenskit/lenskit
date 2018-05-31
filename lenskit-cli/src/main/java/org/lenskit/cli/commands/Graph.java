@@ -175,7 +175,7 @@ public class Graph implements Command {
             engine.eval(rdr);
         } catch (ScriptException e) {
             logger.error("error loading Viz.js", e);
-            throw new RuntimeException(e);
+            throw new LenskitCommandException("Could not load Viz.js", e);
         }
         engine.put("dotSrc", dotSrc);
         engine.put("outFile", outFile);

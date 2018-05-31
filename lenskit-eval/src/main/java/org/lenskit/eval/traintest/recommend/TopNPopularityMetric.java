@@ -24,8 +24,6 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.api.Recommender;
@@ -41,6 +39,7 @@ import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -67,7 +66,7 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recs, Context context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recs, Context context) {
         RatingSummary summary = null;
         if (rec instanceof LenskitRecommender) {
             summary = ((LenskitRecommender) rec).get(RatingSummary.class);
@@ -76,9 +75,8 @@ public class TopNPopularityMetric extends ListOnlyTopNMetric<TopNPopularityMetri
             return MetricResult.empty();
         }
         double pop = 0;
-        LongIterator iter = recs.iterator();
-        while (iter.hasNext()) {
-            pop += summary.getItemRatingCount(iter.nextLong());
+        for (long item: recs) {
+            pop += summary.getItemRatingCount(item);
         }
         pop = pop / recs.size();
 

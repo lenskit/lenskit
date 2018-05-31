@@ -41,7 +41,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeCsv;
+import static org.apache.commons.text.StringEscapeUtils.escapeCsv;
 
 /**
  * Implementation of {@link TableWriter} for CSV files.

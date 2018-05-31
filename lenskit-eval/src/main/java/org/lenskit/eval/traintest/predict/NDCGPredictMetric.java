@@ -131,7 +131,7 @@ public class NDCGPredictMetric extends PredictMetric<Mean> {
         long[] actual = LongUtils.asLongSet(predictions.keySet()).toLongArray();
         LongArrays.quickSort(actual, LongComparators.oppositeComparator(
                 LongUtils.keyValueComparator(
-                        LongUtils.asLong2DoubleFunction(predictions.scoreMap()))));
+                        LongUtils.asLong2DoubleMap(predictions.scoreMap()))));
         double idealGain = computeDCG(ideal, ratings);
         double gain = computeDCG(actual, ratings);
         logger.debug("user {} has gain of {} (ideal {})", user.getUserId(), gain, idealGain);

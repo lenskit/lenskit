@@ -56,12 +56,7 @@ public class PopularityRankItemScorer extends AbstractItemScorer implements Seri
     public PopularityRankItemScorer(final InteractionStatistics stats) {
         statistics = stats;
         long[] items = stats.getKnownItems().toLongArray();
-        LongArrays.quickSort(items, new AbstractLongComparator() {
-            @Override
-            public int compare(long l1, long l2) {
-                return Integer.compare(stats.getInteractionCount(l2), stats.getInteractionCount(l1));
-            }
-        });
+        LongArrays.quickSort(items, (l1, l2) -> Integer.compare(stats.getInteractionCount(l2), stats.getInteractionCount(l1)));
         Long2IntMap ranks = LongUtils.itemRanks(LongArrayList.wrap(items));
         SortedKeyIndex keys = SortedKeyIndex.fromCollection(ranks.keySet());
         int n = keys.size();

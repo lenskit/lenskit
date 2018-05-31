@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 import org.lenskit.data.dao.DataAccessException;
 import org.lenskit.data.entities.*;
 import org.lenskit.util.TypeUtils;
@@ -39,6 +39,7 @@ import org.lenskit.util.reflect.InstanceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -157,6 +158,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
      * @return The entity builder class.
      */
     @Override
+    @Nonnull
     public Class<? extends EntityBuilder> getEntityBuilder() {
         return entityBuilder;
     }
@@ -329,7 +331,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             canUseColumnMap = true;
         } else if (header.isNumber()) {
             format.setHeaderLines(header.asInt());
-            logger.debug("{}: skipping {} header lines", format.getHeaderLines());
+            logger.debug("{}: skipping {} header lines", name, format.getHeaderLines());
         }
         format.setBaseId(json.path("base_id").asLong(0));
 
@@ -371,7 +373,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         if (eb != null) {
             format.setEntityBuilder(eb);
         }
-        logger.debug("{}: using entity builder {}", format.getEntityBuilder());
+        logger.debug("{}: using entity builder {}", name, format.getEntityBuilder());
 
         return format;
     }
@@ -383,7 +385,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
         if (usesHeader() && labeledColumns != null) {
             assert header.size() == 1;
             List<TypedName<?>> cols = new ArrayList<>();
-            StrTokenizer tok = new StrTokenizer(header.get(0), delimiter);
+            StringTokenizer tok = new StringTokenizer(header.get(0), delimiter);
             tok.setQuoteChar('"');
             while (tok.hasNext()) {
                 String label = tok.next();
@@ -392,7 +394,7 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
             return new OrderedParser(cols, tok);
         } else {
             Preconditions.checkState(columns != null, "no columns specified");
-            StrTokenizer tok = new StrTokenizer("", delimiter);
+            StringTokenizer tok = new StringTokenizer("", delimiter);
             tok.setQuoteChar('"');
             return new OrderedParser(columns, tok);
         }
@@ -400,10 +402,10 @@ public class DelimitedColumnEntityFormat implements EntityFormat {
 
     private class OrderedParser extends LineEntityParser {
         int lineNo = 0;
-        StrTokenizer tokenizer;
+        StringTokenizer tokenizer;
         List<TypedName<?>> fileColumns;
 
-        public OrderedParser(List<TypedName<?>> columns, StrTokenizer tok) {
+        public OrderedParser(List<TypedName<?>> columns, StringTokenizer tok) {
             fileColumns = columns;
             tokenizer = tok;
         }

@@ -24,7 +24,7 @@
  */
 package org.lenskit.knn;
 
-import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
+import org.grouplens.grapht.annotation.AllowDefaultMatch;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
@@ -34,7 +34,7 @@ import java.lang.annotation.*;
  */
 @Qualifier
 @Documented
-@AllowUnqualifiedMatch
+@AllowDefaultMatch
 @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ScoreNormalizer {

@@ -28,7 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.text.StrTokenizer;
+import org.apache.commons.text.StringTokenizer;
 import org.joda.convert.FromStringConverter;
 import org.joda.convert.StringConvert;
 
@@ -193,7 +193,7 @@ public class TypeUtils {
         public List<T> convertFromString(Class<? extends List<T>> cls, String str) {
             assert cls != null && cls.isAssignableFrom(List.class);
             List<T> list = new ArrayList<>();
-            StrTokenizer tok = StrTokenizer.getCSVInstance(str);
+            StringTokenizer tok = StringTokenizer.getCSVInstance(str);
             while (tok.hasNext()) {
                 String next = tok.next();
                 list.add(elementConverter.convertFromString(elementType, next));

@@ -31,7 +31,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.*;
@@ -43,6 +42,7 @@ import org.lenskit.data.entities.Entity;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.CompressionMode;
 import org.lenskit.util.table.TableLayout;
 import org.lenskit.util.table.TableLayoutBuilder;
 import org.lenskit.util.table.writer.CSVWriter;
@@ -152,7 +152,7 @@ public class TemporalEvaluator {
      * @return The evaluator (for chaining).
      */
     public TemporalEvaluator setExtendedOutputFile(@Nullable Path file) {
-        extendedOutputFile = file.toFile();
+        extendedOutputFile = file != null ? file.toFile() : null;
         return this;
     }
 

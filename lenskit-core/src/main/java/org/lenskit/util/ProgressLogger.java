@@ -40,6 +40,7 @@ public class ProgressLogger {
     private String label = "unspecified";
     private int total = -1;
     private int period = 100;
+    private long timePeriod = TimeUnit.MICROSECONDS.convert(30, TimeUnit.SECONDS);
     private int prevN;
     private long prevMicros;
     private AtomicInteger ndone = new AtomicInteger(0);
@@ -90,6 +91,16 @@ public class ProgressLogger {
     }
 
     /**
+     * Set a time period for reporting progress.
+     * @param secs The time period for reporting progress.
+     * @return The logger (for chaining).
+     */
+    public ProgressLogger setTimePeriod(long secs) {
+        timePeriod = TimeUnit.MICROSECONDS.convert(secs, TimeUnit.SECONDS);
+        return this;
+    }
+
+    /**
      * Set the window to use for smoothing averages.
      * @param w The window size, in number of periods.
      * @return The progress logger (for chaining).
@@ -119,6 +130,12 @@ public class ProgressLogger {
         }
         if (n % period == 0) {
             logProgress();
+        } else {
+            // log every 30 seconds
+            long micros = timer.elapsed(TimeUnit.MICROSECONDS);
+            if (micros - prevMicros > timePeriod) {
+                logProgress(micros);
+            }
         }
     }
 
@@ -127,6 +144,10 @@ public class ProgressLogger {
      */
     public synchronized void logProgress() {
         long micros = timer.elapsed(TimeUnit.MICROSECONDS);
+        logProgress(micros);
+    }
+
+    private void logProgress(long micros) {
         long elapsed = micros - prevMicros;
         prevMicros = micros;
         double time = elapsed * 0.000001;

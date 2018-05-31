@@ -206,6 +206,10 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     private ResultMap computePredictions(long user, @Nonnull Collection<Long> items, boolean includeDetails) {
         logger.debug("predicting {} items for {}", items.size(), user);
         Long2DoubleMap ratings = makeUserVector(user, dao);
+        if (ratings == null) {
+            logger.warn("user {} has no ratings", user);
+            ratings = Long2DoubleMaps.EMPTY_MAP;
+        }
         LongSet allItems = new LongOpenHashSet(ratings.keySet());
         allItems.addAll(items);
 

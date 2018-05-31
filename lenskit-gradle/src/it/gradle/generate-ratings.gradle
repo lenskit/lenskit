@@ -18,7 +18,10 @@ task generateRatings {
         def sizes = integers(20, 50);
         file("$buildDir/ratings.csv").withPrintWriter { pw ->
             for (user in toIterable(longs(1, 1000000000), 100)) {
+                def seen = new HashSet()
                 for (item in toIterable(longs(1, 1000), sizes.next())) {
+                    if (seen.contains(item)) continue
+                    seen.add(item)
                     double rating = doubles(1, 5).next()
                     pw.format('%d,%d,%.2f\n', user, item, rating);
                 }

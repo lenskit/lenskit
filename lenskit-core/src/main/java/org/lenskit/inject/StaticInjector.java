@@ -125,7 +125,7 @@ public class StaticInjector implements Injector {
     @Override
     protected void finalize() throws Throwable {
         if (!closed) {
-            logger.warn("Injector " + this + " was never closed", capture);
+            logger.warn("Injector {} was never closed", this, capture);
         }
         super.finalize();
     }
