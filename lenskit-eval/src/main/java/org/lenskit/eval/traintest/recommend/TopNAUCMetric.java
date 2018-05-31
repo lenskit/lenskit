@@ -25,6 +25,8 @@
 package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
@@ -132,6 +134,42 @@ public class TopNAUCMetric extends ListOnlyTopNMetric<TopNAUCMetric.Context> {
         UserResult result = new UserResult(aveP);
         context.addUser(result);
         return result.withSuffix(suffix);
+    }
+
+    /**
+     * Compute the AUC from a (sorted) stream of integers of good entries.
+     *
+     * This is not implemented as a collector because that would be disturbingly difficult.
+     *
+     * @param goodPositions The list of good-item indexes (0-based).
+     * @param total The total number of entries (including bad)
+     * @param totalGood The total number of good entries (including ones that never appear)
+     *
+     * @return The AUC.
+     */
+    static double computeAUC(int[] goodPositions, int total, int totalGood) {
+        // use number of bad items _we have_ as proxy for number of all bad items
+        int nbad = total - goodPositions.length;
+        double auc = 0;
+        double thickness = 1.0 / totalGood;
+
+        int goodSoFar = 0;
+
+        // iterate through the set bits
+        for (int pos: goodPositions) {
+            // how many bad items to the left of me?
+            double clowns = pos - goodSoFar;
+            // fraction of clowns? the fpr
+            double fpr = nbad > 0 ? clowns / nbad : 0;
+            // we have a good item. this means we can increment the auc
+            // each good item increments the AUC by a slab with width (1-fpr)
+            // and thickness 1/ngood
+            auc += thickness * (1 - fpr);
+            // and increment good
+            goodSoFar += 1;
+        }
+
+        return auc;
     }
 
     public static class UserResult extends TypedMetricResult {
