@@ -44,6 +44,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.BitSet;
+import java.util.function.LongPredicate;
+import java.util.stream.IntStream;
 
 /**
  * Compute the area under the ROC curve.
