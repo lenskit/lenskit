@@ -24,7 +24,6 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.RecommenderEngine;
@@ -37,6 +36,7 @@ import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Metric that measures how long a TopN list actually is.
@@ -53,7 +53,7 @@ public class TopNLengthMetric extends ListOnlyTopNMetric<Mean> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recommendations, Mean context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recommendations, Mean context) {
         int n = recommendations.size();
         synchronized (context) {
             context.increment(n);

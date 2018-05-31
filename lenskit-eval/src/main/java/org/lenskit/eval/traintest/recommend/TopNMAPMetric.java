@@ -25,8 +25,6 @@
 package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
@@ -43,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Compute the mean average precision.
@@ -107,7 +106,7 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recs, Context context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recs, Context context) {
         LongSet good = goodItems.selectItems(context.universe, rec, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
@@ -121,10 +120,9 @@ public class TopNMAPMetric extends ListOnlyTopNMetric<TopNMAPMetric.Context> {
         int n = 0;
         double ngood = 0;
         double sum = 0;
-        LongIterator iter = recs.iterator();
-        while (iter.hasNext()) {
+        for (long id: recs) {
             n += 1;
-            if(good.contains(iter.nextLong())) {
+            if (good.contains(id)) {
                 // it is good
                 ngood += 1;
                 // add to MAP sum

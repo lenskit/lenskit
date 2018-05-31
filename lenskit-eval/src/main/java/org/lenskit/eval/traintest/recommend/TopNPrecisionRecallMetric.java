@@ -25,8 +25,6 @@
 package org.lenskit.eval.traintest.recommend;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.lenskit.api.Recommender;
@@ -41,6 +39,7 @@ import org.lenskit.util.math.Scalars;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * A metric to compute the precision and recall of a recommender given a 
@@ -92,14 +91,13 @@ public class TopNPrecisionRecallMetric extends ListOnlyTopNMetric<TopNPrecisionR
 
     @Nonnull
     @Override
-    public MetricResult measureUser(Recommender rec, TestUser user, int targetLength, LongList recs, Context context) {
+    public MetricResult measureUserRecList(Recommender rec, TestUser user, int targetLength, List<Long> recs, Context context) {
         int tp = 0;
 
         LongSet items = goodItems.selectItems(context.universe, rec, user);
 
-        LongIterator iter = recs.iterator();
-        while (iter.hasNext()) {
-            if(items.contains(iter.nextLong())) {
+        for (long item: recs) {
+            if(items.contains(item)) {
                 tp += 1;
             }
         }
