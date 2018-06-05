@@ -87,11 +87,20 @@ afterEvaluate {
 publishing {
     repositories {
         maven {
+            def stUser = System.getenv('SONATYPE_USER') ?: project.findProperty('deploy.user')
+            def stPasswd = System.getenv('SONATYPE_PASSWORD') ?: project.findProperty('deploy.password')
+
             def repoUrl = project.findProperty('deploy.url')
             if (!repoUrl && !project.version.endsWith('-SNAPSHOT')) {
                 repoUrl 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
             }
             url repoUrl ?: 'https://oss.sonatype.org/content/repositories/snapshots/'
+            if (stUser && stPasswd) {
+                credentials {
+                    username stUser
+                    password stPasswd
+                }
+            }
         }
     }
 }
