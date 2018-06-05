@@ -156,6 +156,9 @@ afterEvaluate {
     signing {
         sign publishing.publications.mavenJava
     }
+    installForTesting {
+        publication = publishing.publications.mavenJava
+    }
 
     rootProject.ciPublish.dependsOn publish
 }
