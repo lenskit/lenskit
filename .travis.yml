@@ -55,6 +55,7 @@ env:
   global:
   - TERM=dumb
   - TZ=UTC
+  - "_JAVA_OPTIONS=-Xmx1g -Xms512m"
   # SONAR_TOKEN
   - secure: "JSzx8Y50B4uPM5jYyED1d4LdlhxqG0pmGLnNfdHlxfwx3HWn7Trzlip2eNeVXor1OMbQxyDfzOLXjepfXY/lLB3FrmOdkEROy+WnZUBjMM55g+sOKskOzI3FbnKl09uf1hvprzij8UMImfZHgoQIbDgf2GpAmp1vskCVe7BDqsE="
   # SONATYPE_USER
