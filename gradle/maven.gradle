@@ -26,7 +26,10 @@
  * This build script contains code for uploading to Maven.
  */
 
-apply plugin: 'maven'
+import org.lenskit.build.CustomMavenDeploy
+
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 class ProjectMeta {
@@ -50,20 +53,8 @@ task javadocJar(type: Jar) {
     classifier = 'javadoc'
 }
 
-configurations {
-    mavenCentral
-    mavenCentral.extendsFrom archives
-}
 artifacts {
     archives sourcesJar
-    mavenCentral javadocJar
-}
-
-signing {
-    required {
-        !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask('uploadArchives')
-    }
-    sign configurations.archives, configurations.mavenCentral
 }
 
 tasks.withType(Sign) {
@@ -79,27 +70,10 @@ tasks.withType(Sign) {
     }
 }
 
-install {
-    def installUrl = project.getConfigProperty('install.url', null)
-    if (installUrl != null) {
-        logger.info 'installing to $installUrl'
-        repositories.clear()
-        repositories {
-            mavenDeployer {
-                repository(url: rootProject.uri(installUrl))
-            }
-        }
-    }
+task installForTesting(type: CustomMavenDeploy, group: 'Deploy') {
+    repository = rootProject.file('build/lenskit-current-repo')
 }
 
-task installForTesting(type: Upload, group: 'Deploy') {
-    repositories {
-        mavenDeployer {
-            repository(url: rootProject.uri('build/lenskit-current-repo'))
-        }
-    }
-    configuration = configurations.archives
-}
 // enforce ordering on the testing-install operation for parallel builds
 // FIXME enforce ordering between adjacent projects
 afterEvaluate {
@@ -110,70 +84,90 @@ afterEvaluate {
     }
 }
 
-uploadArchives {
-    configuration = configurations.mavenCentral
-    repositories.mavenDeployer {
-        def user = System.getenv('SONATYPE_USER') ?: project.getConfigProperty('deploy.user', null)
-        def password = System.getenv('SONATYPE_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
+publishing {
+    repositories {
+        maven {
+            def stUser = System.getenv('SONATYPE_USER') ?: project.findProperty('deploy.user')
+            def stPasswd = System.getenv('SONATYPE_PASSWORD') ?: project.findProperty('deploy.password')
 
-        def deployUrl = project.getConfigProperty('deploy.url', null)
-        if (deployUrl != null) {
-            deployUrl = rootProject.uri(deployUrl)
-        }
-        repository(url: deployUrl ?: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-            if (user != null && password != null) {
-                authentication(userName: user, password: password)
+            def repoUrl = project.findProperty('deploy.url')
+            if (!repoUrl && !project.version.endsWith('-SNAPSHOT')) {
+                repoUrl 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
             }
-        }
-
-        if (deployUrl == null) {
-            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                if (user != null && password != null) {
-                    authentication(userName: user, password: password)
+            url repoUrl ?: 'https://oss.sonatype.org/content/repositories/snapshots/'
+            if (stUser && stPasswd) {
+                credentials {
+                    username stUser
+                    password stPasswd
                 }
             }
         }
-
-        beforeDeployment { deploy ->
-            signing.signPom(deploy)
-        }
     }
-    // allow deploy to be skipped on the command line
+}
+
+tasks.withType(PublishToMavenRepository) {
     onlyIf {
         !(project.getConfigProperty('deploy.skip', 'false').toBoolean())
     }
 }
 
-rootProject.ciPublish.dependsOn uploadArchives
+signing {
+    required {
+        !version.endsWith('SNAPSHOT')
+    }
+}
 
 // set up the Maven metadata at the end of configuration
 afterEvaluate {
-    uploadArchives.repositories.mavenDeployer.pom.project {
-        name meta.name
-        packaging 'jar'
-        // optionally artifactId can be defined here
-        description meta.description
-        url 'http://lenskit.org'
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId 'org.lenskit'
 
-        scm {
-            connection 'scm:git:http://github.com/grouplens/lenskit.git'
-            developerConnection 'scm:git:git@github.com:grouplens/lenskit.git'
-            url 'http://github.com/grouplens/lenskit'
-        }
+                from components.java
 
-        licenses {
-            license {
-                name 'MIT License'
-                url 'https://opensource.org/licenses/MIT'
-            }
-        }
+                artifact sourcesJar {
+                    classifier 'sources'
+                }
+                artifact javadocJar {
+                    classifier 'javadoc'
+                }
 
-        developers {
-            developer {
-                id 'ekstrand'
-                name 'Michael Ekstrand'
-                email 'ekstrand@txstate.edu'
+                pom {
+                    name = meta.name
+                    description = meta.description
+                    url = 'http://lenskit.org'
+                    scm {
+                        connection = 'scm:git:http://github.com/grouplens/lenskit.git'
+                        developerConnection = 'scm:git:git@github.com:grouplens/lenskit.git'
+                        url = 'http://github.com/grouplens/lenskit'
+                    }
+
+                    licenses {
+                        license {
+                            name = 'MIT License'
+                            url = 'https://opensource.org/licenses/MIT'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'mdekstrand'
+                            name = 'Michael Ekstrand'
+                            email = 'michaelekstrand@boisestate.edu'
+                        }
+                    }
+                }
             }
         }
     }
+
+    signing {
+        sign publishing.publications.mavenJava
+    }
+    installForTesting {
+        publication = publishing.publications.mavenJava
+    }
+
+    rootProject.ciPublish.dependsOn publish
 }
