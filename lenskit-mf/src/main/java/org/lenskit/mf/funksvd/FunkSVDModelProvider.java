@@ -107,7 +107,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
             ivec.set(initialValue);
 
             FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
-            trainFeature(f, estimates, uvec, ivec, fib);
+            double rmse = trainFeature(f, estimates, uvec, ivec, fib);
             summarizeFeature(uvec, ivec, fib);
             featureInfo.add(fib.build());
 
@@ -121,7 +121,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
             assert Math.abs(itemFeatures.getColumnVector(f).getL1Norm() - ivec.getL1Norm()) < 1.0e-4 : "item column sum matches";
 
             timer.stop();
-            logger.info("Finished feature {} in {}", f, timer);
+            logger.info("Finished feature {} in {} (RMSE={})", f, timer, rmse);
         }
 
         // Wrap the user/item matrices because we won't use or modify them again
@@ -155,7 +155,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
      * @see #doFeatureIteration(TrainingEstimator, List, RealVector, RealVector, double)
      * @see #summarizeFeature(RealVector, RealVector, FeatureInfo.Builder)
      */
-    protected void trainFeature(int feature, TrainingEstimator estimates,
+    protected double trainFeature(int feature, TrainingEstimator estimates,
                                 RealVector userFeatureVector, RealVector itemFeatureVector,
                                 FeatureInfo.Builder fib) {
         double oldRMSE = Double.POSITIVE_INFINITY;
@@ -170,6 +170,7 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
             fib.addTrainingRound(rmse);
             logger.trace("iteration {} finished with RMSE {}", epoch, rmse);
         }
+        return rmse;
     }
 
     /**
