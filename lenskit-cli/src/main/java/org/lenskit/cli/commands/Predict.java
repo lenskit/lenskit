@@ -44,6 +44,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -72,14 +74,23 @@ public class Predict implements Command {
     public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
         LenskitRecommenderEngine engine;
+
+        File batch = ctx.options.get("batch_pairs");
+        Long user = ctx.options.getLong("user");
+        List<Long> items = ctx.options.get("items");
+        if (items == null) {
+            items = Collections.emptyList();
+        }
+        if (batch == null && user == null) {
+            logger.error("no request provided: must provide --user or --batch-pairs");
+            throw new LenskitCommandException("no predictions requested");
+        }
+
         try {
             engine = ctx.loader.loadEngine();
         } catch (IOException e) {
             throw new LenskitCommandException("error loading engine", e);
         }
-
-        long user = ctx.options.getLong("user");
-        List<Long> items = ctx.options.get("items");
 
         try (LenskitRecommender rec = engine.createRecommender(ctx.input.getDAO())) {
             RatingPredictor pred = rec.getRatingPredictor();
@@ -113,14 +124,22 @@ public class Predict implements Command {
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
         RecommenderLoader.configureArguments(parser);
-        parser.addArgument("user")
+        parser.addArgument("-B", "--batch-pairs")
+              .type(File.class)
+              .metavar("FILE")
+              .help("Predict for user/item pairs in CSV FILE");
+        parser.addArgument("-o", "--output", "--output-csv")
+              .type(File.class)
+              .metavar("FILE")
+              .help("Write predictions to FILE");
+        parser.addArgument("-u", "--user")
               .type(Long.class)
               .metavar("USER")
               .help("predict for USER");
         parser.addArgument("items")
               .type(Long.class)
               .metavar("ITEM")
-              .nargs("+")
+              .nargs("*")
               .help("predict for ITEMs");
     }
 
