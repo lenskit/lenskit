@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply from: 'common.gradle'
+apply from: 'renjin.gradle'
+
+task trainModel(type: JavaExec) {
+    classpath configurations.runtime
+    inputs.file 'bias.groovy'
+    inputs.file ratingsFile
+    outputs.file 'bias.model'
+
+    main 'org.lenskit.cli.Main'
+    args 'train-model'
+    args "--tsv-file", ratingsFile
+    args '-o', file('bias.model')
+    args 'bias.groovy'
+}
+
+task predict(type: JavaExec) {
+    dependsOn trainModel
+    classpath configurations.runtime
+    inputs.file 'bias.model'
+    outputs.file 'predictions.csv'
+
+    main 'org.lenskit.cli.Main'
+    args 'predict'
+    args '-m', 'bias.model'
+    args '--tsv-file', ratingsFile
+    args '-o', 'predictions.csv'
+    args '-B', 'pairs.csv'
+}
+
+verifyR.dependsOn predict

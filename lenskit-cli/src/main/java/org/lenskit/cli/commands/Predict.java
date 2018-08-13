@@ -130,7 +130,9 @@ public class Predict implements Command {
                 DelimitedColumnEntityFormat ef = new DelimitedColumnEntityFormat();
                 ef.addColumn(CommonAttributes.USER_ID);
                 ef.addColumn(CommonAttributes.ITEM_ID);
+                ef.setDelimiter(",");
                 ef.setHeader(false);
+                ef.setHeaderLines(0);
                 ef.setEntityType(EntityType.forName("request"));
                 csv.setFormat(ef);
                 sds.addSource(csv);
@@ -147,6 +149,7 @@ public class Predict implements Command {
                     }
                 }
             }
+            outW.close();
         } catch (IOException e) {
             throw new LenskitCommandException(e);
         }
