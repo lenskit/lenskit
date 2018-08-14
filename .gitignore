@@ -11,7 +11,9 @@ local.gradle
 /build
 /*/build
 /out
+/bin
 /*/out
+/*/bin
 /.idea
 *.iml
 *.ipr

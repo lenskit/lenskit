@@ -37,15 +37,24 @@ import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.lenskit.data.dao.DataAccessObject;
-import org.lenskit.data.entities.CommonAttributes;
-import org.lenskit.data.entities.CommonTypes;
-import org.lenskit.data.entities.Entity;
+import org.lenskit.data.dao.file.DelimitedColumnEntityFormat;
+import org.lenskit.data.dao.file.StaticDataSource;
+import org.lenskit.data.dao.file.TextEntitySource;
+import org.lenskit.data.entities.*;
+import org.lenskit.util.IdBox;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Predict item ratings for a user.
@@ -72,14 +81,37 @@ public class Predict implements Command {
     public void execute(Namespace opts) throws LenskitCommandException {
         Context ctx = new Context(opts);
         LenskitRecommenderEngine engine;
+
+        File batch = ctx.options.get("batch_pairs");
+        Long user = ctx.options.getLong("user");
+        List<Long> items = ctx.options.get("items");
+        if (items == null) {
+            items = Collections.emptyList();
+        }
+        if (batch == null && user == null) {
+            logger.error("no request provided: must provide --user or --batch-pairs");
+            throw new LenskitCommandException("no predictions requested");
+        }
+
+        File output = ctx.options.get("output");
+        TableWriter outW = null;
+        if (output != null) {
+            TableLayoutBuilder tlb = new TableLayoutBuilder();
+            tlb.addColumn("user")
+               .addColumn("item")
+               .addColumn("prediction");
+            try {
+                outW = CSVWriter.open(output, tlb.build());
+            } catch (IOException e) {
+                throw new LenskitCommandException(e);
+            }
+        }
+
         try {
             engine = ctx.loader.loadEngine();
         } catch (IOException e) {
             throw new LenskitCommandException("error loading engine", e);
         }
-
-        long user = ctx.options.getLong("user");
-        List<Long> items = ctx.options.get("items");
 
         try (LenskitRecommender rec = engine.createRecommender(ctx.input.getDAO())) {
             RatingPredictor pred = rec.getRatingPredictor();
@@ -89,23 +121,60 @@ public class Predict implements Command {
                 throw new UnsupportedOperationException("no rating predictor");
             }
 
-            logger.info("predicting {} items", items.size());
-            Stopwatch timer = Stopwatch.createStarted();
-            Map<Long, Double> preds = pred.predict(user, items);
-            System.out.format("predictions for user %d:%n", user);
-            for (Map.Entry<Long, Double> e : preds.entrySet()) {
-                System.out.format("  %d", e.getKey());
-                Entity item = dao.lookupEntity(CommonTypes.ITEM, e.getKey());
-                String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
-                if (name != null) {
-                    System.out.format(" (%s)", name);
+            if (user != null) {
+                predict(pred, dao, user, items, outW);
+            } else {
+                StaticDataSource sds = new StaticDataSource();
+                TextEntitySource csv = new TextEntitySource();
+                csv.setFile(batch.toPath());
+                DelimitedColumnEntityFormat ef = new DelimitedColumnEntityFormat();
+                ef.addColumn(CommonAttributes.USER_ID);
+                ef.addColumn(CommonAttributes.ITEM_ID);
+                ef.setDelimiter(",");
+                ef.setHeader(false);
+                ef.setHeaderLines(0);
+                ef.setEntityType(EntityType.forName("request"));
+                csv.setFormat(ef);
+                sds.addSource(csv);
+                DataAccessObject testDao = sds.get();
+                try (ObjectStream<IdBox<List<Entity>>> ps = testDao.query(EntityType.forName("request"))
+                                                              .groupBy(CommonAttributes.USER_ID)
+                                                              .stream()) {
+                    for (IdBox<List<Entity>> upairs: ps) {
+                        user = upairs.getId();
+                        items = upairs.getValue().stream()
+                                      .map(Entities.attributeValueFunction(CommonAttributes.ITEM_ID))
+                                      .collect(Collectors.toList());
+                        predict(pred, dao, user, items, outW);
+                    }
                 }
-                System.out.format(": %.3f", e.getValue());
-                System.out.println();
             }
-            timer.stop();
-            logger.info("predicted for {} items in {}", items.size(), timer);
+            outW.close();
+        } catch (IOException e) {
+            throw new LenskitCommandException(e);
         }
+    }
+
+    void predict(RatingPredictor pred, DataAccessObject dao, long user, List<Long> items, TableWriter outW) throws IOException {
+        logger.info("predicting {} items", items.size());
+        Stopwatch timer = Stopwatch.createStarted();
+        Map<Long, Double> preds = pred.predict(user, items);
+        System.out.format("predictions for user %d:%n", user);
+        for (Map.Entry<Long, Double> e : preds.entrySet()) {
+            if (outW != null) {
+                outW.writeRow(user, e.getKey(), e.getValue());
+            }
+            System.out.format("  %d", e.getKey());
+            Entity item = dao.lookupEntity(CommonTypes.ITEM, e.getKey());
+            String name = item == null ? null : item.maybeGet(CommonAttributes.NAME);
+            if (name != null) {
+                System.out.format(" (%s)", name);
+            }
+            System.out.format(": %.3f", e.getValue());
+            System.out.println();
+        }
+        timer.stop();
+        logger.info("predicted for {} items in {}", items.size(), timer);
     }
 
     public void configureArguments(ArgumentParser parser) {
@@ -113,14 +182,22 @@ public class Predict implements Command {
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
         RecommenderLoader.configureArguments(parser);
-        parser.addArgument("user")
+        parser.addArgument("-B", "--batch-pairs")
+              .type(File.class)
+              .metavar("FILE")
+              .help("Predict for user/item pairs in CSV FILE");
+        parser.addArgument("-o", "--output", "--output-csv")
+              .type(File.class)
+              .metavar("FILE")
+              .help("Write predictions to FILE");
+        parser.addArgument("-u", "--user")
               .type(Long.class)
               .metavar("USER")
               .help("predict for USER");
         parser.addArgument("items")
               .type(Long.class)
               .metavar("ITEM")
-              .nargs("+")
+              .nargs("*")
               .help("predict for ITEMs");
     }
 
