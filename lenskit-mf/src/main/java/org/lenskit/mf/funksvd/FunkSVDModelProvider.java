@@ -193,6 +193,9 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
         // Not much overhead, and prevents needing another parameter
         FunkSVDTrainingUpdater updater = rule.createUpdater();
 
+        double acc_ud = 0;
+        double acc_id = 0;
+
         for (RatingMatrixEntry r : ratings) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
@@ -201,10 +204,15 @@ public class FunkSVDModelProvider implements Provider<FunkSVDModel> {
                             userFeatureVector.getEntry(uidx), itemFeatureVector.getEntry(iidx), trail);
 
             // Step 3: Update feature values
-            userFeatureVector.addToEntry(uidx, updater.getUserFeatureUpdate());
-            itemFeatureVector.addToEntry(iidx, updater.getItemFeatureUpdate());
+            double ud = updater.getUserFeatureUpdate();
+            acc_ud += ud * ud;
+            userFeatureVector.addToEntry(uidx, ud);
+            double id = updater.getItemFeatureUpdate();
+            acc_id += id * id;
+            itemFeatureVector.addToEntry(iidx, id);
         }
 
+        logger.trace("finished iteration with |du|={}, |di|={}", Math.sqrt(acc_ud), Math.sqrt(acc_id));
         return updater.getRMSE();
     }
 
