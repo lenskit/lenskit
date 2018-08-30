@@ -7,6 +7,8 @@
 [![SonarQube technical debt](https://sonarcloud.io/api/project_badges/measure?project=lenskit&metric=sqale_index)](https://sonarcloud.io/dashboard?id=lenskit)
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/9190.svg)](https://scan.coverity.com/projects/lenskit-lenskit)
 [![Join the chat at https://gitter.im/lenskit/lenskit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lenskit/lenskit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/lenskit/lenskit.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/lenskit/lenskit/context:java)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/lenskit/lenskit.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/lenskit/lenskit/alerts)
 
 LensKit is an implementation of collaborative filtering algorithms and
 a set of tools for benchmarking them.  This readme is about working with
