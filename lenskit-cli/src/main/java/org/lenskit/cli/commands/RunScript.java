@@ -28,8 +28,13 @@ import com.google.auto.service.AutoService;
 import com.google.common.io.Files;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.lenskit.LenskitRecommender;
+import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.LenskitCommandException;
+import org.lenskit.cli.util.InputData;
+import org.lenskit.cli.util.RecommenderLoader;
+import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +64,10 @@ public class RunScript implements Command {
 
     @Override
     public void configureArguments(ArgumentParser parser) {
+        parser.description("Predicts a user's rating of some items.");
+        InputData.configureArguments(parser);
+        ScriptEnvironment.configureArguments(parser);
+        RecommenderLoader.configureArguments(parser);
         parser.addArgument("script")
               .type(File.class)
               .metavar("SCRIPT")
@@ -72,16 +81,29 @@ public class RunScript implements Command {
 
     @Override
     public void execute(Namespace options) throws LenskitCommandException {
+        ScriptEnvironment env = new ScriptEnvironment(options);
+        InputData input = new InputData(env, options);
+        RecommenderLoader loader = new RecommenderLoader(input, env, options);
+
+        LenskitRecommenderEngine engine = null;
+        try {
+            engine = loader.loadEngine();
+        } catch (IOException e) {
+            throw new LenskitCommandException(e);
+        }
+        LenskitRecommender rec = engine.createRecommender(input.getDAO());
+
         ScriptEngineManager sem = new ScriptEngineManager();
         File scriptFile = options.get("script");
         String ext = Files.getFileExtension(scriptFile.getName());
-        ScriptEngine engine = sem.getEngineByExtension(ext);
-        logger.info("running {} with engine {}", scriptFile, engine);
+        ScriptEngine seng = sem.getEngineByExtension(ext);
+        logger.info("running {} with engine {}", scriptFile, seng);
         SimpleBindings bindings = new SimpleBindings();
         bindings.put("logger", LoggerFactory.getLogger(scriptFile.getName()));
         bindings.put("args", options.<List<String>>get("args"));
+        bindings.put("recommender", rec);
         try (Reader reader = new FileReader(scriptFile)) {
-            engine.eval(reader, bindings);
+            seng.eval(reader, bindings);
         } catch (IOException e) {
             throw new LenskitCommandException("error loading script file", e);
         } catch (ScriptException e) {

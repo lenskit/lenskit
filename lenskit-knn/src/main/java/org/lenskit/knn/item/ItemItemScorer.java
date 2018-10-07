@@ -103,6 +103,7 @@ public class ItemItemScorer extends AbstractItemScorer {
         ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.basic(results);
 
         scoreItems(user, items, accum);
+        logger.debug("scored {} items for user {}", results.size(), user);
 
         return results;
     }
@@ -118,6 +119,7 @@ public class ItemItemScorer extends AbstractItemScorer {
         ItemItemScoreAccumulator accum = ItemItemScoreAccumulator.detailed(results);
 
         scoreItems(user, items, accum);
+        logger.debug("scored {} items for user {} with details", results.size(), user);
 
         return Results.newResultMap(results);
     }
