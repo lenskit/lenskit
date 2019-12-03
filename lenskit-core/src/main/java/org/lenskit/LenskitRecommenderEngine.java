@@ -215,7 +215,9 @@ public final class LenskitRecommenderEngine implements RecommenderEngine, Serial
      */
     public LenskitRecommender createRecommender(@WillNotClose DataAccessObject dao) throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.addComponent(dao);
+        if (dao != null) {
+            config.addComponent(dao);
+        }
         return createRecommender(config);
     }
 
