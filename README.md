@@ -8,6 +8,8 @@
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/9190.svg)](https://scan.coverity.com/projects/lenskit-lenskit)
 [![Join the chat at https://gitter.im/lenskit/lenskit](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/lenskit/lenskit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+**Deprecation Notice:** The Java implementation of LensKit is now deprecated.  For new projects, use the [Python version](https://lenskit.org).
+
 LensKit is an implementation of collaborative filtering algorithms and
 a set of tools for benchmarking them.  This readme is about working with
 the LensKit source code.  For more information about
