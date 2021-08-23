@@ -35,6 +35,7 @@ stages:
 - test
 - deploy
 jobs:
+  fast_finish: true
   include:
     - stage: compile
       script: ./gradlew test -Ptests.slow.skip=true
